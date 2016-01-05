@@ -46,3 +46,4 @@ function tripal_get_arraydesign_select_options($syncd_only = TRUE) {
   }
   return $ad_list;
 }
+
