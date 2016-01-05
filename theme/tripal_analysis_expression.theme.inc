@@ -138,9 +138,15 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
       array('table' => 'biomaterial', 'id' => $exp->biomaterial_id),
       array('type_name' => 'description', 'cv_name' => 'biomaterial_property')
     );
-    $description = $desc->value;
 
-    $json_exp .= '{"name": "' . $exp->name . '", "intensity": "' . $exp->signal . '", "description": "' . $exp->description . '"},';
+    if($desc) {
+      $description = $desc->value;
+    }
+    else {
+      $description = '';
+    }
+
+    $json_exp .= '{"name": "' . $exp->name . '", "intensity": "' . $exp->signal . '", "description": "' . $description . '"},';
   }
   $json_exp .= "]";
   if($json_exp == "[]") {
