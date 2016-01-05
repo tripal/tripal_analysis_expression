@@ -1,0 +1,17 @@
+name = Tripal Expression
+description = A module to load expression data
+core = 7.x
+version = 7.x-0.1-dev
+project = tripal_analysis_expression
+package = Tripal Extensions
+configure = admin/tripal/extension/tripal_analysis_expression/manage
+
+dependencies[] = tripal_core
+dependencies[] = tripal_views
+dependencies[] = tripal_db
+dependencies[] = tripal_cv
+dependencies[] = tripal_analysis
+dependencies[] = tripal_feature
+dependencies[] = tripal_organism
+dependencies[] = tripal_contact
+
