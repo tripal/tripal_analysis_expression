@@ -1,0 +1,26 @@
+div.tooltip {
+  position: absolute;
+  text-align: center;
+  <!--width: 60px;  -->
+  height: 28px;
+  padding: 5px;
+  font: 12px sans-serif;
+  background: white;
+  border: 2px;
+  border-style: solid;
+  border-color: green;
+  border-radius: 4px;
+  pointer-events: none;
+}
+figure {
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.exp-feature-order-selection {
+  align: center;
+}
+
+text {
+  font-family: monospace;
+}
