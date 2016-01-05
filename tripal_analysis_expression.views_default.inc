@@ -1745,3 +1745,4 @@ $handler->display->display_options['tab_options']['weight'] = '0';
 
 return $view;
 }
+
