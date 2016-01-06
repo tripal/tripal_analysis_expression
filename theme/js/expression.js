@@ -303,7 +303,9 @@ function expSub(heatMap,maxHeat,minHeat) {
 				div.transition()
 				.duration(200)
 				.style("opacity", .9)
-				div .html(d.name + ': ' + d.intensityLabel + '<br>' + d.description )
+				.style("text-align", "left")
+				div .html('<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b><br>' + d.description )
+				.style("max-width", 200 + "px")
 				.style("left", (d3.event.pageX) + "px")
 				.style("border-color", function() {
 					if ((d.intensity*hF) <= 255) {

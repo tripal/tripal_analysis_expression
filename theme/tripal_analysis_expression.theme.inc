@@ -118,7 +118,7 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
  
   $feature_id = chado_get_id_from_nid('feature', $node->nid);
 
-  $sql = "SELECT ER.signal, B.name, B.biomaterial_id FROM {elementresult} ER
+  $sql = "SELECT ER.signal, B.name, B.biomaterial_id, B.description FROM {elementresult} ER
            INNER JOIN {element} E ON E.element_id = ER.element_id
            INNER JOIN {feature} F ON F.feature_id = E.feature_id
            INNER JOIN {quantification} Q ON Q.quantification_id = ER.quantification_id
@@ -134,7 +134,7 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
   $json_exp = "[";
   foreach($expressions as $exp) {
  
-    $desc = chado_get_property(
+   /* $desc = chado_get_property(
       array('table' => 'biomaterial', 'id' => $exp->biomaterial_id),
       array('type_name' => 'description', 'cv_name' => 'biomaterial_property')
     );
@@ -144,9 +144,9 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
     }
     else {
       $description = '';
-    }
+    } */
 
-    $json_exp .= '{"name": "' . $exp->name . '", "intensity": "' . $exp->signal . '", "description": "' . $description . '"},';
+    $json_exp .= '{"name": "' . $exp->name . '", "intensity": "' . $exp->signal . '", "description": "' . $exp->description . '"},';
   }
   $json_exp .= "]";
   if($json_exp == "[]") {
