@@ -49,7 +49,7 @@ function tripal_analysis_expression_install() {
   // Set default cvs.
   tripal_set_default_cv('arraydesignprop', 'type_id', 'arraydesign_property');
 
-  //tripal_set_default_cv('biomaterialprop', 'type_id', 'biomaterial_property');
+  tripal_set_default_cv('biomaterialprop', 'type_id', 'biomaterial_property');
   //tripal_set_default_cv('biomaterial_relationship', 'type_id', 'biomaterial_relationship');
 
   // These variables are used to set how expression information is displayed. 
