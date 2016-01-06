@@ -266,8 +266,13 @@ function add_xml_data($organism_id, $biosample) {
  // $version = preg_match('/last_update="(.+?)"/', $biosample);
 
   // Create a contact if contact is not present.
-  $biosourceprovider_id = create_contact($biomaterial_provider);
 
+  if ($biomaterial_provider) {
+    $biosourceprovider_id = create_contact($biomaterial_provider);
+  }
+  else {
+    $biosourceprovider_id = '';
+  }
   // Verify there is an NCBI biosample database.
   $ncbi_biosample_id = create_ncbi_db('bioproject', 'NCBI BioSample', '');    
 
@@ -299,8 +304,15 @@ function add_xml_data($organism_id, $biosample) {
  // drupal_set_message((string)$unique_name);
 
   // Create a biomaterial.
-  $biomaterial_id = create_biomaterial($unique_name, $comment, $organism_id, $biosourceprovider_id, $dbxref_biosample_id);
+  //$biomaterial_id = create_biomaterial($unique_name, $comment, $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $description);
+
+  $biomaterial_description = $comment ? (string)$comment : (string)$description;
+
+ drupal_set_message($biomaterial_description);
+  $biomaterial_id = create_biomaterial($unique_name, '', $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $biomaterial_description);
  // drupal_set_message($biomaterial_id);
+
+//  drupal_set_message($description);
 
   add_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id);
   // Add to biomaterialprop table.
@@ -326,11 +338,11 @@ function add_biomaterial_properties($attributes, $biomaterial_id) {
 
   // Iterate through each property
   foreach($attributes as $attr) {
-    drupal_set_message("here" . var_export($attr,TRUE));
+   // drupal_set_message("here" . var_export($attr,TRUE));
     // Get the cvterm name 
     $attr_name = (string)$attr->attributes()->attribute_name;
-    drupal_set_message(var_export($attr_name,TRUE));
-    drupal_set_message((string)$attr_name);
+    //drupal_set_message(var_export($attr_name,TRUE));
+    //drupal_set_message((string)$attr_name);
     // Insert into database. If the type is already in the database the function will not update. 
     if(!tripal_insert_cvterm(array(
       'name' => (string)$attr_name, 

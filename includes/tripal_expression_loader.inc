@@ -418,7 +418,7 @@ function tripal_expression_elementresult($element_id, $quantification_id, $signa
 
 function expression_create_biomaterial_structure($biomaterial, $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $uniq_name) {
   // Create the biomaterial
-  $biomaterial_id = create_biomaterial($biomaterial, $analysis_id, $organism_id, $contact_id, $dbxref_id);
+  $biomaterial_id = create_biomaterial($biomaterial, $analysis_id, $organism_id, $contact_id, $dbxref_id, '');
 
   $uniq_name = $biomaterial . $uniq_name;
 
@@ -723,15 +723,27 @@ function create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $or
  * @ingroup tripal_analysis_expression
  */ 
 
-function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id) {
+function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description) {
   $biomaterial_id = chado_query('select biomaterial_id from {biomaterial} where name = :name limit 1',array(':name' => $biomaterial))->fetchField();
+
+drupal_set_message($biomaterial_description);
+    if ($biomaterial_description == '') {
+      $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_id;
+    }
+drupal_set_message($biomaterial_description);
+
     $values = array(
       'name' => $biomaterial,
-      'description' => 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_id,
-      'biosourceprovider_id' => $biosourceprovider_id,
+      'description' => $biomaterial_description,
+      //'biosourceprovider_id' => $biosourceprovider_id,
       'taxon_id' => $organism_id, 
       'dbxref_id' => $dbxref_id, 
     );
+
+  if($biosourceprovider_id) {
+    $values['biosourceprovider_id'] = $biosourceprovider_id;
+  }
+
   if(!$biomaterial_id) {
     $biomaterial = chado_insert_record('biomaterial',$values);
     if($biomaterial==FALSE) {
