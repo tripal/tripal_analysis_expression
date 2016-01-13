@@ -32,7 +32,7 @@ function expSortUp() {
 }
 
 /**
- * This functino will remove biomaterials that have a value of 0.
+ * This function will remove biomaterials that have a value of 0.
  */
 function nonZero() {
 	heatMap = heatMap.filter(function (d) { return d.intensity > 0; });
@@ -41,7 +41,12 @@ function nonZero() {
 	exp();
 }
 
-
+/**
+ * This function will divide the biomaterials up into different lines based
+ * on the column width set by the user. This function will call the expKey 
+ * function to build the table key. It will call the expSub function for each
+ * line of biomaterials.
+ */
 function exp() {
 	/* Only print out heatmap if there is at least one value. */
 	if(heatMap.length < 1) {
@@ -69,20 +74,27 @@ function exp() {
 
 	/* Draw the heat maps line by line. */	
 	while(1) {
-		//just in case this loop is reached without an empty maxHeat
-		if(heatMap.length < 1) {
-			break;
-		}
+		/* Grab the biomaterials that have not yet been drawn. */
 		var num = d3.max(heatMap.slice(loc,heatMapLength), function(d,i) { 
+
+			/* Make sure the lenth of the biomaterial name does not exceed
+                        the maxLength set by the user. */
 			if( d.name.length <= maxLength ) { 
 				l = d.name.length;
 			}
+	
+			/* If the maxLength variable is set to 0, there is not limit
+                        on the biomaterial name length. */
 			else if ( maxLength == 0 ) {
 				l = d.name.length;
 			}
+			
+			/* Truncate the length of the biomaterial name to maxLength. */
 			else {
 				l = maxLength;
 			}
+	
+			/* Find the max number of biomaterials that column width and biomaterial name allow. */	
 			if( (((i+.5)*colWidth) + l*ratio*.707*colWidth*.9) > bodyWidth ) {                  
 				return 0;
 			} 
@@ -90,6 +102,8 @@ function exp() {
 				return i+1; 
 			}
 		});
+	
+		/* Cut up the biomateial json variable to draw on each line. */	
 		subHeatMap = [];	
 		if(loc+num >=heatMapLength-1){
 			expSub(heatMap.slice(loc,loc + num+1),maxHeat,minHeat);
@@ -157,39 +171,36 @@ function expKey(maxHeat, minHeat) {
 		.attr("width", recSize)
 		.style("fill", function (d) {return d3.rgb(d.r,d.g,d.b);});
 
+	/* Set dimensions of the svg. */
 	d3.select("svg")
 		.attr("width", pushForward + (4*recSize) + pushBack)
 		.attr("height", recSize);
 
 }
 
-
-
+/*
+ * The function draws an single line of biomaterials.
+ */
 function expSub(heatMap,maxHeat,minHeat) {
+
+	/* Normalize to minimum value to 0 incase of negative expression values. */
 	minNorm = 0;
 	if(minHeat < 0) {
 		minNorm = -minHeat;
 	}
-		
-        //var maxLength = 13;
+
+	/* Graph height is hardcoded to 100. */		
 	var graphHeight = Number(colWidth);
 	if(col == "column") {
 		graphHeight = 100;
 	}
-	var recSize =20;
-	var rSH = recSize/2;
 
-	var ratioChar = [{"char": "a"}];
-
-	//maxHeat = d3.max(heatMap, function (d) {return Number(d.intensity);});
 	hF = 511/maxHeat;
 	numTiles = heatMap.length;
 
-	//Make sure this works in multiple browsers
+	/* Get the size of the figure. */
 	var bodyWidth = d3.select("figure").node().getBoundingClientRect().width;
 	var bodyHeight = d3.select("figure").node().getBoundingClientRect().height;
-	//document.write(bodyWidth);
-
 
 	var graphContainer = d3.select("figure").append("expfeaturedom").append("svg")
 		.attr("width",bodyWidth)
@@ -199,6 +210,7 @@ function expSub(heatMap,maxHeat,minHeat) {
 		.attr("class","tooltip")
 		.style("opacity", 0);
 
+	var ratioChar = [{"char": "a"}];
 	var fontRatio = graphContainer.append("g")
 		.selectAll("text")
 		.data(ratioChar)
@@ -318,7 +330,6 @@ function expSub(heatMap,maxHeat,minHeat) {
 			.duration(500)
 			.style("opacity",0);
 			})
-	//.on("click", function(d) {window.location = window.location.href + "/biomaterial/"+d.name;})
 	.style("fill", function (d) { if ((d.intensity*hF) <= 255) {
 					return d3.rgb(255-(d.intensity*hF),0,0);
 				} 
@@ -326,8 +337,6 @@ function expSub(heatMap,maxHeat,minHeat) {
 					return d3.rgb(0,(d.intensity*hF)-255,0);
 				}
 		});
-
-//******************
 
 	var graphGroup = graphContainer.append("g")
 		.selectAll("rect")
@@ -342,21 +351,9 @@ function expSub(heatMap,maxHeat,minHeat) {
 		.attr("width", colWidth)
 	.style("fill", d3.rgb(0,0,0));
 
-
-
-
-//*****************
-
-
-
-//	var showLabels = 1;
-
 	if(showLabels == 1) {
 		maxLength = 1;
 	}
-
-
-	//document.write("made it to this line");
 
 	var graphLables = graphContainer.append("g")
 		.selectAll("text")
@@ -391,34 +388,7 @@ function expSub(heatMap,maxHeat,minHeat) {
 	var maxTitleHeight = d3.max(heatMap, function (d) {return d.titleHeight;});
 	var divWidth = d3.max(heatMap, function (d) {return d.titleend;});
 
-	//d3.selectAll("svg")
-	graphContainer
-		//      .attr("transform", function (d) { return "translate(" + maxFeatureWidth + "," + maxTitleHeight + ")";})
-	//	.attr("width", divWidth+(colWidth*0.707106781))
-		.attr("height",graphHeight + maxTitleHeight+(colWidth*0.707106781));
-//	}
+	graphContainer.attr("height",graphHeight + maxTitleHeight+(colWidth*0.707106781));
 
-
-/*	else {
-
-
-	graphContainer
-		//      .attr("transform", function (d) { return "translate(" + maxFeatureWidth + "," + maxTitleHeight + ")";})
-		.attr("height",graphHeight);
-
-
-
-
-	}*/
-
-	d3.select(window).on('resize', resize);
-
-
-	function resize() {
-
-
-	}
-
-	//document.write(bodyWidth + "\n");
-	//document.write(bodyWidth1);
+//	d3.select(window).on('resize', resize);
 };
