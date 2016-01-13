@@ -244,7 +244,7 @@ function expSub(heatMap,maxHeat,minHeat) {
 		.data(heatMap)
 		.enter()
 		.append("a")
-		.attr("xlink:href", function(d) { return "/biomaterial/" + d.name})
+		.attr("xlink:href", function(d) { if(d.node) {return "/biomaterial/" + d.name} return null;})
 		.append("rect")
 		.each(function (d) { d.intensityLabel = d.intensity;})
 		.each(function (d) { d.intensityLabel = Number(d.intensity) + Number(minNorm);});
@@ -265,7 +265,7 @@ function expSub(heatMap,maxHeat,minHeat) {
                                                 mrkup += '<br><b>Tissue</b>: ' + d.tissue;
                                         }
                                         if (d.description != '') {
-                                                mrkup += '<br><b>Description</b>: ' + d.description + '<br>';
+                                                mrkup += '<br><b>Description</b>: ' + d.description;
                                         }
                                         return mrkup;
                                 })
@@ -301,7 +301,7 @@ function expSub(heatMap,maxHeat,minHeat) {
 		.data(heatMap)
 		.enter()
 		.append("a")
-		.attr("xlink:href", function(d) { return "/biomaterial/" + d.name})
+		.attr("xlink:href", function(d) { if(d.node) {return "/biomaterial/" + d.name} return null;})
 		.append("rect");
 
 	var graphConstruct = graphGroup
@@ -331,7 +331,7 @@ function expSub(heatMap,maxHeat,minHeat) {
                                                 mrkup += '<br><b>Tissue</b>: ' + d.tissue;
                                         }
                                         if (d.description != '') {
-                                                mrkup += '<br><b>Description</b>: ' + d.description + '<br>';
+                                                mrkup += '<br><b>Description</b>: ' + d.description;
                                         }
                                         return mrkup;
                                 })
