@@ -134,6 +134,31 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
   $json_exp = "[";
   foreach($expressions as $exp) {
  
+    $tis = chado_get_property(
+      array('table' => 'biomaterial', 'id' => $exp->biomaterial_id),
+      array('type_name' => 'tissue', 'cv_name' => 'biomaterial_property')
+    );
+
+    if($tis) {
+      $tissue = $tis->value;
+    }
+    else {
+      $tissue = '';
+    } 
+
+
+    $treat = chado_get_property(
+      array('table' => 'biomaterial', 'id' => $exp->biomaterial_id),
+      array('type_name' => 'treatment', 'cv_name' => 'biomaterial_property')
+    );
+
+    if($treat) {
+      $treatment = $treat->value;
+    }
+    else {
+      $treatment = '';
+    } 
+
    /* $desc = chado_get_property(
       array('table' => 'biomaterial', 'id' => $exp->biomaterial_id),
       array('type_name' => 'description', 'cv_name' => 'biomaterial_property')
@@ -146,7 +171,7 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
       $description = '';
     } */
 
-    $json_exp .= '{"name": "' . $exp->name . '", "intensity": "' . $exp->signal . '", "description": "' . $exp->description . '"},';
+    $json_exp .= '{"name": "' . $exp->name . '", "intensity": "' . $exp->signal . '", "description": "' . $exp->description . '", "tissue": "' . $tissue . '", "treatment": "' . $treatment . '"},';
   }
   $json_exp .= "]";
   if($json_exp == "[]") {
