@@ -143,8 +143,8 @@ function tripal_analysis_expression_node_info() {
       'base_table' => 'biomaterial',
       'hook_prefix' => 'chado_biomaterial',
       'record_type_title' => array(
-        'singular' => t('Protocol'),
-        'plural' => t('Protocols'),
+        'singular' => t('Biomaterial'),
+        'plural' => t('Biomaterials'),
       ),
       'sync_filters' => array(
         'type_id' => FALSE,

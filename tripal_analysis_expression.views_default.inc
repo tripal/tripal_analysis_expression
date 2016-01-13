@@ -1305,12 +1305,6 @@ $handler->display->display_options['fields']['path_1']['table'] = 'node';
 $handler->display->display_options['fields']['path_1']['field'] = 'path';
 $handler->display->display_options['fields']['path_1']['relationship'] = 'taxon_id_to_organism';
 $handler->display->display_options['fields']['path_1']['exclude'] = TRUE;
-/* Field: Content: Path */
-$handler->display->display_options['fields']['path_2']['id'] = 'path_2';
-$handler->display->display_options['fields']['path_2']['table'] = 'node';
-$handler->display->display_options['fields']['path_2']['field'] = 'path';
-$handler->display->display_options['fields']['path_2']['relationship'] = 'biosourceprovider_id_to_contact';
-$handler->display->display_options['fields']['path_2']['exclude'] = TRUE;
 /* Field: Chado Biomaterial: Name */
 $handler->display->display_options['fields']['name']['id'] = 'name';
 $handler->display->display_options['fields']['name']['table'] = 'biomaterial';
@@ -1346,8 +1340,6 @@ $handler->display->display_options['fields']['name_1']['id'] = 'name_1';
 $handler->display->display_options['fields']['name_1']['table'] = 'contact';
 $handler->display->display_options['fields']['name_1']['field'] = 'name';
 $handler->display->display_options['fields']['name_1']['label'] = 'Biomaterial Provider';
-$handler->display->display_options['fields']['name_1']['alter']['make_link'] = TRUE;
-$handler->display->display_options['fields']['name_1']['alter']['path'] = '[path_2]';
 /* Field: Content: Delete link */
 $handler->display->display_options['fields']['delete_node']['id'] = 'delete_node';
 $handler->display->display_options['fields']['delete_node']['table'] = 'views_entity_node';
@@ -1591,11 +1583,11 @@ $handler->display->display_options['relationships']['biomaterial_id']['id'] = 'b
 $handler->display->display_options['relationships']['biomaterial_id']['table'] = 'chado_biomaterial';
 $handler->display->display_options['relationships']['biomaterial_id']['field'] = 'biomaterial_id';
 $handler->display->display_options['relationships']['biomaterial_id']['required'] = TRUE;
-/* Relationship: Chado Biomaterial: taxon_id => Organism */
+/* Relationship: Chado Biomaterial: taxon_id => Organism (organism_id) */
 $handler->display->display_options['relationships']['taxon_id_to_organism']['id'] = 'taxon_id_to_organism';
 $handler->display->display_options['relationships']['taxon_id_to_organism']['table'] = 'biomaterial';
 $handler->display->display_options['relationships']['taxon_id_to_organism']['field'] = 'taxon_id_to_organism';
-/* Relationship: Chado Biomaterial: biosourceprovider_id => Contact */
+/* Relationship: Chado Biomaterial: biosourceprovider_id => Contact (contact_id) */
 $handler->display->display_options['relationships']['biosourceprovider_id_to_contact']['id'] = 'biosourceprovider_id_to_contact';
 $handler->display->display_options['relationships']['biosourceprovider_id_to_contact']['table'] = 'biomaterial';
 $handler->display->display_options['relationships']['biosourceprovider_id_to_contact']['field'] = 'biosourceprovider_id_to_contact';
@@ -1611,12 +1603,6 @@ $handler->display->display_options['fields']['path_1']['table'] = 'node';
 $handler->display->display_options['fields']['path_1']['field'] = 'path';
 $handler->display->display_options['fields']['path_1']['relationship'] = 'taxon_id_to_organism';
 $handler->display->display_options['fields']['path_1']['exclude'] = TRUE;
-/* Field: Content: Path */
-$handler->display->display_options['fields']['path_2']['id'] = 'path_2';
-$handler->display->display_options['fields']['path_2']['table'] = 'node';
-$handler->display->display_options['fields']['path_2']['field'] = 'path';
-$handler->display->display_options['fields']['path_2']['relationship'] = 'biosourceprovider_id_to_contact';
-$handler->display->display_options['fields']['path_2']['exclude'] = TRUE;
 /* Field: Chado Biomaterial: Name */
 $handler->display->display_options['fields']['name']['id'] = 'name';
 $handler->display->display_options['fields']['name']['table'] = 'biomaterial';
@@ -1652,7 +1638,6 @@ $handler->display->display_options['fields']['name_1']['id'] = 'name_1';
 $handler->display->display_options['fields']['name_1']['table'] = 'contact';
 $handler->display->display_options['fields']['name_1']['field'] = 'name';
 $handler->display->display_options['fields']['name_1']['label'] = 'Biomaterial Provider';
-$handler->display->display_options['fields']['name_1']['alter']['make_link'] = TRUE;
 $handler->display->display_options['fields']['name_1']['alter']['path'] = '[path_2]';
 /* Sort criterion: Chado Biomaterial: Name */
 $handler->display->display_options['sorts']['name']['id'] = 'name';
