@@ -1,19 +1,8 @@
-// This files needs some work.
-
-function expSortDown() {
-	heatMap.sort( function(a,b) {return Number(b.intensity) - Number(a.intensity);});
-	d3.selectAll("expfeaturedom").remove();
-	d3.selectAll("expkeydom").remove();
-	exp();
-}
-
-function expSortUp() {
-	heatMap.sort( function(a,b) {return Number(a.intensity) - Number(b.intensity);});
-	d3.selectAll("expfeaturedom").remove();
-	d3.selectAll("expkeydom").remove();
-	exp();
-}
-
+/**
+ * This is the default function that is called when the page is loaded. 
+ * It is also called when the reset link is clicked. It will order biomaterials
+ * using alphanumeric ordering.
+ */
 function expNormal() {
 	heatMap = '';
 	heatMap = JSON.parse(JSON.stringify(heatMapRaw));
@@ -22,6 +11,29 @@ function expNormal() {
 	exp();
 }
 
+/**
+ * This will arrange the biomaterials by value from greatest to least.
+ */
+function expSortDown() {
+	heatMap.sort( function(a,b) {return Number(b.intensity) - Number(a.intensity);});
+	d3.selectAll("expfeaturedom").remove();
+	d3.selectAll("expkeydom").remove();
+	exp();
+}
+
+/**
+ * This will arrange the biomaterials by value from least to greatest.
+ */
+function expSortUp() {
+	heatMap.sort( function(a,b) {return Number(a.intensity) - Number(b.intensity);});
+	d3.selectAll("expfeaturedom").remove();
+	d3.selectAll("expkeydom").remove();
+	exp();
+}
+
+/**
+ * This functino will remove biomaterials that have a value of 0.
+ */
 function nonZero() {
 	heatMap = heatMap.filter(function (d) { return d.intensity > 0; });
 	d3.selectAll("expfeaturedom").remove();
@@ -31,27 +43,31 @@ function nonZero() {
 
 
 function exp() {
-		if(heatMap.length < 1) {
-			return;
-		}
-//	heatMap = expSort(heatMap);
-	//var colWidth = 15;
+	/* Only print out heatmap if there is at least one value. */
+	if(heatMap.length < 1) {
+		return;
+	}
 	var bodyWidth = d3.select("figure").node().getBoundingClientRect().width;
-	//console.log(bodyWidth);
-	var hGet = d3.select("figure").append("expfeaturechar").append("text").attr("font-family", "monospace").text('aWw');
+
+	/* Find the height to width ratio of a monospace character. */
+	var hGet = d3.select("figure").append("expfeaturechar").append("text").attr("font-family", "monospace").text('a');
         var heightChar = d3.select("text").node().getBoundingClientRect().height;
         var widthChar = d3.select("text").node().getBoundingClientRect().width;
 	ratio = heightChar/widthChar;
+	/* Remove the character. */
 	d3.select("expfeaturechar").remove();
 	//ratio = 0.4444444444444444;//charWidth/charHeight;
 
+	/* The max and min heat will be used in creating the figure key. */
 	maxHeat = d3.max(heatMap, function (d) {return Number(d.intensity);});
 	minHeat = d3.min(heatMap, function (d) {return Number(d.intensity);});
-//	var obj = JSON.parse(heatMap);
-//		console.log(obj);
 	var loc = 0;
 	var heatMapLength = heatMap.length;
+	
+	/* Create the figure key. */
 	expKey(maxHeat, minHeat);
+
+	/* Draw the heat maps line by line. */	
 	while(1) {
 		//just in case this loop is reached without an empty maxHeat
 		if(heatMap.length < 1) {
@@ -68,28 +84,13 @@ function exp() {
 				l = maxLength;
 			}
 			if( (((i+.5)*colWidth) + l*ratio*.707*colWidth*.9) > bodyWidth ) {                  
-		//		console.log((((i+.5)*colWidth) + colWidth*.9*l*ratio*.707) ); 
-		//		console.log(ratio);
-				//console.log(i);
-				//console.log(colWidth);
 				return 0;
 			} 
 			else {                 
-		//		console.log((((i+.5)*colWidth) + colWidth*.9*l*ratio*.707) ); 
-		//		console.log(ratio);
-				//console.log(i);
-				//console.log(colWidth);
 				return i+1; 
 			}
 		});
-//		console.log(num);
-//		console.log(bodyWidth);
-//		console.log(colWidth);
 		subHeatMap = [];	
-		/*for(i = 0; i < num; i++) {
-			subHeatMap.push(heatMap[i]);
-		}*/
-	//	console.log(subHeatMap);
 		if(loc+num >=heatMapLength-1){
 			expSub(heatMap.slice(loc,loc + num+1),maxHeat,minHeat);
 		}
@@ -104,66 +105,61 @@ function exp() {
 	}
 }
 
+/*
+ * This function creates a key for the figure. 
+ */
 function expKey(maxHeat, minHeat) {
 	recSize = colWidth;
+
+	/* Set a the minimum column width so that the figure does not become to hard to read. */
 	if(colWidth < 15) {
 		recSize = 15;
 	}
 	var rSH = recSize/2;
-    var heatMapKey = [{"r": 255, "g": 0, "b": 0, "text": "min expression (" + minHeat + ") -"},
-                      {"r": 0, "g": 0, "b": 0, "text": ""},
-                      {"r": 0, "g": 255, "b": 0, "text": " - (" + maxHeat + ") max expression"}];
-////////*****=======
 
+	/* Set the colors of the key. The colors are green, black, and red. */
+	var heatMapKey = [{"r": 255, "g": 0, "b": 0, "text": "min expression (" + minHeat + ") -"},
+		{"r": 0, "g": 0, "b": 0, "text": ""},
+		{"r": 0, "g": 255, "b": 0, "text": " - (" + maxHeat + ") max expression"}];
+
+	/* Configure the key text. */
 	var keyContainer = d3.select("figure").append("expkeydom").append("svg")
 	var keyTextContainer = keyContainer.append("g");
-   
-    var keyText = keyTextContainer.selectAll("text")
-                              .data(heatMapKey)
-                              .enter()
-                              .append("text");
-    var mapKeyText = keyText
-                       .text( function (d) {return d.text;})
-                       .attr("fontFamily", "monospace") //not working???
-                       .attr("fontWeight", "bold") //not working for some reason
-                       .attr("fill","black")
-                       .each(function (d) {d.titleWidth = this.getBBox().width;})
-                       .attr("y", recSize*.75);
+	var keyText = keyTextContainer.selectAll("text")
+		.data(heatMapKey)
+		.enter()
+		.append("text")
+		.text( function (d) {return d.text;})
+		.attr("fontFamily", "monospace") //not working???
+		.attr("fontWeight", "bold") //not working for some reason
+		.attr("fill","black")
+		.each(function (d) {d.titleWidth = this.getBBox().width;})
+		.attr("y", recSize*.75);
                       
-                       pushBack = heatMapKey[2].titleWidth;
-                       pushForward = heatMapKey[0].titleWidth;
-                      
-                       keyText
-                         .attr("x", function (d,i) {
-                        if (i == 0) { return 0;}
-                        if (i == 2) { return recSize*4 + pushForward; }
-                      });
+	pushBack = heatMapKey[2].titleWidth;
+	pushForward = heatMapKey[0].titleWidth;
 
-    var mapKey = keyContainer.append("g");
-   
-    var key = mapKey.selectAll("rect")
-                    .data(heatMapKey)
-                    .enter()
-                    .append("rect");
-                   
-    var mapKeyConstruct = key
-                       .attr("x", function (d,i) { return recSize*(i+.5) + pushForward;})
-                       .attr("y", recSize*.25)
-                       .attr("height", recSize*.5)
-                       .attr("width", recSize)
-                       .style("fill", function (d) {return d3.rgb(d.r,d.g,d.b);});
-                  
+	/* Set the location of the key text. */                      
+	keyText.attr("x", function (d,i) {
+		if (i == 0) { return 0;}
+		if (i == 2) { return recSize*4 + pushForward; }
+	});
+
+	/* Draw the tiles for the key. */
+	var mapKey = keyContainer.append("g");
+	var key = mapKey.selectAll("rect")
+		.data(heatMapKey)
+		.enter()
+		.append("rect")
+		.attr("x", function (d,i) { return recSize*(i+.5) + pushForward;})
+		.attr("y", recSize*.25)
+		.attr("height", recSize*.5)
+		.attr("width", recSize)
+		.style("fill", function (d) {return d3.rgb(d.r,d.g,d.b);});
+
 	d3.select("svg")
 		.attr("width", pushForward + (4*recSize) + pushBack)
 		.attr("height", recSize);
-
-                      /*  d3.select("svg")
-                        .attr("transform", function (d) { return "translate(" + maxFeatureWidth + "," + maxTitleHeight + ")";})
-                        .attr("width", divWidth)
-                        .attr("height",parseFloat(3*recSize)+parseFloat(maxTitleHeight));*/ 
-////////*****=======
-	
-
 
 }
 
