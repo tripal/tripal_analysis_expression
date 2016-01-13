@@ -257,7 +257,18 @@ function expSub(heatMap,maxHeat,minHeat) {
 				div.transition()
 				.duration(200)
 				.style("opacity", .9)
-				div .html('<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b><br><b>Treatment</b>: ' + d.treatment + '<br><b>Tissue</b>: ' + d.tissue + '<br><b>Description</b>: ' + d.description )
+                                div .html(function() {mrkup = '<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b>';
+                                        if (d.treatment != '') {
+                                                mrkup += '<br><b>Treatment</b>: ' + d.treatment;      
+                                        }
+                                        if (d.tissue != '') {
+                                                mrkup += '<br><b>Tissue</b>: ' + d.tissue;
+                                        }
+                                        if (d.description != '') {
+                                                mrkup += '<br><b>Description</b>: ' + d.description + '<br>';
+                                        }
+                                        return mrkup;
+                                })
 				.style("left", (d3.event.pageX) + "px")
 				.style("border-color", function() {
 					if(d.intensity == 0) {
@@ -312,7 +323,18 @@ function expSub(heatMap,maxHeat,minHeat) {
 				.duration(200)
 				.style("opacity", .9)
 				.style("text-align", "left")
-				div .html('<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b><br><b>Treatment</b>: ' + d.treatment + '<br><b>Tissue</b>: ' + d.tissue + '<br><b>Description</b>: ' + d.description )
+                                div .html(function() {mrkup = '<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b>';
+                                        if (d.treatment != '') {
+                                                mrkup += '<br><b>Treatment</b>: ' + d.treatment;      
+                                        }
+                                        if (d.tissue != '') {
+                                                mrkup += '<br><b>Tissue</b>: ' + d.tissue;
+                                        }
+                                        if (d.description != '') {
+                                                mrkup += '<br><b>Description</b>: ' + d.description + '<br>';
+                                        }
+                                        return mrkup;
+                                })
 				.style("max-width", 200 + "px")
 				.style("left", (d3.event.pageX) + "px")
 				.style("border-color", function() {
