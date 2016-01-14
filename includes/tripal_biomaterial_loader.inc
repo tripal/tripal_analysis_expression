@@ -24,7 +24,7 @@ function tripal_biomaterial_loader() {
   $organism_id  = '';
 
   $form['description'] = array(
-    '#markup' => t('This loader will load the following fields if present. <br> 
+    '#markup' => t('This loader will load the following tables if corresponding fields are present. <br> 
      <b>biomaterial table</b>: name, description, organism, and biomaterial provider. <br> 
      <b>biomaterialprop table</b>: ncbi owner, age, collected by, cultivar, temperature, tissue, treatment, and geographic location. <br>
      <b>dbxref table</b>: sample accession, sample external id'),
@@ -86,6 +86,14 @@ function tripal_biomaterial_loader() {
     '#value' => t('Submit Job'),
   );
 
+  $form['flat_file']['regex_description'] = array(
+    '#markup' => t('The flat file loader expects a file where the first line is the title of each column. 
+    The only field that is required to create a biomaterial is the name of the biomaterial. 
+    It is recommended that a description, organism, biomaterial provider, accession, treatment, and tissue
+    also be provided. A biomaterialprop cvterm type will be created for column title not already present
+    in the database.')
+  ); 
+
   $form['flat_file']['flat_path'] = array(
     '#type' => 'textfield',
     '#title' => t('File Path'),
@@ -111,95 +119,48 @@ function tripal_biomaterial_loader() {
     '#size' => 5,
   );
 
-  $form['flat_file']['flat_regex'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Field Regular Expressions'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
-
-  $form['flat_file']['flat_regex']['name'] = array(
+  $form['flat_file']['name'] = array(
     '#type' => 'textfield',
-    '#title' => t('Unique Name'),
+    '#title' => t('Name'),
     '#description' => t('Regex to capture the unique name of the biomaterial. Case insensitive - defaults to "(library[\s|\_|\-]id|library|sample[\s|\_|\-]name|sample|name)".'),
   );
 
-  $form['flat_file']['flat_regex']['description'] = array(
+  $form['flat_file']['description'] = array(
     '#type' => 'textfield',
     '#title' => t('Description'),
-    '#description' => t('Regex to capture the description of the biomaterial. Case insensitive - defaults to "(title\/short description|description)".'),
+    '#description' => t('Regex to capture the description of the biomaterial. Case insensitive - defaults to "(title|short description|description)".'),
   );
 
-  $form['flat_file']['flat_regex']['organism'] = array(
+  $form['flat_file']['organism'] = array(
     '#type' => 'textfield',
     '#title' => t('Organism Name'),
     '#description' => t('Regex to capture name of the organism from which the biomaterial was collected. Case insensitive - defaults to "(organism)".'),
   );
 
-  $form['flat_file']['flat_regex']['biomaterial_provider'] = array(
+  $form['flat_file']['biomaterial_provider'] = array(
     '#type' => 'textfield',
     '#title' => t('Biomaterial Provider'),
-    '#description' => t('Regex to capture the person or institution that provided the biomaterial. Case insensitive - defaults to "(biomaterial[\s|\_|\-]provider)".'),
+    '#description' => t('Regex to capture the person or institution that provided the biomaterial. 
+    Case insensitive - defaults to "(biomaterial[\s|\_|\-]provider)". If not present in the 
+    database a contact will be created with the name of the biomaterial provider.'),
   ); 
 
-  $form['flat_file']['flat_regex']['ncbi_owner'] = array(
-    '#type' => 'textfield',
-    '#title' => t('NCBI owner'),
-    '#description' => t('Regex to capture the NCBI owner of the biomaterial. Case insensitive - defaults to "(owner)".'),
-  );
-
-  $form['flat_file']['flat_regex']['age'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Biomaterial Age'),
-    '#description' => t('Regex to capture the age of the biomaterial. Case insensitive - defaults to "(age)".'),
-  );
-
-  $form['flat_file']['flat_regex']['collected_by'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Collected By'),
-    '#description' => t('Regex to capture the name of institution that collected the biomaterial. Case insensitive - defaults to "(collected[\s|\_|\-]by)".'),
-  );
-
-  $form['flat_file']['flat_regex']['cultivar'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Cultivar'),
-    '#description' => t('Regex to capture the biomaterial cultivar. Case insensitive - defaults to "(cultivar)".'),
-  );
-
-  $form['flat_file']['flat_regex']['temperature'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Biomaterial Temperature'),
-    '#description' => t('Regex to capture the temperature of the biomaterial. Case insensitive - defaults to "(temperature|temp)".'),
-  );
-
-  $form['flat_file']['flat_regex']['tissue'] = array(
+  $form['flat_file']['tissue'] = array(
     '#type' => 'textfield',
     '#title' => t('Biomaterial Tissue'),
     '#description' => t('Regex to capture the biomaterial tissue. Case insensitive - defaults to "(tissue)".'),
   );
 
-  $form['flat_file']['flat_regex']['treatment'] = array(
+  $form['flat_file']['treatment'] = array(
     '#type' => 'textfield',
-    '#title' => t('Unique Name'),
+    '#title' => t('Treatment'),
     '#description' => t('Regex to capture the treatment the biomaterial underwent. Case insensitive - defaults to "(treatment)".'),
   );
 
-  $form['flat_file']['flat_regex']['geographic_location'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Geographic Location'),
-    '#description' => t('Regex to capture the geographic location where the biomaterial was collected. Case insensitive - defaults to "(geographic[\s|\_|\-]location)".'),
-  );
-
-  $form['flat_file']['flat_regex']['sample_accession'] = array(
+  $form['flat_file']['sample_accession'] = array(
     '#type' => 'textfield',
     '#title' => t('Sample Accession'),
     '#description' => t('Regex to capture the sample accession. Case insensitive - defaults to "(biosample[\s|\_|\-]accession|accession|external[\s|\_|\-]id)".'),
-  );
-
-  $form['flat_file']['flat_regex']['sample_id'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Sample Id'),
-    '#description' => t('Regex to capture the sample id. Case insensitive - defaults to "(primary[\s|\_|\-]id)".'),
   );
 
   $form['flat_file']['flat_submit'] = array(
