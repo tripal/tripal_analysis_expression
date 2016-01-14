@@ -726,11 +726,13 @@ function create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $or
 function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description) {
   $biomaterial_id = chado_query('select biomaterial_id from {biomaterial} where name = :name limit 1',array(':name' => $biomaterial))->fetchField();
 
-drupal_set_message($biomaterial_description);
-    if ($biomaterial_description == '') {
-      $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_id;
+  if ($analysis_id) {
+    $analysis_name = chado_select_record('analysis', 'name', array('analysis_id' => $analysis_id));
+  }
+
+    if ($biomaterial_description == '' && $analysis_id) {
+      $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_name;
     }
-drupal_set_message($biomaterial_description);
 
     $values = array(
       'name' => $biomaterial,
