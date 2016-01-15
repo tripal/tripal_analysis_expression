@@ -9,7 +9,7 @@
  * 
  * @ingroup tripal_analysis_expression
  */
-function tripal_biomaterial_loader() {
+function tripal_biomaterial_loader($form, &$form_state) {
 
   // Set the breadcrumbs. 
   $breadcrumb = array(); //*** update this for tripal
@@ -22,6 +22,8 @@ function tripal_biomaterial_loader() {
   drupal_set_breadcrumb($breadcrumb);
 
   $organism_id  = '';
+
+  $form['#tree'] = TRUE;
 
   $form['description'] = array(
     '#markup' => t('This loader will load the following tables if corresponding fields are present. <br> 
@@ -108,14 +110,14 @@ function tripal_biomaterial_loader() {
   $form['flat_file']['flat_delimiter'] = array(
     '#type' => 'textfield',
     '#title' => t('Field Delimiter'),
-    '#description' => t('Select a field delimiter such as "," or "\t". Delimiter must be a single character. Defaults to "\t".'),
+    '#description' => t('Select a field delimiter such as "," or "\t". Delimiter must be a single character (an escaped character is considered a single character). Defaults to "\t".'),
     '#size' => 5,
   );
 
   $form['flat_file']['flat_enclosure'] = array(
     '#type' => 'textfield',
     '#title' => t('Field Enclosure'),
-    '#description' => t('Select a field delimiter such as "\'" or """. Delimiter must be a single character. Leave blank if there is no enclosure character. Defaults to no delimiter.'),
+    '#description' => t('Select a field delimiter such as "\'" or """. Delimiter must be a single character (an escaped character is considered a single character). Leave blank if there is no enclosure character. Defaults to no delimiter.'),
     '#size' => 5,
   );
 
@@ -131,10 +133,10 @@ function tripal_biomaterial_loader() {
     '#description' => t('Regex to capture the description of the biomaterial. Case insensitive - defaults to "(title|short description|description)".'),
   );
 
-  $form['flat_file']['organism'] = array(
+  $form['flat_file']['sample_accession'] = array(
     '#type' => 'textfield',
-    '#title' => t('Organism Name'),
-    '#description' => t('Regex to capture name of the organism from which the biomaterial was collected. Case insensitive - defaults to "(organism)".'),
+    '#title' => t('Sample Accession'),
+    '#description' => t('Regex to capture the sample accession. Case insensitive - defaults to "(biosample[\s|\_|\-]accession|accession|external[\s|\_|\-]id)".'),
   );
 
   $form['flat_file']['biomaterial_provider'] = array(
@@ -145,22 +147,63 @@ function tripal_biomaterial_loader() {
     database a contact will be created with the name of the biomaterial provider.'),
   ); 
 
-  $form['flat_file']['tissue'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Biomaterial Tissue'),
-    '#description' => t('Regex to capture the biomaterial tissue. Case insensitive - defaults to "(tissue)".'),
+  $form['flat_file']['properties_description'] = array(
+    '#markup' => t('Other fields in the flat file can be loaded as biomaterial properties (biomaterialprop table) or as database accessions (biomaterial_dbxref table).'),
   );
 
-  $form['flat_file']['treatment'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Treatment'),
-    '#description' => t('Regex to capture the treatment the biomaterial underwent. Case insensitive - defaults to "(treatment)".'),
+
+  $form['flat_file']['properties'] = array(
+    '#type' => 'feildset',
+    '#title' => t('Biomaterial Properties'),
+    '#prefix' => '<div id="biomaterial-properties-wrapper">',
+    '#suffix' => '</div>',
   );
 
-  $form['flat_file']['sample_accession'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Sample Accession'),
-    '#description' => t('Regex to capture the sample accession. Case insensitive - defaults to "(biosample[\s|\_|\-]accession|accession|external[\s|\_|\-]id)".'),
+  if (empty($form_state['flat_file']['properties']['biomaterial_properties']['num_properties'])) {
+    $form_state['flat_file']['properties']['biomaterial_properties']['num_properties'] = 1;
+  }
+//	drupal_set_message("at the top");
+  for ($i=0;$i<$form_state['flat_file']['properties']['biomaterial_properties']['num_properties'];$i++) {
+    
+  $form['flat_file']['properties']['biomaterial_properties'][$i] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Property ' . ($i+1)), 
+    //'#attributes' => array('class' => array('container-inline'),),
+     // '#prefix' => '<div class="container-inline">',
+      //'#suffix' => '</div>',
+  );
+//	drupal_set_message("this is $i");
+
+    $form['flat_file']['properties']['biomaterial_properties'][$i]['biomaterial_prop_type'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Cvterm'),
+      '#prefix' => '<div class="container-inline">',
+      '#suffix' => '</div><br>',
+      '#description' => t('Name of the biomaterial property type to be inserted into the cvterm table.'),
+    );
+    $form['flat_file']['properties']['biomaterial_properties'][$i]['biomaterial_prop_regex'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Regex'),
+      '#prefix' => '<div class="container-inline">',
+      '#suffix' => '</div><br>',
+      '#description' => t('Regex to capture the property from the flat file.'),
+    ); 
+    $form['flat_file']['properties']['biomaterial_properties'][$i]['is_accession'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Is Accession'),
+      '#attributes' => array('acc_val' => array('here')),
+    );
+
+  }
+
+  $form['flat_file']['properties']['biomaterial_properties']['add_property'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add Property'),
+    '#submit' => array('ajax_add_biomaterial_property_submit'),
+    '#ajax' => array(
+      'callback' => 'ajax_add_biomaterial_property_callback',
+      'wrapper' => 'biomaterial-properties-wrapper',
+    ),
   );
 
   $form['flat_file']['flat_submit'] = array(
@@ -171,14 +214,104 @@ function tripal_biomaterial_loader() {
   return $form;
 }
 
+function ajax_add_biomaterial_property_callback($form, $form_state) {
+  return $form['flat_file']['properties'];
+}
+
+function ajax_add_biomaterial_property_submit($form, &$form_state) {
+  $form_state['flat_file']['properties']['biomaterial_properties']['num_properties']++;
+  $form_state['rebuild'] = TRUE;
+}
+
+
+
+
 function tripal_biomaterial_loader_submit($form, &$form_state) {
 
   $xml_path = $form_state['values']['xml_path'];
+  $flat_path = $form_state['values']['flat_path'];
   $organism_id = $form_state['values']['organism_id'];
+  $file_type = $form_state['values']['file_type'];
+  $flat_delimiter = $form_state['values']['flat_delimiter'];
+  $flat_enclosure = $form_state['values']['flat_enclosure'];
+  $regex['name'] = $form_state['values']['name'];
+  $regex['description']= $form_state['values']['description'];
+ // $regex[] = $form_state['values']['organism'];
+  $regex['dbxref'] = $form_state['values']['sample_accession'];
+  $regex['biomaterial_provider'] = $form_state['values']['biomaterial_provider'];
+  $regex['tissue']= $form_state['values']['tissue'];
+  $regex['treatment'] = $form_state['values']['treatment'];
 
-  $success = xml_biomaterial_parser($xml_path, $organism_id); 
+  if ($file_type == 'xml') {
+    $success = xml_biomaterial_parser($xml_path, $organism_id); 
+  }
 
+  if ($file_type == 'flat') {
+    $success = flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_delimiter,
+                                       $flat_enclosure, $regex);
+  }
 }
+
+
+function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_delimiter, $flat_enclosure, $regex) {
+
+  // Check file path to see if file is accessible.
+  if (!is_readable($flat_path)) {
+    print "ERROR: File is not readable or not present.";
+    return 0;
+  }
+
+  // Get the file pointer.
+  $fp = fopen($flat_path, "r");
+
+  $headers = fgetcsv($fp);
+
+  $key_values = [];
+  $tissue_key = '';
+  $treatment_key = '';
+
+  for ($i=0;$i<count($headers);$i++) {
+    if(preg_match($regex['name'], $headers[$i])) {
+      $key_values['name'] = $i; 
+    }  
+    if(preg_match($regex['description'], $headers[$i])) {
+      $key_values['description'] = $i; 
+    }  
+    if(preg_match($regex['dbxref'], $headers[$i])) {
+      $key_values['dbxref'] = $i; 
+    }  
+    if(preg_match($regex['biomaterial_provider'], $headers[$i])) {
+      $key_values['biomaterial_provider'] = $i; 
+    }  
+    if(preg_match($regex['tissue'], $headers[$i])) {
+      $tissue_key = $i; 
+    } 
+    if(preg_match($regex['treatment'], $headers[$i])) {
+      $treatment_key = $i; 
+    }  
+  }
+
+  while($line = fgetcsv($fp)) {
+
+    $values = [];
+    $values['organism_id'] = $organism_id;
+
+    if (array_key_exists('name', $treatment_key)) {
+      $values['name'] = $name;
+    } 
+
+    if (array_key_exists('description', $treatment_key)) {
+      $values['description'] = $description;
+    } 
+
+    if (array_key_exists('biomaterial_provider', $treatment_key)) {
+      $biosourceprovider_id = create_contact($line[$treatment_key['biomaterial_provider']]);
+      $values['biosourceprovider_id'] = $biosourceprovider_id;
+    } 
+
+  }
+
+} 
 
 function xml_biomaterial_parser($xml_path, $organism_id) {
 
@@ -275,7 +408,7 @@ function add_xml_data($organism_id, $biosample) {
 
 //  drupal_set_message($description);
 
-  add_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id);
+  add_xml_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id);
   // Add to biomaterialprop table.
 //  add_biomaterial_properties($biomaterial_id, $sra_accession, $description, $ncbi_owner, $age, $collected_by, $cultivar, $temperature, $tissue, $treatment, $geographic_location);
 
@@ -286,7 +419,7 @@ function add_xml_data($organism_id, $biosample) {
 }
 
 
-function add_biomaterial_properties($attributes, $biomaterial_id) {
+function add_xml_biomaterial_properties($attributes, $biomaterial_id) {
 
   $record = array(
     'table' => 'biomaterial',
