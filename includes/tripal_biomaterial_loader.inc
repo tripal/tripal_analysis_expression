@@ -147,44 +147,35 @@ function tripal_biomaterial_loader($form, &$form_state) {
     database a contact will be created with the name of the biomaterial provider.'),
   ); 
 
-  $form['flat_file']['feilds_description'] = array(
+  $form['flat_file']['fields_description'] = array(
     '#markup' => t('Other fields in the flat file can be loaded as biomaterial properties (biomaterialprop table) or as database accessions (biomaterial_dbxref table).'),
   );
 
   $form['flat_file']['properties'] = array(
-    '#type' => 'feildset',
+    '#type' => 'fieldset',
     '#title' => t('Biomaterial Properties'),
     '#prefix' => '<div id="biomaterial-properties-wrapper">',
     '#suffix' => '</div>',
   );
 
   $form['flat_file']['dbxrefs'] = array(
-    '#type' => 'feildset',
+    '#type' => 'fieldset',
     '#title' => t('Biomaterial Database Accessions'),
-    '#prefix' => '<div id="biomaterial-properties-wrapper">',
+    '#prefix' => '<div id="biomaterial-dbxrefs-wrapper">',
     '#suffix' => '</div>',
   );
 
   if (empty($form_state['flat_file']['properties']['biomaterial_properties']['num_properties'])) {
     $form_state['flat_file']['properties']['biomaterial_properties']['num_properties'] = 1;
   }
-//	drupal_set_message("at the top");
-  for ($i=0;$i<$form_state['flat_file']['properties']['biomaterial_properties']['num_properties'];$i++) {
-    
-  $form['flat_file']['properties']['biomaterial_properties'][$i] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Property ' . ($i+1)), 
-    //'#attributes' => array('class' => array('container-inline'),),
-     // '#prefix' => '<div class="container-inline">',
-      //'#suffix' => '</div>',
-  );
-//	drupal_set_message("this is $i");
 
-  /*  $form['flat_file']['properties']['biomaterial_properties'][$i]['is_accession'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Field represents an accession value'),
-      '#attributes' => array('acc_val' => array('here')),
-    ); */
+  for ($i=0;$i<$form_state['flat_file']['properties']['biomaterial_properties']['num_properties'];$i++) {
+
+    $form['flat_file']['properties']['biomaterial_properties'][$i] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Property ' . ($i+1)), 
+    );
+
     $form['flat_file']['properties']['biomaterial_properties'][$i]['biomaterial_prop_regex'] = array(
       '#type' => 'textfield',
       '#title' => t('Regex'),
@@ -192,6 +183,7 @@ function tripal_biomaterial_loader($form, &$form_state) {
       '#suffix' => '</div><br>',
       '#description' => t('Regex to capture the property from the flat file.'),
     ); 
+
     $form['flat_file']['properties']['biomaterial_properties'][$i]['biomaterial_prop_type'] = array(
       '#type' => 'textfield',
       '#title' => t('Cvterm'),
@@ -202,18 +194,16 @@ function tripal_biomaterial_loader($form, &$form_state) {
 
   }
 
-//////
-
-  if (empty($form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['dbxrefs'])) {
+  if (empty($form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'])) {
     $form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'] = 1;
   }
 
   for ($i=0;$i<$form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'];$i++) {
-    
-  $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Database Accession ' . ($i+1)), 
-  );
+
+    $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Database Accession ' . ($i+1)), 
+    );
 
     $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i]['biomaterial_dbxref_regex'] = array(
       '#type' => 'textfield',
@@ -222,6 +212,7 @@ function tripal_biomaterial_loader($form, &$form_state) {
       '#suffix' => '</div><br>',
       '#description' => t('Regex to capture the database accession from the flat file.'),
     ); 
+
     $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i]['biomaterial_dbxref_type'] = array(
       '#type' => 'textfield',
       '#title' => t('Cvterm'),
@@ -231,10 +222,6 @@ function tripal_biomaterial_loader($form, &$form_state) {
     );
 
   }
-
-
-////
-
 
   $form['flat_file']['properties']['biomaterial_properties']['add_property'] = array(
     '#type' => 'submit',
@@ -254,6 +241,28 @@ function tripal_biomaterial_loader($form, &$form_state) {
       '#ajax' => array(
         'callback' => 'ajax_add_biomaterial_property_callback',
         'wrapper' => 'biomaterial-properties-wrapper',
+      ),
+    );
+  }
+
+  $form['flat_file']['dbxrefs']['biomaterial_dbxrefs']['add_dbxref'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add Database Accession'),
+    '#submit' => array('ajax_add_biomaterial_dbxref_submit'),
+    '#ajax' => array(
+      'callback' => 'ajax_add_biomaterial_dbxref_callback',
+      'wrapper' => 'biomaterial-dbxrefs-wrapper',
+    ),
+  );
+
+  if ($form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'] > 1) {
+    $form['flat_file']['dbxrefs']['biomaterial_dbxrefs']['remove_dbxref'] = array(
+      '#type' => 'submit',
+      '#value' => t('Remove Database Accession'),
+      '#submit' => array('ajax_remove_biomaterial_dbxref_submit'),
+      '#ajax' => array(
+        'callback' => 'ajax_add_biomaterial_dbxref_callback',
+        'wrapper' => 'biomaterial-dbxrefs-wrapper',
       ),
     );
   }
@@ -292,8 +301,8 @@ function ajax_add_biomaterial_dbxref_submit($form, &$form_state) {
 }
 
 function ajax_remove_biomaterial_dbxref_submit($form, &$form_state) {
-  if ($form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_db_xrefs'] > 1) {
-    $form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['db_xrefs']--;
+  if ($form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'] > 1) {
+    $form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs']--;
   }
   $form_state['rebuild'] = TRUE;
 }
