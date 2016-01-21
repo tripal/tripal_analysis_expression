@@ -189,6 +189,11 @@ function tripal_biomaterial_loader($form, &$form_state) {
     $form['flat_file']['fields']['biomaterial_fields'][$i]['biomaterial_prop_type'] = array(
       '#type' => 'textfield',
       '#title' => t('Cvterm'),
+      '#states' => array(
+        'visible' => array(
+          ':input[name="is_accession[acc_val]"]' => array('checked' => TRUE),
+        )
+      ),
       '#prefix' => '<div class="container-inline">',
       '#suffix' => '</div><br>',
       '#description' => t('Name of the biomaterial field type to be inserted into the cvterm table.'),
@@ -205,6 +210,18 @@ function tripal_biomaterial_loader($form, &$form_state) {
       'wrapper' => 'biomaterial-fields-wrapper',
     ),
   );
+
+  if ($form_state['flat_file']['fields']['biomaterial_fields']['num_fields'] > 1) {
+    $form['flat_file']['fields']['biomaterial_fields']['remove_field'] = array(
+      '#type' => 'submit',
+      '#value' => t('Remove Field'),
+      '#submit' => array('ajax_remove_biomaterial_field_submit'),
+      '#ajax' => array(
+        'callback' => 'ajax_add_biomaterial_field_callback',
+        'wrapper' => 'biomaterial-fields-wrapper',
+      ),
+    );
+  }
 
   $form['flat_file']['flat_submit'] = array(
     '#type' => 'submit',
@@ -223,8 +240,12 @@ function ajax_add_biomaterial_field_submit($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
 }
 
-
-
+function ajax_remove_biomaterial_field_submit($form, &$form_state) {
+  if ($form_state['flat_file']['fields']['biomaterial_fields']['num_fields'] > 1) {
+    $form_state['flat_file']['fields']['biomaterial_fields']['num_fields']--;
+  }
+  $form_state['rebuild'] = TRUE;
+}
 
 function tripal_biomaterial_loader_submit($form, &$form_state) {
 
