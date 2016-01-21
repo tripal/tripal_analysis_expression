@@ -28,8 +28,8 @@ function tripal_biomaterial_loader($form, &$form_state) {
   $form['description'] = array(
     '#markup' => t('This loader will load the following tables if corresponding fields are present. <br> 
      <b>biomaterial table</b>: name, description, organism, and biomaterial provider. <br> 
-     <b>biomaterialprop table</b>: ncbi owner, age, collected by, cultivar, temperature, tissue, treatment, and geographic location. <br>
-     <b>dbxref table</b>: sample accession, sample external id'),
+     <b>biomaterialprop table</b>: Other fields such as cultivar, temperature, tissue, and treatment can be loaded into the properties table. <br>
+     <b>dbxref table</b>: Accession values can be loaded into the database reference table.'),
   );
 
   $organisms = tripal_get_organism_select_options(FALSE);
@@ -147,62 +147,62 @@ function tripal_biomaterial_loader($form, &$form_state) {
     database a contact will be created with the name of the biomaterial provider.'),
   ); 
 
-  $form['flat_file']['properties_description'] = array(
+  $form['flat_file']['feilds_description'] = array(
     '#markup' => t('Other fields in the flat file can be loaded as biomaterial properties (biomaterialprop table) or as database accessions (biomaterial_dbxref table).'),
   );
 
 
-  $form['flat_file']['properties'] = array(
+  $form['flat_file']['fields'] = array(
     '#type' => 'feildset',
     '#title' => t('Biomaterial Properties'),
-    '#prefix' => '<div id="biomaterial-properties-wrapper">',
+    '#prefix' => '<div id="biomaterial-fields-wrapper">',
     '#suffix' => '</div>',
   );
 
-  if (empty($form_state['flat_file']['properties']['biomaterial_properties']['num_properties'])) {
-    $form_state['flat_file']['properties']['biomaterial_properties']['num_properties'] = 1;
+  if (empty($form_state['flat_file']['fields']['biomaterial_fields']['num_fields'])) {
+    $form_state['flat_file']['fields']['biomaterial_fields']['num_fields'] = 1;
   }
 //	drupal_set_message("at the top");
-  for ($i=0;$i<$form_state['flat_file']['properties']['biomaterial_properties']['num_properties'];$i++) {
+  for ($i=0;$i<$form_state['flat_file']['fields']['biomaterial_fields']['num_fields'];$i++) {
     
-  $form['flat_file']['properties']['biomaterial_properties'][$i] = array(
+  $form['flat_file']['fields']['biomaterial_fields'][$i] = array(
     '#type' => 'fieldset',
-    '#title' => t('Property ' . ($i+1)), 
+    '#title' => t('Extra Field ' . ($i+1)), 
     //'#attributes' => array('class' => array('container-inline'),),
      // '#prefix' => '<div class="container-inline">',
       //'#suffix' => '</div>',
   );
 //	drupal_set_message("this is $i");
 
-    $form['flat_file']['properties']['biomaterial_properties'][$i]['biomaterial_prop_type'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Cvterm'),
-      '#prefix' => '<div class="container-inline">',
-      '#suffix' => '</div><br>',
-      '#description' => t('Name of the biomaterial property type to be inserted into the cvterm table.'),
+    $form['flat_file']['fields']['biomaterial_fields'][$i]['is_accession'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Field represents an accession value'),
+      '#attributes' => array('acc_val' => array('here')),
     );
-    $form['flat_file']['properties']['biomaterial_properties'][$i]['biomaterial_prop_regex'] = array(
+    $form['flat_file']['fields']['biomaterial_fields'][$i]['biomaterial_prop_regex'] = array(
       '#type' => 'textfield',
       '#title' => t('Regex'),
       '#prefix' => '<div class="container-inline">',
       '#suffix' => '</div><br>',
-      '#description' => t('Regex to capture the property from the flat file.'),
+      '#description' => t('Regex to capture the field from the flat file.'),
     ); 
-    $form['flat_file']['properties']['biomaterial_properties'][$i]['is_accession'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Is Accession'),
-      '#attributes' => array('acc_val' => array('here')),
+    $form['flat_file']['fields']['biomaterial_fields'][$i]['biomaterial_prop_type'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Cvterm'),
+      '#prefix' => '<div class="container-inline">',
+      '#suffix' => '</div><br>',
+      '#description' => t('Name of the biomaterial field type to be inserted into the cvterm table.'),
     );
 
   }
 
-  $form['flat_file']['properties']['biomaterial_properties']['add_property'] = array(
+  $form['flat_file']['fields']['biomaterial_fields']['add_field'] = array(
     '#type' => 'submit',
-    '#value' => t('Add Property'),
-    '#submit' => array('ajax_add_biomaterial_property_submit'),
+    '#value' => t('Add Field'),
+    '#submit' => array('ajax_add_biomaterial_field_submit'),
     '#ajax' => array(
-      'callback' => 'ajax_add_biomaterial_property_callback',
-      'wrapper' => 'biomaterial-properties-wrapper',
+      'callback' => 'ajax_add_biomaterial_field_callback',
+      'wrapper' => 'biomaterial-fields-wrapper',
     ),
   );
 
@@ -214,12 +214,12 @@ function tripal_biomaterial_loader($form, &$form_state) {
   return $form;
 }
 
-function ajax_add_biomaterial_property_callback($form, $form_state) {
-  return $form['flat_file']['properties'];
+function ajax_add_biomaterial_field_callback($form, $form_state) {
+  return $form['flat_file']['fields'];
 }
 
-function ajax_add_biomaterial_property_submit($form, &$form_state) {
-  $form_state['flat_file']['properties']['biomaterial_properties']['num_properties']++;
+function ajax_add_biomaterial_field_submit($form, &$form_state) {
+  $form_state['flat_file']['fields']['biomaterial_fields']['num_fields']++;
   $form_state['rebuild'] = TRUE;
 }
 
