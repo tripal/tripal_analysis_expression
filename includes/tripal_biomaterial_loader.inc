@@ -194,12 +194,17 @@ function tripal_biomaterial_loader($form, &$form_state) {
       '#description' => t('Regex to capture the property from the flat file.'),
     ); 
 
+    $type_cv = tripal_get_default_cv('biomaterialprop', 'type_id');
+    $cv_id = $type_cv->cv_id;
+
     $form['flat_file']['properties']['biomaterial_properties'][$i]['biomaterial_prop_type'] = array(
       '#type' => 'textfield',
       '#title' => t('Cvterm'),
       '#prefix' => '<div class="container-inline">',
       '#suffix' => '</div><br>',
-      '#description' => t('Name of the biomaterial property type to be inserted into the cvterm table.'),
+      '#description' => t('Name of the biomaterial property type to be inserted into the cvterm table. 
+                            If a type is not present in the database, a new type will be created.'),
+      '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
     );
 
   }
@@ -238,6 +243,10 @@ function tripal_biomaterial_loader($form, &$form_state) {
       '#value' => $dbs,
     );
 
+    $lt_message = tripal_set_message(t('If the database is not present in the list, ')
+      . l(t('add a new database.'), '/admin/tripal/chado/tripal_db/add/'),
+      TRIPAL_INFO, array('return_html' => TRUE));
+
     $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i]['biomaterial_dbxref_type'] = array(
       '#type' => 'select',
       '#title' => t('Select database'),
@@ -246,6 +255,7 @@ function tripal_biomaterial_loader($form, &$form_state) {
    //   '#prefix' => '<div class="container-inline">',
     //  '#suffix' => '</div><br>',
       '#size' => 6,
+      '#suffix' => $lt_message,
     );
   /*  $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i]['biomaterial_dbxref_type'] = array(
       '#type' => 'textfield',
@@ -342,9 +352,16 @@ function ajax_remove_biomaterial_dbxref_submit($form, &$form_state) {
 }
 
 function tripal_biomaterial_loader_submit($form, &$form_state) {
+/*
+  // Get the file path. 
+  $file_type = $form_state['values']['file_type'];
+  if ($file_type == 'xml') {
+    $path = $form_state['values']['xml_file']['xml_path'];
+  }
+  else {
+    $path = $form_state['values']['flat_file']['flat_path'];
+  }
 
-  $xml_path = $form_state['values']['xml_file']['xml_path'];
-  $flat_path = $form_state['values']['flat_file']['flat_path'];
   $organism_id = $form_state['values']['organism_id'];
   $file_type = $form_state['values']['file_type'];
   $flat_delimiter = $form_state['values']['flat_file']['flat_delimiter'];
@@ -356,13 +373,13 @@ function tripal_biomaterial_loader_submit($form, &$form_state) {
   $regex['biomaterial_provider'] = $form_state['values']['flat_file']['biomaterial_provider'];
 
   if ($file_type == 'xml') {
-    $success = xml_biomaterial_parser($xml_path, $organism_id); 
+    $success = xml_biomaterial_parser($path, $organism_id); 
   }
 
   if ($file_type == 'flat') {
-    $success = flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_delimiter,
+    $success = flat_biomaterial_parser($path, $organism_id, $file_type, $flat_delimiter,
                                        $flat_enclosure, $regex);
-  }
+  } */
 }
 
 
@@ -631,34 +648,128 @@ function create_ncbi_db($url_name, $db_name, $db_description) {
  */
 function tripal_biomaterial_loader_validate($form, &$form_state) {
 
+  // Get the file path. 
+  $file_type = $form_state['values']['file_type'];
+  if ($file_type == 'xml') {
+    $path = $form_state['values']['xml_file']['xml_path'];
+    if ($path == '') { form_set_error('xml_file][xml_path', 'Please enter the path to a file.');} //** abs or relative?
+    else if (!is_readable($path)) { form_set_error('xml_file][xml_path', 'File is not present or is unreadable.'); }
+  }
+  else {
+    $path = $form_state['values']['flat_file']['flat_path'];
+    if ($path == '') { form_set_error('xml_file][xml_path', 'Please enter the path to a file.');} //** abs or relative?
+    else if (!is_readable($path)) { form_set_error('flat_file][flat_path', 'File is not present or is unreadable.'); }
+  }
+
+  //$xml_path = $form_state['values']['xml_file']['xml_path'];
+  //$flat_path = $form_state['values']['flat_file']['flat_path'];
+  $flat_delimiter = $form_state['values']['flat_file']['flat_delimiter'];
+  $flat_enclosure = $form_state['values']['flat_file']['flat_enclosure'];
+  $re_name = $form_state['values']['flat_file']['name'];
+  $re_description = $form_state['values']['flat_file']['description'];
+  $re_sample_accession = $form_state['values']['flat_file']['sample_accession'];
+  $re_biomaterial_provider = $form_state['values']['flat_file']['biomaterial_provider'];
+  $biomaterial_properties = $form_state['values']['flat_file']['properties']['biomaterial_properties'];
+  $num_properties = $form_state['flat_file']['properties']['biomaterial_properties']['num_properties'];
+
+  // Make sure the file is present and readable. 
+ //*** if (!is_readable($form_sta
+
   // Make sure the field delimiter is only a single character. An escaped character will count as a single character.
-  $len = strlen($form_state['values']['flat_file']['flat_delimiter']);
-  if (($len == 2 and $form_state['values']['flat_file']['flat_delimiter'][0] != '\\') or $len < 1 or $len > 2) {
+  $len = strlen($flat_delimiter);
+  if (($len == 2 and $flat_delimiter[0] != '\\') or $len < 1 or $len > 2) {
     form_set_error('flat_file][flat_delimiter', 'Please enter a single character for the field delimiter. 
       An escaped character is considered a single character.');
   }
 
   // Make sure the field delimiter is only a single character. An escaped character will count as a single character.
-  $len = strlen($form_state['values']['flat_file']['flat_enclosure']);
-  if (($len == 2 and $form_state['values']['flat_file']['flat_enclosure'][0] != '\\') or $len < 1 or $len > 2) {
-    form_set_error('flat_file][flat_delimiter', 'Please enter a single character for the field enclosure. 
+  $len = strlen($flat_enclosure);
+  if (($len == 2 and $flat_enclosure[0] != '\\') or $len > 2) {
+    form_set_error('flat_file][flat_delimiter', 'Please enter a single character for the field enclosure or leave blank. 
       An escaped character is considered a single character.');
   }
 
-  if (@preg_match("/" . $form_state['values']['flat_file']['name'] . "/i", null) === FALSE) {
+  if (@preg_match("/" . $re_name . "/i", null) === FALSE) {
     form_set_error('flat_file][name', 'Please enter a valid regular expression to capture the name field.');
   }
-  if (@preg_match("/" . $form_state['values']['flat_file']['description'] . "/i", null) === FALSE) {
+  if (@preg_match("/" . $re_description . "/i", null) === FALSE) {
     form_set_error('flat_file][description', 'Please enter a valid regular expression to capture the description field.');
   }
-  if (@preg_match("/" . $form_state['values']['flat_file']['sample_accession'] . "/i", null) === FALSE) {
+  if (@preg_match("/" . $re_sample_accession . "/i", null) === FALSE) {
     form_set_error('flat_file][sample_accession', 'Please enter a valid regular expression to capture the description field.');
   }
-  if (@preg_match("/" . $form_state['values']['flat_file']['biomaterial_provider'] . "/i", null) === FALSE) {
+  if (@preg_match("/" . $re_biomaterial_provider . "/i", null) === FALSE) {
     form_set_error('flat_file][biomaterial_provider', 'Please enter a valid regular expression to capture the description field.');
   }
 
+  for($i=0;$i<$num_properties;$i++) {
+    $bioamterial_prop_regex = $biomaterial_properties[$i]['biomaterial_prop_regex'];
+    $bioamterial_prop_type = $biomaterial_properties[$i]['biomaterial_prop_type'];
+    if ((!empty($biomaterial_prop_regex) and (@preg_match("/" . $biomaterial_prop_regex . "/i", null) === FALSE)) 
+         or (empty($biomaterial_prop_regex) and !empty($biomaterial_prop_type))) {
+      form_set_error('flat_file][properties][biomaterial_properties][' . $i . '][biomaterial_prop_regex', 
+        'Please enter a valid regular expression to capture property ' . ($i+1) . '.');
+    }
+    if (!empty($biomaterial_prop_type) and empty($biomaterial_prop_regex)) {
+      form_set_error('flat_file][properties][biomaterial_properties][' . $i . '][biomaterial_prop_type', 
+        'Please enter a type for property ' . ($i+1) . '.');
+    }
 
+  }  
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
