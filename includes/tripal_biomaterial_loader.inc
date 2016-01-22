@@ -198,6 +198,12 @@ function tripal_biomaterial_loader($form, &$form_state) {
     $form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'] = 1;
   }
 
+  //$sql = "SELECT name FROM db WHERE
+
+
+
+
+
   for ($i=0;$i<$form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'];$i++) {
 
     $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i] = array(
@@ -214,12 +220,19 @@ function tripal_biomaterial_loader($form, &$form_state) {
     ); 
 
     $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i]['biomaterial_dbxref_type'] = array(
+      '#type' => 'select',
+      '#title' => t('Select database'),
+   //   '#prefix' => '<div class="container-inline">',
+    //  '#suffix' => '</div><br>',
+      '#size' => 6,
+    );
+  /*  $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i]['biomaterial_dbxref_type'] = array(
       '#type' => 'textfield',
       '#title' => t('Cvterm'),
       '#prefix' => '<div class="container-inline">',
       '#suffix' => '</div><br>',
       '#description' => t('Name of the biomaterial database accession type to be inserted into the cvterm table.'),
-    );
+    ); */
 
   }
 
