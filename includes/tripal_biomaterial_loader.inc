@@ -112,6 +112,7 @@ function tripal_biomaterial_loader($form, &$form_state) {
     '#title' => t('Field Delimiter'),
     '#description' => t('Select a field delimiter such as "," or "\t". Delimiter must be a single character (an escaped character is considered a single character). Defaults to "\t".'),
     '#size' => 5,
+    '#default_value' => '\t',
   );
 
   $form['flat_file']['flat_enclosure'] = array(
@@ -119,24 +120,28 @@ function tripal_biomaterial_loader($form, &$form_state) {
     '#title' => t('Field Enclosure'),
     '#description' => t('Select a field delimiter such as "\'" or """. Delimiter must be a single character (an escaped character is considered a single character). Leave blank if there is no enclosure character. Defaults to no delimiter.'),
     '#size' => 5,
+    '#default_value' => '',
   );
 
   $form['flat_file']['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Name'),
     '#description' => t('Regex to capture the unique name of the biomaterial. Case insensitive - defaults to "(library[\s|\_|\-]id|library|sample[\s|\_|\-]name|sample|name)".'),
+    '#default_value' => '(library[\s|\_|\-]id|library|sample[\s|\_|\-]name|sample|name)',
   );
 
   $form['flat_file']['description'] = array(
     '#type' => 'textfield',
     '#title' => t('Description'),
     '#description' => t('Regex to capture the description of the biomaterial. Case insensitive - defaults to "(title|short description|description)".'),
+    '#default_value' => '(title|short description|description)',
   );
 
   $form['flat_file']['sample_accession'] = array(
     '#type' => 'textfield',
     '#title' => t('Sample Accession'),
     '#description' => t('Regex to capture the sample accession. Case insensitive - defaults to "(biosample[\s|\_|\-]accession|accession|external[\s|\_|\-]id)".'),
+    '#default_value' => '(biosample[\s|\_|\-]accession|accession|external[\s|\_|\-]id)',
   );
 
   $form['flat_file']['biomaterial_provider'] = array(
@@ -145,6 +150,7 @@ function tripal_biomaterial_loader($form, &$form_state) {
     '#description' => t('Regex to capture the person or institution that provided the biomaterial. 
     Case insensitive - defaults to "(biomaterial[\s|\_|\-]provider)". If not present in the 
     database a contact will be created with the name of the biomaterial provider.'),
+    '#default_value' => '(biomaterial[\s|\_|\-]provider)',
   ); 
 
   $form['flat_file']['fields_description'] = array(
@@ -156,6 +162,8 @@ function tripal_biomaterial_loader($form, &$form_state) {
     '#title' => t('Biomaterial Properties'),
     '#prefix' => '<div id="biomaterial-properties-wrapper">',
     '#suffix' => '</div>',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
   );
 
   $form['flat_file']['dbxrefs'] = array(
@@ -163,6 +171,8 @@ function tripal_biomaterial_loader($form, &$form_state) {
     '#title' => t('Biomaterial Database Accessions'),
     '#prefix' => '<div id="biomaterial-dbxrefs-wrapper">',
     '#suffix' => '</div>',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
   );
 
   if (empty($form_state['flat_file']['properties']['biomaterial_properties']['num_properties'])) {
@@ -198,12 +208,6 @@ function tripal_biomaterial_loader($form, &$form_state) {
     $form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'] = 1;
   }
 
-  //$sql = "SELECT name FROM db WHERE
-
-
-
-
-
   for ($i=0;$i<$form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'];$i++) {
 
     $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i] = array(
@@ -219,9 +223,26 @@ function tripal_biomaterial_loader($form, &$form_state) {
       '#description' => t('Regex to capture the database accession from the flat file.'),
     ); 
 
+    $sql = 'SELECT
+             db_id, name
+           FROM {db}
+           ORDER BY name';
+    $results = chado_query($sql);
+    $dbs = array();
+    while ($db = $results->fetchObject()) {
+      $dbs[$db->db_id] = $db->name;
+    }
+
+    $form['choose_db'] = array(
+      '#type' => 'value',
+      '#value' => $dbs,
+    );
+
     $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i]['biomaterial_dbxref_type'] = array(
       '#type' => 'select',
       '#title' => t('Select database'),
+      '#empty_value' => '',
+      '#options' => $form['choose_db']['#value'],
    //   '#prefix' => '<div class="container-inline">',
     //  '#suffix' => '</div><br>',
       '#size' => 6,
@@ -322,19 +343,17 @@ function ajax_remove_biomaterial_dbxref_submit($form, &$form_state) {
 
 function tripal_biomaterial_loader_submit($form, &$form_state) {
 
-  $xml_path = $form_state['values']['xml_path'];
-  $flat_path = $form_state['values']['flat_path'];
+  $xml_path = $form_state['values']['xml_file']['xml_path'];
+  $flat_path = $form_state['values']['flat_file']['flat_path'];
   $organism_id = $form_state['values']['organism_id'];
   $file_type = $form_state['values']['file_type'];
-  $flat_delimiter = $form_state['values']['flat_delimiter'];
-  $flat_enclosure = $form_state['values']['flat_enclosure'];
-  $regex['name'] = $form_state['values']['name'];
-  $regex['description']= $form_state['values']['description'];
+  $flat_delimiter = $form_state['values']['flat_file']['flat_delimiter'];
+  $flat_enclosure = $form_state['values']['flat_file']['flat_enclosure'];
+  $regex['name'] = $form_state['values']['flat_file']['name'];
+  $regex['description']= $form_state['values']['flat_file']['description'];
  // $regex[] = $form_state['values']['organism'];
-  $regex['dbxref'] = $form_state['values']['sample_accession'];
-  $regex['biomaterial_provider'] = $form_state['values']['biomaterial_provider'];
-  $regex['tissue']= $form_state['values']['tissue'];
-  $regex['treatment'] = $form_state['values']['treatment'];
+  $regex['dbxref'] = $form_state['values']['flat_file']['sample_accession'];
+  $regex['biomaterial_provider'] = $form_state['values']['flat_file']['biomaterial_provider'];
 
   if ($file_type == 'xml') {
     $success = xml_biomaterial_parser($xml_path, $organism_id); 
@@ -605,14 +624,41 @@ function create_ncbi_db($url_name, $db_name, $db_description) {
   return $db_id;
 }
 
-
-
-
 /**
  * Implements a function that validates and submits the form that configures the display of analysis: expression data.
  * 
  * @ingroup tripal_analysis_expression
  */
 function tripal_biomaterial_loader_validate($form, &$form_state) {
+
+  // Make sure the field delimiter is only a single character. An escaped character will count as a single character.
+  $len = strlen($form_state['values']['flat_file']['flat_delimiter']);
+  if (($len == 2 and $form_state['values']['flat_file']['flat_delimiter'][0] != '\\') or $len < 1 or $len > 2) {
+    form_set_error('flat_file][flat_delimiter', 'Please enter a single character for the field delimiter. 
+      An escaped character is considered a single character.');
+  }
+
+  // Make sure the field delimiter is only a single character. An escaped character will count as a single character.
+  $len = strlen($form_state['values']['flat_file']['flat_enclosure']);
+  if (($len == 2 and $form_state['values']['flat_file']['flat_enclosure'][0] != '\\') or $len < 1 or $len > 2) {
+    form_set_error('flat_file][flat_delimiter', 'Please enter a single character for the field enclosure. 
+      An escaped character is considered a single character.');
+  }
+
+  if (@preg_match("/" . $form_state['values']['flat_file']['name'] . "/i", null) === FALSE) {
+    form_set_error('flat_file][name', 'Please enter a valid regular expression to capture the name field.');
+  }
+  if (@preg_match("/" . $form_state['values']['flat_file']['description'] . "/i", null) === FALSE) {
+    form_set_error('flat_file][description', 'Please enter a valid regular expression to capture the description field.');
+  }
+  if (@preg_match("/" . $form_state['values']['flat_file']['sample_accession'] . "/i", null) === FALSE) {
+    form_set_error('flat_file][sample_accession', 'Please enter a valid regular expression to capture the description field.');
+  }
+  if (@preg_match("/" . $form_state['values']['flat_file']['biomaterial_provider'] . "/i", null) === FALSE) {
+    form_set_error('flat_file][biomaterial_provider', 'Please enter a valid regular expression to capture the description field.');
+  }
+
+
+
 }
 
