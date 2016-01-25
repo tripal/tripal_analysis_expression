@@ -153,6 +153,15 @@ function tripal_biomaterial_loader($form, &$form_state) {
     '#default_value' => '(biomaterial[\s|\_|\-]provider)',
   ); 
 
+  $form['flat_file']['auto_add_props'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Ignore all columns not specified'),
+    '#description' => t('If this box is checked the loader will ignore all columns not ') 
+      . t('specified here with a regular expression. If this box is not checked, the ')
+      . t('loader will load all columns including those not specified here into the ')
+      . t('properties table. The column header will be used as the property type.'),
+  );
+
   $form['flat_file']['fields_description'] = array(
     '#markup' => t('Other fields in the flat file can be loaded as biomaterial properties (biomaterialprop table) or as database accessions (biomaterial_dbxref table).'),
   );
@@ -244,7 +253,7 @@ function tripal_biomaterial_loader($form, &$form_state) {
     );
 
     $lt_message = tripal_set_message(t('If the database is not present in the list, ')
-      . l(t('add a new database.'), '/admin/tripal/chado/tripal_db/add/'),
+      . l(t('add a new database') . t('.'), '/admin/tripal/chado/tripal_db/add/'),
       TRIPAL_INFO, array('return_html' => TRUE));
 
     $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i]['biomaterial_dbxref_type'] = array(
@@ -670,7 +679,9 @@ function tripal_biomaterial_loader_validate($form, &$form_state) {
   $re_sample_accession = $form_state['values']['flat_file']['sample_accession'];
   $re_biomaterial_provider = $form_state['values']['flat_file']['biomaterial_provider'];
   $biomaterial_properties = $form_state['values']['flat_file']['properties']['biomaterial_properties'];
+  $biomaterial_dbxrefs = $form_state['values']['flat_file']['dbxrefs']['biomaterial_dbxrefs'];
   $num_properties = $form_state['flat_file']['properties']['biomaterial_properties']['num_properties'];
+  $num_dbxrefs = $form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'];
 
   // Make sure the file is present and readable. 
  //*** if (!is_readable($form_sta
@@ -703,20 +714,31 @@ function tripal_biomaterial_loader_validate($form, &$form_state) {
   }
 
   for($i=0;$i<$num_properties;$i++) {
-    $bioamterial_prop_regex = $biomaterial_properties[$i]['biomaterial_prop_regex'];
-    $bioamterial_prop_type = $biomaterial_properties[$i]['biomaterial_prop_type'];
+    $biomaterial_prop_regex = $biomaterial_properties[$i]['biomaterial_prop_regex'];
+    $biomaterial_prop_type = $biomaterial_properties[$i]['biomaterial_prop_type'];
     if ((!empty($biomaterial_prop_regex) and (@preg_match("/" . $biomaterial_prop_regex . "/i", null) === FALSE)) 
          or (empty($biomaterial_prop_regex) and !empty($biomaterial_prop_type))) {
       form_set_error('flat_file][properties][biomaterial_properties][' . $i . '][biomaterial_prop_regex', 
         'Please enter a valid regular expression to capture property ' . ($i+1) . '.');
     }
-    if (!empty($biomaterial_prop_type) and empty($biomaterial_prop_regex)) {
+    if (empty($biomaterial_prop_type) and !empty($biomaterial_prop_regex)) {
       form_set_error('flat_file][properties][biomaterial_properties][' . $i . '][biomaterial_prop_type', 
         'Please enter a type for property ' . ($i+1) . '.');
     }
-
   }  
 
+  for($i=0;$i<$num_dbxrefs;$i++) {
+    $biomaterial_dbxref_regex = $biomaterial_dbxrefs[$i]['biomaterial_dbxref_regex'];
+    //$biomaterial_dbxref_db = $biomaterial_dbxrefs[$i]['biomaterial_db_regex'];
+    if (!empty($biomaterial_dbxref_regex) and (@preg_match("/" . $biomaterial_dbxref_regex . "/i", null) === FALSE)) {
+      form_set_error('flat_file][properties][biomaterial_dbxrefs][' . $i . '][biomaterial_dbxref_regex', 
+        'Please enter a valid regular expression to capture database accession ' . ($i+1) . '.');
+    }
+  /*  if (empty($biomaterial_prop_type) and !empty($biomaterial_prop_regex)) {
+      form_set_error('flat_file][properties][biomaterial_properties][' . $i . '][biomaterial_prop_type', 
+        'Please enter a type for property ' . ($i+1) . '.');
+    }*/
+  }
 }
 
 
