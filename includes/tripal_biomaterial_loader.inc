@@ -139,11 +139,42 @@ function tripal_biomaterial_loader($form, &$form_state) {
 
   $form['flat_file']['sample_accession'] = array(
     '#type' => 'textfield',
-    '#title' => t('Sample Accession'),
+    '#title' => t('Primay Sample Accession'),
     '#description' => t('Regex to capture the sample accession. Case insensitive - defaults to "(biosample[\s|\_|\-]accession|accession|external[\s|\_|\-]id)".'),
     '#default_value' => '(biosample[\s|\_|\-]accession|accession|external[\s|\_|\-]id)',
   );
 
+/////
+    $sql = 'SELECT
+             db_id, name
+           FROM {db}
+           ORDER BY name';
+    $results = chado_query($sql);
+    $dbs = array();
+    while ($db = $results->fetchObject()) {
+      $dbs[$db->db_id] = $db->name;
+    }
+
+    $form['choose_db'] = array(
+      '#type' => 'value',
+      '#value' => $dbs,
+    );
+
+    $lt_message = tripal_set_message(t('If the database is not present in the list, ')
+      . l(t('add a new database') . t('.'), '/admin/tripal/chado/tripal_db/add/'),
+      TRIPAL_INFO, array('return_html' => TRUE));
+
+    $form['flat_file']['primary_db_id'] = array(
+      '#type' => 'select',
+      '#title' => t('Select Primary Sample Accession Database'),
+      '#empty_value' => '',
+      '#options' => $form['choose_db']['#value'],
+      '#size' => 6,
+      '#suffix' => $lt_message,
+    );
+
+
+////
   $form['flat_file']['biomaterial_provider'] = array(
     '#type' => 'textfield',
     '#title' => t('Biomaterial Provider'),
@@ -361,7 +392,9 @@ function ajax_remove_biomaterial_dbxref_submit($form, &$form_state) {
 }
 
 function tripal_biomaterial_loader_submit($form, &$form_state) {
-/*
+//**
+  $primary_db_id = $form_state['values']['flat_file']['primary_db_id']; 
+
   // Get the file path. 
   $file_type = $form_state['values']['file_type'];
   if ($file_type == 'xml') {
@@ -372,27 +405,30 @@ function tripal_biomaterial_loader_submit($form, &$form_state) {
   }
 
   $organism_id = $form_state['values']['organism_id'];
-  $file_type = $form_state['values']['file_type'];
+//  $file_type = $form_state['values']['file_type'];
   $flat_delimiter = $form_state['values']['flat_file']['flat_delimiter'];
   $flat_enclosure = $form_state['values']['flat_file']['flat_enclosure'];
-  $regex['name'] = $form_state['values']['flat_file']['name'];
-  $regex['description']= $form_state['values']['flat_file']['description'];
+  $regex_main['name'] = $form_state['values']['flat_file']['name'];
+  $regex_main['description']= $form_state['values']['flat_file']['description'];
  // $regex[] = $form_state['values']['organism'];
-  $regex['dbxref'] = $form_state['values']['flat_file']['sample_accession'];
-  $regex['biomaterial_provider'] = $form_state['values']['flat_file']['biomaterial_provider'];
+  $regex_main['dbxref'] = $form_state['values']['flat_file']['sample_accession'];
+  $regex_main['biomaterial_provider'] = $form_state['values']['flat_file']['biomaterial_provider'];
+
+  $regex_prop = [];
+  $regex_dbxref = [];
 
   if ($file_type == 'xml') {
-    $success = xml_biomaterial_parser($path, $organism_id); 
+ //   $success = xml_biomaterial_parser($path, $organism_id); 
   }
 
   if ($file_type == 'flat') {
     $success = flat_biomaterial_parser($path, $organism_id, $file_type, $flat_delimiter,
-                                       $flat_enclosure, $regex);
-  } */
+                                       $flat_enclosure, $regex_main, $regex_prop, $regex_dbxref);
+  } 
 }
 
 
-function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_delimiter, $flat_enclosure, $regex) {
+function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_delimiter, $flat_enclosure, $primary_db_id, $regex_main, $regex_prop, $regex_dbxref) {
 
   // Check file path to see if file is accessible.
   if (!is_readable($flat_path)) {
@@ -409,28 +445,83 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
   $tissue_key = '';
   $treatment_key = '';
 
+  $col_values = [];
+  $col_props = [];
+  $col_dbxrefs = [];
+  $hit = 0;
+
+
   for ($i=0;$i<count($headers);$i++) {
-    if(preg_match($regex['name'], $headers[$i])) {
-      $key_values['name'] = $i; 
-    }  
-    if(preg_match($regex['description'], $headers[$i])) {
-      $key_values['description'] = $i; 
-    }  
-    if(preg_match($regex['dbxref'], $headers[$i])) {
-      $key_values['dbxref'] = $i; 
-    }  
-    if(preg_match($regex['biomaterial_provider'], $headers[$i])) {
-      $key_values['biomaterial_provider'] = $i; 
-    }  
-    if(preg_match($regex['tissue'], $headers[$i])) {
-      $tissue_key = $i; 
-    } 
-    if(preg_match($regex['treatment'], $headers[$i])) {
-      $treatment_key = $i; 
+    $hit = 0;
+    foreach ($regex_main as $name => $regex) {
+      if (@preg_match('/' . $regex . '/i',$headers[$i])) {
+        $col_values[$key] = $i;
+        if($hit == 1) {
+          print "ERROR: Column header has multiple regular expression hits.";
+          exit();
+        }
+        $hit = 1;
+      }
+    }
+    foreach ($regex_prop as $name => $regex) {
+      if (@preg_match('/' . $regex . '/i',$headers[$i])) {
+        $col_props[$key] = $i;
+        if($hit == 1) {
+          print "ERROR: Column header has multiple regular expression hits.";
+          exit();
+        }
+        $hit = 1;
+      }
+    }
+    foreach ($regex_dbxref as $name => $regex) {
+      if (@preg_match('/' . $regex . '/i',$headers[$i])) {
+        $col_dbxrefs[$key] = $i;
+        if($hit == 1) {
+          print "ERROR: Column header has multiple regular expression hits.";
+          exit();
+        }
+        $hit = 1;
+      }
     }  
   }
 
   while($line = fgetcsv($fp)) {
+    $unique_name = '';
+    $description = '';
+    $biosource_provider_id = '';
+    $dbxref_biosample_id = '';
+ 
+    if (array_key_exists('name',$col_values)) { 
+      $unique_name = $line[$col_values['name']];
+    }
+
+    if (array_key_exists('description',$col_values)) { 
+      $description = $line[$col_values['description']];
+    }
+
+    if (array_key_exists('biomaterial_provider',$col_values)) { 
+      $biosourceprovider_id = create_biomaterial_contact($line[$col_values['biomaterial_provider']]);
+    }
+
+    
+
+    if (array_key_exists('dbxref_biosample',$col_values)) { 
+    // $dbxref_biosample_id = $line[$col_values['dbxref_biosample']];
+      $primary_dbxref= tripal_insert_dbxref(array(
+        'db_id' => $primary_db_id,
+        'accession' => $line[$col_values['dbxref_biosample']],
+        // 'version' => $version,
+        'description' => '',
+      ));
+      $primary_dbxref_id = $dbxref_db->dbxref_id;
+
+    }
+
+    $biomaterial_id = create_biomaterial($unique_name, $description, $organism_id, $biosourceprovider_id, $primary_dbxref_id, $description);
+
+  }
+
+/*  while($line = fgetcsv($fp)) {
 
     $values = [];
     $values['organism_id'] = $organism_id;
@@ -448,7 +539,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
       $values['biosourceprovider_id'] = $biosourceprovider_id;
     } 
 
-  }
+  }*/
 
 } 
 
@@ -501,7 +592,7 @@ function add_xml_data($organism_id, $biosample) {
   // Create a contact if contact is not present.
 
   if ($biomaterial_provider) {
-    $biosourceprovider_id = create_contact($biomaterial_provider);
+    $biosourceprovider_id = create_biomaterial_contact($biomaterial_provider);
   }
   else {
     $biosourceprovider_id = '';
@@ -597,7 +688,7 @@ function add_xml_biomaterial_properties($attributes, $biomaterial_id) {
 
 }
 
-function create_contact($contact_name) {
+function create_biomaterial_contact($contact_name) {
    $contact_id = chado_query('select contact_id from {contact} where name = :name limit 1',array(':name' => $contact_name))->fetchField();
   if(!$contact_id) {
     $values = array(
@@ -740,18 +831,6 @@ function tripal_biomaterial_loader_validate($form, &$form_state) {
     }*/
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
