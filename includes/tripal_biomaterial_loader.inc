@@ -26,10 +26,17 @@ function tripal_biomaterial_loader($form, &$form_state) {
   $form['#tree'] = TRUE;
 
   $form['description'] = array(
-    '#markup' => t('This loader will load the following tables if corresponding fields are present. <br> 
-     <b>biomaterial table</b>: name, description, organism, and biomaterial provider. <br> 
-     <b>biomaterialprop table</b>: Other fields such as cultivar, temperature, tissue, and treatment can be loaded into the properties table. <br>
-     <b>dbxref table</b>: Accession values can be loaded into the database reference table.'),
+    '#markup' => t('This loader is designed to load data from NCBI BioSample compatible formats.
+      If you have loaded data into NCBI, download download an xml file from NCBI with your 
+      BioSamples. This will ensure biomaterials have the BioSample accession number. 
+      If you have not uploaded to NCBI, load a flatfile in the NCBI BioSample Submission format. 
+      The NCBI BioSample submission format can be downloaded 
+      <a href="https://submit.ncbi.nlm.nih.gov/biosample/template/" target = "_blank">here</a>. 
+      Available attributes to use can be found 
+      <a href="http://www.ncbi.nlm.nih.gov/biosample/docs/attributes/" target = "_blank">here</a>. 
+      You may add additional fields to the file, by adding another column to the submission file. 
+      The header of the column will be used as the property type. <b>Biomaterials must have a unique
+      sample_name</b>')
   );
 
   $organisms = tripal_get_organism_select_options(FALSE);
@@ -123,272 +130,12 @@ function tripal_biomaterial_loader($form, &$form_state) {
     '#default_value' => '',
   );
 
-  $form['flat_file']['name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Name'),
-    '#description' => t('Regex to capture the unique name of the biomaterial. Case insensitive - defaults to "(library[\s|\_|\-]id|library|sample[\s|\_|\-]name|sample|name)".'),
-    '#default_value' => '(library[\s|\_|\-]id|library|sample[\s|\_|\-]name|sample|name)',
-  );
-
-  $form['flat_file']['description'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Description'),
-    '#description' => t('Regex to capture the description of the biomaterial. Case insensitive - defaults to "(title|short description|description)".'),
-    '#default_value' => '(title|short description|description)',
-  );
-
-  $form['flat_file']['sample_accession'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Primay Sample Accession'),
-    '#description' => t('Regex to capture the sample accession. Case insensitive - defaults to "(biosample[\s|\_|\-]accession|accession|external[\s|\_|\-]id)".'),
-    '#default_value' => '(biosample[\s|\_|\-]accession|accession|external[\s|\_|\-]id)',
-  );
-
-/////
-    $sql = 'SELECT
-             db_id, name
-           FROM {db}
-           ORDER BY name';
-    $results = chado_query($sql);
-    $dbs = array();
-    while ($db = $results->fetchObject()) {
-      $dbs[$db->db_id] = $db->name;
-    }
-
-    $form['choose_db'] = array(
-      '#type' => 'value',
-      '#value' => $dbs,
-    );
-
-    $lt_message = tripal_set_message(t('If the database is not present in the list, ')
-      . l(t('add a new database') . t('.'), '/admin/tripal/chado/tripal_db/add/'),
-      TRIPAL_INFO, array('return_html' => TRUE));
-
-    $form['flat_file']['primary_db_id'] = array(
-      '#type' => 'select',
-      '#title' => t('Select Primary Sample Accession Database'),
-      '#empty_value' => '',
-      '#options' => $form['choose_db']['#value'],
-      '#size' => 6,
-      '#suffix' => $lt_message,
-    );
-
-
-////
-  $form['flat_file']['biomaterial_provider'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Biomaterial Provider'),
-    '#description' => t('Regex to capture the person or institution that provided the biomaterial. 
-    Case insensitive - defaults to "(biomaterial[\s|\_|\-]provider)". If not present in the 
-    database a contact will be created with the name of the biomaterial provider.'),
-    '#default_value' => '(biomaterial[\s|\_|\-]provider)',
-  ); 
-
-  $form['flat_file']['auto_add_props'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Ignore all columns not specified'),
-    '#description' => t('If this box is checked the loader will ignore all columns not ') 
-      . t('specified here with a regular expression. If this box is not checked, the ')
-      . t('loader will load all columns including those not specified here into the ')
-      . t('properties table. The column header will be used as the property type.'),
-  );
-
-  $form['flat_file']['fields_description'] = array(
-    '#markup' => t('Other fields in the flat file can be loaded as biomaterial properties (biomaterialprop table) or as database accessions (biomaterial_dbxref table).'),
-  );
-
-  $form['flat_file']['properties'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Biomaterial Properties'),
-    '#prefix' => '<div id="biomaterial-properties-wrapper">',
-    '#suffix' => '</div>',
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-  );
-
-  $form['flat_file']['dbxrefs'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Biomaterial Database Accessions'),
-    '#prefix' => '<div id="biomaterial-dbxrefs-wrapper">',
-    '#suffix' => '</div>',
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-  );
-
-  if (empty($form_state['flat_file']['properties']['biomaterial_properties']['num_properties'])) {
-    $form_state['flat_file']['properties']['biomaterial_properties']['num_properties'] = 1;
-  }
-
-  for ($i=0;$i<$form_state['flat_file']['properties']['biomaterial_properties']['num_properties'];$i++) {
-
-    $form['flat_file']['properties']['biomaterial_properties'][$i] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Property ' . ($i+1)), 
-    );
-
-    $form['flat_file']['properties']['biomaterial_properties'][$i]['biomaterial_prop_regex'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Regex'),
-      '#prefix' => '<div class="container-inline">',
-      '#suffix' => '</div><br>',
-      '#description' => t('Regex to capture the property from the flat file.'),
-    ); 
-
-    $type_cv = tripal_get_default_cv('biomaterialprop', 'type_id');
-    $cv_id = $type_cv->cv_id;
-
-    $form['flat_file']['properties']['biomaterial_properties'][$i]['biomaterial_prop_type'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Cvterm'),
-      '#prefix' => '<div class="container-inline">',
-      '#suffix' => '</div><br>',
-      '#description' => t('Name of the biomaterial property type to be inserted into the cvterm table. 
-                            If a type is not present in the database, a new type will be created.'),
-      '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
-    );
-
-  }
-
-  if (empty($form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'])) {
-    $form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'] = 1;
-  }
-
-  for ($i=0;$i<$form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'];$i++) {
-
-    $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Database Accession ' . ($i+1)), 
-    );
-
-    $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i]['biomaterial_dbxref_regex'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Regex'),
-      '#prefix' => '<div class="container-inline">',
-      '#suffix' => '</div><br>',
-      '#description' => t('Regex to capture the database accession from the flat file.'),
-    ); 
-
-    $sql = 'SELECT
-             db_id, name
-           FROM {db}
-           ORDER BY name';
-    $results = chado_query($sql);
-    $dbs = array();
-    while ($db = $results->fetchObject()) {
-      $dbs[$db->db_id] = $db->name;
-    }
-
-    $form['choose_db'] = array(
-      '#type' => 'value',
-      '#value' => $dbs,
-    );
-
-    $lt_message = tripal_set_message(t('If the database is not present in the list, ')
-      . l(t('add a new database') . t('.'), '/admin/tripal/chado/tripal_db/add/'),
-      TRIPAL_INFO, array('return_html' => TRUE));
-
-    $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i]['biomaterial_dbxref_type'] = array(
-      '#type' => 'select',
-      '#title' => t('Select database'),
-      '#empty_value' => '',
-      '#options' => $form['choose_db']['#value'],
-   //   '#prefix' => '<div class="container-inline">',
-    //  '#suffix' => '</div><br>',
-      '#size' => 6,
-      '#suffix' => $lt_message,
-    );
-  /*  $form['flat_file']['dbxrefs']['biomaterial_dbxrefs'][$i]['biomaterial_dbxref_type'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Cvterm'),
-      '#prefix' => '<div class="container-inline">',
-      '#suffix' => '</div><br>',
-      '#description' => t('Name of the biomaterial database accession type to be inserted into the cvterm table.'),
-    ); */
-
-  }
-
-  $form['flat_file']['properties']['biomaterial_properties']['add_property'] = array(
-    '#type' => 'submit',
-    '#value' => t('Add Property'),
-    '#submit' => array('ajax_add_biomaterial_property_submit'),
-    '#ajax' => array(
-      'callback' => 'ajax_add_biomaterial_property_callback',
-      'wrapper' => 'biomaterial-properties-wrapper',
-    ),
-  );
-
-  if ($form_state['flat_file']['properties']['biomaterial_properties']['num_properties'] > 1) {
-    $form['flat_file']['properties']['biomaterial_properties']['remove_property'] = array(
-      '#type' => 'submit',
-      '#value' => t('Remove Property'),
-      '#submit' => array('ajax_remove_biomaterial_property_submit'),
-      '#ajax' => array(
-        'callback' => 'ajax_add_biomaterial_property_callback',
-        'wrapper' => 'biomaterial-properties-wrapper',
-      ),
-    );
-  }
-
-  $form['flat_file']['dbxrefs']['biomaterial_dbxrefs']['add_dbxref'] = array(
-    '#type' => 'submit',
-    '#value' => t('Add Database Accession'),
-    '#submit' => array('ajax_add_biomaterial_dbxref_submit'),
-    '#ajax' => array(
-      'callback' => 'ajax_add_biomaterial_dbxref_callback',
-      'wrapper' => 'biomaterial-dbxrefs-wrapper',
-    ),
-  );
-
-  if ($form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'] > 1) {
-    $form['flat_file']['dbxrefs']['biomaterial_dbxrefs']['remove_dbxref'] = array(
-      '#type' => 'submit',
-      '#value' => t('Remove Database Accession'),
-      '#submit' => array('ajax_remove_biomaterial_dbxref_submit'),
-      '#ajax' => array(
-        'callback' => 'ajax_add_biomaterial_dbxref_callback',
-        'wrapper' => 'biomaterial-dbxrefs-wrapper',
-      ),
-    );
-  }
-
   $form['flat_file']['flat_submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit Job'),
   );
 
   return $form;
-}
-
-function ajax_add_biomaterial_property_callback($form, $form_state) {
-  return $form['flat_file']['properties'];
-}
-
-function ajax_add_biomaterial_property_submit($form, &$form_state) {
-  $form_state['flat_file']['properties']['biomaterial_properties']['num_properties']++;
-  $form_state['rebuild'] = TRUE;
-}
-
-function ajax_remove_biomaterial_property_submit($form, &$form_state) {
-  if ($form_state['flat_file']['properties']['biomaterial_properties']['num_properties'] > 1) {
-    $form_state['flat_file']['properties']['biomaterial_properties']['num_properties']--;
-  }
-  $form_state['rebuild'] = TRUE;
-}
-
-function ajax_add_biomaterial_dbxref_callback($form, $form_state) {
-  return $form['flat_file']['dbxrefs'];
-}
-
-function ajax_add_biomaterial_dbxref_submit($form, &$form_state) {
-  $form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs']++;
-  $form_state['rebuild'] = TRUE;
-}
-
-function ajax_remove_biomaterial_dbxref_submit($form, &$form_state) {
-  if ($form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'] > 1) {
-    $form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs']--;
-  }
-  $form_state['rebuild'] = TRUE;
 }
 
 function tripal_biomaterial_loader_submit($form, &$form_state) {
@@ -405,30 +152,21 @@ function tripal_biomaterial_loader_submit($form, &$form_state) {
   }
 
   $organism_id = $form_state['values']['organism_id'];
-//  $file_type = $form_state['values']['file_type'];
   $flat_delimiter = $form_state['values']['flat_file']['flat_delimiter'];
   $flat_enclosure = $form_state['values']['flat_file']['flat_enclosure'];
-  $regex_main['name'] = $form_state['values']['flat_file']['name'];
-  $regex_main['description']= $form_state['values']['flat_file']['description'];
- // $regex[] = $form_state['values']['organism'];
-  $regex_main['dbxref'] = $form_state['values']['flat_file']['sample_accession'];
-  $regex_main['biomaterial_provider'] = $form_state['values']['flat_file']['biomaterial_provider'];
 
-  $regex_prop = [];
-  $regex_dbxref = [];
 
   if ($file_type == 'xml') {
- //   $success = xml_biomaterial_parser($path, $organism_id); 
+    $success = xml_biomaterial_parser($path, $organism_id); 
   }
 
   if ($file_type == 'flat') {
-    $success = flat_biomaterial_parser($path, $organism_id, $file_type, $flat_delimiter,
-                                       $flat_enclosure, $regex_main, $regex_prop, $regex_dbxref);
+    $success = flat_biomaterial_parser($path, $organism_id, $file_type, $flat_delimiter, $flat_enclosure);
   } 
 }
 
 
-function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_delimiter, $flat_enclosure, $primary_db_id, $regex_main, $regex_prop, $regex_dbxref) {
+function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_delimiter, $flat_enclosure) {
 
   // Check file path to see if file is accessible.
   if (!is_readable($flat_path)) {
@@ -441,19 +179,19 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
 
   $headers = fgetcsv($fp);
 
-  $key_values = [];
-  $tissue_key = '';
-  $treatment_key = '';
+  if(count(array_unique($headers))<count($headers)) {
+    print "ERROR: Two of the column headers in the BioSample submission file have the same value\n";
+    print "Each header must be a unique value.";
+    exit(1);
+  }
 
-  $col_values = [];
-  $col_props = [];
-  $col_dbxrefs = [];
   $hit = 0;
+
+  $biomaterial_names = [];
 
   $biomaterial_header = [];
   $prop_headers = [];
   $acc_headers = [];
-  $col_props = [];
 
 
   for ($i=0; $i < count($headers); $i++) {
@@ -478,6 +216,14 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
   }
 
   while($line = fgetcsv($fp)) {
+
+    if (in_array($line[$biomaterial_header['sample_name']],$biomaterial_names)) {
+      print "ERROR: Two BioSamples have the same sample_name. BioSamples must have different sample_names";
+      exit(1);
+    }
+    else {
+      $biomaterial_names[] = $line[$biomaterial_header];
+    }
 
     // Gather the fields to insert into the biomaterial table. 
     foreach($biomaterial_header as $name => $index) {
@@ -514,6 +260,15 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
 
     // Insert into the biomaterialprop table.
     foreach($prop_headers as $name => $index) { 
+      if (chado_select_record('biomaterialprop', array('biomaterialprop_id'), array('name' => $name))) {
+        tripal_insert_cvterm(array(
+          'name' => $name,
+          'def' => '',
+          'cv_name' => 'biomaterial_property',
+          'db_name' => 'tripal',
+        ));
+      }
+        	
       $record = array(
         'table' => 'biomaterial',
         'id' => $biomaterial_id,
@@ -755,71 +510,12 @@ function tripal_biomaterial_loader_validate($form, &$form_state) {
   //$flat_path = $form_state['values']['flat_file']['flat_path'];
   $flat_delimiter = $form_state['values']['flat_file']['flat_delimiter'];
   $flat_enclosure = $form_state['values']['flat_file']['flat_enclosure'];
-  $re_name = $form_state['values']['flat_file']['name'];
-  $re_description = $form_state['values']['flat_file']['description'];
-  $re_sample_accession = $form_state['values']['flat_file']['sample_accession'];
-  $re_biomaterial_provider = $form_state['values']['flat_file']['biomaterial_provider'];
-  $biomaterial_properties = $form_state['values']['flat_file']['properties']['biomaterial_properties'];
-  $biomaterial_dbxrefs = $form_state['values']['flat_file']['dbxrefs']['biomaterial_dbxrefs'];
-  $num_properties = $form_state['flat_file']['properties']['biomaterial_properties']['num_properties'];
-  $num_dbxrefs = $form_state['flat_file']['dbxrefs']['biomaterial_dbxrefs']['num_dbxrefs'];
 
   // Make sure the file is present and readable. 
  //*** if (!is_readable($form_sta
 
-  // Make sure the field delimiter is only a single character. An escaped character will count as a single character.
-  $len = strlen($flat_delimiter);
-  if (($len == 2 and $flat_delimiter[0] != '\\') or $len < 1 or $len > 2) {
-    form_set_error('flat_file][flat_delimiter', 'Please enter a single character for the field delimiter. 
-      An escaped character is considered a single character.');
-  }
 
-  // Make sure the field delimiter is only a single character. An escaped character will count as a single character.
-  $len = strlen($flat_enclosure);
-  if (($len == 2 and $flat_enclosure[0] != '\\') or $len > 2) {
-    form_set_error('flat_file][flat_delimiter', 'Please enter a single character for the field enclosure or leave blank. 
-      An escaped character is considered a single character.');
-  }
 
-  if (@preg_match("/" . $re_name . "/i", null) === FALSE) {
-    form_set_error('flat_file][name', 'Please enter a valid regular expression to capture the name field.');
-  }
-  if (@preg_match("/" . $re_description . "/i", null) === FALSE) {
-    form_set_error('flat_file][description', 'Please enter a valid regular expression to capture the description field.');
-  }
-  if (@preg_match("/" . $re_sample_accession . "/i", null) === FALSE) {
-    form_set_error('flat_file][sample_accession', 'Please enter a valid regular expression to capture the description field.');
-  }
-  if (@preg_match("/" . $re_biomaterial_provider . "/i", null) === FALSE) {
-    form_set_error('flat_file][biomaterial_provider', 'Please enter a valid regular expression to capture the description field.');
-  }
-
-  for($i=0;$i<$num_properties;$i++) {
-    $biomaterial_prop_regex = $biomaterial_properties[$i]['biomaterial_prop_regex'];
-    $biomaterial_prop_type = $biomaterial_properties[$i]['biomaterial_prop_type'];
-    if ((!empty($biomaterial_prop_regex) and (@preg_match("/" . $biomaterial_prop_regex . "/i", null) === FALSE)) 
-         or (empty($biomaterial_prop_regex) and !empty($biomaterial_prop_type))) {
-      form_set_error('flat_file][properties][biomaterial_properties][' . $i . '][biomaterial_prop_regex', 
-        'Please enter a valid regular expression to capture property ' . ($i+1) . '.');
-    }
-    if (empty($biomaterial_prop_type) and !empty($biomaterial_prop_regex)) {
-      form_set_error('flat_file][properties][biomaterial_properties][' . $i . '][biomaterial_prop_type', 
-        'Please enter a type for property ' . ($i+1) . '.');
-    }
-  }  
-
-  for($i=0;$i<$num_dbxrefs;$i++) {
-    $biomaterial_dbxref_regex = $biomaterial_dbxrefs[$i]['biomaterial_dbxref_regex'];
-    //$biomaterial_dbxref_db = $biomaterial_dbxrefs[$i]['biomaterial_db_regex'];
-    if (!empty($biomaterial_dbxref_regex) and (@preg_match("/" . $biomaterial_dbxref_regex . "/i", null) === FALSE)) {
-      form_set_error('flat_file][properties][biomaterial_dbxrefs][' . $i . '][biomaterial_dbxref_regex', 
-        'Please enter a valid regular expression to capture database accession ' . ($i+1) . '.');
-    }
-  /*  if (empty($biomaterial_prop_type) and !empty($biomaterial_prop_regex)) {
-      form_set_error('flat_file][properties][biomaterial_properties][' . $i . '][biomaterial_prop_type', 
-        'Please enter a type for property ' . ($i+1) . '.');
-    }*/
-  }
 }
 
 
