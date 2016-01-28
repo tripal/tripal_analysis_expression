@@ -450,96 +450,86 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
   $col_dbxrefs = [];
   $hit = 0;
 
+  $biomaterial_header = [];
+  $prop_headers = [];
+  $acc_headers = [];
+  $col_props = [];
 
-  for ($i=0;$i<count($headers);$i++) {
-    $hit = 0;
-    foreach ($regex_main as $name => $regex) {
-      if (@preg_match('/' . $regex . '/i',$headers[$i])) {
-        $col_values[$key] = $i;
-        if($hit == 1) {
-          print "ERROR: Column header has multiple regular expression hits.";
-          exit();
-        }
-        $hit = 1;
-      }
+
+  for ($i=0; $i < count($headers); $i++) {
+    if ($header[$i] == 'sample_name') {
+      $biomaterial_header['sample_name'] = $i;
     }
-    foreach ($regex_prop as $name => $regex) {
-      if (@preg_match('/' . $regex . '/i',$headers[$i])) {
-        $col_props[$key] = $i;
-        if($hit == 1) {
-          print "ERROR: Column header has multiple regular expression hits.";
-          exit();
-        }
-        $hit = 1;
-      }
+    if ($header[$i] == 'organism') {
+      $biomaterial_header['organism'] = $i;
     }
-    foreach ($regex_dbxref as $name => $regex) {
-      if (@preg_match('/' . $regex . '/i',$headers[$i])) {
-        $col_dbxrefs[$key] = $i;
-        if($hit == 1) {
-          print "ERROR: Column header has multiple regular expression hits.";
-          exit();
-        }
-        $hit = 1;
-      }
-    }  
+    if ($header[$i] == 'description') {
+      $biomaterial_header['description'] = $i;
+    }
+    if ($header[$i] == 'biomaterial_provider') {
+      $biomaterial_header['biomaterial_provider'] = $i;
+    }
+    if ($header[$i] == 'bioproject_accession') {
+      $acc_header['bioproject_accession'] = $i;
+    }
+    else {
+      $prop_headers[$header[$i]] = $i;
+    }
   }
 
   while($line = fgetcsv($fp)) {
-    $unique_name = '';
-    $description = '';
-    $biosource_provider_id = '';
-    $dbxref_biosample_id = '';
- 
-    if (array_key_exists('name',$col_values)) { 
-      $unique_name = $line[$col_values['name']];
-    }
 
-    if (array_key_exists('description',$col_values)) { 
-      $description = $line[$col_values['description']];
-    }
-
-    if (array_key_exists('biomaterial_provider',$col_values)) { 
-      $biosourceprovider_id = create_biomaterial_contact($line[$col_values['biomaterial_provider']]);
-    }
-
-    
-
-    if (array_key_exists('dbxref_biosample',$col_values)) { 
-    // $dbxref_biosample_id = $line[$col_values['dbxref_biosample']];
-      $primary_dbxref= tripal_insert_dbxref(array(
-        'db_id' => $primary_db_id,
-        'accession' => $line[$col_values['dbxref_biosample']],
-        // 'version' => $version,
-        'description' => '',
-      ));
-      $primary_dbxref_id = $dbxref_db->dbxref_id;
+    // Gather the fields to insert into the biomaterial table. 
+    foreach($biomaterial_header as $name => $index) {
+      if ($name == 'sample_name') { 
+        $unique_name = $line[$index];
+      }
+      if ($name == 'description') { 
+        $description = $line[$index];
+      }
+      if ($name == 'biomaterial_provider' and $line[$index] != "") { 
+        $biosourceprovider_id = create_biomaterial_contact($line[$index]);
+      }
+   //   if ($name == 'bioproject_accession') { 
+        //$value['primary_dbxref'] = $line[$index];
+     // }
 
     }
 
-    $biomaterial_id = create_biomaterial($unique_name, $description, $organism_id, $biosourceprovider_id, $primary_dbxref_id, $description);
+    // Create an accession to the bioproject
+    $ncbi_bioproject_id = create_ncbi_db('bioproject', 'NCBI BioSample', '');    
+
+    // Create entry in the dbxref table. 
+    $dbxref_bioproject= tripal_insert_dbxref(array(
+      'db_id' => $ncbi_bioproject_id,
+      'accession' => $line[$acc_header['bioproject_accession']],
+     // 'version' => $version,
+      'description' => '',
+      )
+    );
+    $dbxref_bioproject_id = $dbxref_bioproject->dbxref_id;
+
+    // Create the biomaterial based on the values given.
+    $biomaterial_id = create_biomaterial($unique_name, $description, $organism_id, $biosourceprovider_id, '', $description);
+
+    // Insert into the biomaterialprop table.
+    foreach($prop_headers as $name => $index) { 
+      $record = array(
+        'table' => 'biomaterial',
+        'id' => $biomaterial_id,
+      );
+      $property = array(
+        'type_name' => $name,
+        'cv_name' => 'biomaterial_property',
+        'value' => $line[$index],
+      );
+      $options = array(
+        'update_if_present' => TRUE,
+      );
+      chado_insert_property($record, $property, $options);
+    }
 
   }
-
-/*  while($line = fgetcsv($fp)) {
-
-    $values = [];
-    $values['organism_id'] = $organism_id;
-
-    if (array_key_exists('name', $treatment_key)) {
-      $values['name'] = $name;
-    } 
-
-    if (array_key_exists('description', $treatment_key)) {
-      $values['description'] = $description;
-    } 
-
-    if (array_key_exists('biomaterial_provider', $treatment_key)) {
-      $biosourceprovider_id = create_contact($line[$treatment_key['biomaterial_provider']]);
-      $values['biosourceprovider_id'] = $biosourceprovider_id;
-    } 
-
-  }*/
 
 } 
 
