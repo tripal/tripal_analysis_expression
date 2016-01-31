@@ -730,17 +730,21 @@ function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosource
     $analysis_name = chado_select_record('analysis', 'name', array('analysis_id' => $analysis_id));
   }
 
-    if ($biomaterial_description == '' && $analysis_id) {
-      $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_name;
-    }
+  if ($biomaterial_description == '' && $analysis_id) {
+    $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_name;
+  }
 
-    $values = array(
-      'name' => $biomaterial,
-      'description' => $biomaterial_description,
-      //'biosourceprovider_id' => $biosourceprovider_id,
-      'taxon_id' => $organism_id, 
-      'dbxref_id' => $dbxref_id, 
-    );
+  $values = array(
+    'name' => $biomaterial,
+    'description' => $biomaterial_description,
+    //'biosourceprovider_id' => $biosourceprovider_id,
+    'taxon_id' => $organism_id, 
+  //  'dbxref_id' => $dbxref_id, 
+  );
+
+  if($dbxref_id) {
+    $values['dbxref_id'] = $dbxref_id;
+  }
 
   if($biosourceprovider_id) {
     $values['biosourceprovider_id'] = $biosourceprovider_id;

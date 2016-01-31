@@ -140,7 +140,6 @@ function tripal_biomaterial_loader($form, &$form_state) {
 
 function tripal_biomaterial_loader_submit($form, &$form_state) {
 //**
-  $primary_db_id = $form_state['values']['flat_file']['primary_db_id']; 
 
   // Get the file path. 
   $file_type = $form_state['values']['file_type'];
@@ -177,11 +176,21 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
   // Get the file pointer.
   $fp = fopen($flat_path, "r");
 
-  $headers = fgetcsv($fp);
+  //$headers = fgetcsv($fp);
+  while($line = fgetcsv($fp,0,"\t")) {
+    foreach($line as $field) { 
+      if(preg_match("/(sample_name)/",$field)) {
+        break 2;
+      }
+    }
+  }
+   
+  $headers = $line; 
 
-  if(count(array_unique($headers))<count($headers)) {
-    print "ERROR: Two of the column headers in the BioSample submission file have the same value\n";
+  if (count(array_unique($headers))<count($headers)) {
+    print "ERROR: Two of the column headers in the BioSample submission file have the same value.\n";
     print "Each header must be a unique value.";
+    print $headers[0];
     exit(1);
   }
 
@@ -189,44 +198,47 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
 
   $biomaterial_names = [];
 
-  $biomaterial_header = [];
+  $biomaterial_headers = [];
   $prop_headers = [];
   $acc_headers = [];
 
 
   for ($i=0; $i < count($headers); $i++) {
-    if ($header[$i] == 'sample_name') {
-      $biomaterial_header['sample_name'] = $i;
+    $header = trim(str_replace("*","",$headers[$i]));
+    drupal_set_message("'" . $header . "'");
+    if ($header == 'sample_name') {
+      $biomaterial_headers['sample_name'] = $i;
+      drupal_set_message("here ***");
+    } //***
+    if ($header == 'organism') {
+      $biomaterial_headers['organism'] = $i;
     }
-    if ($header[$i] == 'organism') {
-      $biomaterial_header['organism'] = $i;
+    if ($header == 'description') {
+      $biomaterial_headers['description'] = $i;
     }
-    if ($header[$i] == 'description') {
-      $biomaterial_header['description'] = $i;
+    if ($header == 'biomaterial_provider') {
+      $biomaterial_headers['biomaterial_provider'] = $i;
     }
-    if ($header[$i] == 'biomaterial_provider') {
-      $biomaterial_header['biomaterial_provider'] = $i;
-    }
-    if ($header[$i] == 'bioproject_accession') {
-      $acc_header['bioproject_accession'] = $i;
+    if ($header == 'bioproject_accession') {
+      $acc_headers['bioproject_accession'] = $i;
     }
     else {
-      $prop_headers[$header[$i]] = $i;
+      $prop_headers[$headers[$i]] = $i;
     }
   }
 
-  while($line = fgetcsv($fp)) {
+  while($line = fgetcsv($fp,0,"\t")) {
 
-    if (in_array($line[$biomaterial_header['sample_name']],$biomaterial_names)) {
+    if (in_array($line[$biomaterial_headers['sample_name']],$biomaterial_names)) {
       print "ERROR: Two BioSamples have the same sample_name. BioSamples must have different sample_names";
       exit(1);
     }
     else {
-      $biomaterial_names[] = $line[$biomaterial_header];
+      $biomaterial_names[] = $line[$biomaterial_headers['sample_name']];
     }
 
     // Gather the fields to insert into the biomaterial table. 
-    foreach($biomaterial_header as $name => $index) {
+    foreach($biomaterial_headers as $name => $index) {
       if ($name == 'sample_name') { 
         $unique_name = $line[$index];
       }
@@ -246,14 +258,15 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
     $ncbi_bioproject_id = create_ncbi_db('bioproject', 'NCBI BioSample', '');    
 
     // Create entry in the dbxref table. 
-    $dbxref_bioproject= tripal_insert_dbxref(array(
+  /*  $dbxref_bioproject= tripal_insert_dbxref(array(
       'db_id' => $ncbi_bioproject_id,
       'accession' => $line[$acc_header['bioproject_accession']],
      // 'version' => $version,
       'description' => '',
       )
-    );
+    ); 
     $dbxref_bioproject_id = $dbxref_bioproject->dbxref_id;
+   */
 
     // Create the biomaterial based on the values given.
     $biomaterial_id = create_biomaterial($unique_name, $description, $organism_id, $biosourceprovider_id, '', $description);
@@ -420,7 +433,7 @@ function add_xml_biomaterial_properties($attributes, $biomaterial_id) {
       'is_relationship' => 0,
       'db_name' => 'tripal'), 
       array('update_existing' => FALSE))) {
-      drupal_set_message("ERRORR");
+      drupal_set_message("ERROR");
       print "ERROR: Could not insert biomaterial attribute name into the controlled vocabulary table.";
       return 0;
     } 
