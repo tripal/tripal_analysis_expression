@@ -97,10 +97,13 @@ function tripal_biomaterial_loader($form, &$form_state) {
 
   $form['flat_file']['regex_description'] = array(
     '#markup' => t('The flat file loader expects a file where the first line is the title of each column. 
-    The only field that is required to create a biomaterial is the name of the biomaterial. 
-    It is recommended that a description, organism, biomaterial provider, accession, treatment, and tissue
-    also be provided. A biomaterialprop cvterm type will be created for column title not already present
-    in the database.')
+    The only field that is required to create a biomaterial is the name of the biomaterial (column: sample_name). 
+    It is recommended that a description (column: description), organism (column: organism), biomaterial provider 
+    (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), 
+    and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column 
+    title not already present in the database.<br><br>This loader will creating dbxref records for the following 
+    column headers if present, biosample_accession, bioproject_accession, sra_accession. Other accessions should
+    be uploaded using a bulk loader template.')
   ); 
 
   $form['flat_file']['flat_path'] = array(
@@ -114,7 +117,16 @@ function tripal_biomaterial_loader($form, &$form_state) {
     )
   );
 
-  $form['flat_file']['flat_delimiter'] = array(
+  $form['flat_file']['flat_file_type'] = array(
+    '#title' => t('Flat file type'),
+    '#type' => 'radios',
+    '#required' => TRUE,
+    '#options' => array(
+      'csv' => t('CSV file'),
+      'tsv' => t('TSV file')
+    ));
+
+/*  $form['flat_file']['flat_delimiter'] = array(
     '#type' => 'textfield',
     '#title' => t('Field Delimiter'),
     '#description' => t('Select a field delimiter such as "," or "\t". Delimiter must be a single character (an escaped character is considered a single character). Defaults to "\t".'),
@@ -128,7 +140,7 @@ function tripal_biomaterial_loader($form, &$form_state) {
     '#description' => t('Select a field delimiter such as "\'" or """. Delimiter must be a single character (an escaped character is considered a single character). Leave blank if there is no enclosure character. Defaults to no delimiter.'),
     '#size' => 5,
     '#default_value' => '',
-  );
+  ); */
 
   $form['flat_file']['flat_submit'] = array(
     '#type' => 'submit',
@@ -143,6 +155,8 @@ function tripal_biomaterial_loader_submit($form, &$form_state) {
 
   // Get the file path. 
   $file_type = $form_state['values']['file_type'];
+  $flat_file_type = $form_state['values']['flat_file']['flat_file_type'];
+
   if ($file_type == 'xml') {
     $path = $form_state['values']['xml_file']['xml_path'];
   }
@@ -151,8 +165,8 @@ function tripal_biomaterial_loader_submit($form, &$form_state) {
   }
 
   $organism_id = $form_state['values']['organism_id'];
-  $flat_delimiter = $form_state['values']['flat_file']['flat_delimiter'];
-  $flat_enclosure = $form_state['values']['flat_file']['flat_enclosure'];
+ // $flat_delimiter = $form_state['values']['flat_file']['flat_delimiter'];
+ // $flat_enclosure = $form_state['values']['flat_file']['flat_enclosure'];
 
 
   if ($file_type == 'xml') {
@@ -160,12 +174,12 @@ function tripal_biomaterial_loader_submit($form, &$form_state) {
   }
 
   if ($file_type == 'flat') {
-    $success = flat_biomaterial_parser($path, $organism_id, $file_type, $flat_delimiter, $flat_enclosure);
+    $success = flat_biomaterial_parser($path, $organism_id, $file_type, $flat_file_type);
   } 
 }
 
 
-function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_delimiter, $flat_enclosure) {
+function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_file_type) {
 
   // Check file path to see if file is accessible.
   if (!is_readable($flat_path)) {
@@ -176,8 +190,19 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
   // Get the file pointer.
   $fp = fopen($flat_path, "r");
 
+  if ($flat_file_type == "tsv") {
+    $fgetcsv_values = array($fp,0,"\t");
+    $separator = "\t";
+    $enclosure = "\0";
+  }
+  if ($flat_file_type == "csv") {
+    $fgetcsv_values = array($fp,0,',','"');
+    $separator = ",";
+    $enclosure = '"';
+  }
+
   //$headers = fgetcsv($fp);
-  while($line = fgetcsv($fp,0,"\t")) {
+  while($line = fgetcsv($fp,0,$separator,$enclosure)) {
     foreach($line as $field) { 
       if(preg_match("/(sample_name)/",$field)) {
         break 2;
@@ -219,6 +244,12 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
     if ($header == 'biomaterial_provider') {
       $biomaterial_headers['biomaterial_provider'] = $i;
     }
+    if ($header == 'biomaterial_accession') {
+      $acc_headers['biomaterial_accession'] = $i;
+    }
+    if ($header == 'sra_accession') {
+      $acc_headers['sra_accession'] = $i;
+    }
     if ($header == 'bioproject_accession') {
       $acc_headers['bioproject_accession'] = $i;
     }
@@ -227,7 +258,13 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
     }
   }
 
-  while($line = fgetcsv($fp,0,"\t")) {
+  while($line = fgetcsv($fp,0,$separator,$enclosure)) {
+
+    $unique_name = '';
+    $description = '';
+//    $organism_id = '';
+    $biosourceprovider_id = '';
+    $dbxref_id = '';
 
     if (in_array($line[$biomaterial_headers['sample_name']],$biomaterial_names)) {
       print "ERROR: Two BioSamples have the same sample_name. BioSamples must have different sample_names";
@@ -248,14 +285,22 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
       if ($name == 'biomaterial_provider' and $line[$index] != "") { 
         $biosourceprovider_id = create_biomaterial_contact($line[$index]);
       }
-   //   if ($name == 'bioproject_accession') { 
+      if ($name == 'biosample_accession') {
+        // In case there is no biosample database
+        $ncbi_biosample_id = create_ncbi_db('biosample', 'NCBI BioSample', '');    
+        $values = array(
+          'accession' => $line[$index],
+          'db_id' => $ncbi_biosample_id,
+        ); 
+        $dbxref = tripal_insert_record('dbxref',$values); 
+        $dbxref_id = $dbxref->dbxref_id;
         //$value['primary_dbxref'] = $line[$index];
-     // }
+      }
 
     }
 
     // Create an accession to the bioproject
-    $ncbi_bioproject_id = create_ncbi_db('bioproject', 'NCBI BioSample', '');    
+  //  $ncbi_bioproject_id = create_ncbi_db('bioproject', 'NCBI BioSample', '');    
 
     // Create entry in the dbxref table. 
   /*  $dbxref_bioproject= tripal_insert_dbxref(array(
@@ -269,7 +314,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_del
    */
 
     // Create the biomaterial based on the values given.
-    $biomaterial_id = create_biomaterial($unique_name, $description, $organism_id, $biosourceprovider_id, '', $description);
+    $biomaterial_id = create_biomaterial($unique_name, $description, $organism_id, $biosourceprovider_id, $dbxref_id, $description);
 
     // Insert into the biomaterialprop table.
     foreach($prop_headers as $name => $index) { 
@@ -521,8 +566,8 @@ function tripal_biomaterial_loader_validate($form, &$form_state) {
 
   //$xml_path = $form_state['values']['xml_file']['xml_path'];
   //$flat_path = $form_state['values']['flat_file']['flat_path'];
-  $flat_delimiter = $form_state['values']['flat_file']['flat_delimiter'];
-  $flat_enclosure = $form_state['values']['flat_file']['flat_enclosure'];
+  //$flat_delimiter = $form_state['values']['flat_file']['flat_delimiter'];
+  //$flat_enclosure = $form_state['values']['flat_file']['flat_enclosure'];
 
   // Make sure the file is present and readable. 
  //*** if (!is_readable($form_sta
