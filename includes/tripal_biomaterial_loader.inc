@@ -36,8 +36,9 @@ function tripal_biomaterial_loader($form, &$form_state) {
       <a href="http://www.ncbi.nlm.nih.gov/biosample/docs/attributes/" target = "_blank">here</a>. 
       You may add additional fields to the file, by adding another column to the submission file. 
       The header of the column will be used as the property type. <b>Biomaterials must have a unique
-      sample_name</b>')
-  );
+      sample_name</b><br><br>To associate ontology terms (e.g., Plant Ontology, Human Disease Ontology) load an ') 
+      . t('<a href="@url">OBO loader</a>', array('@url' => 'admin/tripal/loaders/obo_loader'))
+      . t(' and then load terms with the bulk loader.'));
 
   $organisms = tripal_get_organism_select_options(FALSE);
 
@@ -55,8 +56,8 @@ function tripal_biomaterial_loader($form, &$form_state) {
     '#type' => 'radios',
     '#required' => TRUE,
     '#options' => array(
-      'xml' => t('NCBI biosample xml file'),
-      'flat' => t('Delineated flat file')
+      'xml' => t('NCBI BioSample xml file'),
+      'flat' => t('Flat file (CSV, TSV)')
     ));
 
   $form['xml_file'] = array(
@@ -71,7 +72,7 @@ function tripal_biomaterial_loader($form, &$form_state) {
 
   $form['flat_file'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Delineated flat file'),
+    '#title' => t('Flat file (CSV, TSV)'),
     '#states' => array(
       'visible' => array(
         ':input[name="file_type"]' => array('value' => 'flat'),
@@ -101,8 +102,8 @@ function tripal_biomaterial_loader($form, &$form_state) {
     It is recommended that a description (column: description), organism (column: organism), biomaterial provider 
     (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), 
     and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column 
-    title not already present in the database.<br><br>This loader will creating dbxref records for the following 
-    column headers if present, biosample_accession, bioproject_accession, sra_accession. Other accessions should
+    titles not already present in the database.<br><br>This loader will create dbxref records for the following 
+    column headers if present, biosample_accession, bioproject_accession, and sra_accession. Other accessions should
     be uploaded using a bulk loader template.')
   ); 
 
@@ -244,9 +245,9 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_fil
     if ($header == 'biomaterial_provider') {
       $biomaterial_headers['biomaterial_provider'] = $i;
     }
-    if ($header == 'biomaterial_accession') {
+  /*  if ($header == 'biomaterial_accession') {
       $acc_headers['biomaterial_accession'] = $i;
-    }
+    } */
     if ($header == 'sra_accession') {
       $acc_headers['sra_accession'] = $i;
     }
@@ -315,6 +316,36 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_fil
 
     // Create the biomaterial based on the values given.
     $biomaterial_id = create_biomaterial($unique_name, $description, $organism_id, $biosourceprovider_id, $dbxref_id, $description);
+
+    // Insert database accessions.
+    foreach($acc_headers as $name => $index) {
+      // Get the db_id.
+      if ($name == 'sra_accession') {
+        $db_id = create_ncbi_db('sra', 'NCBI SRA', '');
+      }
+      else if($name == 'bioproject_accession') { 
+        $db_id - create_ncbi_db('bioproject', 'NCBI BioProject', '');     
+      }
+      // First check to see if there is a dbxref record in the database corresponding to the accession number from the file.
+      if (empty(chado_select_record('dbxref', array('dbxref_id'), array('accession' => $line[$index], 'db_id' => $db_id)))) {
+        // Insert value into dbxref table.
+        $values = array(
+          'accession' => $line[$index],
+          'db_id' => $db_id,
+        );
+        $dbxref = tripal_insert_record('dbxref',$values);
+        $dbxref_id = $dbxref->dbxref_id;
+
+        // Insert into the biomaterial_dbxref table.
+        // Add error checking?
+        $values = array(
+          'biomaterial_id' => $biomaterial_id,
+          'dbxref_id' => $dbxref_id,
+        );
+        $biomaterial_dbxref = tripal_insert_record('biomaterial_dbxref', $values);
+        $biomaterial_dbxref_id = $biomaterial_dbxref->$biomaterial_dbxref_id; 
+      }
+    }
 
     // Insert into the biomaterialprop table.
     foreach($prop_headers as $name => $index) { 
