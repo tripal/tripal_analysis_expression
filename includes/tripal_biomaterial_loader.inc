@@ -25,7 +25,7 @@ function tripal_biomaterial_loader($form, &$form_state) {
 
   $form['#tree'] = TRUE;
 
-  $form['description'] = array(
+  $form['description'] = array( //***
     '#markup' => t('This loader is designed to load data from NCBI BioSample compatible formats.
       If you have loaded data into NCBI, download download an xml file from NCBI with your 
       BioSamples. This will ensure biomaterials have the BioSample accession number. 
@@ -36,10 +36,13 @@ function tripal_biomaterial_loader($form, &$form_state) {
       <a href="http://www.ncbi.nlm.nih.gov/biosample/docs/attributes/" target = "_blank">here</a>. 
       You may add additional fields to the file, by adding another column to the submission file. 
       The header of the column will be used as the property type. <b>Biomaterials must have a unique
-      sample_name</b><br><br>To associate ontology terms (e.g., Plant Ontology, Human Disease Ontology) load an ') 
-      . t('<a href="@url">OBO loader</a>', array('@url' => 'admin/tripal/loaders/obo_loader'))
-      . t(' and then load terms with the bulk loader.'));
-
+      sample_name</b><br><br>To associate ontology terms (e.g., Plant Ontology, Human Disease Ontology) ') 
+      . t('<a href="@url">load an OBO file</a>', array('@url' => '/admin/tripal/loaders/obo_loader'))
+      . t(' and then load terms with the ') 
+      . t('<a href="@url">bulk loader</a> ', array('@url' => '/node/add/tripal-bulk-loader'))
+      . t('(select "Biomaterial Ontology Term Loader" as the template).') 
+  );
+       
   $organisms = tripal_get_organism_select_options(FALSE);
 
   $form['organism_id'] = array(
