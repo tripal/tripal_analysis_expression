@@ -372,7 +372,7 @@ function chado_analysis_expression_form($node, $form_state) {
 
   $form['experimental_design']['acquisition_details']['acquisitiondate']= array(
     '#type' => 'date',
-    '#title' => t('Date Assay Run'),
+    '#title' => t('Date Acquisition Run'),
     '#description' => t('If no date is provided, then the current date will be used.'),
     '#required' => TRUE,
     '#default_value' => array(
@@ -500,7 +500,7 @@ function chado_analysis_expression_form($node, $form_state) {
       'col' => t('Column Format'),
       'mat' => t('Matrix Format'),
     ),
-    '#default_value' => 'col',
+    '#default_value' => $filetype,
   );
 
   $form['loader']['submit_job'] = array(
@@ -520,7 +520,7 @@ function chado_analysis_expression_form($node, $form_state) {
   $form['loader']['filepath'] = array(
     '#type' => 'textfield',
     '#title' => t('File Path'),
-    '#description' => t('Select the path to the expression file(s). If you place an "/" at the end of the file path, the loader will load every file of the type specified in "File Type Suffix" from the directory.'),
+    '#description' => t('Select the path to the expression file(s). If the file path is a directory, then the loader will load every file of the type specified in "File Type Suffix" from the directory.'),
     '#default_value' => $filepath,
   );
 
@@ -561,7 +561,7 @@ function chado_analysis_expression_form($node, $form_state) {
   }
   $form['experimental_design']['assay_details']['assaydate']= array(
     '#type' => 'date',
-    '#title' => t('Date Acquisition Run'),
+    '#title' => t('Date Assay Run'),
     '#description' => t('If no date is provided, then the current date will be used.'),
     '#required' => TRUE,
     '#default_value' => array(
@@ -672,6 +672,9 @@ function chado_analysis_expression_validate($node, $form, &$form_state) {
     form_set_error('filepath', 'Unable to read expression file: ' . $node->filepath); 
   }
   elseif ($node->filepath and $node->filetype === 'col' and is_dir($node->filepath)) {
+    if (empty($node->fileext)) {
+      form_set_error('fileext', 'Please specify a file extension for the column files to be loaded.'); 
+    }
     $anyfile = 0;
     $dir_handle = @opendir($node->filepath);
     if ($dir_handle === FALSE) {
