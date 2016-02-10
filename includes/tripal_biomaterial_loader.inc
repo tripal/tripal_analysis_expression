@@ -318,7 +318,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_fil
    */
 
     // Create the biomaterial based on the values given.
-    $biomaterial_id = create_biomaterial($unique_name, $description, $organism_id, $biosourceprovider_id, $dbxref_id, $description);
+    $biomaterial_id = create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $description);
 
     // Insert database accessions.
     foreach($acc_headers as $name => $index) {
