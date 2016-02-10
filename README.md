@@ -1,4 +1,4 @@
-# tripal_analysis_expression
+pal_analysis_expression
 
 This is an extension module for the Tripal project. 
 
@@ -8,8 +8,8 @@ This is an extension module for the Tripal project.
 2. [Module Features](#module-features)
 3. [Loading Biomaterials](#loading-biomaterials)
 4. [Loading Expression Data](#loading-expression-data)
-5. [Administrative Pages](#administrative-pages)
-6. [Viewing Data](#viewing-data)
+5. [Viewing Data](#viewing-data)
+6. [Administrative Pages](#administrative-pages)
 
 # Introduction 
 Tripal Analysis: Expression is a [Drupal](https://www.drupal.org/) module built to extend the functionality of the [Tripal](http://tripal.info/) toolset.
@@ -76,6 +76,9 @@ Select the organism for which you are uploading expression data. Optionaly selec
 ### Loading Biomaterials From a Flat File
 Altenatively biomaterials may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.   
 
+### Syncing Biomaterials
+After loading, biomaterials must be synced to create nodes for each biomaterial content type. As an administrator or user with correct permissions, navigate to **Tripal->Extensions->Expression Analysis->Tripal Expression Analysis Content Types->Biomaterial->SYNC**. Select the biomaterials to sync and click "Sync Biomaterials".
+
 ### Loading a Single Biomaterial
 Biomaterials may also be loaded one at a time. As an administer or a user with permission to create content, go to: **Add content->Biomaterial**. Available biomaterial fields include the following. 
 * **Biomaterial Name (must be unique - required)**
@@ -137,6 +140,35 @@ The "Experimental Design" fields allow a complete description of the experimenta
 * **Source File Type** - This can be either "Column Format" or "Matrix Format".
 * **Checkbox** - Check this box to submit a job to parse the data into Chado.
 * **File Type Suffix** - The suffix of the files to load. This is used to submit multiple column format files in the same directory.
-* **File Path** - The  path to a single matrix or column format file. The path may also be set to a directory, in which case all column files with the "File Type Suffix" specified above will be loaded. If the suffix is not specified then 
-* **Regex for Start of Data**
-* **Regex for End of Data**
+* **File Path** - The  path to a single matrix or column format file. The path may also be set to a directory, in which case all column files with the "File Type Suffix" specified above will be loaded. When loading multiple files from a file suffix must be specified. 
+* **Regex for Start of Data** - If the expression file has a header, use this field to capture the line that occurs before the start of expression data. This line of text and any text preceding this line will be ignored. 
+* **Regex for End of Data** - If the expression file has a footer, use this field to capture teh line that occurs after the end of expression data. This line of text and all text following will be ignored.
+
+# Viewing Data
+The following panes are added to the following content types:
+
+### Organism
+* **Biomaterial Browser** - After loading biomaterials, a new pane with a list of biomaterials will appear on the corresponding organism page. Biomaterials are not required to be synced when to appear in this list.
+
+### Feature
+* **Differential Expression** - After biomaterials and expression data have been loaded the differential expression pane will appear on the corresponding feature page. 
+
+### Analysis: Expression
+* **Overview (base)** - The generic tripal overview pane.
+* **Protocol** - Protocols used in this analysis (acquisition protocol, assay protocol, and quantification protocol).
+
+### Biomaterial
+* **Overview (base)** - The generic tripal overview pane.
+* **Feature Browser** - A list of features associated with the biomaterial.
+* **Properties** - Properties associated with the biomaterial.
+* **Cross References** - Accession terms associated with the biomaterial.
+* **Relationships** - Relationships associated with the biomaterial.
+* 
+### Array Design
+
+
+
+
+
+
+
