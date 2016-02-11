@@ -1,4 +1,4 @@
-pal_analysis_expression
+# Tripal\_analysis\_expression
 
 This is an extension module for the Tripal project. 
 
@@ -120,7 +120,7 @@ The "Experimental Design" fields allow a complete description of the experimenta
  * **Data Acquisition Run** - The date the acquisition was run. 
  * **Acquisition URI** - A web address to a page that describes the acquisition process.
  * **Acquisition Protocol** - The acquisition protocol used in the experiment. (See protocol description below).
-* **uantification Details** - A description of the method used to transform raw expression data into numeric data. 
+* **Quantification Details** - A description of the method used to transform raw expression data into numeric data. 
  * **Date Quantification Run** - The date the quantification was run. 
  * **Quantification URI** - A web address to a page that describes the quantification process.
  * **Quantification Operator** - The person or organization that ran the quantification.
@@ -136,6 +136,7 @@ The "Experimental Design" fields allow a complete description of the experimenta
 * **Publication** - A publication that describes the protocol.
 
 #### Data Loader
+
 * The data loader fields provide a way for the user to load expression data associated with the experiment. The loader can load data from two types of formats, matrix and column. The matrix format expects a row of data containing biomaterials names. The first column should be unique feature names. Features must already be loaded into the database. Biomaterials will be added if not present. Expression values will map to a library in the column and a feature in the row. Only one matrix file may be loaded at a time. The column format expects the first column to contain features and the second column to be expression values. The biomaterial name will be taken as the name of the file minus the file extension. Features must already be loaded into the database. Biomaterials will be added if not present. Multiple column format files may be loaded at the same time given that the files are in the same directory and contain the same file suffix. Either format may have header or footer information. Regex can be used in the form to only record data after the header and before the footer. Any file suffix can be used. The data loader fields are the following:
 * **Source File Type** - This can be either "Column Format" or "Matrix Format".
 * **Checkbox** - Check this box to submit a job to parse the data into Chado.
@@ -147,11 +148,11 @@ The "Experimental Design" fields allow a complete description of the experimenta
 # Viewing Data
 The following panes are added to the following content types:
 
+### Feature
+* **Differential Expression** - After biomaterials and expression data have been loaded the differential expression pane will appear on the corresponding feature page.
+
 ### Organism
 * **Biomaterial Browser** - After loading biomaterials, a new pane with a list of biomaterials will appear on the corresponding organism page. Biomaterials are not required to be synced when to appear in this list.
-
-### Feature
-* **Differential Expression** - After biomaterials and expression data have been loaded the differential expression pane will appear on the corresponding feature page. 
 
 ### Analysis: Expression
 * **Overview (base)** - The generic tripal overview pane.
@@ -163,8 +164,15 @@ The following panes are added to the following content types:
 * **Properties** - Properties associated with the biomaterial.
 * **Cross References** - Accession terms associated with the biomaterial.
 * **Relationships** - Relationships associated with the biomaterial.
-* 
+ 
 ### Array Design
+* **Overview (base)** - The generic tripal overview pane.
+* **Properties** - Properties associated with the array design.
+
+### Protocol
+* **Overview (base)** - The generic tripal overview pane.
+
+# Administrative Pages
 
 
 
