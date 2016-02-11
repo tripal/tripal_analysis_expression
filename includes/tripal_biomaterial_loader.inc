@@ -36,12 +36,13 @@ function tripal_biomaterial_loader($form, &$form_state) {
       <a href="http://www.ncbi.nlm.nih.gov/biosample/docs/attributes/" target = "_blank">here</a>. 
       You may add additional fields to the file, by adding another column to the submission file. 
       The header of the column will be used as the property type. <b>Biomaterials must have a unique
-      sample_name</b><br><br>To associate ontology terms (e.g., Plant Ontology, Human Disease Ontology) ') 
+      sample_name.</b><br><br>To associate ontology terms (e.g., Plant Ontology, Human Disease Ontology) ') 
       . t('<a href="@url">load an OBO file</a>', array('@url' => '/admin/tripal/loaders/obo_loader'))
       . t(' and then load terms with the ') 
       . t('<a href="@url">bulk loader</a> ', array('@url' => '/node/add/tripal-bulk-loader'))
       . t('(select "Biomaterial Ontology Term Loader" as the template).') 
-  );
+      . t(' <b>Caution: If a biomaterial with the same name is already in the database,')
+      . t(' this loader will update the biomaterial with the parameters set by this form.</b>'));
        
   $organisms = tripal_get_organism_select_options(FALSE);
 
@@ -172,20 +173,39 @@ function tripal_biomaterial_loader_submit($form, &$form_state) {
  // $flat_delimiter = $form_state['values']['flat_file']['flat_delimiter'];
  // $flat_enclosure = $form_state['values']['flat_file']['flat_enclosure'];
 
+  global $user;
 
   if ($file_type == 'xml') {
-    $success = xml_biomaterial_parser($path, $organism_id); 
+
+    $job_args = array(
+      $path,
+      $organism_id
+    );
+
+    tripal_add_job("Loading biomaterial data from NCBI XML BioSample file from: $path", 'tripal_analysis_expression',
+      'xml_biomaterial_parser', $job_args, $user->uid); 
   }
 
   if ($file_type == 'flat') {
-    $success = flat_biomaterial_parser($path, $organism_id, $file_type, $flat_file_type);
+    $job_args = array(
+      $path,
+      $organism_id,
+      $flat_file_type
+    );
+
+    tripal_add_job("Loading biomaterial data from flat file from: $path", 'tripal_analysis_expression',
+      'flat_biomaterial_parser', $job_args, $user->uid); 
   } 
 }
 
 
-function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_file_type) {
+function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
 
-  // Check file path to see if file is accessible.
+  // Check file path to see if file is accessible.nsaction = db_transaction();
+  print "\nNOTE: Loading of this expression file is performed using a database transaction. \n" .
+        "If the load fails or is terminated prematurely then the entire set of \n" .
+        "insertions/updates is rolled back and will not be found in the database\n\n";
+  try {  
   if (!is_readable($flat_path)) {
     print "ERROR: File is not readable or not present.";
     return 0;
@@ -377,12 +397,25 @@ function flat_biomaterial_parser($flat_path, $organism_id, $file_type, $flat_fil
     }
 
   }
-
+  }
+  catch (Exception $e) {
+    print "\n";
+    watchdog_exception('T_expression_load', $e);
+    $transaction->rollback();
+    print "FAILED: Rolling back database changes...\n";
+  }
+  print "\nDone.\n";
+  return;
 } 
 
 function xml_biomaterial_parser($xml_path, $organism_id) {
 
-  // Check file path to see if file is accessible.
+  // Check file path to see if file is accessible.nsaction = db_transaction();
+  print "\nNOTE: Loading of this expression file is performed using a database transaction. \n" .
+        "If the load fails or is terminated prematurely then the entire set of \n" .
+        "insertions/updates is rolled back and will not be found in the database\n\n";
+  try {
+
   if (!is_readable($xml_path)) {
     print "ERROR: File is not readable or not present.";
     return 0;
@@ -402,6 +435,15 @@ function xml_biomaterial_parser($xml_path, $organism_id) {
   for ($i=0; $i<count($xml->BioSample); $i++) {
     add_xml_data($organism_id,$xml->BioSample[$i]);
   }
+  }
+  catch (Exception $e) {
+    print "\n";
+    watchdog_exception('T_expression_load', $e);
+    $transaction->rollback();
+    print "FAILED: Rolling back database changes...\n";
+  }
+  print "\nDone.\n";
+  return;
 }
 
 function add_xml_data($organism_id, $biosample) {
