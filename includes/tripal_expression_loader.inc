@@ -177,8 +177,8 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
             if(!$analysisfeature_id) {
               $analysisfeature = chado_insert_record('analysisfeature', array('analysis_id' => $analysis_id, 'feature_id' => $feature_id));
               if($analysisfeature==FALSE) {
-                print "Unable to write to analysisfeature table\n";
-                return 0;
+                print "ERROR: Unable to write to analysisfeature table\n";
+                exit;
               }
             }
             if($analysisfeature) {
@@ -186,8 +186,8 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
                 array(':analysis_id' => $analysis_id, ':feature_id' => $feature_id),
                 $values);
               if($analysisfeature==FALSE) {
-                print "Unable to update analysisfeature table\n";
-                return 0;
+                print "ERROR: Unable to update analysisfeature table\n";
+                exit;
               }
             }
           }
@@ -265,8 +265,8 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
       if(!$analysisfeature_id) {
         $analysisfeature = chado_insert_record('analysisfeature', array('analysis_id' => $analysis_id, 'feature_id' => $feature_id));
         if($analysisfeature==FALSE) {
-          print "Unable to write to analysisfeature table\n";
-          return 0;
+          print "ERROR: Unable to write to analysisfeature table\n";
+          exit;
         }
       }
       if($analysisfeature) {
@@ -274,8 +274,8 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
           array(':analysis_id' => $analysis_id, ':feature_id' => $feature_id),
           $values);
         if($analysisfeature==FALSE) {
-          print "Unable to update analysisfeature table\n";
-          return 0;
+          print "ERROR: Unable to update analysisfeature table\n";
+          exit;
         }
       }
     }
@@ -326,8 +326,8 @@ function tripal_expression_element($arraydesign_id, $feature_id) {
     );
     $element = chado_insert_record('element',$values);
     if($element==FALSE) {
-      print "Unable to write to element table\n";
-      return 0;
+      print "ERROR: Unable to write to element table\n";
+      exit;
     }
     $element_id = $element['element_id'];
   }
@@ -361,8 +361,8 @@ function tripal_expression_elementresult($element_id, $quantification_id, $signa
   if(!$elementresult_id) {
     $elementresult = chado_insert_record('elementresult',$values);
     if($elementresult==FALSE) {
-      print "Unable to write to elementresult table\n";
-      return 0;
+      print "ERROR: Unable to write to elementresult table\n";
+      exit;
     }
   }
   if($elementresult_id) {
@@ -370,8 +370,8 @@ function tripal_expression_elementresult($element_id, $quantification_id, $signa
       array('element_id' => $element_id, 'quantification_id' => $quantification_id), 
       $values);
     if($elementresult==FALSE) {
-      print "Unable to update elementresult table\n";
-      return 0;
+      print "ERROR: Unable to update elementresult table\n";
+      exit;
     }
   }
     $elementresult_id = $elementresult['elementresult_id'];
@@ -473,8 +473,8 @@ function create_assay_biomaterial($assay_id, $biomaterial_id, $channel_id) {
     );
     $assay_biomaterial = chado_insert_record('assay_biomaterial', $values);
     if($assay_biomaterial==FALSE) {
-      print "Unable to write to assay_biomaterial table\n";
-      return 0;
+      print "ERROR: Unable to write to assay_biomaterial table\n";
+      exit;
     }
     $assay_biomaterial_id = $assay_biomaterial['assay_biomaterial_id'];
   }
@@ -497,8 +497,8 @@ function create_generic_contact() {
     );
     $contact = chado_insert_record('contact', $values);
     if($contact==FALSE) {
-      print "Unable to write to contact table\n";
-      return 0;
+      print "ERROR: Unable to write to contact table\n";
+      exit;
     }
     $contact_id = $contact['contact_id'];
   }
@@ -521,8 +521,8 @@ function create_generic_channel() {
     );
     $channel = chado_insert_record('channel',$values);
     if($channel==FALSE) {
-      print "Unable to write to channel table\n";
-      return 0;
+      print "ERROR: Unable to write to channel table\n";
+      exit;
     }
     $channel_id = $channel['channel_id'];
   }
@@ -547,8 +547,8 @@ function create_generic_arraydesign($contact_id) {
     );
     $arraydesign = chado_insert_record('arraydesign',$values);
     if($arraydesign==FALSE) {
-      print "Unable to write to arraydesign table\n";
-      return 0;
+      print "ERROR: Unable to write to arraydesign table\n";
+      exit;
     }
     $arraydesign_id = $arraydesign['arraydesign_id'];
   }
@@ -693,8 +693,8 @@ function create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $or
     );
     $assay = chado_insert_record('assay',$values);
     if($assay==FALSE) {
-      print "Unable to write to assay table\n";
-      return 0;
+      print "ERROR: Unable to write to assay table\n";
+      exit;
     }
     $assay_id = $assay['assay_id'];
   }
@@ -753,8 +753,8 @@ function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosource
   if(!$biomaterial_id) {
     $biomaterial = chado_insert_record('biomaterial',$values);
     if($biomaterial==FALSE) {
-      print "Unable to write to biomaterial table\n";
-      return 0;
+      print "ERROR: Unable to write to biomaterial table\n";
+      exit;
     }
   }
   if($biomaterial_id) {
@@ -763,8 +763,8 @@ function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosource
       $values,
       array('return_record' => TRUE));
     if($biomaterial==FALSE) {
-      print "Unable to update biomaterial_table\n";
-      return 0;
+      print "ERROR: Unable to update biomaterial_table\n";
+      exit;
     }
   } 
   $biomaterial_id = $biomaterial['biomaterial_id'];
@@ -812,8 +812,8 @@ function create_generic_acquisition($assay_id, $biomaterial_id, $organism_id, $a
     );
     $acquisition = chado_insert_record('acquisition',$values);
     if($acquisition==FALSE) {
-      print "Unable to write to acquisition table\n";
-      return 0;
+      print "ERROR: Unable to write to acquisition table\n";
+      exit;
     }
     $acquisition_id = $acquisition['acquisition_id'];
   }
@@ -862,8 +862,8 @@ function create_generic_quantification($acquisition_id, $biomaterial_id, $organi
     );
     $quantification = chado_insert_record('quantification',$values);
     if($quantification==FALSE) {
-      print "Unable to write to quantification table\n";
-      return 0;
+      print "ERROR: Unable to write to quantification table\n";
+      exit;
     }
     $quantification_id =  $quantification['quantification_id'];
   }

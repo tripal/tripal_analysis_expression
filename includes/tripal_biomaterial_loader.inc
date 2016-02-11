@@ -208,7 +208,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
   try {  
   if (!is_readable($flat_path)) {
     print "ERROR: File is not readable or not present.";
-    return 0;
+    exit;
   }
 
   // Get the file pointer.
@@ -240,7 +240,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
     print "ERROR: Two of the column headers in the BioSample submission file have the same value.\n";
     print "Each header must be a unique value.";
     print $headers[0];
-    exit(1);
+    exit;
   }
 
   $hit = 0;
@@ -292,7 +292,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
 
     if (in_array($line[$biomaterial_headers['sample_name']],$biomaterial_names)) {
       print "ERROR: Two BioSamples have the same sample_name. BioSamples must have different sample_names";
-      exit(1);
+      exit;
     }
     else {
       $biomaterial_names[] = $line[$biomaterial_headers['sample_name']];
@@ -418,7 +418,7 @@ function xml_biomaterial_parser($xml_path, $organism_id) {
 
   if (!is_readable($xml_path)) {
     print "ERROR: File is not readable or not present.";
-    return 0;
+    exit;
   }
 
   // Load the contents of the xml file into a string.
@@ -426,7 +426,7 @@ function xml_biomaterial_parser($xml_path, $organism_id) {
 
   if (!$xml_raw) {
     print "ERROR: Unable to read file.";
-    return 0;
+    exit 0;
   }
 
   // Parse the file.
@@ -556,7 +556,7 @@ function add_xml_biomaterial_properties($attributes, $biomaterial_id) {
       array('update_existing' => FALSE))) {
       drupal_set_message("ERROR");
       print "ERROR: Could not insert biomaterial attribute name into the controlled vocabulary table.";
-      return 0;
+      exit;
     } 
   
     // Insert the property into the biomaterialprop table.  
@@ -575,8 +575,8 @@ function create_biomaterial_contact($contact_name) {
     );
     $contact = chado_insert_record('contact', $values);
     if($contact==FALSE) {
-      print "Unable to write to contact table\n";
-      return 0;
+      print "ERROR: Unable to write to contact table\n";
+      exit;
     }
     $contact_id = $contact['contact_id'];
   }
@@ -600,8 +600,8 @@ function create_ncbi_db($url_name, $db_name, $db_description) {
   if(!$db_id) {
     $db = chado_insert_record('db', $values);
     if($db==FALSE) {
-      print "Unable to write to db table\n";
-      return 0;
+      print "ERROR: Unable to write to db table\n";
+      exit;
     }
     $db_id = $db['db_id'];
   }
@@ -612,8 +612,8 @@ function create_ncbi_db($url_name, $db_name, $db_description) {
       $values,
       array('return_record' => TRUE));
     if($db==FALSE) {
-      print "Unable to update db_table\n";
-      return 0;
+      print "ERROR: Unable to update db_table\n";
+      exit;
     }
   }
 
