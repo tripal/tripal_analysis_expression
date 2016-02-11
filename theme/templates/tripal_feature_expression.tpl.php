@@ -12,6 +12,7 @@ Hover the mouse over a column in the graph to view expression values. <br>
   <a href='' onclick="expSortDown(); return false;">Sort Descending</a> |
   <a href='' onclick="expSortUp(); return false;">Sort Ascending</a> |
   <a href='' onclick="nonZero(); return false;">Only Non-Zero Values</a> |
+  <a href='' onclick="expChart(); return false;">Tile/Chart</a> |
   <a href='' onclick="expNormal(); return false;">Reset</a> 
 </p>
 
