@@ -426,7 +426,7 @@ function xml_biomaterial_parser($xml_path, $organism_id) {
 
   if (!$xml_raw) {
     print "ERROR: Unable to read file.";
-    exit 0;
+    exit;
   }
 
   // Parse the file.
