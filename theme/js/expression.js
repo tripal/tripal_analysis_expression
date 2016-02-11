@@ -12,6 +12,21 @@ function expNormal() {
 }
 
 /**
+ * This function is called to change the graph type to chart.
+ */
+function expChart() {
+	if (col == "column") {
+		col = "tile";
+	}
+	else if (col == "tile") {
+		col = "column";
+	}
+	d3.selectAll("expfeaturedom").remove();
+	d3.selectAll("expkeydom").remove();
+	exp();
+}
+
+/**
  * This will arrange the biomaterials by value from greatest to least.
  */
 function expSortDown() {
