@@ -195,7 +195,7 @@ function tripal_analysis_expression_menu() {
   // Biomaterial loader form.
   $items['admin/tripal/extension/tripal_analysis_expression/biomaterial_loader'] = array(
     'title' => 'Tripal Biomaterial Loader',
-    'description' => 'Load biosample xml files from NCBI, or bimaterial flat files.',
+    'description' => 'Load biosample xml files from NCBI, or biomaterial flat files.',
     'access arguments' => array('administer tripal biomaterial'), 
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_biomaterial_loader'),
