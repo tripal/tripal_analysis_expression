@@ -269,7 +269,7 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
           exit;
         }
       }
-      if($analysisfeature) {
+      /*if($analysisfeature) {
         $analysisfeature = chado_update_record('analysisfeature',
           array(':analysis_id' => $analysis_id, ':feature_id' => $feature_id),
           $values);
@@ -277,7 +277,7 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
           print "ERROR: Unable to update analysisfeature table\n";
           exit;
         }
-      }
+      }*/
     }
     if (preg_match('/' . $re_start . '/',$line) and $re_start) {
       $data_ln = 1; 
@@ -727,7 +727,7 @@ function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosource
   $biomaterial_id = chado_query('select biomaterial_id from {biomaterial} where name = :name limit 1',array(':name' => $biomaterial))->fetchField();
 
   if ($analysis_id) {
-    $analysis_name = chado_select_record('analysis', 'name', array('analysis_id' => $analysis_id));
+    $analysis_name = chado_select_record('analysis', array('name'), array('analysis_id' => $analysis_id));
   }
 
   if ($biomaterial_description == '' && $analysis_id) {
