@@ -482,7 +482,7 @@ function add_xml_data($organism_id, $biosample) {
     $biosourceprovider_id = '';
   }
   // Verify there is an NCBI biosample database.
-  $ncbi_biosample_id = create_ncbi_db('bioproject', 'NCBI BioSample', '');    
+  $ncbi_biosample_id = create_ncbi_db('biosample', 'NCBI BioSample', '');    
 
   // Verify there is an NCBI sra database.
   $ncbi_sra_id = create_ncbi_db('sra', 'NCBI SRA', '');
