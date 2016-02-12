@@ -238,6 +238,7 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
 
 function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id,
   $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name) {
+  print "Loading File";
   $inter = 0; 
   $data_ln = 0;
   preg_match('/^.+\/(.+)\.' . $fileext . '/', $filepath, $biomaterial);
@@ -252,7 +253,7 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
     if ($data_ln == 1 or !$re_start) {
       //print "this is the line >>> $line <<<";
       $inter++;
-      print "loading number: $inter\n";
+     // print "loading number: $inter\n";
       $linepart = preg_split('/\s+/',$line,-1,PREG_SPLIT_NO_EMPTY);
       // Extract the feature id.
       $feature_id = tripal_expression_find_feature_id($linepart[0]);
