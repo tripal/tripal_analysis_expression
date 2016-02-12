@@ -125,7 +125,12 @@ function tripal_biomaterial_loader($form, &$form_state) {
   $form['flat_file']['flat_file_type'] = array(
     '#title' => t('Flat file type'),
     '#type' => 'radios',
-    '#required' => TRUE,
+    //'#required' => TRUE,
+    '#states' => array(
+      'required' => array(
+        ':input[name="file_type"]' => array('value' => 'flat'),
+      )
+    ),
     '#options' => array(
       'csv' => t('CSV file'),
       'tsv' => t('TSV file')
