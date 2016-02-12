@@ -66,19 +66,23 @@ To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http:/
 
 Click the "Send to:" link. Then select "File" and select "Full XML (text)" as the format. Then click "Create File". 
 ![Download BioSample XML File](https://cloud.githubusercontent.com/assets/14822959/12490242/8cb8b796-c042-11e5-82dc-7a723867ea7a.png)
-
 ### Loading NCBI XML BioSample File into Tripal
 To upload the file into Chado/Tripal, Navigate to:  
 **Tripal->Extensions->Expression Analysis->Tripal Biomaterial Loader**
 
-Select the organism for which you are uploading expression data. Optionaly select an expression analysis associated with the biomaterials. Select "NCBI biosample xml file" and then write the path in "File Path" field.
+Select the organism for which you are uploading expression data. Select "NCBI biosample xml file" and then write the path in "File Path" field.
 
+![NCBI XML BioSample Loader](https://cloud.githubusercontent.com/assets/14822959/12991555/a4afaf70-d0dd-11e5-95b1-ebbc6da404dc.png)
 ### Loading Biomaterials From a Flat File
+
 Altenatively biomaterials may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.   
 
+![Flat File Loader](https://cloud.githubusercontent.com/assets/14822959/12991558/a4b26a30-d0dd-11e5-8419-07216d0cbbc8.png)
 ### Syncing Biomaterials
+
 After loading, biomaterials must be synced to create nodes for each biomaterial content type. As an administrator or user with correct permissions, navigate to **Tripal->Extensions->Expression Analysis->Tripal Expression Analysis Content Types->Biomaterial->SYNC**. Select the biomaterials to sync and click "Sync Biomaterials".
 
+![Syncing Biomaterials](https://cloud.githubusercontent.com/assets/14822959/12991663/243827d6-d0de-11e5-820c-4cae34974283.png)
 ### Loading a Single Biomaterial
 Biomaterials may also be loaded one at a time. As an administer or a user with permission to create content, go to: **Add content->Biomaterial**. Available biomaterial fields include the following. 
 * **Biomaterial Name (must be unique - required)**
@@ -94,6 +98,7 @@ There is also the ability to add properties or accession values to the biomateri
 ### Creating the Experiment Setup
 Before loading data, describe the experimental setup used to collect the data. As an administrator or a user with permission to create content, go to: **Add content->Analysis: Expression**. The "Analysis: Expression" content type is a sub-type of the analysis content type. It contains all fields used in the analysis content type as well as fields that allow the description of the experimental design and the data loader. 
 #### Analysis Fields:
+
 * **Analysis Name (required)**
 * **Program, Pipeline Name or Method Name (required)**
 * **Program, Pipeline or Method version (required)**
@@ -104,6 +109,7 @@ Before loading data, describe the experimental setup used to collect the data. A
 * **Time Executed (required)**
 * **Materials & Methods (Description and/or Program Settings)** 
 
+![Analysis Feilds](https://cloud.githubusercontent.com/assets/14822959/12991556/a4afb984-d0dd-11e5-8368-3018c2d80ede.png)
 There is also the ability to add analysis properties to this content type.
 
 #### Experimental Design Fields
@@ -126,6 +132,7 @@ The "Experimental Design" fields allow a complete description of the experimenta
  * **Quantification Operator** - The person or organization that ran the quantification.
  * **Quantification Protocol** - The quantification protocol used in the experiment. (See protocol description below).
 
+![Experimental Design Fields](https://cloud.githubusercontent.com/assets/14822959/12991557/a4b0228e-d0dd-11e5-93de-2f206be6d5fe.png)
 **Protocol Descripton** - The protocol content types can be created by navigating to **Add content->Protocol**. A protocol can be used to add extra detail to an experimental design. A protocol can be used to describe the assay, acquisition, and quantification steps of the experiment design. A protocol can also be used to further describe the array design content type. The fields of a protocol are:
 * **Protocol Name (must be unique - required)**
 * **Protocol Link** - A web address to a page that describes the protocol.
@@ -137,19 +144,26 @@ The "Experimental Design" fields allow a complete description of the experimenta
 
 #### Data Loader
 
-* The data loader fields provide a way for the user to load expression data associated with the experiment. The loader can load data from two types of formats, matrix and column. The matrix format expects a row of data containing biomaterials names. The first column should be unique feature names. Features must already be loaded into the database. Biomaterials will be added if not present. Expression values will map to a library in the column and a feature in the row. Only one matrix file may be loaded at a time. The column format expects the first column to contain features and the second column to be expression values. The biomaterial name will be taken as the name of the file minus the file extension. Features must already be loaded into the database. Biomaterials will be added if not present. Multiple column format files may be loaded at the same time given that the files are in the same directory and contain the same file suffix. Either format may have header or footer information. Regex can be used in the form to only record data after the header and before the footer. Any file suffix can be used. The data loader fields are the following:
+The data loader fields provide a way for the user to load expression data associated with the experiment. The loader can load data from two types of formats, matrix and column. The matrix format expects a row of data containing biomaterials names. The first column should be unique feature names. Features must already be loaded into the database. Biomaterials will be added if not present. Expression values will map to a library in the column and a feature in the row. Only one matrix file may be loaded at a time. The column format expects the first column to contain features and the second column to be expression values. The biomaterial name will be taken as the name of the file minus the file extension. Features must already be loaded into the database. Biomaterials will be added if not present. Multiple column format files may be loaded at the same time given that the files are in the same directory and contain the same file suffix. Either format may have header or footer information. Regex can be used in the form to only record data after the header and before the footer. Any file suffix can be used. The data loader fields are the following:
 * **Source File Type** - This can be either "Column Format" or "Matrix Format".
 * **Checkbox** - Check this box to submit a job to parse the data into Chado.
-* **File Type Suffix** - The suffix of the files to load. This is used to submit multiple column format files in the same directory.
+* **File Type Suffix** - The suffix of the files to load. This is used to submit multiple column format files in the same directory. A suffix is not required for a matrix file.
 * **File Path** - The  path to a single matrix or column format file. The path may also be set to a directory, in which case all column files with the "File Type Suffix" specified above will be loaded. When loading multiple files from a file suffix must be specified. 
 * **Regex for Start of Data** - If the expression file has a header, use this field to capture the line that occurs before the start of expression data. This line of text and any text preceding this line will be ignored. 
 * **Regex for End of Data** - If the expression file has a footer, use this field to capture teh line that occurs after the end of expression data. This line of text and all text following will be ignored.
 
+![Data Loader Fields](https://cloud.githubusercontent.com/assets/14822959/12991553/a4ade58c-d0dd-11e5-97d2-1096d78bb189.png)
 # Viewing Data
 The following panes are added to the following content types:
 
 ### Feature
-* **Differential Expression** - After biomaterials and expression data have been loaded the differential expression pane will appear on the corresponding feature page.
+* **Differential Expression** - After biomaterials and expression data have been loaded the differential expression pane will appear on the corresponding feature page. The pane will 5 different links: Sort Descending, Sort Ascending, Only Non-Zero Values, Tile/Chart, Reset.
+ * **Sort Descending/Sort Ascending** - Sort expression data based on expression values - descending or ascending. 
+ * **Only Non-Zero Values** - Remove biomaterials that do not expression the feature.
+ * **Tile/Chart** - Toggle figure between a tile heatmap view or a chart view. 
+ * **Reset** - Reset the figure. Return the figure to it's original state.
+
+![Differential Expression Tile Map](https://cloud.githubusercontent.com/assets/14822959/13010313/3da1a292-d16f-11e5-9c32-f8d6f43a0c34.png)
 
 ### Organism
 * **Biomaterial Browser** - After loading biomaterials, a new pane with a list of biomaterials will appear on the corresponding organism page. Biomaterials are not required to be synced when to appear in this list.
@@ -174,7 +188,19 @@ The following panes are added to the following content types:
 
 # Administrative Pages
 
+### Content Type Administrative Pages
+Each Analysis: Expression content type has administrative pages. As an administrator or a user with correct permissions navigate to the following: **Tripal->Extensions->Expression Analysis->Tripal Expression Analysis Content Types**. Each content type has the following administrative pages. 
+* **Administrative Search** - Administrative search to find, create, edit, or delete content type. 
+* **Sync** - Page to sync content type from the chado database. Also provides a method to clean up orphaned nodes.
+* **Delete** - Page where content type can be deleted in bulk.
+* **TOC** - Page to change the default order and display of table of contents and panes for content type pages. 
+* **Settings** - Page to set default page titles and default page urls for content type.
+* **Help** - Description the content type.
 
+![Administrator Pages for Content Types](https://cloud.githubusercontent.com/assets/14822959/13010514/2d2dc7be-d170-11e5-8670-92bdded6659d.png)
+
+### Differential Expression Display Administrative Page
+The display of differential expression data on feature pages can be configured.
 
 
 
