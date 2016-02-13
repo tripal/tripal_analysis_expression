@@ -304,7 +304,7 @@ function expSub(heatMap,maxHeat,minHeat) {
 			.style("opacity",0);
 			})
 	//.on("click", function(d) {window.location = window.location.href + "/biomaterial/"+d.name;})
-	.style("fill", "white");
+	.style("fill", "transparent");
 
 
 	//document.write("made it to this line");
