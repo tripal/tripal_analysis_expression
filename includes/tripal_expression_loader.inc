@@ -181,7 +181,7 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
                 exit;
               }
             }
-            if($analysisfeature) {
+            /*if($analysisfeature) {
               $analysisfeature = chado_update_record('analysisfeature', 
                 array(':analysis_id' => $analysis_id, ':feature_id' => $feature_id),
                 $values);
@@ -189,7 +189,7 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
                 print "ERROR: Unable to update analysisfeature table\n";
                 exit;
               }
-            }
+            } */
           }
         }    
       } 
