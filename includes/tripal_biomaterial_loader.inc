@@ -273,9 +273,9 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
     if ($header == 'biomaterial_provider') {
       $biomaterial_headers['biomaterial_provider'] = $i;
     }
-  /*  if ($header == 'biomaterial_accession') {
+    if ($header == 'biomaterial_accession') {
       $acc_headers['biomaterial_accession'] = $i;
-    } */
+    } 
     if ($header == 'sra_accession') {
       $acc_headers['sra_accession'] = $i;
     }
@@ -549,6 +549,11 @@ function add_xml_biomaterial_properties($attributes, $biomaterial_id) {
    // drupal_set_message("here" . var_export($attr,TRUE));
     // Get the cvterm name 
     $attr_name = (string)$attr->attributes()->attribute_name;
+
+    if ($attr_name == "biomaterial_provider") {
+      continue;
+    }
+
     //drupal_set_message(var_export($attr_name,TRUE));
     //drupal_set_message((string)$attr_name);
     // Insert into database. If the type is already in the database the function will not update. 

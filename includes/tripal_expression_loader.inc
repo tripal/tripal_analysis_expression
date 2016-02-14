@@ -732,7 +732,7 @@ function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosource
   }
 
   if ($biomaterial_description == '' && $analysis_id) {
-    $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_name;
+    $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_name[0]->name;
   }
 
   $values = array(
