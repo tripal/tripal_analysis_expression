@@ -495,7 +495,7 @@ function chado_analysis_expression_form($node, $form_state) {
   $form['loader']['filetype'] = array(
     '#type' => 'radios',
     '#title' => t('Source File Type'),
-    '#description' => t('Data can be loaded from two format types. Select the column format for files that have two columns - transcript id and expression value. Select the matrix format for files that specify biosample by column and transcript by row.'),
+    '#description' => t('Data can be loaded from two format types. Select the column format for files that have two columns - transcript id and expression value. Select the matrix format for files that specify biosample by column and transcript by row. If "Column Format" is selected, the name of the column file will be taken as the biomaterial name. It is recommended to avoid the use of white space in column file names and in biomaterial names.'),
     '#options' => array(
       'col' => t('Column Format'),
       'mat' => t('Matrix Format'),
@@ -513,7 +513,7 @@ function chado_analysis_expression_form($node, $form_state) {
   $form['loader']['fileext'] = array(
     '#type' => 'textfield',
     '#title' => t('File Type Suffix'),
-    '#description' => t('Select the file fileext for the file(s) to be loaded into Chado.'),
+    '#description' => t('Select the file extension for the file(s) to be loaded into Chado. Do not include the ".". It is not necessary to specifiy a file extension for a matrix file or a single column file.'),
     '#default_value' => $fileext,
   );
 
