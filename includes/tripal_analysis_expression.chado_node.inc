@@ -324,7 +324,9 @@ function chado_analysis_expression_form($node, $form_state) {
     '#title' => t('Biomaterial Provider'),
     '#type' => 'select',
     '#empty_value' => '',
-    '#description' => t('The contact who provided the biomaterial.'),
+    '#description' => t('The contact who provided the biomaterial. If the biomaterial is already')
+                      . (' present in the database, the biomaterial provider selected here will')
+                      . (' overwrite the biomaterial provider set for the biomaterial in the database.'),
     '#default_value' => $biosourceprovider_id,
     '#options' => $form['choose_contact']['#value'],
     '#suffix' => $lt_message,
@@ -341,7 +343,9 @@ function chado_analysis_expression_form($node, $form_state) {
   $form['experimental_design']['arraydesign_id'] = array(
     '#title' => t('Array Design'),
     '#type' => 'select',
-    '#description' => t('The array design associated with this analysis.'),
+    '#description' => t('The array design associated with this analysis. This is not required if the experimental')
+                      . t(' data was gathered from next generation sequencing methods. If an array design is not')
+                      . t(' selected, a generic array design will be used as a place filler.'),
     '#options' => $arraydesigns,
     '#default_value' => $arraydesign_id,
     '#suffix' => $lt_message,
@@ -350,7 +354,8 @@ function chado_analysis_expression_form($node, $form_state) {
   $form['experimental_design']['acquisition_details'] = array(
     '#title' => t('Acquisition Details'),
     '#type' => 'fieldset',
-    '#description' => t('Describe the details of the acquistion process.'), 
+    '#description' => t('Describe the details of the acquisition process. The acquisition is the process') 
+                      . (' of scanning the experimental data.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#weight' => 1,
@@ -408,7 +413,8 @@ function chado_analysis_expression_form($node, $form_state) {
   $form['experimental_design']['quantification_details'] = array(
     '#title' => t('Quantification Details'),
     '#type' => 'fieldset',
-    '#description' => t('Describe the details of the quantification process.'), 
+    '#description' => t('Describe the details of the quantification process. The quantification is the process')
+                      . (' of transforming raw expression data into numeric data.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#weight' => 1,
@@ -541,7 +547,8 @@ function chado_analysis_expression_form($node, $form_state) {
   $form['experimental_design']['assay_details'] = array(
     '#title' => t('Assay Details'),
     '#type' => 'fieldset',
-    '#description' => t('The protocol of the assay used.'), 
+    '#description' => t('Describe the details of the assay process. The assay is the physical instance of the array')
+                      . t(' used in the experiment.'), 
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#weight' => 1,
