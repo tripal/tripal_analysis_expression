@@ -125,9 +125,9 @@ function tripal_biomaterial_delete_biomaterials($biomaterial_names, $organism_id
   try {
     // If biomaterial names have been provided then handle those.
     if ($biomaterial_names) {
-      $names = preg_splice('/\s+/', $biomaterial_names);
+      $names = preg_split('/\s+/', $biomaterial_names);
       if (sizeof($names) == 1) { 
-        $names = $name[0];
+        $names = $names[0];
       }
       $match['name'] = $names;
       $num_deletes = chado_select_record('biomaterial', array('count(*) as cnt'), $match);
