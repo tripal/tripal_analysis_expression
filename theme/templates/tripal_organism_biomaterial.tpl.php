@@ -35,7 +35,7 @@ if (sizeof($values['biomaterial_id']) > 0) {
     );
   }
 
-  $num_per_page = 25;
+  $num_per_page = 10;
   $current_page = pager_default_initialize(count($rows), $num_per_page, 1);
   $chunks = array_chunk($rows, $num_per_page, TRUE);
   $output = theme('table', array('header' => $headers, 'rows' => $chunks[$current_page]));
