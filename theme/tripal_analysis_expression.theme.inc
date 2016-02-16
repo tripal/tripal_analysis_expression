@@ -21,6 +21,45 @@ if (count($properties) > 0) {
 
 }
 
+function tripal_analysis_expression_preprocess_tripal_biomaterial_base(&$variables) {
+
+  $biomaterial_ontologies = variable_get('chado_biomaterial_ontologies_to_display');
+//  $biomaterial_ontologies = "sequence";
+
+  $ontology_names = preg_split('/\s+/', $biomaterial_ontologies);
+
+  $biomaterial = $variables['node']->biomaterial;
+  $biomaterial_id = $biomaterial->biomaterial_id;
+
+  $ontology_array = array();
+
+  foreach($ontology_names as $ontology_name) {
+
+    $sql = 'SELECT CVT.name FROM {cvterm} CVT
+             INNER JOIN {biomaterialprop} BP ON CVT.cvterm_id = BP.type_id
+             INNER JOIN {biomaterial} B ON BP.biomaterial_id = B.biomaterial_id
+             INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
+           WHERE
+             BP.biomaterial_id = :biomaterial_id
+           AND
+             CV.name = :cv_name';
+  
+    $ontology_terms = chado_query($sql, array(":biomaterial_id" => $biomaterial_id, ":cv_name" => $ontology_name));
+  
+    $terms = array();
+  
+    foreach($ontology_terms as $ontology_term) {
+      $terms[] = $ontology_term->name;
+    }
+
+    $ontology_array[$ontology_name] = $terms;
+
+  }
+
+  $variables['biomaterial_ontology_terms'] = $ontology_array;
+
+} 
+
 function tripal_analysis_expression_preprocess_tripal_analysis_expression_protocols(&$variables) {
 
 $analysis = $variables['node']->analysis;

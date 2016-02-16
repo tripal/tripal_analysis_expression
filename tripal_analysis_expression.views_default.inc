@@ -29,6 +29,10 @@ function tripal_analysis_expression_views_default_views() {
   $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
+  $view = tripal_biomaterial_defaultvalue_user_ontologies();
+  $view = tripal_make_view_compatible_with_external($view);
+  $views[$view->name] = $view;
+ 
   $view = tripal_analysis_expression_defaultvalue_user_analysis_expressions();
   $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
@@ -51,6 +55,120 @@ function tripal_analysis_expression_views_default_views() {
  
   return $views;
 } 
+
+function tripal_biomaterial_defaultvalue_user_ontologies() {
+
+$view = new view();
+$view->name = 'biomaterial_ontology_terms';
+$view->description = '';
+$view->tag = 'default';
+$view->base_table = 'biomaterial';
+$view->human_name = 'Biomaterial Ontology Terms';
+$view->core = 7;
+$view->api_version = '3.0';
+$view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+/* Display: Master */
+$handler = $view->new_display('default', 'Master', 'default');
+$handler->display->display_options['title'] = 'Biomaterial Ontology Terms';
+$handler->display->display_options['use_more_always'] = FALSE;
+$handler->display->display_options['access']['type'] = 'perm';
+$handler->display->display_options['access']['perm'] = 'access chado_biomaterial content';
+$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['query']['type'] = 'views_query';
+$handler->display->display_options['exposed_form']['type'] = 'basic';
+$handler->display->display_options['pager']['type'] = 'full';
+$handler->display->display_options['pager']['options']['items_per_page'] = '10';
+$handler->display->display_options['style_plugin'] = 'table';
+/* Relationship: Biomaterial: Biomaterial => Node */
+$handler->display->display_options['relationships']['biomaterial_id']['id'] = 'biomaterial_id';
+$handler->display->display_options['relationships']['biomaterial_id']['table'] = 'chado_biomaterial';
+$handler->display->display_options['relationships']['biomaterial_id']['field'] = 'biomaterial_id';
+$handler->display->display_options['relationships']['biomaterial_id']['required'] = TRUE;
+/* Relationship: Chado Biomaterial: biomaterial_id => Biomaterialprop (biomaterial_id) */
+$handler->display->display_options['relationships']['biomaterial_id_to_biomaterialprop']['id'] = 'biomaterial_id_to_biomaterialprop';
+$handler->display->display_options['relationships']['biomaterial_id_to_biomaterialprop']['table'] = 'biomaterial';
+$handler->display->display_options['relationships']['biomaterial_id_to_biomaterialprop']['field'] = 'biomaterial_id_to_biomaterialprop';
+$handler->display->display_options['relationships']['biomaterial_id_to_biomaterialprop']['required'] = TRUE;
+/* Relationship: Chado Biomaterialprop: type_id => Cvterm (cvterm_id) */
+$handler->display->display_options['relationships']['type_id_to_cvterm']['id'] = 'type_id_to_cvterm';
+$handler->display->display_options['relationships']['type_id_to_cvterm']['table'] = 'biomaterialprop';
+$handler->display->display_options['relationships']['type_id_to_cvterm']['field'] = 'type_id_to_cvterm';
+$handler->display->display_options['relationships']['type_id_to_cvterm']['relationship'] = 'biomaterial_id_to_biomaterialprop';
+$handler->display->display_options['relationships']['type_id_to_cvterm']['required'] = TRUE;
+/* Relationship: Chado Cvterm: cv_id => Cv (cv_id) */
+$handler->display->display_options['relationships']['cv_id_to_cv']['id'] = 'cv_id_to_cv';
+$handler->display->display_options['relationships']['cv_id_to_cv']['table'] = 'cvterm';
+$handler->display->display_options['relationships']['cv_id_to_cv']['field'] = 'cv_id_to_cv';
+$handler->display->display_options['relationships']['cv_id_to_cv']['relationship'] = 'biomaterial_id_to_biomaterialprop';
+$handler->display->display_options['relationships']['cv_id_to_cv']['required'] = TRUE;
+/* Relationship: Chado Biomaterial: taxon_id => Organism (organism_id) */
+$handler->display->display_options['relationships']['taxon_id_to_organism']['id'] = 'taxon_id_to_organism';
+$handler->display->display_options['relationships']['taxon_id_to_organism']['table'] = 'biomaterial';
+$handler->display->display_options['relationships']['taxon_id_to_organism']['field'] = 'taxon_id_to_organism';
+/* Field: Content: Path */
+$handler->display->display_options['fields']['path']['id'] = 'path';
+$handler->display->display_options['fields']['path']['table'] = 'node';
+$handler->display->display_options['fields']['path']['field'] = 'path';
+$handler->display->display_options['fields']['path']['relationship'] = 'biomaterial_id';
+$handler->display->display_options['fields']['path']['label'] = '';
+$handler->display->display_options['fields']['path']['exclude'] = TRUE;
+$handler->display->display_options['fields']['path']['element_label_colon'] = FALSE;
+/* Field: Chado Biomaterial: Name */
+$handler->display->display_options['fields']['name']['id'] = 'name';
+$handler->display->display_options['fields']['name']['table'] = 'biomaterial';
+$handler->display->display_options['fields']['name']['field'] = 'name';
+$handler->display->display_options['fields']['name']['label'] = 'Biomaterial';
+$handler->display->display_options['fields']['name']['alter']['alter_text'] = TRUE;
+$handler->display->display_options['fields']['name']['alter']['make_link'] = TRUE;
+$handler->display->display_options['fields']['name']['alter']['path'] = '[path]';
+$handler->display->display_options['fields']['name']['element_label_colon'] = FALSE;
+/* Field: Chado Organism: Common Name */
+$handler->display->display_options['fields']['common_name']['id'] = 'common_name';
+$handler->display->display_options['fields']['common_name']['table'] = 'organism';
+$handler->display->display_options['fields']['common_name']['field'] = 'common_name';
+$handler->display->display_options['fields']['common_name']['label'] = 'Organism';
+$handler->display->display_options['fields']['common_name']['element_label_colon'] = FALSE;
+/* Field: Chado Cvterm: Name */
+$handler->display->display_options['fields']['name_1']['id'] = 'name_1';
+$handler->display->display_options['fields']['name_1']['table'] = 'cvterm';
+$handler->display->display_options['fields']['name_1']['field'] = 'name';
+$handler->display->display_options['fields']['name_1']['relationship'] = 'biomaterial_id_to_biomaterialprop';
+$handler->display->display_options['fields']['name_1']['label'] = 'Ontology Term';
+/* Field: Chado Cv: Name */
+$handler->display->display_options['fields']['name_2']['id'] = 'name_2';
+$handler->display->display_options['fields']['name_2']['table'] = 'cv';
+$handler->display->display_options['fields']['name_2']['field'] = 'name';
+$handler->display->display_options['fields']['name_2']['relationship'] = 'type_id_to_cvterm';
+$handler->display->display_options['fields']['name_2']['label'] = 'Ontology';
+/* Contextual filter: Chado Cv: Name */
+$handler->display->display_options['arguments']['name_1']['id'] = 'name_1';
+$handler->display->display_options['arguments']['name_1']['table'] = 'cv';
+$handler->display->display_options['arguments']['name_1']['field'] = 'name';
+$handler->display->display_options['arguments']['name_1']['relationship'] = 'type_id_to_cvterm';
+$handler->display->display_options['arguments']['name_1']['default_argument_type'] = 'fixed';
+$handler->display->display_options['arguments']['name_1']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['name_1']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['name_1']['summary_options']['items_per_page'] = '25';
+$handler->display->display_options['arguments']['name_1']['limit'] = '0';
+/* Contextual filter: Chado Cvterm: Name */
+$handler->display->display_options['arguments']['name']['id'] = 'name';
+$handler->display->display_options['arguments']['name']['table'] = 'cvterm';
+$handler->display->display_options['arguments']['name']['field'] = 'name';
+$handler->display->display_options['arguments']['name']['relationship'] = 'biomaterial_id_to_biomaterialprop';
+$handler->display->display_options['arguments']['name']['default_argument_type'] = 'fixed';
+$handler->display->display_options['arguments']['name']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['name']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['name']['summary_options']['items_per_page'] = '25';
+$handler->display->display_options['arguments']['name']['limit'] = '0';
+
+/* Display: Page */
+$handler = $view->new_display('page', 'Page', 'page');
+$handler->display->display_options['path'] = 'biomaterial-ontology-terms';
+
+return $view;
+}
+
 
 /**
  * This function contains the default view for the analysis: expression

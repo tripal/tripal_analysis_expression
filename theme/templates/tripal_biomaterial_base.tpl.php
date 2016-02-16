@@ -3,6 +3,7 @@
   if (property_exists($variables['node'],'biomaterial')) {
     $biomaterial = $variables['node']->biomaterial;
     $biomaterial = chado_expand_var($biomaterial, 'field', 'biomaterial.description');
+    $ontology_terms = $variables['biomaterial_ontology_terms'];
     ?>
 
     <div class="tripal_biomaterial-data-block-desc tripal-data-block-desc"></div>
@@ -84,7 +85,28 @@
   if ($biomaterial->description) { ?>
     <div style="text-align: justify"><?php print $biomaterial->description?></div> <?php
   }
+
+  $first = 0;
  
+  foreach ($ontology_terms as $ontology => $ontology_term) {
+    if (count($ontology_term) == 0) {
+      continue;
+    }
+
+    if ($first != 0) {
+      print '<br>';
+    }
+  
+    print '<br><b>' . ucfirst(str_replace('_', ' ', $ontology)) . ':</b>';
+
+    foreach ($ontology_term as $term) {
+      print "&nbsp&nbsp&nbsp&nbsp";
+      print l(t(str_replace('_', ' ', $term)), "/biomaterial-ontology-terms/" . $ontology . "/" . $term);
+    }
+
+    $first = 1;
+  } 
+
 
   ?>
 

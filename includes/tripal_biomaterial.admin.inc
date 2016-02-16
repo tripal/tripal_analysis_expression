@@ -40,11 +40,26 @@ function tripal_biomaterial_admin() {
   );
   chado_add_admin_form_set_url($form, $form_state, $details);
 
+  $form['ontologies'] = array(
+    '#title' => t('Biomaterial Ontology Terms'),
+    '#type' => 'fieldset',
+    '#description' => t('Configuration settings for ontology term display.'),
+    '#collapsible' => TRUE,
+   ); 
+
+  $form['ontologies']['chado_biomaterial_ontologies_to_display'] = array(
+    '#title' => t('Ontologies to Display'),
+    '#description' => t('List the sequence ontologies for which cvterms should be displayed (if present)')
+                      . t(' on the biomaterial page. Ontologies should be separated by a space or newline.'),
+    '#type' => 'textarea',
+    '#default_value' => variable_get('chado_biomaterial_ontologies_to_display'),
+  );
+
  return system_settings_form($form);
 }
 
 /**
- * Landing page for administration. Ensures Views are enabled adn if not, provides links to do so.
+ * Landing page for administration. Ensures Views are enabled and if not, provides links to do so.
  *
  * @return
  *   An HTML string that provides a link to enable the view.
