@@ -21,6 +21,38 @@ if (count($properties) > 0) {
 
 }
 
+function tripal_analysis_expression_preprocess_analysis_biomaterial_browser(&$variables) {
+
+  $analysis = $variables['node']->analysis;
+  $analysis = chado_expand_var($analysis, 'table', 'analysisprop', array('return_array' => 1));
+  $analysis_name = $analysis->name;
+  //$properties = $analysis->analysisprop;
+
+  $sql = "SELECT B.biomaterial_id FROM {biomaterial} B
+           INNER JOIN {assay_biomaterial} AB ON B.biomaterial_id = AB.biomaterial_id
+           INNER JOIN {assay} AY ON AB.assay_id = AY.assay_id
+           INNER JOIN {acquisition} AQ ON AY.assay_id = AQ.assay_id
+           INNER JOIN {quantification} Q ON AQ.acquisition_id = Q.acquisition_id
+           INNER JOIN {analysis} A ON Q.analysis_id = A.analysis_id
+           INNER JOIN {analysisprop} AP ON A.analysis_id = AP.analysis_id
+           INNER JOIN {cvterm} CVT ON AP.type_id - CVT.cvterm_id
+         WHERE
+           CVT.name = :type_name
+         AND 
+           AP.value = :analysis_name";
+
+  $biomaterial_results = chado_query($sql, array(":type_name" => "associated_analysis", ":analysis_name" => $analysis_name));
+
+  $biomaterials = array();
+
+  foreach($biomaterial_results as $biomaterial) {
+    $biomaterials[] = $biomterial->biomaterial_id;
+  }
+
+  $variables['associated_biomaterials'] = $biomaterials;
+
+}
+
 function tripal_analysis_expression_preprocess_tripal_biomaterial_base(&$variables) {
 
   $biomaterial_ontologies = variable_get('chado_biomaterial_ontologies_to_display');
