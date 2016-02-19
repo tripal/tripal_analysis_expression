@@ -167,6 +167,7 @@ function chado_analysis_expression_form($node, $form_state) {
   $form = chado_analysis_form($node, $form_state);
 
   $organism_id = '';
+  $associated_analysis_id = '';
   $biosourceprovider_id  = '';
   $arraydesign_id = '';
   $assaydate = '';
@@ -194,6 +195,7 @@ function chado_analysis_expression_form($node, $form_state) {
   if (property_exists($node, 'analysis')) {
     $expression            = $node->analysis->tripal_analysis_expression;
     $organism_id           = $expression->organism_id;
+    $associated_analysis_id           = $expression->associated_analysis_id;
     $biosourceprovider_id  = $expression->biosourceprovider_id;
     $arraydesign_id        = $expression->arraydesign_id;
     $assaydate             = $expression->assaydate;
@@ -218,6 +220,7 @@ function chado_analysis_expression_form($node, $form_state) {
   // In the case of a failed validation or an ajax callback, repopulate the fields. 
   if (array_key_exists('values', $form_state)) {
     $organism_id           = $form_state['values']['organism_id'];
+    $associated_analysis_id           = $form_state['values']['associated_analysis_id'];
     $biosourceprovider_id  = $form_state['values']['biosourceprovider_id'];
     $arraydesign_id        = $form_state['values']['arraydesign_id'];
     $assaydate             = $form_state['values']['assaydate'];
@@ -242,6 +245,7 @@ function chado_analysis_expression_form($node, $form_state) {
   // Rebuilding form after submission from ajax call (is this necessary?).
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
     $organism_id           = $form_state['input']['organism_id'];
+    $associated_analysis_id           = $form_state['input']['associated_analysis_id'];
     $biosourceprovider_id  = $form_state['input']['biosourceprovider_id'];
     $arraydesign_id        = $form_state['input']['arraydesign_id'];
     $assaydate             = $form_state['input']['assaydate'];
@@ -297,6 +301,16 @@ function chado_analysis_expression_form($node, $form_state) {
     '#options' => $organisms,
     '#default_value' => $organism_id,
     '#suffix' => $lt_message,
+  );
+
+  $analyses = tripal_get_analysis_select_options(FALSE);
+  $form['experimental_design']['associated_analysis_id'] = array(
+    '#title' => t('Associated Analysis'),
+    '#type' => 'select',
+    '#description' => t("An analysis associated with the expression analysis. For example, an expression")
+                      . t(" analysis may be associated with a unigene analysis."),
+    '#options' => $analyses,
+    '#default_value' => $associated_analysis_id,
   );
 
   // Obtain the list of contacts from the chado contact table. 
@@ -728,6 +742,7 @@ function chado_analysis_expression_insert($node) {
 
   // Add analysis: expression fields. 
   chado_insert_property($record, array('type_name' => 'analysis_expression_organism_id', 'cv_name' => 'tripal', 'value' => trim($node->organism_id))); 
+  chado_insert_property($record, array('type_name' => 'analysis_expression_associated_analysis_id', 'cv_name' => 'tripal', 'value' => trim($node->associated_analysis_id))); 
   chado_insert_property($record, array('type_name' => 'analysis_expression_biosourceprovider_id', 'cv_name' => 'tripal', 'value' => trim($node->biosourceprovider_id))); 
   chado_insert_property($record, array('type_name' => 'analysis_expression_arraydesign_id', 'cv_name' => 'tripal', 'value' => trim($node->arraydesign_id))); 
   chado_insert_property($record, array('type_name' => 'analysis_expression_assaydate', 'cv_name' => 'tripal', 'value' => $assaydate)); 
@@ -775,6 +790,7 @@ function chado_analysis_expression_load($nodes) {
 
     // Load the analysis expression property fields. 
     $organism_id = chado_get_property($record, array('type_name' => 'analysis_expression_organism_id', 'cv_name' => 'tripal'));
+    $associated_analysis_id = chado_get_property($record, array('type_name' => 'analysis_expression_associated_analysis_id', 'cv_name' => 'tripal'));
     $biosourceprovider_id = chado_get_property($record, array('type_name' => 'analysis_expression_biosourceprovider_id', 'cv_name' => 'tripal'));
     $arraydesign_id = chado_get_property($record, array('type_name' => 'analysis_expression_arraydesign_id', 'cv_name' => 'tripal'));
     $assaydate = chado_get_property($record, array('type_name' => 'analysis_expression_assaydate', 'cv_name' => 'tripal'));
@@ -797,6 +813,7 @@ function chado_analysis_expression_load($nodes) {
  
     $analysis->tripal_analysis_expression = new stdClass;
     $analysis->tripal_analysis_expression->organism_id          = is_object($organism_id)          ? $organism_id->value          : '';
+    $analysis->tripal_analysis_expression->associated_analysis_id = is_object($associated_analysis_id)          ? $associated_analysis_id->value          : '';
     $analysis->tripal_analysis_expression->biosourceprovider_id = is_object($biosourceprovider_id) ? $biosourceprovider_id->value : '';
     $analysis->tripal_analysis_expression->arraydesign_id       = is_object($arraydesign_id)       ? $arraydesign_id->value       : '';
     $analysis->tripal_analysis_expression->assaydate            = is_object($assaydate)            ? $assaydate->value            : '';
@@ -851,6 +868,7 @@ function chado_analysis_expression_update($node) {
 
   // Update the blast fields. 
   chado_update_property($record, array('type_name' => 'analysis_expression_organism_id', 'cv_name' => 'tripal', 'value' => trim($node->organism_id)), $options); 
+  chado_update_property($record, array('type_name' => 'analysis_expression_associated_analysis_id', 'cv_name' => 'tripal', 'value' => trim($node->associated_analysis_id)), $options); 
   chado_update_property($record, array('type_name' => 'analysis_expression_biosourceprovider_id', 'cv_name' => 'tripal', 'value' => trim($node->biosourceprovider_id)), $options); 
   chado_update_property($record, array('type_name' => 'analysis_expression_arraydesign_id', 'cv_name' => 'tripal', 'value' => trim($node->arraydesign_id)), $options); 
   chado_update_property($record, array('type_name' => 'analysis_expression_assaydate', 'cv_name' => 'tripal', 'value' => $assaydate), $options); 
@@ -1001,6 +1019,18 @@ function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
       }
     break;    
 
+    case 'chado_analysis':
+      if ($view_mode == 'full') {
+        $node->content['tripal_analysis_biomaterial'] = array(
+          '#markup' => theme('tripal_analysis_biomaterial', array('node' => $node)),
+          '#tripal_toc_id' => 'biomaterial_browser', // Fix ****
+          '#tripal_toc_title' => 'Biomaterial Browser',
+          '#weight' => -9,
+        );
+      }
+    break;    
+
+    case 'chado_biomaterial':
     case 'chado_biomaterial':
       if ($view_mode == 'full') {
         $node->content['tripal_biomaterial_properties'] = array(

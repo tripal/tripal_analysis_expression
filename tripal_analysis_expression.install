@@ -264,6 +264,12 @@ function tripal_analysis_expression_add_cvterms() {
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
+    'name' => 'analysis_expression_associated_analysis_id',
+    'def' => 'The analysis_id of another analysis associated with an expression experiment',
+    'cv_name' => 'tripal', 
+    'db_name' => 'tripal',
+  ));
+  tripal_insert_cvterm(array(
     'name' => 'analysis_expression_biosourceprovider_id',
     'def' => 'The contact_id of the contact who provided the biomaterial for an expression experiment',
     'cv_name' => 'tripal', 

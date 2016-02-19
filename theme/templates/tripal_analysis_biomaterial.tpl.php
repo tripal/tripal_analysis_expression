@@ -1,15 +1,12 @@
 <?php
 
 $analysis = $variables['node']->analysis;
-$values = $variables['biomaterial_ids'];
+$results = $variables['associated_biomaterials'];
 
-if (sizeof($values['biomaterial_id']) > 0) {
+if (sizeof($results) > 0) {
   $element = 1;
   $num_per_page = 25;
  
-  $columns = array('biomaterial_id');
-  $results = chado_select_record('biomaterial', $columns, $values);
-
   $biomaterials = array();
   foreach ($results as $result) {
     $values = array('biomaterial_id' => $result->biomaterial_id);
