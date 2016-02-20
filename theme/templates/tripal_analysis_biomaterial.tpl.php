@@ -16,10 +16,11 @@ if (sizeof($results) > 0) {
       )
     );
     $biomaterials[] = chado_generate_var('biomaterial', $values);
+    //$biomaterials[] = chado_expand_var($biomaterials, 'table', 'organism');
   } ?>
     <div class="tripal_analysis-data-block-desc tripal-data-block-desc">The following browser provides a list of biomaterials associated with this analysis.</div> <?php
 
-  $headers = array('Biomaterial Name');
+  $headers = array('Biomaterial Name', 'Organism', 'Biomaterial Provider');
   $rows = array();
 
   foreach($biomaterials as $biomaterial) {
@@ -28,7 +29,7 @@ if (sizeof($results) > 0) {
       $bname = l($bname, "node/$biomaterial->nid", array('attributes' => array('target' => '_blank')));
     }
     $rows[] = array(
-      $bname
+      $bname, $biomaterial->biomaterial_id
     );
   }
 

@@ -560,9 +560,9 @@ function chado_analysis_expression_form($node, $form_state) {
 
   $form['loader']['biomaterial_validator'] = array(
     '#type' => 'submit',
-    '#value' => 'Check Biomaterials',
-    '#Descripton' => 'Expression values are associated with their respective biomaterial based on the name of the biomaterial. Running this check will show whether the biomaterial names in the expression file have a corresponding biomaterial in the database. This can be useful when biomaterials have been loaded using the biomaterial loader. If a biomaterial is not present in the database then the expression loader will create a biomaterial.'  
-    '#submit' => array('chado_analysis_expression_biomaterial_validator_submit')
+    '#value' => t('Check Biomaterials'),
+    '#Descripton' => t('Expression values are associated with their respective biomaterial based on the name of the biomaterial. Running this check will show whether the biomaterial names in the expression file have a corresponding biomaterial in the database. This can be useful when biomaterials have been loaded using the biomaterial loader. If a biomaterial is not present in the database then the expression loader will create a biomaterial.'),  
+    '#submit' => array('chado_analysis_expression_biomaterial_validator_submit'),
   );
 
   $form['experimental_design']['assay_details'] = array(
@@ -657,8 +657,74 @@ return $form;
 }
 
 
-function chado_analysis_expression_biomaterial_validator_submit($node, $form, &$form_state) {
-  drupal_set_message("Inside biomaterial validator submit");
+function chado_analysis_expression_biomaterial_validator_submit($form, &$form_state) {
+
+  $filepath = $form_state['values']['filepath'];
+  $filetype = $form_state['values']['filetype'];
+  $fileext = $form_state['values']['fileext'];
+  $re_start = $form_state['values']['re_start'];
+  $re_end = $form_state['values']['re_end'];
+
+///
+    $re_ext = '/^.+\.(' . $fileext . ')/';
+
+    // A matrix file.
+    if ($filetype == 'mat' and is_file($filepath) and preg_match($re_ext,$filepath)) {
+      $data_ln = 0;
+      $mat_fp = fopen($filepath, 'r');
+      //Check a single matrix file.
+      while($line = fgets($mat_fp)) {
+        if ($data_ln == 1 or !$re_start) {
+          $linepart = preg_split('/\s+/',$line,-1,PREG_SPLIT_NO_EMPTY);
+          $num_col = count($linepart);
+          $first_mes = 0;
+          foreach($linepart as $sample) {
+            if(chado_select_record('biomaterial', array('biomaterial_id'), array('name'), array('has_record'=>TRUE)) > 1)  {
+              if ($first_mes ==0) {
+                drupal_set_message("The following biosamples from the expression file do not have a corresponding entry in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loader job is submitted a new biomaterial will be created for biomaterials from the expression file without a name match in the Chado database.");
+                $first_mes = 1;
+              }
+              drupal_set_message($sample);
+            }
+          }
+          break;
+        }
+        if (preg_match('/' . $re_start . '/',$line) and $re_start) {
+          $data_ln = 1;
+        }
+      }
+    }
+
+    // The column format.
+    elseif ($filetype == 'col' and is_file($filepath) and preg_match($re_ext,$filepath)) {
+    ///check single column file
+    } else { // Multiple files in the column format.
+      $dir_handle = @opendir($filepath) or die("Unable to open $filepath");
+      $total_files = count(glob($filepath . '/*.' . $fileext));
+      $num_file = 0;
+
+      // Load all files with of type $fileext in the directory.
+      while ($file = readdir($dir_handle)) {
+        if (preg_match('/(.+)\.' . $fileext . '/',$file)) {
+          ///Check column files
+          $num_file++;
+        }
+      }
+    }
+
+
+
+
+
+
+
+///
+
+
+
+
+
+
 
 }
 
