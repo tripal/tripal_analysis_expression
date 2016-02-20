@@ -558,6 +558,13 @@ function chado_analysis_expression_form($node, $form_state) {
     '#default_value' => $re_end,
   );
 
+  $form['loader']['biomaterial_validator'] = array(
+    '#type' => 'submit',
+    '#value' => 'Check Biomaterials',
+    '#Descripton' => 'Expression values are associated with their respective biomaterial based on the name of the biomaterial. Running this check will show whether the biomaterial names in the expression file have a corresponding biomaterial in the database. This can be useful when biomaterials have been loaded using the biomaterial loader. If a biomaterial is not present in the database then the expression loader will create a biomaterial.'  
+    '#submit' => array('chado_analysis_expression_biomaterial_validator_submit')
+  );
+
   $form['experimental_design']['assay_details'] = array(
     '#title' => t('Assay Details'),
     '#type' => 'fieldset',
@@ -648,6 +655,13 @@ function chado_analysis_expression_form($node, $form_state) {
 
 return $form;
 }
+
+
+function chado_analysis_expression_biomaterial_validator_submit($node, $form, &$form_state) {
+  drupal_set_message("Inside biomaterial validator submit");
+
+}
+
 
 /**
  * Implementation of hook_validate.
