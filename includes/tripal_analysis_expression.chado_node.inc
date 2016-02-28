@@ -533,7 +533,7 @@ function chado_analysis_expression_form($node, $form_state) {
   $form['loader']['fileext'] = array(
     '#type' => 'textfield',
     '#title' => t('File Type Suffix'),
-    '#description' => t('Select the file extension for the file(s) to be loaded into Chado. Do not include the ".". It is not necessary to specifiy a file extension for a matrix file or a single column file.'),
+    '#description' => t('Select the file extension for the file(s) to be loaded into Chado. Do not include the ".". It is not necessary to specifiy a file extension for a matrix file.'),
     '#default_value' => $fileext,
   );
 
@@ -679,8 +679,8 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
           $num_col = count($linepart);
           $first_mes = 0;
           foreach($linepart as $sample) {
-            if(chado_select_record('biomaterial', array('biomaterial_id'), array('name'), array('has_record'=>TRUE)) > 1)  {
-              if ($first_mes ==0) {
+            if(chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $sample), array('has_record'=>TRUE)) < 1)  {
+              if ($first_mes == 0) {
                 drupal_set_message("The following biosamples from the expression file do not have a corresponding entry in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loader job is submitted a new biomaterial will be created for biomaterials from the expression file without a name match in the Chado database.");
                 $first_mes = 1;
               }
@@ -697,7 +697,13 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
 
     // The column format.
     elseif ($filetype == 'col' and is_file($filepath) and preg_match($re_ext,$filepath)) {
-    ///check single column file
+      //check single column file
+      preg_match('/^.+\/(.+)\.' . $fileext . '/', $filepath, $biomaterial);
+      if (chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $biomaterial[0]), array('has_record'=>TRUE)) > 1)  {
+        drupal_set_message("The following biomaterial from the expression file does not have a corresponding entry in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loader job is submitted a new biomaterial will be created for the biomaterial from the expression file without a name match in the Chado database.");
+              drupal_set_message($biomaterial[0]);
+      }
+
     } else { // Multiple files in the column format.
       $dir_handle = @opendir($filepath) or die("Unable to open $filepath");
       $total_files = count(glob($filepath . '/*.' . $fileext));
