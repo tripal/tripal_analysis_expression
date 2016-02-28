@@ -6,13 +6,13 @@
 
 /**
  * Implements hook_requirements().
- * 
+ *
  * @ingroup tripal_analysis_expression
  */
 function tripal_analysis_expression_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
-    // make sure chado is installed. 
+    // Make sure chado is installed.
     if (!$GLOBALS["chado_is_installed"]) {
       $requirements['tripal_analysis_expression'] = array(
         'title' => "tripal_analysis_expression",
@@ -23,24 +23,22 @@ function tripal_analysis_expression_requirements($phase) {
   }
   return $requirements;
 }
- 
-
 
 /**
  * Implements install_hook().
  *
  * Permforms actions when the module is first installed.
- * 
+ *
  * @ingroup tripal_analysis_module
  */
 function tripal_analysis_expression_install() {
 
-  //Get localization function for installation. 
+  // Get localization function for installation.
   $t = get_t();
 
-  // Register the analysis. 
+  // Register the analysis.
   tripal_register_analysis_child('tripal_analysis_expression');
-  
+
   tripal_analysis_expression_add_cvs();
   tripal_analysis_expression_add_cvterms();
 
@@ -50,7 +48,7 @@ function tripal_analysis_expression_install() {
   tripal_set_default_cv('biomaterialprop', 'type_id', 'biomaterial_property');
   tripal_set_default_cv('biomaterial_relationship', 'type_id', 'biomaterial_relationship');
 
-  // These variables are used to set how expression information is displayed. 
+  // These variables are used to set how expression information is displayed.
   variable_set('chado_feature_expression_hide_differential_expression', 0);
   variable_set('chado_feature_expression_hide_biomaterial_labels', 0);
   variable_set('chado_feature_expression_limit_label_length', 0);
@@ -58,8 +56,9 @@ function tripal_analysis_expression_install() {
   variable_set('chado_feature_expression_expression_display', 'column');
   variable_set('chado_feature_expression_biomaterial_display_width', 15);
 
-  // Make sure the arraydesign, biomateria, and protocol chado tables are a set as base tables.
-  // This allows the tables to be used as base tables in Drupal Views. 
+  // Make sure the arraydesign, biomateria, and protocol chado tables are a set
+  // as base tables. This allows the tables to be used as base tables in
+  // Drupal Views.
   $update = db_update('tripal_views')
     ->fields(array(
       'base_table' => 1,
@@ -82,7 +81,7 @@ function tripal_analysis_expression_install() {
 
 /**
  * Add controlled vocabulary terms used by the analyis: expression module.
- * 
+ *
  * @ingroup tripal_analysis_expression
  */
 function tripal_analysis_expression_add_cvs() {
@@ -98,14 +97,14 @@ function tripal_analysis_expression_add_cvs() {
   tripal_insert_cv(
     'arraydesign_substratetype',
     'Contains microarray substrate types.'
-  );    
+  );
 
   // CVs for the protocol content type.
   tripal_insert_cv(
     'protocol_type',
     'Contains protocol type.'
-  );    
-  
+  );
+
   // CVs for the biomaterial content type.
   tripal_insert_cv(
     'biomaterial_property',
@@ -118,8 +117,11 @@ function tripal_analysis_expression_add_cvs() {
 }
 
 /**
- * Implements hook_schema() for the arraydesign, biomaterial, and protocol content types.
- * 
+ * Implements hook_schema().
+ *
+ * This function implments the hook schema for arraydesign, biomaterial,
+ * and protocol content types.
+ *
  * @ingroup tripal_analysis_expression
  */
 function tripal_analysis_expression_schema() {
@@ -129,11 +131,11 @@ function tripal_analysis_expression_schema() {
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0, 
+        'default' => 0,
       ),
       'nid' => array(
         'type' => 'int',
-        'unsigned' => TRUE, 
+        'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
@@ -143,9 +145,9 @@ function tripal_analysis_expression_schema() {
         'default' => 0,
       ),
     ),
-    'indexes' => array( 
+    'indexes' => array(
       'arraydesign_id' => array('arraydesign_id'),
-    ), 
+    ),
     'unique keys' => array(
       'nid_vid' => array('nid', 'vid'),
       'vid' => array('vid'),
@@ -158,11 +160,11 @@ function tripal_analysis_expression_schema() {
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0, 
+        'default' => 0,
       ),
       'nid' => array(
         'type' => 'int',
-        'unsigned' => TRUE, 
+        'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
@@ -172,9 +174,9 @@ function tripal_analysis_expression_schema() {
         'default' => 0,
       ),
     ),
-    'indexes' => array( 
+    'indexes' => array(
       'protocol_id' => array('protocol_id'),
-    ), 
+    ),
     'unique keys' => array(
       'nid_vid' => array('nid', 'vid'),
       'vid' => array('vid'),
@@ -187,11 +189,11 @@ function tripal_analysis_expression_schema() {
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0, 
+        'default' => 0,
       ),
       'nid' => array(
         'type' => 'int',
-        'unsigned' => TRUE, 
+        'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
@@ -201,9 +203,9 @@ function tripal_analysis_expression_schema() {
         'default' => 0,
       ),
     ),
-    'indexes' => array( 
+    'indexes' => array(
       'biomaterial_id' => array('biomaterial_id'),
-    ), 
+    ),
     'unique keys' => array(
       'nid_vid' => array('nid', 'vid'),
       'vid' => array('vid'),
@@ -213,264 +215,197 @@ function tripal_analysis_expression_schema() {
 
   return $schema;
 }
- 
+
 /**
  * Add cvterms related to the analysis: expression module.
- * 
+ *
  * @ingroup tripal_analysis_expression
- */ 
+ */
 function tripal_analysis_expression_add_cvterms() {
 
   tripal_insert_cvterm(array(
     'name' => 'photochemical_oligo',
     'def' => 'in-situ photochemically synthesized oligoes',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'glass',
     'def' => 'glass array',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'Acquisition Protocol',
     'def' => 'protocol for an acquisition',
-    'cv_name' => 'protocol_type', 
+    'cv_name' => 'protocol_type',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'Array Design Protocol',
     'def' => 'protocol for an arraydesign',
-    'cv_name' => 'protocol_type', 
+    'cv_name' => 'protocol_type',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'Assay Protocol',
     'def' => 'protocol for an assay',
-    'cv_name' => 'protocol_type', 
+    'cv_name' => 'protocol_type',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'Quantification Protocol',
     'def' => 'protocol for a quantification',
-    'cv_name' => 'protocol_type', 
+    'cv_name' => 'protocol_type',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_organism_id',
     'def' => 'The organism_id of the organism associated with an expression experiment',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_associated_analysis_id',
     'def' => 'The analysis_id of another analysis associated with an expression experiment',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_biosourceprovider_id',
     'def' => 'The contact_id of the contact who provided the biomaterial for an expression experiment',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_arraydesign_id',
     'def' => 'The arraydesign_id of the arraydesign associated with an expression experiment',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_assay_id',
     'def' => 'The assay_id of the assay associated with an expression experiment',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_acquisition_id',
     'def' => 'The acquisition_id of the acquisition associated with an expression experiment',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_quantification_id',
     'def' => 'The quantification_id of the quantification associated with an expression experiment',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_filetype',
     'def' => 'The file type of the expression data to be loaded. The file type can be either column or matrix',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_submit_job',
     'def' => 'A value that indicates whether an expression loading job should be submitted.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_fileext',
     'def' => 'The file extension of the expression files to be loaded',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_filepath',
     'def' => 'The file path of the expression files to be loaded',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_re_start',
     'def' => 'A regular expression to specify the line that imediately preceeds the start of expresion data in an expression file.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_re_end',
     'def' => 'A regular expression to specify the line that imediately follows the end of expresion data in an expression file.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_assaydate',
     'def' => 'The date an assay is run.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_assay_description',
     'def' => 'The description of an assay.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_acquisitiondate',
     'def' => 'The date an acquisition is run.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_acquisition_uri',
     'def' => 'URI location that describes the acquisition.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_quantificationdate',
     'def' => 'The date an quantification is run.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_quantification_uri',
     'def' => 'URI location that describes the quantification.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_assay_protocol_id',
     'def' => 'The protocol id associated with an assay.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_acquisition_protocol_id',
     'def' => 'The protocol id associated with an acquisition.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_quantification_protocol_id',
     'def' => 'The protocol id associated with a quantification.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_assay_operator_id',
     'def' => 'The operator id associated with an assay.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
     'name' => 'analysis_expression_quantification_operator_id',
     'def' => 'The operator id associated with a quantification.',
-    'cv_name' => 'tripal', 
+    'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ));
 
-  // Biomaterial Properties
-/*  tripal_insert_cvterm(array(
-    'name' => 'sra_accession',
-    'def' => 'SRA accession of the biomaterial.',
-    'cv_name' => 'biomaterial_property', 
-    'db_name' => 'tripal',
-  ));
-  tripal_insert_cvterm(array(
-    'name' => 'age',
-    'def' => 'A description of the age of the biomaterial.',
-    'cv_name' => 'biomaterial_property', 
-    'db_name' => 'tripal',
-  ));
-  tripal_insert_cvterm(array(
-    'name' => 'ncbi_owner',
-    'def' => 'The NCBI owner of the biomaterial.',
-    'cv_name' => 'biomaterial_property', 
-    'db_name' => 'tripal',
-  ));
-  tripal_insert_cvterm(array(
-    'name' => 'tissue',
-    'def' => 'The tissue from which the sample was gathered.',
-    'cv_name' => 'biomaterial_property', 
-    'db_name' => 'tripal',
-  ));
-  tripal_insert_cvterm(array(
-    'name' => 'treatment',
-    'def' => 'The treatment the biomaterial has undergone.',
-    'cv_name' => 'biomaterial_property', 
-    'db_name' => 'tripal',
-  ));
-  tripal_insert_cvterm(array(
-    'name' => 'description',
-    'def' => 'A description of the biomaterial.',
-    'cv_name' => 'biomaterial_property', 
-    'db_name' => 'tripal',
-  ));
-  tripal_insert_cvterm(array(
-    'name' => 'collected_by',
-    'def' => 'The contact who provided the biomaterial.',
-    'cv_name' => 'biomaterial_property', 
-    'db_name' => 'tripal',
-  ));
-  tripal_insert_cvterm(array(
-    'name' => 'cultivar',
-    'def' => 'The cultivar of the biomaterial.',
-    'cv_name' => 'biomaterial_property', 
-    'db_name' => 'tripal',
-  ));
-  tripal_insert_cvterm(array(
-    'name' => 'temperature',
-    'def' => 'The temperature from which the biomaterial was gathered.', //******
-    'cv_name' => 'biomaterial_property', 
-    'db_name' => 'tripal',
-  ));
-  tripal_insert_cvterm(array(
-    'name' => 'geographic_location',
-    'def' => 'The geographic location from which the sample was gathered.',
-    'cv_name' => 'biomaterial_property', 
-    'db_name' => 'tripal',
-  ));
-  tripal_insert_cvterm(array(
-    'name' => 'collected_by',
-    'def' => 'The collector of the biomaterial.',
-    'cv_name' => 'biomaterial_property', 
-    'db_name' => 'tripal',
-  )); */
-
-  //Insert the basic biomaterialprop types. These types are used in the NCBI BioSample database. 
+  // Insert the basic biomaterialprop types. These types are used in the NCBI
+  // BioSample database.
   tripal_insert_cvterm(array(
     'name' => 'sample_name',
     'def' => 'Sample Name is a name that you choose for the sample. It can have any format, but we suggest that you make it concise, unique and consistent within your lab, and as informative as possible. Every Sample Name from a single Submitter must be unique.',
@@ -480,11 +415,11 @@ function tripal_analysis_expression_add_cvterms() {
 
   tripal_insert_cvterm(array(
     'name' => 'sample_title',
-    'def' => 'Title of the sample.',             
+    'def' => 'Title of the sample.',
     'cv_name' => 'biomaterial_property',
     'db_name' => 'tripal',
   ));
- 
+
   tripal_insert_cvterm(array(
     'name' => 'bioproject_accession',
     'def' => 'The accession number of the BioProject(s) to which the BioSample belongs. If the BioSample belongs to more than one BioProject, enter multiple bioproject_accession columns. A valid BioProject accession has prefix PRJN, PRJE or PRJD, e.g., PRJNA12345.',
@@ -499,21 +434,20 @@ function tripal_analysis_expression_add_cvterms() {
     'db_name' => 'tripal',
   ));
 
-  // We use NCBI biosample attributes as to fill the biomaterialprop cv table. 
+  // We use NCBI biosample attributes as to fill the biomaterialprop cv table.
   // These attributes can be accessed at the following url.
   $url = "http://www.ncbi.nlm.nih.gov/biosample/docs/attributes/?format=xml";
   $xml_str = file_get_contents($url);
   $xml_obj = simplexml_load_string($xml_str);
 
-  foreach($xml_obj->Attribute as $attribute) {
+  foreach ($xml_obj->Attribute as $attribute) {
     tripal_insert_cvterm(array(
       'name' => $attribute->HarmonizedName,
       'def' => $attribute->Description,
       'cv_name' => 'biomaterial_property',
       'db_name' => 'tripal',
     ));
-}
-
+  }
 
 }
 
@@ -525,11 +459,10 @@ function tripal_analysis_expression_add_cvterms() {
  */
 function tripal_analysis_expression_uninstall() {
 
-  //Get localization function for installation. 
+  // Get localization function for installation.
   $t = get_t();
 
   // Unregister the analysis.
   tripal_unregister_analysis_child('tripal_analysis_expression');
 
 }
-
