@@ -313,6 +313,23 @@ function chado_analysis_expression_form($node, $form_state) {
     '#default_value' => $associated_analysis_id,
   );
 
+  // At this time the analysis module has the extra fields.
+  // These fields do not appear to do anything for the analysis module.
+  // The following three form fields prevent an error form appearing 
+  // when the expression biomaterial is submitted. 
+  $form['removed'] = array(
+    '#type' => 'value',
+    '#default_value' => '',
+  );
+  $form['num_new'] = array(
+    '#type' => 'value',
+    '#default_value' => '',
+  );
+  $form['analysis_type'] = array(
+    '#type' => 'value',
+    '#default_value' => '',
+  );
+
   // Obtain the list of contacts from the chado contact table. 
   $sql = 'SELECT
             contact_id, name 
@@ -665,6 +682,9 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
   $re_start = $form_state['values']['re_start'];
   $re_end = $form_state['values']['re_end'];
 
+  // Make sure the form rebuilds.
+  $form_state['rebuild'] = TRUE;
+
 ///
     $re_ext = '/^.+\.(' . $fileext . ')/';
 
@@ -681,7 +701,7 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
           foreach($linepart as $sample) {
             if(chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $sample), array('has_record'=>TRUE)) < 1)  {
               if ($first_mes == 0) {
-                drupal_set_message("The following biosamples from the expression file do not have a corresponding entry in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loader job is submitted a new biomaterial will be created for biomaterials from the expression file without a name match in the Chado database.");
+                drupal_set_message("The following biosamples from the expression file do not have a corresponding entry in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loading job is submitted a new biomaterial will be created for biomaterials from the expression file without a name match in the Chado database.");
                 $first_mes = 1;
               }
               drupal_set_message($sample);
