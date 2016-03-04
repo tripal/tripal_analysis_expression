@@ -148,8 +148,41 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
   $mat_fp = fopen($filepath,'r');
   $num_col = 0;
   $mat_head = 0;
+  $num_features = 0;
+  $cur_feature = 1;
   
   $quant_array = array();
+
+  // Count the number of features in the file.
+
+  // Ignore the feature footer.
+  while($line = fgets($mat_fp)) {
+    if (preg_match('/' . $re_stop . '/',$line) and $re_stop ) {
+      $data_ln = 0; 
+    }    
+
+    // Grab data lines. Ingore the header.
+    if ($data_ln == 1 or !$re_start) {
+      if ($mat_head == 0) {
+        $mat_head = 1;
+        continue;
+      }
+      elseif ($mat_head == 1) {
+        $num_features++;
+      }
+
+    }
+
+    // Only capture lines after the header. 
+    if (preg_match('/' . $re_start . '/',$line) and $re_start) {
+      $data_ln = 1; 
+    }    
+
+  }  
+  
+  // Rewind the file.
+  rewind($mat_fp);
+  $mat_head = 0;
 
   // Loop through every line in a file.
   while($line = fgets($mat_fp)) {
@@ -166,6 +199,8 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
         }
         $mat_head = 1; 
       } else {
+        print "Processing Feature $cur_feature of $num_features\n";
+        $cur_feature++; 
         for ($i = 1; $i < $num_col; $i++) {
           $feature_id = tripal_expression_find_feature_id($linepart[0]);
           $element_id = tripal_expression_element($arraydesign_id, $feature_id); 
