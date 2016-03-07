@@ -149,6 +149,7 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
   $num_col = 0;
   $mat_head = 0;
   $num_features = 0;
+  $num_lines = 0;
   $cur_feature = 1;
   
   $quant_array = array();
@@ -157,6 +158,9 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
 
   // Ignore the feature footer.
   while($line = fgets($mat_fp)) {
+
+    $num_lines++;
+
     if (preg_match('/' . $re_stop . '/',$line) and $re_stop ) {
       $data_ln = 0; 
     }    
@@ -180,12 +184,34 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
 
   }  
   
+  //fclose($mat_fp);
   // Rewind the file.
   rewind($mat_fp);
   $mat_head = 0;
 
+  $mat_fp = fopen($filepath,'r');
+
+  $set_fp = '';
+
+  $load_limit = 500;
+
   // Loop through every line in a file.
-  while($line = fgets($mat_fp)) {
+  //while($line = fgets($mat_fp) and (intval(ftell($mat_fp)) < $num_lines) {
+
+  for($j=0; $j < $num_lines and $line = fgets($mat_fp); $j++) {
+
+    if ($j % $load_limit == 0) {
+      $set_fp = ftell($mat_fp);
+      fclose($mat_fp);
+      $time_end = microtime(true);
+      if ($j != 0) {
+        print $load_limit/($time_end - $time_start) . " lines per second\n"; 
+      }
+      $time_start = microtime(true);
+      $mat_fp = fopen($filepath,'r');
+      fseek($mat_fp, $set_fp);
+    }
+
     if (preg_match('/' . $re_stop . '/',$line) and $re_stop ) {
       $data_ln = 0; 
     }    
@@ -199,7 +225,10 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
         }
         $mat_head = 1; 
       } else {
-        print "Processing Feature $cur_feature of $num_features\n";
+        
+        if ($j % $load_limit == 0) {
+          print "Processing Feature $cur_feature of $num_features\n";
+        }
         $cur_feature++; 
         for ($i = 1; $i < $num_col; $i++) {
           $feature_id = tripal_expression_find_feature_id($linepart[0]);
