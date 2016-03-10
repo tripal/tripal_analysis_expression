@@ -5,7 +5,7 @@ $values = $variables['feature_ids'];
 
   if (sizeof($values['feature_id']) > 0) { 
     $element = 0;
-    $num_per_page = 25;
+    $num_per_page = 10;
   
     $columns = array('feature_id');
     $options = array(
@@ -67,7 +67,7 @@ $values = $variables['feature_ids'];
         'parameters' => array(
           'block' => 'biomaterial_feature_browser'
         ),
-        'quantity' => $num_per_page,
+        'quantity' => 5,
       );
       print theme_pager($pager);
     }

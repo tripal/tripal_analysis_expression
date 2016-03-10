@@ -40,6 +40,8 @@
 function tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate,
   $acquisitiondate, $quantificationdate, $filepath, $fileext, $filetype, $re_start, $re_stop) {
 
+  $features = [];
+
   $uniq_name = get_unique_name($organism_id, $analysis_id);
 
   $transaction = db_transaction();
@@ -62,7 +64,7 @@ function tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arra
 
     // The column format.
     elseif ($filetype == 'col' and is_file($filepath) and preg_match($re_ext,$filepath)) {
-      tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, 
+      $features = tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, 
         $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name); 
 
     } else { // Multiple files in the column format.
@@ -73,11 +75,25 @@ function tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arra
       // Load all files with of type $fileext in the directory.
       while ($file = readdir($dir_handle)) {
         if (preg_match('/(.+)\.' . $fileext . '/',$file)) {
-          print "File $num_file of $total_files: $file			\n";
-          tripal_expression_load_col_file($filepath . '/' . $file, $fileext, $arraydesign_id, $organism_id, $analysis_id, 
+          print "File " . ($num_file + 1) . " of $total_files: $file                                       \n";
+          $new_features = tripal_expression_load_col_file($filepath . '/' . $file, $fileext, $arraydesign_id, $organism_id, $analysis_id, 
             $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name);
           $num_file++;
+          $old_features = $features;
+          $features = (array_unique(array_merge($old_features, $new_features))); 
 	}
+      }
+    }
+
+    // Associate features with an analysis.
+    foreach($features as $feature_id) {
+      $analysisfeature_id = chado_query('SELECT analysisfeature_id FROM {analysisfeature} WHERE analysis_id = :analysis_id AND feature_id = :feature_id', array(':analysis_id' => $analysis_id, ':feature_id' => $feature_id))->fetchField();
+      if(!$analysisfeature_id) {
+        $analysisfeature = chado_insert_record('analysisfeature', array('analysis_id' => $analysis_id, 'feature_id' => $feature_id));
+        if($analysisfeature==FALSE) {
+          print "ERROR: Unable to write to analysisfeature table\n";
+          exit;
+        }
       }
     }
   }
@@ -103,9 +119,6 @@ function get_unique_name($organism_id, $analysis_id) {
  print $uniq_string; 
   return $uniq_string; 
 }
-
-
-
 
 /**
  * 
@@ -158,13 +171,10 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
 
   // Ignore the feature footer.
   while($line = fgets($mat_fp)) {
-
     $num_lines++;
-
     if (preg_match('/' . $re_stop . '/',$line) and $re_stop ) {
       $data_ln = 0; 
     }    
-
     // Grab data lines. Ingore the header.
     if ($data_ln == 1 or !$re_start) {
       if ($mat_head == 0) {
@@ -174,14 +184,11 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
       elseif ($mat_head == 1) {
         $num_features++;
       }
-
     }
-
     // Only capture lines after the header. 
     if (preg_match('/' . $re_start . '/',$line) and $re_start) {
       $data_ln = 1; 
     }    
-
   }  
   
   //fclose($mat_fp);
@@ -302,13 +309,53 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
 
 function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id,
   $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name) {
-  print "Loading File";
   $inter = 0; 
   $data_ln = 0;
   preg_match('/^.+\/(.+)\.' . $fileext . '/', $filepath, $biomaterial);
   $quantification_id = expression_create_biomaterial_structure($biomaterial[1], $organism_id, 
     $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $uniq_name);
+
+  $features = [];
+ 
+  $col_head = 0;
+  $num_features = 0;
+
+  $col_fp = fopen($filepath,'r');
+  // Ignore the feature footer.
+  while($line = fgets($col_fp)) {
+    $num_lines++;
+    if (preg_match('/' . $re_stop . '/',$line) and $re_stop ) {
+      $data_ln = 0; 
+    }    
+    // Grab data lines. Ingore the header.
+    if ($data_ln == 1 or !$re_start) {
+      if ($col_head == 0) {
+        $col_head = 1;
+        continue;
+      }
+      elseif ($col_head == 1) {
+        $num_features++;
+      }
+    }
+    // Only capture lines after the header. 
+    if (preg_match('/' . $re_start . '/',$line) and $re_start) {
+      $data_ln = 1; 
+    }    
+  }  
   
+  fclose($col_fp);
+  $data_ln = 0;
+
+  // Calculate interval length.
+  $int_length = .01 * $num_features;
+
+  $f_id = 0;
+  $e_id = 0;
+  $er_id = 0;
+  $af_id = 0;
+
+  print "Loading complete: " . 0 . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
+
   $col_fp = fopen($filepath,'r');
   while($line = fgets($col_fp)) {
     if (preg_match('/' . $re_stop . '/',$line) and $re_stop ) {
@@ -317,39 +364,49 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
     if ($data_ln == 1 or !$re_start) {
       //print "this is the line >>> $line <<<";
       $inter++;
-     // print "loading number: $inter\n";
+      if ( $inter % $int_length == 0 ) {
+        $percent = sprintf("%.2f", ($inter / $num_features) * 100);
+        print "\rLoading complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \n";
+        ob_end_flush();
+      //  print "Find feature_id: " . $f_id/($num_features*.01) . "\n";
+      //  print "Create element_id: " . $e_id/($num_features*.01) . "\n";
+      //  print "Create elementresult_id: " . $er_id/($num_features*.01) . "\n";
+      //  print "Create analysisfeature_id: " . $af_id/($num_features*.01) . "\n\n";
+
+        $f_id = 0;
+        $e_id = 0;
+        $er_id = 0;
+        $af_id = 0;
+      }
       $linepart = preg_split('/\s+/',$line,-1,PREG_SPLIT_NO_EMPTY);
       // Extract the feature id.
+
+      $start = microtime(true);
       $feature_id = tripal_expression_find_feature_id($linepart[0]);
+
+      // Add to feature list;
+      $features[] = $feature_id;  
+
+      //print "Find feature_id: "; 
+      $f_id += microtime(true) - $start . "\n";
+
+      $start = microtime(true);
       $element_id = tripal_expression_element($arraydesign_id, $feature_id);
+      //print "Create element_id: ";
+      $e_id += microtime(true) - $start . "\n";
+
+      $start = microtime(true);
       $elementresult_id = tripal_expression_elementresult($element_id, $quantification_id, $linepart[1]);
-      // Create a record in the analysisfeature table. This will allow the analysis to appear in the 
-      // analysis list on the feature page. 
-      //chado_insert_record('analysisfeature', array('analysis_id' => $analysis_id, 'feature_id' => $feature_id));
-      $analysisfeature_id = chado_query('SELECT analysisfeature_id FROM {analysisfeature} WHERE analysis_id = :analysis_id AND feature_id = :feature_id', array(':analysis_id' => $analysis_id, ':feature_id' => $feature_id))->fetchField();
-      if(!$analysisfeature_id) {
-        $analysisfeature = chado_insert_record('analysisfeature', array('analysis_id' => $analysis_id, 'feature_id' => $feature_id));
-        if($analysisfeature==FALSE) {
-          print "ERROR: Unable to write to analysisfeature table\n";
-          exit;
-        }
-      }
-      /*if($analysisfeature) {
-        $analysisfeature = chado_update_record('analysisfeature',
-          array(':analysis_id' => $analysis_id, ':feature_id' => $feature_id),
-          $values);
-        if($analysisfeature==FALSE) {
-          print "ERROR: Unable to update analysisfeature table\n";
-          exit;
-        }
-      }*/
+      //print "Create elementresult_id: "; 
+      $er_id += microtime(true) - $start . "\n";
+
     }
     if (preg_match('/' . $re_start . '/',$line) and $re_start) {
       $data_ln = 1; 
     }    
   }
   fclose($col_fp);
-  return;
+  return $features;
 }
 
 /**
@@ -789,19 +846,25 @@ function create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $or
  */ 
 
 function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description) {
-  $biomaterial_id = chado_query('select biomaterial_id from {biomaterial} where name = :name limit 1',array(':name' => $biomaterial))->fetchField();
+  $biomaterial_result = chado_query('select biomaterial_id, description from {biomaterial} where name = :name limit 1',array(':name' => $biomaterial))->fetchObject();
+
+  $biomaterial_id = $biomaterial_result->biomaterial_id;
 
   if ($analysis_id) {
     $analysis_name = chado_select_record('analysis', array('name'), array('analysis_id' => $analysis_id));
   }
 
-  if ($biomaterial_description == '' && $analysis_id) {
+  if ($biomaterial_description == '' and $biomaterial_result->description != '') {
+    $biomaterial_description = '';
+  }
+ 
+  elseif ($biomaterial_description == '' && $analysis_id) {
     $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_name[0]->name;
   }
 
   $values = array(
     'name' => $biomaterial,
-    'description' => $biomaterial_description,
+    //'description' => $biomaterial_description,
     //'biosourceprovider_id' => $biosourceprovider_id,
     'taxon_id' => $organism_id, 
   //  'dbxref_id' => $dbxref_id, 
@@ -809,6 +872,10 @@ function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosource
 
   if($dbxref_id) {
     $values['dbxref_id'] = $dbxref_id;
+  }
+
+  if($biomaterial_description) {
+    $values['description'] = $biomaterial_description;
   }
 
   if($biosourceprovider_id) {

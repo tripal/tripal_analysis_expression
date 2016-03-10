@@ -2,8 +2,6 @@
 
 $feature = $variables['node']->feature;
 
-$hide_biomaterial_labels = $variables['hide_biomaterial_labels'];
-
 if ($variables['json_exp']) {
 ?>
 <a name="expression-top"> </a>
@@ -18,6 +16,7 @@ Hover the mouse over a column in the graph to view expression values. <br>
 
 <?php
   tripal_add_d3js();
+  $hide_biomaterial_labels = $variables['hide_biomaterial_labels'];
   $json_exp = $variables['json_exp']; 
   $limit_label_length = $variables['limit_label_length'];
   $expression_display = $variables['expression_display'];

@@ -216,6 +216,24 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
     exit;
   }
 
+  $num_biosamples = 0;
+  $cur_biosample = 0;
+
+  // Count the number of biomaterials in the file.
+  $fp = fopen($flat_path, "r");
+
+  while($line = fgetcsv($fp,0,$separator,$enclosure)) {
+    foreach($line as $field) { 
+      if(preg_match("/(sample_name)/",$field)) {
+        break 2;
+      }
+    }
+  }
+  while($line = fgets($fp)) {
+    $num_biosamples++;
+  }
+  $fclose($fp);
+
   // Get the file pointer.
   $fp = fopen($flat_path, "r");
 
@@ -243,7 +261,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
 
   if (count(array_unique($headers))<count($headers)) {
     print "ERROR: Two of the column headers in the BioSample submission file have the same value.\n";
-    print "Each header must be a unique value.";
+    print "Each header must be a unique value.\n";
     print $headers[0];
     exit;
   }
@@ -288,6 +306,10 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
   }
 
   while($line = fgetcsv($fp,0,$separator,$enclosure)) {
+
+    print "Loading BioSample " . ($cur_biosample+1) . " of " . $num_biosamples . "\n";
+
+    $cur_biosample++;
 
     $unique_name = '';
     $description = '';
@@ -436,8 +458,11 @@ function xml_biomaterial_parser($xml_path, $organism_id) {
 
   // Parse the file.
   $xml = simplexml_load_string($xml_raw);
+
+  $num_biosamples = count($xml->BioSample);
  
-  for ($i=0; $i<count($xml->BioSample); $i++) {
+  for ($i=0; $i<$num_biosamples; $i++) {
+    print "Loading BioSample " . ($i+1) . " of " . $num_biosamples . "\n";
     add_xml_data($organism_id,$xml->BioSample[$i]);
   }
   }
@@ -463,15 +488,6 @@ function add_xml_data($organism_id, $biosample) {
   $ncbi_owner = $biosample->Owner->Name;
 
   $biomaterial_provider = $biosample->Attributes->Attribute[1];
-/*  $age = $biosample->Attributes->Attribute[0];
-  $biomaterial_provider = $biosample->Attributes->Attribute[1];
-  $collected_by = $biosample->Attributes->Attribute[2];
-  $cultivar = $biosample->Attributes->Attribute[3];
-  $temperature = $biosample->Attributes->Attribute[4];
-  $tissue = $biosample->Attributes->Attribute[5];
-  $treatment = $biosample->Attributes->Attribute[6];
-  $geographic_location = $biosample->Attributes->Attribute[7]*/;
- // $version = preg_match('/last_update="(.+?)"/', $biosample);
 
   // Create a contact if contact is not present.
 
@@ -508,23 +524,12 @@ function add_xml_data($organism_id, $biosample) {
     $dbxref_sra_id = $dbxref_sra->dbxref_id;
   }
 
- // drupal_set_message((string)$biosample->Attributes->Attribute[0]);
- // drupal_set_message((string)$unique_name);
-
-  // Create a biomaterial.
-  //$biomaterial_id = create_biomaterial($unique_name, $comment, $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $description);
-
   $biomaterial_description = $comment ? (string)$comment : (string)$description;
 
- drupal_set_message($biomaterial_description);
   $biomaterial_id = create_biomaterial($unique_name, '', $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $biomaterial_description);
- // drupal_set_message($biomaterial_id);
 
-//  drupal_set_message($description);
-
+  // Add to biomaterialprop table. 
   add_xml_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id);
-  // Add to biomaterialprop table.
-//  add_biomaterial_properties($biomaterial_id, $sra_accession, $description, $ncbi_owner, $age, $collected_by, $cultivar, $temperature, $tissue, $treatment, $geographic_location);
 
   // Add to biomaterial_dbxref table.
   if ($sra_accession) {
@@ -546,7 +551,7 @@ function add_xml_biomaterial_properties($attributes, $biomaterial_id) {
 
   // Iterate through each property
   foreach($attributes as $attr) {
-   // drupal_set_message("here" . var_export($attr,TRUE));
+
     // Get the cvterm name 
     $attr_name = (string)$attr->attributes()->attribute_name;
 
@@ -554,8 +559,6 @@ function add_xml_biomaterial_properties($attributes, $biomaterial_id) {
       continue;
     }
 
-    //drupal_set_message(var_export($attr_name,TRUE));
-    //drupal_set_message((string)$attr_name);
     // Insert into database. If the type is already in the database the function will not update. 
     if(!tripal_insert_cvterm(array(
       'name' => (string)$attr_name, 
