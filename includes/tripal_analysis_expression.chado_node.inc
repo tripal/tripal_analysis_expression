@@ -297,7 +297,7 @@ function chado_analysis_expression_form($node, $form_state) {
     '#title' => t('Organism'),
     '#type' => 'select',
     '#required' => TRUE,
-    '#description' => t('The organism from which the biosamples were collected.'),
+    '#description' => t('The organism from which the biomaterials were collected.'),
     '#options' => $organisms,
     '#default_value' => $organism_id,
     '#suffix' => $lt_message,
@@ -719,22 +719,28 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
     }
 
     // The column format.
-    elseif ($filetype == 'col' and is_file($filepath) and preg_match($re_ext,$filepath)) {
+    elseif ($filetype == 'col' and is_file($filepath) and preg_match("/^.+\." . $fileext . "$/",$filepath)) {
       // Check single column file.
-      preg_match('/^.+\/(.+)\.' . $fileext . '/', $filepath, $biomaterial);
+      preg_match('/^.+\/(.+)\.' . $fileext . '$/', $filepath, $biomaterial);
       if (chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $biomaterial[1]), array('has_record'=>TRUE)) < 1)  {
         drupal_set_message("The following biomaterial from the expression file does not have a corresponding entry in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loader job is submitted a new biomaterial will be created for the biomaterial from the expression file without a name match in the Chado database.");
         drupal_set_message($biomaterial[1]);
       }
+      if ($first_mes == 0) {
+        drupal_set_message("The biomaterial found in the file has a corresponding biomaterial in the Chado database.");
+      }
 
     } else { // Multiple files in the column format.
-      $dir_handle = @opendir($filepath) or die("Unable to open $filepath");
+      $dir_handle = @opendir($filepath);
+      if (!$dir_handle) {
+        return;
+      }
       $total_files = count(glob($filepath . '/*.' . $fileext));
       $num_file = 0;
 
       // Load all files with of type $fileext in the directory.
       while ($file = readdir($dir_handle)) {
-        if (preg_match('/(.+)\.' . $fileext . '/',$file, $biomaterial)) {
+        if (preg_match('/(.+)\.' . $fileext . '$/',$file, $biomaterial)) {
           // Check multiple column files.
           if (chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $biomaterial[1]), array('has_record'=>TRUE)) < 1)  {
             if ($first_mes == 0) {
@@ -745,6 +751,9 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
           }
           $num_file++;
         }
+      }
+      if ($first_mes == 0) {
+        drupal_set_message("All biomaterials found in the directory have a corresponding biomaterial in the Chado database.");
       }
     }
 ///
@@ -770,6 +779,11 @@ function chado_analysis_expression_validate($node, $form, &$form_state) {
     return;
   }
 
+  // Check for an organism.
+  if (!$node->organism_id) {
+    form_set_error('organism_id', 'Please select the organism from which the biomaterials were collected.');
+  }
+
   // Remove white space around field values.
   $node->fileext = trim($node->fileext);
   $node->filepath = trim($node->filepath); 
@@ -784,6 +798,15 @@ function chado_analysis_expression_validate($node, $form, &$form_state) {
     form_set_error('re_end', 'Invalid regular expression for the end of expression data: ' . $node->re_end); 
   }
 
+  // Make sure a file type is selected if a file path is provided.
+  if ($node->filepath and !$node->filetype) {
+    form_set_error('filetype', 'Please select a source file type.');
+  }
+
+  if (!is_file($node->filepath) and !is_dir($node->filepath)) {
+    form_set_error('filepath', 'Please ensure that the file or directory in the file path is present and/or readable');
+  }
+
   // Check to see if the matrix file is readable.
   if ($node->filepath and $node->filetype === 'mat' and (!is_file($node->filepath) or !is_readable($node->filepath)) and !is_dir($node->filepath)) {
     form_set_error('filepath', 'Unable to read expression file: ' . $node->filepath); 
@@ -794,26 +817,32 @@ function chado_analysis_expression_validate($node, $form, &$form_state) {
   elseif ($node->filepath and $node->filetype === 'col' and is_file($node->filepath) and !is_readable($node->filepath)) {
     form_set_error('filepath', 'Unable to read expression file: ' . $node->filepath); 
   }
+  elseif ($node->filepath and $node->filetype === 'col' and is_file($node->filepath) and !$node->fileext) {
+    form_set_error('fileext', 'Please specify a file extension for the column file to be loaded.'); 
+  }
   elseif ($node->filepath and $node->filetype === 'col' and is_dir($node->filepath)) {
     if (empty($node->fileext)) {
       form_set_error('fileext', 'Please specify a file extension for the column files to be loaded.'); 
     }
     $anyfile = 0;
     $dir_handle = @opendir($node->filepath);
-    if ($dir_handle === FALSE) {
+    if (!$dir_handle) {
       form_set_error('filepath', 'Unable to open the directory: ' . $node->filepath); 
     }  
     while ($file = readdir($dir_handle)) {
-      if (preg_match('/(.+)\.' . $node->fileext . '/',$file)) { 
+      if (preg_match('/(.+)\.' . $node->fileext . '$/',$file)) { 
          $anyfile = 1;
       }
-      if (preg_match('/(.+)\.' . $node->fileext . '/',$file) and !is_readable($node->filepath . '/' . $file)) {
+      if (preg_match('/(.+)\.' . $node->fileext . '$/',$file) and !is_readable($node->filepath . '/' . $file)) {
         form_set_error('filepath', 'At least one file of type: ' . $node->fileext . ' is unreadable. Error caught when attempting to read file: ' . $node->filepath . '/' . $file); 
       }
     }
     if ($anyfile == 0) {
       form_set_error('filepath', 'No files of type: ' . $node->fileext . ' are found in the directory: ' . $node->filepath); 
     }
+  }
+  elseif ($node->filepath and $node->filetype === 'col' and !is_dir($node->filepath)) {
+    form_set_error('filepath', 'Unable to open the directory: ' . $node->filepath . '. Please ensure that the file type suffix is correctly set and that the server has permission to access the file(s) or directory.'); 
   }
 }
 

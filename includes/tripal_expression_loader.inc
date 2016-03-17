@@ -74,7 +74,7 @@ function tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arra
       
       // Load all files with of type $fileext in the directory.
       while ($file = readdir($dir_handle)) {
-        if (preg_match('/(.+)\.' . $fileext . '/',$file)) {
+        if (preg_match('/(.+)\.' . $fileext . '$/',$file)) {
           print "File " . ($num_file + 1) . " of $total_files: $file                                       \n";
           $new_features = tripal_expression_load_col_file($filepath . '/' . $file, $fileext, $arraydesign_id, $organism_id, $analysis_id, 
             $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name);
@@ -311,7 +311,7 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
   $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name) {
   $inter = 0; 
   $data_ln = 0;
-  preg_match('/^.+\/(.+)\.' . $fileext . '/', $filepath, $biomaterial);
+  preg_match('/^.+\/(.+)\.' . $fileext . '$/', $filepath, $biomaterial);
   $quantification_id = expression_create_biomaterial_structure($biomaterial[1], $organism_id, 
     $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $uniq_name);
 
