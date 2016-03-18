@@ -179,7 +179,10 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
   $biomaterial_display_width = variable_get('chado_feature_expression_biomaterial_display_width');
   $min_num_biomaterials = variable_get('chado_feature_expression_min_num_biomaterials');
   $node = $variables['node'];
- 
+
+  $has_exp = FALSE;
+  $first_sig = 1;
+
   $feature_id = chado_get_id_from_nid('feature', $node->nid);
 
   $sql = "SELECT ER.signal, B.name, B.biomaterial_id, B.description FROM {elementresult} ER
@@ -197,7 +200,16 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
 
   $json_exp = "[";
   foreach($expressions as $exp) {
- 
+    if($first_sig == 1) {
+      $last_signal = $exp->signal;
+      $first_sig = 0;
+    }
+
+    if ($exp->signal != $last_signal) {
+      $has_exp = TRUE;
+    }
+    $last_signal = $exp->signal;
+
     $tis = chado_get_property(
       array('table' => 'biomaterial', 'id' => $exp->biomaterial_id),
       array('type_name' => 'tissue', 'cv_name' => 'biomaterial_property')
@@ -208,7 +220,7 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
     }
     else {
       $tissue = '';
-    } 
+    }
 
 
     $treat = chado_get_property(
@@ -221,7 +233,7 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
     }
     else {
       $treatment = '';
-    } 
+    }
 
     $node_present = chado_get_nid_from_id('biomaterial', $exp->biomaterial_id);
 
@@ -252,8 +264,9 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
     $json_exp = "";
   }
 
+  $variables['has_exp'] = $has_exp;
   $variables['json_exp'] = $json_exp;
-  
+
   $variables['limit_label_length'] = $limit_label_length;
   $variables['hide_differential_expression'] = $hide_differential_expression;
   $variables['hide_biomaterial_labels'] = $hide_biomaterial_labels;
