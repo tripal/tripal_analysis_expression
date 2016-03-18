@@ -1,4 +1,4 @@
-  <h3> Module Decsription:</h3>
+  <h3> Analysis: Expression Content Type Description:</h3>
   <p> The content type <b>Analysis: Expression</b> is one of the content types specified by the 
     Tripal Expression module. The Tripal Expression module is built on top of the chado
     MAGE module. The Analysis: Expression content type is built on top of the Tripal Analysis 

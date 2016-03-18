@@ -1,4 +1,4 @@
-  <h3> Module Decsription:</h3>
+  <h3> Biomaterial Content Type Description:</h3>
   <p> The content type <b>Biomaterial</b> is one of the content types specified by the 
     Tripal Expression module. The Tripal Expression module is built on top of the chado
     MAGE module. The biomaterial content type is used to detail a biomaterial. A biomaterial 

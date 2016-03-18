@@ -4,7 +4,7 @@ core = 7.x
 version = 7.x-0.1-dev
 project = tripal_analysis_expression
 package = Tripal Extensions
-configure = admin/tripal/extension/tripal_analysis_expression/manage
+configure = admin/tripal/extension/tripal_analysis_expression
 
 dependencies[] = tripal_core
 dependencies[] = tripal_views
