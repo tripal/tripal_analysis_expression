@@ -1181,11 +1181,6 @@ function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_title' => 'Cross References',
           '#weight' => -99,
         );
-        $node->content['tripal_biomaterial_feature_browser'] = array(
-          '#markup' => theme('tripal_biomaterial_feature_browser', array('node' => $node)),
-          '#tripal_toc_id' => 'feature_browser',
-          '#tripal_toc_title' => 'Feature Browser',
-        );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_biomaterial_teaser'] = array(

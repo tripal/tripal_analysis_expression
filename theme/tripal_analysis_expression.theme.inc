@@ -271,39 +271,6 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
 
 }
 
-function tripal_analysis_expression_preprocess_tripal_biomaterial_feature_browser(&$variables) {
-
-  $biomaterial = $variables['node']->biomaterial;
-  $biomaterial_id = $biomaterial->biomaterial_id;
-
-  $sql = 'SELECT F.feature_id FROM {feature} F
-           INNER JOIN {element} E ON F.feature_id = E.feature_id
-           INNER JOIN {elementresult} ER ON E.element_id = ER.element_id
-           INNER JOIN {quantification} Q ON ER.quantification_id = Q.quantification_id
-           INNER JOIN {acquisition} AC ON Q.acquisition_id = AC.acquisition_id
-           INNER JOIN {assay} AY ON AC.assay_id = AY.assay_id
-           INNER JOIN {assay_biomaterial} AB ON AY.assay_id = AB.assay_id
-           INNER JOIN {biomaterial} B ON AB.biomaterial_id = B.biomaterial_id
-         WHERE
-           B.biomaterial_id = :biomaterial_id';
-
-  $feature_ids = chado_query($sql, array(":biomaterial_id" => $biomaterial_id)); 
- 
-//  $ids = array();
-  if ($feature_ids->rowCount() > 0)  {  
-    foreach ($feature_ids as $feature_id) { 
-      $ids[] = $feature_id->feature_id;
-    }
-    $match['feature_id'] = $ids;
-    $variables['feature_ids'] = $match;
-  }
-  else { 
-    $match['feature_id'] = [];
-    $variables['feature_ids'] = $match;
-  } 
-
-}
-
 function tripal_analysis_expression_preprocess_tripal_organism_biomaterial(&$variables) {
 
   $organism = $variables['node']->organism;
