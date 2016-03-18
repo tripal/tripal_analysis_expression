@@ -202,8 +202,18 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
 
   $load_limit = 500;
 
+  // Calculate interval length.
+  $int_length = .01 * $num_features;
+
+  // The minimum interval length is 1.
+  if ($int_length < 1) {
+    $int_length = 1;
+  }
+
   // Loop through every line in a file.
   //while($line = fgets($mat_fp) and (intval(ftell($mat_fp)) < $num_lines) {
+
+  print "Loading complete: " . 0 . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
 
   for($j=0; $j < $num_lines and $line = fgets($mat_fp); $j++) {
 
@@ -232,10 +242,14 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
         }
         $mat_head = 1; 
       } else {
-        
-        if ($j % $load_limit == 0) {
-          print "Processing Feature $cur_feature of $num_features\n";
+
+        if ( $cur_feature % $int_length == 0 ) {
+          $percent = sprintf("%.2f", ($cur_feature / $num_features) * 100);
+          print "Loading complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \n";
         }
+      //  if ($j % $load_limit == 0) {
+       //   print "Processing Feature $cur_feature of $num_features\n";
+       // }
         $cur_feature++; 
         for ($i = 1; $i < $num_col; $i++) {
           $feature_id = tripal_expression_find_feature_id($linepart[0]);
@@ -349,6 +363,11 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
   // Calculate interval length.
   $int_length = .01 * $num_features;
 
+  // The minimum interval length is 1.
+  if ($int_length < 1) {
+    $int_length = 1;
+  }
+
   $f_id = 0;
   $e_id = 0;
   $er_id = 0;
@@ -366,7 +385,7 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
       $inter++;
       if ( $inter % $int_length == 0 ) {
         $percent = sprintf("%.2f", ($inter / $num_features) * 100);
-        print "\rLoading complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \n";
+        print "Loading complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
         ob_end_flush();
       //  print "Find feature_id: " . $f_id/($num_features*.01) . "\n";
       //  print "Create element_id: " . $e_id/($num_features*.01) . "\n";

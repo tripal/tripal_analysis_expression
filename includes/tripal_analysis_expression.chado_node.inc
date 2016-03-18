@@ -701,7 +701,7 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
           foreach($linepart as $sample) {
             if(chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $sample), array('has_record'=>TRUE)) < 1)  {
               if ($first_mes == 0) {
-                drupal_set_message("The following biosamples from the expression file do not have a corresponding entry in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loading job is submitted a new biomaterial will be created for biomaterials from the expression file without a name match in the Chado database.");
+                drupal_set_message("The following biosamples from the expression file do not have a corresponding biomaterial record in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loading job is submitted a new biomaterial will be created for biomaterials from the expression file without a name match in the Chado database.");
                 $first_mes = 1;
               }
               drupal_set_message($sample);
@@ -714,7 +714,7 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
         }
       }
       if ($first_mes == 0) {
-        drupal_set_message("All biomaterials found in the expression matrix file have a corresponding biomaterial in the Chado database.");
+        drupal_set_message("All biomaterials found in the expression matrix file have a corresponding biomaterial record in the Chado database.");
       }
     }
 
@@ -723,11 +723,11 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
       // Check single column file.
       preg_match('/^.+\/(.+)\.' . $fileext . '$/', $filepath, $biomaterial);
       if (chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $biomaterial[1]), array('has_record'=>TRUE)) < 1)  {
-        drupal_set_message("The following biomaterial from the expression file does not have a corresponding entry in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loader job is submitted a new biomaterial will be created for the biomaterial from the expression file without a name match in the Chado database.");
+        drupal_set_message("The following biomaterial from the expression file does not have a corresponding biomaterial record in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loader job is submitted a new biomaterial will be created for the biomaterial from the expression file without a name match in the Chado database.");
         drupal_set_message($biomaterial[1]);
       }
       if ($first_mes == 0) {
-        drupal_set_message("The biomaterial found in the file has a corresponding biomaterial in the Chado database.");
+        drupal_set_message("The biomaterial found in the file has a corresponding biomaterial record in the Chado database.");
       }
 
     } else { // Multiple files in the column format.
@@ -744,7 +744,7 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
           // Check multiple column files.
           if (chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $biomaterial[1]), array('has_record'=>TRUE)) < 1)  {
             if ($first_mes == 0) {
-              drupal_set_message("The following biosamples from the expression file do not have a corresponding entry in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loading job is submitted a new biomaterial will be created for biomaterials from the expression file without a name match in the Chado database.");
+              drupal_set_message("The following biosamples from the expression file do not have a corresponding biomaterial record in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loading job is submitted a new biomaterial will be created for biomaterials from the expression file without a name match in the Chado database.");
               $first_mes = 1;
             }
             drupal_set_message($biomaterial[1]);
@@ -753,7 +753,7 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
         }
       }
       if ($first_mes == 0) {
-        drupal_set_message("All biomaterials found in the directory have a corresponding biomaterial in the Chado database.");
+        drupal_set_message("All biomaterials found in the directory have a corresponding biomaterial record in the Chado database.");
       }
     }
 ///
