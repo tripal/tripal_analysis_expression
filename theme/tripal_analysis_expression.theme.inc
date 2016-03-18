@@ -81,6 +81,19 @@ function tripal_analysis_expression_preprocess_tripal_biomaterial_base(&$variabl
 
   }
 
+  // Check to see if there is an analysis associated with this biomaterial.
+  $sql = "SELECT DISTINCT A.name, A.analysis_id from {analysis} A 
+           INNER JOIN {quantification} Q ON A.analysis_id = Q.analysis_id
+           INNER JOIN {acquisition} AC ON Q.acquisition_id = AC.acquisition_id
+           INNER JOIN {assay} AY ON AC.assay_id = AY.assay_id
+           INNER JOIN {assay_biomaterial} AB ON AY.assay_id = AB.assay_id
+         WHERE AB.biomaterial_id = :biomaterial_id LIMIT 1";
+
+  // This assumes there is only one analysis associated with this biomterial using the above tables.
+  $analysis = chado_query($sql, array(":biomaterial_id" => $biomaterial_id))->fetchObject();
+
+  $variables['analysis_name'] = ($analysis and property_exists($analysis, "name")) ? $analysis->name: '';
+  $variables['analysis_nid'] = ($analysis and property_exists($analysis, "analysis_id")) ? chado_get_nid_from_id('analysis', $analysis->analysis_id, 'chado_analysis'): '';
   $variables['biomaterial_ontology_terms'] = $ontology_array;
 
 } 

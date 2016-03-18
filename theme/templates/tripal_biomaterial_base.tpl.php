@@ -10,6 +10,9 @@
 
   <?php
 
+  $analysis_name = $variables['analysis_name'];
+  $analysis_nid = $variables['analysis_nid'];
+
   $headers = array();
   $rows = array();
  
@@ -26,18 +29,38 @@
 
   // The organism from which the biomaterial was collected
   if($biomaterial->taxon_id) {
+    $organism =  '<i>' . $biomaterial->taxon_id->genus . ' ' . $biomaterial->taxon_id->species . '</i> (' . $biomaterial->taxon_id->common_name . ')';
+    if (property_exists($biomaterial->taxon_id, 'nid')) {
+      $organism =  l('<i>' . $biomaterial->taxon_id->genus . ' ' . $biomaterial->taxon_id->species . '</i> (' . $biomaterial->taxon_id->common_name . ')', 'node/' . $biomaterial->taxon_id->nid, array('html' => TRUE));
+    }
     $rows[] = array(
       array(
         'data' => 'Organism',
         'header' => TRUE,
         'width' => '20%',
       ),
-      '<i>' . $biomaterial->taxon_id->genus . ' ' . $biomaterial->taxon_id->species . ' (' . $biomaterial->taxon_id->common_name . ') ' . '</i>'
+    $organism
     );
   } 
- 
+
+  // The analysis
+  if ($analysis_name) {
+    $analysis = $analysis_name;
+    if ($analysis_nid) {
+      $analysis = l($analysis_name, 'node/' . $analysis_nid, array('html' => TRUE));
+    }
+    $rows[] = array(
+      array(
+        'data' => 'Analysis',
+        'header' => TRUE,
+        'width' => '20%',
+      ),
+    $analysis
+    );
+  }
+
   // The biosource provider
-  if($biomaterial->taxon_id) {
+  if($biomaterial->biosourceprovider_id) {
     $rows[] = array(
       array(
         'data' => 'Biomaterial Provider',
