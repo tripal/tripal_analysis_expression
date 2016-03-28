@@ -164,10 +164,13 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
   $num_features = 0;
   $num_lines = 0;
   $cur_feature = 1;
+  $num_biomaterials = 0;
   
   $quant_array = array();
+  $feature_array = array();
 
   // Count the number of features in the file.
+  // Also make sure there are no duplicate features.
 
   // Ignore the feature footer.
   while($line = fgets($mat_fp)) {
@@ -183,6 +186,8 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
       }
       elseif ($mat_head == 1) {
         $num_features++;
+        preg_match("/^(.+?)\t/", $line, $match);
+        $feature_array[] = trim($match[1]);
       }
     }
     // Only capture lines after the header. 
@@ -190,7 +195,23 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
       $data_ln = 1; 
     }    
   }  
-  
+
+  // Make sure there not duplicate feature names.
+  if (count($feature_repeats = array_diff_assoc($feature_array, array_unique($feature_array))) > 0 ) {
+    //if (count($linepart) != count(array_unique($linepart))) {
+    print "ERROR: There are multiple instance of the following "
+          . "feature(s) in the expression file:\n";
+    foreach ($feature_repeats as $repeat) {
+      print "  " . $repeat . "\n";
+    }
+    print "Please make sure there is only one instance of each "
+          . "feature in the expression file\n";
+    exit;
+  }
+ 
+  // Get rid of the feature_array. 
+  unset($feature_array); 
+
   //fclose($mat_fp);
   // Rewind the file.
   rewind($mat_fp);
@@ -233,15 +254,61 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
       $data_ln = 0; 
     }    
     if ($data_ln == 1 or !$re_start) {
-      $linepart = preg_split('/\s+/',$line,-1,PREG_SPLIT_NO_EMPTY);
+      $linepart = preg_split('/\t/',$line,-1,PREG_SPLIT_NO_EMPTY);
+
+      // Trim whitespace from columns.
+      $new_linepart = [];
+      foreach ($linepart as $col) {
+        $new_linepart[] = trim($col); 	
+      }
+      $linepart = array_filter($new_linepart);
       $num_col = count($linepart);
-  
+      $linepart = array_values($linepart);
+
       if ($mat_head == 0) {
         foreach ($linepart as $sample) {
           $quant_array[] = expression_create_biomaterial_structure($sample, $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $uniq_name);
         }
+
+        // Make sure there not duplicate biomaterial names.
+        if (count($bio_repeats = array_diff_assoc($linepart, array_unique($linepart))) > 0 ) {
+        //if (count($linepart) != count(array_unique($linepart))) {
+          print "ERROR: There are multiple instance of the following " 
+                . "biomaterial(s) in the expression file:\n";
+          foreach ($bio_repeats as $repeat) {
+            print "  " . $repeat . "\n"; 
+          }
+          print "Please make sure there is only one instance of each "
+                . "biomaterial in the expression file\n";
+          exit;
+        }
+
+        $num_biomaterials = count($linepart);
         $mat_head = 1; 
+        continue;
       } else {
+
+        // Make sure that there are enough expression columns.
+        if ($num_col != ($num_biomaterials+1)) {
+          print "ERROR: Expression data in the data section of the matrix format must have a\n"
+                . "feature name followed by tab separated expression values.\n"
+                . "The number of expression values for each feature must equal\n"
+                . "the number of biomaterials in the matrix file header.\n"
+                . "Example matrix format:\n"
+                . "  <feature name>       <expression value>	<expression value> ...\n";
+          if (count($linepart) > 0) {
+            print "Loader failed on the following line:\n"
+                  . "  " . $line;
+            print "Loader expected " . ($num_biomaterials+1). " columns "
+                  . "but only found " . $num_col . " column(s).\n";
+          }
+          else {
+            print "Loader failed because of a blank line in the data section of the expression file.\n";
+          }
+          exit;
+        }
+
+        //exit;
 
         if ( $cur_feature % $int_length == 0 ) {
           $percent = sprintf("%.2f", ($cur_feature / $num_features) * 100);
@@ -252,7 +319,7 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
        // }
         $cur_feature++; 
         for ($i = 1; $i < $num_col; $i++) {
-          $feature_id = tripal_expression_find_feature_id($linepart[0]);
+          $feature_id = tripal_expression_find_feature_id($linepart[0], $organism_id);
           $element_id = tripal_expression_element($arraydesign_id, $feature_id); 
           $elementresult_id = tripal_expression_elementresult($element_id, $quant_array[$i-1], $linepart[$i]);
           // Create a record in the analysisfeature table. This will allow the analysis to appear in the 
@@ -349,6 +416,8 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
       }
       elseif ($col_head == 1) {
         $num_features++;
+        preg_match("/^(.+?)\t/", $line, $match);
+        $feature_array[] = trim($match[1]);
       }
     }
     // Only capture lines after the header. 
@@ -359,6 +428,22 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
   
   fclose($col_fp);
   $data_ln = 0;
+
+  // Make sure there not duplicate feature names.
+  if (count($feature_repeats = array_diff_assoc($feature_array, array_unique($feature_array))) > 0 ) {
+    //if (count($linepart) != count(array_unique($linepart))) {
+    print "ERROR: There are multiple instance of the following "
+          . "feature(s) in the expression file:\n";
+    foreach ($feature_repeats as $repeat) {
+      print "  " . $repeat . "\n";
+    }
+    print "Please make sure there is only one instance of each "
+          . "feature in the expression file\n";
+    exit;
+  }
+
+  // Get rid of the feature_array. 
+  unset($feature_array);
 
   // Calculate interval length.
   $int_length = .01 * $num_features;
@@ -397,11 +482,36 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
         $er_id = 0;
         $af_id = 0;
       }
-      $linepart = preg_split('/\s+/',$line,-1,PREG_SPLIT_NO_EMPTY);
-      // Extract the feature id.
+      $linepart = preg_split('/\t/',$line,-1,PREG_SPLIT_NO_EMPTY);
 
+      // Trim whitespace from columns.
+      $new_linepart = [];
+      foreach ($linepart as $col) {
+        $new_linepart[] = trim($col); 	
+      }
+      $linepart = array_filter($new_linepart);
+      $linepart = array_values($linepart);
+
+      // Make sure that there are two columns.
+      if (count($linepart) != 2) {
+        print "ERROR: Expression data in the data section of the column format must have two columns separated by a tab.\n"
+              . "Example column format:\n"
+              . "  <feature name>	<expression value>\n";
+        if (count($linepart) > 0) {
+          print "Loader failed on the following line:\n"
+                . "  " . $line . "\n";
+        }
+        else {
+          print "Loader failed because of a blank line in the data section of the expression file.\n";
+        }
+        exit;
+      }
+      
+      $num_col = count($linepart);
+  
+      // Extract the feature id.
       $start = microtime(true);
-      $feature_id = tripal_expression_find_feature_id($linepart[0]);
+      $feature_id = tripal_expression_find_feature_id($linepart[0], $organism_id);
 
       // Add to feature list;
       $features[] = $feature_id;  
@@ -438,9 +548,36 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
  * @ingroup tripal_analysis_expression
  */
 
-function tripal_expression_find_feature_id($feature) {
-  $sql = "SELECT feature_id FROM {feature} WHERE name = :feature";
-  return chado_query($sql, array(':feature' => $feature))->fetchField();
+function tripal_expression_find_feature_id($feature, $organism_id) {
+  $sql = "SELECT feature_id, organism_id FROM {feature} WHERE name = :feature";
+  $feature_object = chado_query($sql, array(':feature' => $feature))->fetchObject();
+
+  if (!$feature_object) { 
+    print "ERROR: The feature, " . $feature . ", found in the expression file "
+          . "was not found in the Chado database. Please ensure that the "
+          . "feature has been loaded into the database and that the feature name is "
+          . "both unique and correct.\n\n";
+    exit;
+  }
+
+  if ($feature_object->organism_id != $organism_id) {
+    $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
+    $analysis_org = chado_query($sql, array(":organism_id" => $organism_id))->fetchObject();
+    $feature_org = chado_query($sql, array(":organism_id" => $feature_object->organism_id))->fetchObject();
+    print "ERROR: Mismatch between the organism selected in the expression analysis "
+          . "and the organism of a feature from the expression file.\n" 
+          . "  Analysis organism: " . $analysis_org->genus  
+          . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n"
+          . "  Feature organism: " . $feature_org->genus . " " . $feature_org->species . " (" 
+          . $feature_org->common_name . ")\n"
+          . "  On feature: " . $feature . "\n"
+          . "Please ensure that the organism selected for the expression "
+          . "analysis and the organism for each feature in the expression " 
+          . "file are the same.\n";
+    exit;
+  }
+
+  return $feature_object->feature_id;
 }
 
 /**
@@ -865,7 +1002,24 @@ function create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $or
  */ 
 
 function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description) {
-  $biomaterial_result = chado_query('select biomaterial_id, description from {biomaterial} where name = :name limit 1',array(':name' => $biomaterial))->fetchObject();
+  $biomaterial_result = chado_query('select biomaterial_id, taxon_id, description from {biomaterial} where name = :name limit 1',array(':name' => $biomaterial))->fetchObject();
+
+  if ($biomaterial_result->taxon_id != $organism_id) {
+    $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
+    $analysis_org = chado_query($sql, array(":organism_id" => $organism_id))->fetchObject();
+    $biomaterial_org = chado_query($sql, array(":organism_id" => $biomaterial_result->taxon_id))->fetchObject();
+    print "ERROR: Mismatch between the organism selected in the expression file "
+          . "and the organism of a biomaterial from the expression file.\n"
+          . "  Analysis organism: " . $analysis_org->genus
+          . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n"
+          . "  Biomaterial organism: " . $biomaterial_org->genus . " " . $biomaterial_org->species . " ("
+          . $biomaterial_org->common_name . ")\n"
+          . "  On biomaterial: " . $biomaterial . "\n"
+          . "Please ensure that the organism selected for the expression "
+          . "analysis and the organism for each biomaterial in the expression "
+          . "file(s) are the same.\n";
+    exit; 
+  }
 
   $biomaterial_id = $biomaterial_result->biomaterial_id;
 

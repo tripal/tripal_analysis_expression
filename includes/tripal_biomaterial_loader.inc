@@ -219,6 +219,17 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
   $num_biosamples = 0;
   $cur_biosample = 0;
 
+  if ($flat_file_type == "tsv") {
+    $fgetcsv_values = array($fp,0,"\t");
+    $separator = "\t";
+    $enclosure = "\0";
+  }
+  if ($flat_file_type == "csv") {
+    $fgetcsv_values = array($fp,0,',','"');
+    $separator = ",";
+    $enclosure = '"';
+  }
+
   // Count the number of biomaterials in the file.
   $fp = fopen($flat_path, "r");
 
@@ -232,21 +243,10 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
   while($line = fgets($fp)) {
     $num_biosamples++;
   }
-  $fclose($fp);
+  fclose($fp);
 
   // Get the file pointer.
   $fp = fopen($flat_path, "r");
-
-  if ($flat_file_type == "tsv") {
-    $fgetcsv_values = array($fp,0,"\t");
-    $separator = "\t";
-    $enclosure = "\0";
-  }
-  if ($flat_file_type == "csv") {
-    $fgetcsv_values = array($fp,0,',','"');
-    $separator = ",";
-    $enclosure = '"';
-  }
 
   //$headers = fgetcsv($fp);
   while($line = fgetcsv($fp,0,$separator,$enclosure)) {
@@ -259,10 +259,16 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
    
   $headers = $line; 
 
-  if (count(array_unique($headers))<count($headers)) {
-    print "ERROR: Two of the column headers in the BioSample submission file have the same value.\n";
-    print "Each header must be a unique value.\n";
-    print $headers[0];
+  // Make sure there are not duplicate biomaterial headers.
+  if (count($header_repeats = array_diff_assoc($headers, array_unique($headers))) > 0 ) {
+    //if (count($linepart) != count(array_unique($linepart))) {
+    print "ERROR: There are multiple instance of the following "
+          . "header(s) in the biomaterial file:\n";
+    foreach ($header_repeats as $repeat) {
+      print "  " . $repeat . "\n";
+    }
+    print "Please make sure there is only one instance of each "
+          . "header in the biomaterial file\n";
     exit;
   }
 
@@ -277,10 +283,10 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
 
   for ($i=0; $i < count($headers); $i++) {
     $header = trim(str_replace("*","",$headers[$i]));
-    drupal_set_message("'" . $header . "'");
+    //drupal_set_message("'" . $header . "'");
     if ($header == 'sample_name') {
       $biomaterial_headers['sample_name'] = $i;
-      drupal_set_message("here ***");
+      //drupal_set_message("here ***");
     } //***
     if ($header == 'organism') {
       $biomaterial_headers['organism'] = $i;
@@ -317,13 +323,13 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
     $biosourceprovider_id = '';
     $dbxref_id = '';
 
-    if (in_array($line[$biomaterial_headers['sample_name']],$biomaterial_names)) {
+    /*if (in_array($line[$biomaterial_headers['sample_name']],$biomaterial_names)) {
       print "ERROR: Two BioSamples have the same sample_name. BioSamples must have different sample_names";
       exit;
     }
-    else {
+    else { */
       $biomaterial_names[] = $line[$biomaterial_headers['sample_name']];
-    }
+    //}
 
     // Gather the fields to insert into the biomaterial table. 
     foreach($biomaterial_headers as $name => $index) {
@@ -399,14 +405,31 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
 
     // Insert into the biomaterialprop table.
     foreach($prop_headers as $name => $index) { 
-      if (chado_select_record('biomaterialprop', array('biomaterialprop_id'), array('name' => $name))) {
+
+      ////
+      // Insert into database. If the type is already in the database the function will not update. 
+      if(!tripal_insert_cvterm(array(
+        'name' => $name,
+        'definition' => '',
+        'cv_name' => 'biomaterial_property',
+        'is_relationship' => 0,
+        'db_name' => 'tripal'),
+        array('update_existing' => FALSE))) {
+        //drupal_set_message("ERROR");
+        print "ERROR: Could not insert biomaterial attribute name into the controlled vocabulary table.";
+        exit;
+      }
+
+      ////
+
+      /*if (chado_select_record('biomaterialprop', array('biomaterialprop_id'), array('name' => $name))) {
         tripal_insert_cvterm(array(
           'name' => $name,
           'def' => '',
           'cv_name' => 'biomaterial_property',
           'db_name' => 'tripal',
         ));
-      }
+      } */
         	
       $record = array(
         'table' => 'biomaterial',
@@ -424,6 +447,20 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
     }
 
   }
+
+  // Make sure there are not duplicate biomaterials.
+  if (count($sample_repeats = array_diff_assoc($biomaterial_names, array_unique($biomaterial_names))) > 0 ) {
+    //if (count($linepart) != count(array_unique($linepart))) {
+    print "ERROR: There are multiple instance of the following "
+          . "sample_name(s) in the biomaterial file:\n";
+    foreach ($sample_repeats as $repeat) {
+      print "  " . $repeat . "\n";
+    }
+    print "Please make sure there is only one instance of each "
+          . "sample_name in the biomaterial file.\n";
+    exit;
+  }
+
   }
   catch (Exception $e) {
     print "\n";
@@ -460,7 +497,33 @@ function xml_biomaterial_parser($xml_path, $organism_id) {
   $xml = simplexml_load_string($xml_raw);
 
   $num_biosamples = count($xml->BioSample);
- 
+
+  $biomaterial_names = [];
+
+  // Make sure there are no duplicate biomaterials.
+  for ($i=0; $i<$num_biosamples; $i++) {
+    $biomaterial_names[] = $xml->BioSample[$i]->Ids->Id[1];
+    print $xml->BioSample[$i]->Ids->Id[1];
+  }
+
+  // Make sure there are not duplicate biomaterials.
+  if (count($sample_repeats = array_diff_assoc($biomaterial_names, array_unique($biomaterial_names))) > 0 ) {
+    //if (count($linepart) != count(array_unique($linepart))) {
+    print "ERROR: There are multiple instance of the following "
+          . "Sample name(s) in the biomaterial file:\n";
+    foreach ($sample_repeats as $repeat) {
+      print "  " . $repeat . "\n";
+    }
+    print "Please make sure there is only one instance of each "
+          . "Sample name in the biomaterial file.\n";
+    exit;
+  }
+
+  print "made it this fare";
+
+  exit;
+
+  // Load biomaterials. 
   for ($i=0; $i<$num_biosamples; $i++) {
     print "Loading BioSample " . ($i+1) . " of " . $num_biosamples . "\n";
     add_xml_data($organism_id,$xml->BioSample[$i]);
@@ -567,7 +630,7 @@ function add_xml_biomaterial_properties($attributes, $biomaterial_id) {
       'is_relationship' => 0,
       'db_name' => 'tripal'), 
       array('update_existing' => FALSE))) {
-      drupal_set_message("ERROR");
+      //drupal_set_message("ERROR");
       print "ERROR: Could not insert biomaterial attribute name into the controlled vocabulary table.";
       exit;
     } 
