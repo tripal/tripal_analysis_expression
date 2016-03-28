@@ -38,7 +38,7 @@
  */
 
 function tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate,
-  $acquisitiondate, $quantificationdate, $filepath, $fileext, $filetype, $re_start, $re_stop) {
+  $acquisitiondate, $quantificationdate, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames) {
 
   $features = [];
 
@@ -59,13 +59,13 @@ function tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arra
     // A matrix file.
     if ($filetype == 'mat' and is_file($filepath) and preg_match($re_ext,$filepath)) {
       tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, 
-        $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name); 
+        $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames); 
     }
 
     // The column format.
     elseif ($filetype == 'col' and is_file($filepath) and preg_match($re_ext,$filepath)) {
       $features = tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, 
-        $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name); 
+        $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames); 
 
     } else { // Multiple files in the column format.
       $dir_handle = @opendir($filepath) or die("Unable to open $filepath");
@@ -77,7 +77,7 @@ function tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arra
         if (preg_match('/(.+)\.' . $fileext . '$/',$file)) {
           print "File " . ($num_file + 1) . " of $total_files: $file                                       \n";
           $new_features = tripal_expression_load_col_file($filepath . '/' . $file, $fileext, $arraydesign_id, $organism_id, $analysis_id, 
-            $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name);
+            $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames);
           $num_file++;
           $old_features = $features;
           $features = (array_unique(array_merge($old_features, $new_features))); 
@@ -155,7 +155,7 @@ function get_unique_name($organism_id, $analysis_id) {
  */
 
 function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id,
-  $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name) {
+  $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames) {
   
   $data_ln = 0;
   $mat_fp = fopen($filepath,'r');
@@ -319,7 +319,7 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
        // }
         $cur_feature++; 
         for ($i = 1; $i < $num_col; $i++) {
-          $feature_id = tripal_expression_find_feature_id($linepart[0], $organism_id);
+          $feature_id = tripal_expression_find_feature_id($linepart[0], $organism_id, $feature_uniquenames);
           $element_id = tripal_expression_element($arraydesign_id, $feature_id); 
           $elementresult_id = tripal_expression_elementresult($element_id, $quant_array[$i-1], $linepart[$i]);
           // Create a record in the analysisfeature table. This will allow the analysis to appear in the 
@@ -389,7 +389,7 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
  */
 
 function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id,
-  $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name) {
+  $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames) {
   $inter = 0; 
   $data_ln = 0;
   preg_match('/^.+\/(.+)\.' . $fileext . '$/', $filepath, $biomaterial);
@@ -511,7 +511,7 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
   
       // Extract the feature id.
       $start = microtime(true);
-      $feature_id = tripal_expression_find_feature_id($linepart[0], $organism_id);
+      $feature_id = tripal_expression_find_feature_id($linepart[0], $organism_id, $feature_uniquenames);
 
       // Add to feature list;
       $features[] = $feature_id;  
@@ -548,8 +548,15 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
  * @ingroup tripal_analysis_expression
  */
 
-function tripal_expression_find_feature_id($feature, $organism_id) {
-  $sql = "SELECT feature_id, organism_id FROM {feature} WHERE name = :feature";
+function tripal_expression_find_feature_id($feature, $organism_id, $feature_uniquenames) {
+
+  if ($feature_uniquenames == 'uniq') {
+    $sql = "SELECT feature_id, organism_id FROM {feature} WHERE uniquename = :feature";
+  }
+  else {
+    $sql = "SELECT feature_id, organism_id FROM {feature} WHERE name = :feature";
+  }
+
   $feature_object = chado_query($sql, array(':feature' => $feature))->fetchObject();
 
   if (!$feature_object) { 

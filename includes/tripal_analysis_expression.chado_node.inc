@@ -190,6 +190,7 @@ function chado_analysis_expression_form($node, $form_state) {
   $quantification_operator_id = '';
   $assay_operator_id     = '';
   $assay_protocol_id     = '';
+  $feature_uniquenames = 'uniq';
 
   // Load custom fields if present in the database. 
   if (property_exists($node, 'analysis')) {
@@ -215,6 +216,7 @@ function chado_analysis_expression_form($node, $form_state) {
     $quantification_operator_id = $expression->quantification_operator_id;
     $assay_operator_id     = $expression->assay_operator_id;
     $assay_protocol_id     = $expression->assay_protocol_id;
+    $feature_uniquenames  = $expression->feature_uniquenames;
   }
 
   // In the case of a failed validation or an ajax callback, repopulate the fields. 
@@ -240,6 +242,7 @@ function chado_analysis_expression_form($node, $form_state) {
     $quantification_operator_id = $form_state['values']['quantification_operator_id'];
     $assay_operator_id     = $form_state['values']['assay_operator_id'];
     $assay_protocol_id     = $form_state['values']['assay_protocol_id'];
+    $feature_uniquenames  = $form_state['values']['feature_uniquenames'];
   } 
 
   // Rebuilding form after submission from ajax call (is this necessary?).
@@ -265,6 +268,7 @@ function chado_analysis_expression_form($node, $form_state) {
     $quantification_operator_id = $form_state['input']['quantification_operator_id'];
     $assay_operator_id     = $form_state['input']['assay_operator_id'];
     $assay_protocol_id     = $form_state['input']['assay_protocol_id'];
+    $feature_uniquenames  = $form_state['input']['feature_uniquenames'];
   }
  
   // Set submit_job to 0 every time the form loads.
@@ -546,6 +550,23 @@ function chado_analysis_expression_form($node, $form_state) {
     '#description' => t('Note: Features associated with the expression data must exist in Chado before parsing the file. Otherwise, expression data that cannot be linked to a feature will be discarded.'),
     '#default_value' => 0,
   );
+
+  $form['loader']['feature_uniquenames'] = array(
+    '#type' => 'radios',
+    '#title' => t('Name Match Type'),
+    '#description' => t('Expression data can be associated with features via the feature name or the feature unique name.'),
+    '#options' => array(
+      'name' => t('Name'),
+      'uniq' => t('Unique name'),
+    ),
+    '#default_value' => $feature_uniquenames,
+  );
+
+/*  $form['loader']['feature_uniquenames'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use feature uniquename to associate expression values (default is feature name)'),
+    '#default_value' => $feature_uniquenames,
+  );*/
 
   $form['loader']['fileext'] = array(
     '#type' => 'textfield',
@@ -901,6 +922,7 @@ function chado_analysis_expression_insert($node) {
   chado_insert_property($record, array('type_name' => 'analysis_expression_filepath', 'cv_name' => 'tripal', 'value' => trim($node->filepath))); 
   chado_insert_property($record, array('type_name' => 'analysis_expression_re_start', 'cv_name' => 'tripal', 'value' => trim($node->re_start))); 
   chado_insert_property($record, array('type_name' => 'analysis_expression_re_end', 'cv_name' => 'tripal', 'value' => trim($node->re_end))); 
+  chado_insert_property($record, array('type_name' => 'analysis_expression_feature_uniquenames', 'cv_name' => 'tripal', 'value' => trim($node->feature_uniquenames))); 
 
   if ($node->submit_job) { 
     // Submit the expression loading job.
@@ -949,6 +971,7 @@ function chado_analysis_expression_load($nodes) {
     $filepath = chado_get_property($record, array('type_name' => 'analysis_expression_filepath', 'cv_name' => 'tripal'));
     $re_start = chado_get_property($record, array('type_name' => 'analysis_expression_re_start', 'cv_name' => 'tripal'));
     $re_end = chado_get_property($record, array('type_name' => 'analysis_expression_re_end', 'cv_name' => 'tripal'));
+    $feature_uniquenames = chado_get_property($record, array('type_name' => 'analysis_expression_feature_uniquenames', 'cv_name' => 'tripal'));
  
     $analysis->tripal_analysis_expression = new stdClass;
     $analysis->tripal_analysis_expression->organism_id          = is_object($organism_id)          ? $organism_id->value          : '';
@@ -972,6 +995,7 @@ function chado_analysis_expression_load($nodes) {
     $analysis->tripal_analysis_expression->filepath             = is_object($filepath)             ? $filepath->value             : '';
     $analysis->tripal_analysis_expression->re_start             = is_object($re_start)             ? $re_start->value             : '';
     $analysis->tripal_analysis_expression->re_end               = is_object($re_end)               ? $re_end->value               : '';
+    $analysis->tripal_analysis_expression->feature_uniquenames = is_object($feature_uniquenames) ? $feature_uniquenames->value : '';
 
     // Acquire the node title.
     $node->title = chado_get_node_title($node);
@@ -1027,6 +1051,7 @@ function chado_analysis_expression_update($node) {
   chado_update_property($record, array('type_name' => 'analysis_expression_filepath', 'cv_name' => 'tripal', 'value' => trim($node->filepath)), $options); 
   chado_update_property($record, array('type_name' => 'analysis_expression_re_start', 'cv_name' => 'tripal', 'value' => trim($node->re_start)), $options); 
   chado_update_property($record, array('type_name' => 'analysis_expression_re_end', 'cv_name' => 'tripal', 'value' => trim($node->re_end)), $options); 
+  chado_update_property($record, array('type_name' => 'analysis_expression_feature_uniquenames', 'cv_name' => 'tripal', 'value' => trim($node->feature_uniquenames)), $options); 
   
   if ($node->submit_job) { 
     // Submit the expression loading job.
@@ -1059,6 +1084,7 @@ function chado_analysis_expression_submit_job($node) {
       $node->filetype,
       $node->re_start,
       $node->re_end,
+      $node->feature_uniquenames,
     );
     tripal_add_job("Loading expression data from: $node->filepath", 'tripal_analysis_expression', 
       'tripal_expression_loader', $job_args, $user->uid);

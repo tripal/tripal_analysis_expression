@@ -338,6 +338,12 @@ function tripal_analysis_expression_add_cvterms() {
     'db_name' => 'tripal',
   ));
   tripal_insert_cvterm(array(
+    'name' => 'analysis_expression_feature_uniquenames',
+    'def' => 'Use feature uniquenames to associate expression data with biomaterials.',
+    'cv_name' => 'tripal',
+    'db_name' => 'tripal',
+  ));
+  tripal_insert_cvterm(array(
     'name' => 'analysis_expression_assaydate',
     'def' => 'The date an assay is run.',
     'cv_name' => 'tripal',
