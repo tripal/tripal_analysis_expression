@@ -503,7 +503,6 @@ function xml_biomaterial_parser($xml_path, $organism_id) {
   // Make sure there are no duplicate biomaterials.
   for ($i=0; $i<$num_biosamples; $i++) {
     $biomaterial_names[] = $xml->BioSample[$i]->Ids->Id[1];
-    print $xml->BioSample[$i]->Ids->Id[1];
   }
 
   // Make sure there are not duplicate biomaterials.
@@ -518,10 +517,6 @@ function xml_biomaterial_parser($xml_path, $organism_id) {
           . "Sample name in the biomaterial file.\n";
     exit;
   }
-
-  print "made it this fare";
-
-  exit;
 
   // Load biomaterials. 
   for ($i=0; $i<$num_biosamples; $i++) {
