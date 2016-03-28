@@ -218,7 +218,7 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
       $first_sig = 0;
     }
 
-    if ($exp->signal != $last_signal) {
+    if ($exp->signal != $last_signal and $exp->signal != 0) {
       $has_exp = TRUE;
     }
     $last_signal = $exp->signal;

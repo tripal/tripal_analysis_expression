@@ -3,7 +3,7 @@
 $feature = $variables['node']->feature;
 
 
-if (!$variables['has_exp']) { ?>
+if (!$variables['has_exp'] and $variables['json_exp']) { ?>
 
 No biomaterial libraries express this feature.
 
