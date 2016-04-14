@@ -489,7 +489,7 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
       foreach ($linepart as $col) {
         $new_linepart[] = trim($col); 	
       }
-      $linepart = array_filter($new_linepart);
+      $linepart = array_filter($new_linepart, function($var){return $var!="";});
       $linepart = array_values($linepart);
 
       // Make sure that there are two columns.
