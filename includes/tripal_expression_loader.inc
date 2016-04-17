@@ -181,6 +181,7 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
     // Grab data lines. Ingore the header.
     if ($data_ln == 1 or !$re_start) {
       if ($mat_head == 0) {
+        $num_features++;
         $mat_head = 1;
         continue;
       }
@@ -411,6 +412,7 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
     // Grab data lines. Ingore the header.
     if ($data_ln == 1 or !$re_start) {
       if ($col_head == 0) {
+        $num_features++;
         $col_head = 1;
         continue;
       }
@@ -774,11 +776,11 @@ function create_assay_biomaterial($assay_id, $biomaterial_id, $channel_id) {
  */
 
 function create_generic_contact() {
-  $contact_id = chado_query('select contact_id from {contact} where name = :name limit 1',array(':name' => 'generic contact'))->fetchField();
+  $contact_id = chado_query('select contact_id from {contact} where name = :name limit 1',array(':name' => 'Not provided'))->fetchField();
   if(!$contact_id) {
     $values = array(
-      'name' => 'generic contact',
-      'description' => 'Caution: This is a generic contact created by the expression module. This contact may be a dependency for an expression analysis.',
+      'name' => 'Not provided',
+      'description' => 'Caution: This is a generic contact created by the expression module. This contact may be a dependency for an expression analysis. Delete with caution.',
     );
     $contact = chado_insert_record('contact', $values);
     if($contact==FALSE) {
@@ -798,11 +800,11 @@ function create_generic_contact() {
  */
 
 function create_generic_channel() {
-  $channel_id = chado_query('select channel_id from {channel} where name = :name limit 1',array(':name' => 'generic channel'))->fetchField();
+  $channel_id = chado_query('select channel_id from {channel} where name = :name limit 1',array(':name' => 'Not provided'))->fetchField();
   if(!$channel_id) {
     $values = array(
-      'name' => 'generic channel',
-      'definition' => 'Caution: This is a generic channel created by the expression module. This channel may be a dependency for an expression analysis.',
+      'name' => 'Not provided',
+      'definition' => 'Caution: This is a generic channel created by the expression module. This channel may be a dependency for an expression analysis. Delete with caution',
     );
     $channel = chado_insert_record('channel',$values);
     if($channel==FALSE) {
@@ -822,11 +824,11 @@ function create_generic_channel() {
  */
 
 function create_generic_arraydesign($contact_id) {
-  $arraydesign_id = chado_query('select arraydesign_id from {arraydesign} where name = :name limit 1',array(':name' => 'generic arraydesign'))->fetchField(); 
+  $arraydesign_id = chado_query('select arraydesign_id from {arraydesign} where name = :name limit 1',array(':name' => 'Not provided'))->fetchField(); 
   if(!$arraydesign_id) {
     $values = array(
-      'name' => 'generic arraydesign',
-      'description' => 'Caution: This is a generic arraydesign created by the expression module. This arraydesign may be a dependency for an expression analysis.',
+      'name' => 'Not provided',
+      'description' => 'Caution: This is a generic arraydesign created by the expression module. This arraydesign may be a dependency for an expression analysis. Delete with caution',
       'manufacturer_id' => $contact_id,
       'platformtype_id' => 1,  
     );
@@ -1015,16 +1017,18 @@ function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosource
     $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
     $analysis_org = chado_query($sql, array(":organism_id" => $organism_id))->fetchObject();
     $biomaterial_org = chado_query($sql, array(":organism_id" => $biomaterial_result->taxon_id))->fetchObject();
-    print "ERROR: Mismatch between the organism selected in the expression file "
-          . "and the organism of a biomaterial from the expression file.\n"
-          . "  Analysis organism: " . $analysis_org->genus
+    print "ERROR: Mismatch between the organism selected in the loader "
+          . "and the organism of a biomaterial in the Chado database.\n"
+          . "  Organism selected by loader: " . $analysis_org->genus
           . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n"
           . "  Biomaterial organism: " . $biomaterial_org->genus . " " . $biomaterial_org->species . " ("
           . $biomaterial_org->common_name . ")\n"
           . "  On biomaterial: " . $biomaterial . "\n"
-          . "Please ensure that the organism selected for the expression "
-          . "analysis and the organism for each biomaterial in the expression "
-          . "file(s) are the same.\n";
+          . "Please ensure that the organism selected by the loader "
+          . "and the organism for each biomaterial in the file to be loaded "
+          . "are the same. If these organisms should not be the same, "
+          . "delete the offending biomaterial in Chado or change the name of "
+          . "the biomaterial to another unique name.\n";
     exit; 
   }
 

@@ -547,7 +547,7 @@ function chado_analysis_expression_form($node, $form_state) {
   $form['loader']['submit_job'] = array(
     '#type' => 'checkbox',
     '#title' => t('Submit a job to parse the expression data into Chado'),
-    '#description' => t('Note: Features associated with the expression data must exist in Chado before parsing the file. Otherwise, expression data that cannot be linked to a feature will be discarded.'),
+    '#description' => t('Note: Features associated with the expression data must exist in Chado before loading the file. Otherwise, the loader will exit with an error.'),
     '#default_value' => 0,
   );
 

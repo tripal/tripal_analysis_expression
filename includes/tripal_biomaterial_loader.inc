@@ -349,7 +349,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
           'accession' => $line[$index],
           'db_id' => $ncbi_biosample_id,
         ); 
-        $dbxref = tripal_insert_record('dbxref',$values); 
+        $dbxref = chado_insert_record('dbxref',$values); 
         $dbxref_id = $dbxref->dbxref_id;
         //$value['primary_dbxref'] = $line[$index];
       }
@@ -389,7 +389,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
           'accession' => $line[$index],
           'db_id' => $db_id,
         );
-        $dbxref = tripal_insert_record('dbxref',$values);
+        $dbxref = chado_insert_record('dbxref',$values);
         $dbxref_id = $dbxref->dbxref_id;
 
         // Insert into the biomaterial_dbxref table.
@@ -398,7 +398,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
           'biomaterial_id' => $biomaterial_id,
           'dbxref_id' => $dbxref_id,
         );
-        $biomaterial_dbxref = tripal_insert_record('biomaterial_dbxref', $values);
+        $biomaterial_dbxref = chado_insert_record('biomaterial_dbxref', $values);
         $biomaterial_dbxref_id = $biomaterial_dbxref->$biomaterial_dbxref_id; 
       }
     }
@@ -698,6 +698,12 @@ function create_ncbi_db($url_name, $db_name, $db_description) {
  */
 function tripal_biomaterial_loader_validate($form, &$form_state) {
 
+  // Make sure an organism is selected.
+  $organism_id = $form_state['values']['organism_id'];
+  if(!$organism_id) {
+    form_set_error('organism_id', 'Please select the organism from which the biomaterials were collected.');
+  }
+
   // Get the file path. 
   $file_type = $form_state['values']['file_type'];
   if ($file_type == 'xml') {
@@ -711,16 +717,12 @@ function tripal_biomaterial_loader_validate($form, &$form_state) {
     else if (!is_readable($path)) { form_set_error('flat_file][flat_path', 'File is not present or is unreadable.'); }
   }
 
-  //$xml_path = $form_state['values']['xml_file']['xml_path'];
-  //$flat_path = $form_state['values']['flat_file']['flat_path'];
-  //$flat_delimiter = $form_state['values']['flat_file']['flat_delimiter'];
-  //$flat_enclosure = $form_state['values']['flat_file']['flat_enclosure'];
-
-  // Make sure the file is present and readable. 
- //*** if (!is_readable($form_sta
-
-
-
+  // Make sure the flat file type is selected when loading a flat file.
+  $flat_file_type = $form_state['values']['flat_file']['flat_file_type'];
+  if($file_type == 'flat' and !$flat_file_type) {
+    form_set_error('flat_file_type', 'Please select a flat file format.');
+  }
+  
 }
 
 
