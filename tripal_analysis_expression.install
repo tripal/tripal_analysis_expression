@@ -49,7 +49,7 @@ function tripal_analysis_expression_install() {
   tripal_set_default_cv('biomaterial_relationship', 'type_id', 'biomaterial_relationship');
 
   // These variables are used to set how expression information is displayed.
-  variable_set('chado_feature_expression_hide_differential_expression', 0);
+  variable_set('chado_feature_expression_hide_expression', 0);
   variable_set('chado_feature_expression_hide_biomaterial_labels', 0);
   variable_set('chado_feature_expression_limit_label_length', 0);
   variable_set('chado_feature_expression_min_num_biomaterials', 0);

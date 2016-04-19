@@ -49,7 +49,7 @@ function tripal_analysis_expression_help($path, $arg) {
       $ret_val .= '<p>' . t('The expression module allows the user to load and display expression information.') . '</p>';
       $ret_val .= "<b>" . t("Analysis: Expression") . "</b> - " . t("This analysis: expression content type") . " ";
       $ret_val .= t("provides the ability") . " ";
-      $ret_val .= t("to describe either microarray differential expression data or next generation sequencing") . " ";
+      $ret_val .= t("to describe either microarray expression data or next generation sequencing") . " ";
       $ret_val .= t("expression data (such as data obtained from RNASeq). The analysis: expression content") . " ";
       $ret_val .= t("type also provides a") . " ";
       $ret_val .= t("form to load expression data associated with the analysis.") . "<br>";
@@ -222,7 +222,7 @@ function tripal_analysis_expression_menu() {
     'weight' => 10,
   );
 
-  // Differential expression display on feature pages.
+  // Expression display on feature pages.
   $items['admin/tripal/extension/tripal_analysis_expression/manage'] = array(
     'title' => 'Tripal Expression Analysis Settings',
     'description' => 'Manage the display of expression information.',

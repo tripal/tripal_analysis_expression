@@ -13,7 +13,7 @@ This is an extension module for the Tripal project.
 
 # Introduction 
 Tripal Analysis: Expression is a [Drupal](https://www.drupal.org/) module built to extend the functionality of the [Tripal](http://tripal.info/) toolset.
-The purpose of the module is to visually represent differential gene expression for Tripal features. This module requires the following Tripal modules:
+The purpose of the module is to visually represent gene expression for Tripal features. This module requires the following Tripal modules:
 
 1. Tripal Core
 2. Tripal Views
@@ -29,7 +29,7 @@ The purpose of the module is to visually represent differential gene expression 
 ### Content Types
 The is module provides four content types - Analysis: Expression, Biomaterial, Array Design, and Protocol. 
 
-1. Analysis: Expression - The analysis: expression content type it built by hooking into the Tripal 2 Analysis module. This content type was modeled after the content types provided by the [Tripal InterPro Analysis](https://www.drupal.org/project/tripal_analysis_interpro) module and the [Tripal Blast Analysis](https://www.drupal.org/project/tripal_analysis_blast) module. This content type provides an interface to describe the experiment from which differential expression data was gathered. This content type provides the ability to describe either microarray differential expression data or next generation sequencing expression data (such as data obtained from RNASeq). This content type also provides a form to load expression data associated with the analysis.
+1. Analysis: Expression - The analysis: expression content type it built by hooking into the Tripal 2 Analysis module. This content type was modeled after the content types provided by the [Tripal InterPro Analysis](https://www.drupal.org/project/tripal_analysis_interpro) module and the [Tripal Blast Analysis](https://www.drupal.org/project/tripal_analysis_blast) module. This content type provides an interface to describe the experiment from which expression data was gathered. This content type provides the ability to describe either microarray expression data or next generation sequencing expression data (such as data obtained from RNASeq). This content type also provides a form to load expression data associated with the analysis.
 
 2. Biomaterial - The biomaterial content type represents the Chado biomaterial table. The Chado biomaterial table is a member of the Chado MAGE module. The biomaterial content type is similar to the [BioSample](http://www.ncbi.nlm.nih.gov/books/NBK169436/) content type provided by [NCBI](http://www.ncbi.nlm.nih.gov/). See the biomaterial description at the [GMOD wiki](http://gmod.org/wiki/Chado_Mage_Module#Table:_biomaterial).
 
@@ -52,9 +52,9 @@ site_name/chado/biomaterial
 site_name/chado/protocol
 
 ### Data Loaders
-Two loaders are provided by this module, a biomaterial loader, and a differential expression loader. The biomaterial loader has the ability to load data from a flat file or from an xml file downloaded from NCBI. The expression loader is included in the analysis: expression content type form.
+Two loaders are provided by this module, a biomaterial loader, and an expression loader. The biomaterial loader has the ability to load data from a flat file or from an xml file downloaded from NCBI. The expression loader is included in the analysis: expression content type form.
 
-### Differential Expression Display
+### Expression Display
 Once expression data is loaded. A display will be shown on each feature page that has corresponding biomaterials and expression values.
 
 # Loading Biomaterials
@@ -157,13 +157,13 @@ The data loader fields provide a way for the user to load expression data associ
 The following panes are added to the following content types:
 
 ### Feature
-* **Differential Expression** - After biomaterials and expression data have been loaded the differential expression pane will appear on the corresponding feature page. The pane will 5 different links: Sort Descending, Sort Ascending, Only Non-Zero Values, Tile/Chart, Reset.
+* **Expression** - After biomaterials and expression data have been loaded the expression pane will appear on the corresponding feature page. The pane will 5 different links: Sort Descending, Sort Ascending, Only Non-Zero Values, Tile/Chart, Reset.
  * **Sort Descending/Sort Ascending** - Sort expression data based on expression values - descending or ascending. 
  * **Only Non-Zero Values** - Remove biomaterials that do not expression the feature.
  * **Tile/Chart** - Toggle figure between a tile heatmap view or a chart view. 
  * **Reset** - Reset the figure. Return the figure to it's original state.
 
-![Differential Expression Tile Map](https://cloud.githubusercontent.com/assets/14822959/13010313/3da1a292-d16f-11e5-9c32-f8d6f43a0c34.png)
+![Expression Tile Map](https://cloud.githubusercontent.com/assets/14822959/13010313/3da1a292-d16f-11e5-9c32-f8d6f43a0c34.png)
 
 ### Organism
 * **Biomaterial Browser** - After loading biomaterials, a new pane with a list of biomaterials will appear on the corresponding organism page. Biomaterials are not required to be synced when to appear in this list.
@@ -199,8 +199,8 @@ Each Analysis: Expression content type has administrative pages. As an administr
 
 ![Administrator Pages for Content Types](https://cloud.githubusercontent.com/assets/14822959/13010514/2d2dc7be-d170-11e5-8670-92bdded6659d.png)
 
-### Differential Expression Display Administrative Page
-The display of differential expression data on feature pages can be configured.
+### Expression Display Administrative Page
+The display of expression data on feature pages can be configured.
 
 
 

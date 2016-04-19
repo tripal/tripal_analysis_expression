@@ -1167,7 +1167,7 @@ function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_feature_expression'] = array(
           '#markup' => theme('tripal_feature_expression', array('node' => $node)),
           '#tripal_toc_id' => 'figure',
-          '#tripal_toc_title' => 'Differential Expression',
+          '#tripal_toc_title' => 'Expression',
           '#weight' => -99,
         );
       }

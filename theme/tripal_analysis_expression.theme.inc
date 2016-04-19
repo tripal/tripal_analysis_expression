@@ -185,7 +185,7 @@ if (count($properties) > 0) {
 
 function tripal_analysis_expression_preprocess_tripal_feature_expression(&$variables) {
 
-  $hide_differential_expression = variable_get('chado_feature_expression_hide_differential_expression');
+  $hide_expression = variable_get('chado_feature_expression_hide_expression');
   $hide_biomaterial_labels = variable_get('chado_feature_expression_hide_biomaterial_labels');
   $limit_label_length = trim(variable_get('chado_feature_expression_limit_label_length'));
   $expression_display = variable_get('chado_feature_expression_expression_display');
@@ -273,7 +273,7 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
     $json_exp = "";
   }
 
-  if($hide_differential_expression == 1) {
+  if($hide_expression == 1) {
     $json_exp = "";
   }
 
@@ -281,7 +281,7 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
   $variables['json_exp'] = $json_exp;
 
   $variables['limit_label_length'] = $limit_label_length;
-  $variables['hide_differential_expression'] = $hide_differential_expression;
+  $variables['hide_expression'] = $hide_expression;
   $variables['hide_biomaterial_labels'] = $hide_biomaterial_labels;
   $variables['expression_display'] = $expression_display;
   $variables['biomaterial_display_width'] = $biomaterial_display_width;

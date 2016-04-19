@@ -26,17 +26,17 @@ function tripal_analysis_expression_config_admin() {
     '#title' => t('Feature Display'),
   );
   
-  $form['feature_expression']['hide_differential_expression'] = array(
+  $form['feature_expression']['hide_expression'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Hide Differential Expression'),
-    '#description' => t('Hide differential expression on all feature pages.'),
-    '#default_value' => variable_get('chado_feature_expression_hide_differential_expression',TRUE),
+    '#title' => t('Hide Expression Figure'),
+    '#description' => t('Hide expression figure on all feature pages.'),
+    '#default_value' => variable_get('chado_feature_expression_hide_expression',TRUE),
   );
 
   $form['feature_expression']['hide_biomaterial_labels'] = array(
     '#type' => 'checkbox',
     '#title' => t('Hide Biomaterial Labels'),
-    '#description' => t('Hide biomaterials labels on differential expression figure.'),
+    '#description' => t('Hide biomaterials labels on expression figure.'),
     '#options' => t('Show Labels'),
     '#default_value' => variable_get('chado_feature_expression_hide_biomaterial_labels',TRUE),
   );
@@ -51,8 +51,8 @@ function tripal_analysis_expression_config_admin() {
 
   $form['feature_expression']['min_num_biomaterials'] = array(
     '#type' => 'textfield',
-    '#title' => t('Required Number of Differential Expression'),
-    '#description' => t('Only show expression data for features with this number or greater of differential expression.'),
+    '#title' => t('Required Number of Expression Values'),
+    '#description' => t('Only show expression data for features with this number or greater of expression values.'),
     '#default_value' => variable_get('chado_feature_expression_min_num_biomaterials','0'),
     '#size' => 5,
   );
@@ -85,7 +85,7 @@ function tripal_analysis_expression_config_admin() {
  */
 function tripal_analysis_expression_config_admin_validate($form, &$form_state) {
 
-  variable_set('chado_feature_expression_hide_differential_expression', $form_state['values']['hide_differential_expression']);
+  variable_set('chado_feature_expression_hide_expression', $form_state['values']['hide_expression']);
   variable_set('chado_feature_expression_hide_biomaterial_labels', $form_state['values']['hide_biomaterial_labels']);
   variable_set('chado_feature_expression_expression_display', $form_state['values']['expression_display']);
   variable_set('chado_feature_expression_min_num_biomaterials', $form_state['values']['min_num_biomaterials']);
@@ -98,7 +98,7 @@ function tripal_analysis_expression_config_admin_validate($form, &$form_state) {
   }
 
   if ( $form_state['values']['min_num_biomaterials'] < 0 ) {
-    form_set_error('min_num_biomaterials', t("Please provide a number 0 or greater for the required number of differential expressions."));
+    form_set_error('min_num_biomaterials', t("Please provide a number 0 or greater for the required number of expression values."));
   }
   else {
     variable_set('chado_feature_expression_min_num_biomaterials', $form_state['values']['min_num_biomaterials']);
