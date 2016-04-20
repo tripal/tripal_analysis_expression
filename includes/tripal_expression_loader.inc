@@ -49,11 +49,11 @@ function tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arra
         "If the load fails or is terminated prematurely then the entire set of \n" . 
         "insertions/updates is rolled back and will not be found in the database\n\n";
   try {
-    if(!$contact_id) {
-      $contact_id = create_generic_contact(); //***
-    }
+    //if(!$contact_id) {
+    //  $contact_id = create_generic_contact(); //***
+   // }
     // Create the array design. 
-    $arraydesign_id   = $arraydesign_id    ? $arraydesign_id    : create_generic_arraydesign($contact_id);
+    $arraydesign_id   = $arraydesign_id    ? $arraydesign_id    : create_generic_arraydesign(create_generic_contact());
     $re_ext = '/^.+\.(' . $fileext . ')/';
 
     // A matrix file.
@@ -710,10 +710,10 @@ function expression_create_biomaterial_structure($biomaterial, $organism_id, $an
   $uniq_name = $biomaterial . $uniq_name;
 
   // Create the following records if not provided by the user. 
-  $contact_id       = $contact_id        ? $contact_id        : create_generic_contact();
-  $assay_id = create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
-  $acquisition_id = create_generic_acquisition($assay_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
-  $quantification_id = create_generic_quantification($acquisition_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
+  $contact_id        = $contact_id        ? $contact_id        : create_generic_contact();
+  $assay_id          = $assay_id          ? $assay_id          : create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
+  $acquisition_id    = $acquistion_id     ? $acquisition_id    : create_generic_acquisition($assay_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
+  $quantification_id = $quantification_id ? $quantification_id : create_generic_quantification($acquisition_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
   //$assay_id         = $assay_id          ? create_unique_assay($assay_id, $contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id) 
    // : create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id);
   //$acquisition_id   = $acquisition_id    ? create_unique_acquisition($acquisition_id, $assay_id, $biomaterial_id, $organism_id, $analysis_id)        
@@ -804,7 +804,7 @@ function create_generic_channel() {
   if(!$channel_id) {
     $values = array(
       'name' => 'Not provided',
-      'definition' => 'Caution: This is a generic channel created by the expression module. This channel may be a dependency for an expression analysis. Delete with caution',
+      'definition' => 'Caution: This is a generic channel created by the expression module. This channel may be a dependency for an expression analysis. Delete with caution.',
     );
     $channel = chado_insert_record('channel',$values);
     if($channel==FALSE) {
@@ -828,7 +828,7 @@ function create_generic_arraydesign($contact_id) {
   if(!$arraydesign_id) {
     $values = array(
       'name' => 'Not provided',
-      'description' => 'Caution: This is a generic arraydesign created by the expression module. This arraydesign may be a dependency for an expression analysis. Delete with caution',
+      'description' => 'Caution: This is a generic arraydesign created by the expression module. This arraydesign may be a dependency for an expression analysis. Delete with caution.',
       'manufacturer_id' => $contact_id,
       'platformtype_id' => 1,  
     );
