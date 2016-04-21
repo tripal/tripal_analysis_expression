@@ -1112,6 +1112,12 @@ function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_title' => 'Protocols',
           '#weight' => -80,
         );
+        $node->content['tripal_analysis_biomaterial'] = array(
+          '#markup' => theme('tripal_analysis_biomaterial', array('node' => $node)),
+          '#tripal_toc_id' => 'biomaterial_browser', // Fix ****
+          '#tripal_toc_title' => 'Biomaterial Browser',
+          '#weight' => -9,
+        );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_analysis_expression_teaser'] = array(
@@ -1184,18 +1190,6 @@ function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
       }
     break;    
 
-    case 'chado_analysis':
-      if ($view_mode == 'full') {
-        $node->content['tripal_analysis_biomaterial'] = array(
-          '#markup' => theme('tripal_analysis_biomaterial', array('node' => $node)),
-          '#tripal_toc_id' => 'biomaterial_browser', // Fix ****
-          '#tripal_toc_title' => 'Biomaterial Browser',
-          '#weight' => -9,
-        );
-      }
-    break;    
-
-    case 'chado_biomaterial':
     case 'chado_biomaterial':
       if ($view_mode == 'full') {
         $node->content['tripal_biomaterial_properties'] = array(

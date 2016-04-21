@@ -1,15 +1,15 @@
 <?php
 
 $analysis = $variables['node']->analysis;
-$results = $variables['associated_biomaterials'];
+//$biomaterial_ids = $variables['biomaterial_ids'];
 
-if (sizeof($results) > 0) {
+if (sizeof($variables['biomaterial_ids']) > 0) {
   $element = 1;
-  $num_per_page = 25;
+  $num_per_page = 10;
  
   $biomaterials = array();
-  foreach ($results as $result) {
-    $values = array('biomaterial_id' => $result->biomaterial_id);
+  foreach ($variables['biomaterial_ids'] as $biomaterial_id) {
+    $values = array('biomaterial_id' => $biomaterial_id);
     $options = array(
       'include_fk' => array(
         'type_id' => 1
@@ -25,19 +25,48 @@ if (sizeof($results) > 0) {
 
   foreach($biomaterials as $biomaterial) {
     $bname = $biomaterial->name;
+    $borganism = '';
+    $bcontact = '';
+
     if (property_exists($biomaterial, 'nid')) {
-      $bname = l($bname, "node/$biomaterial->nid", array('attributes' => array('target' => '_blank')));
+      $bname = l($bname, 'node/' . $biomaterial->nid, array('attributes' => array('target' => '_blank')));
     }
+
+    if ($biomaterial->taxon_id) {
+      if (property_exists($biomaterial->taxon_id, 'nid')) {
+        $bgenus = $biomaterial->taxon_id->genus;
+        $bspecies = $biomaterial->taxon_id->species;
+        $bcommon_name = $biomaterial->taxon_id->common_name;
+        $borganism = l($bgenus . ' ' . $bspecies . ' (' . $bcommon_name . ')', 'node/' . $biomaterial->taxon_id->nid, array('attributes' => array('target' => '_blank')));
+      }
+      else {
+        $bgenus = $biomaterial->taxon_id->nid;
+        $bspecies = $biomaterial->taxon_id->species;
+        $bcommon_name = $biomaterial->taxon_id->common_name;
+        $borganism = $bgenus . ' ' . $bspecies . ' (' . $bcommon_name . ')';
+      }
+    }
+
+    if ($biomaterial->biosourceprovider_id) {
+      if (property_exists($biomaterial->biosourceprovider_id,'nid')) { 
+        $bcontact = l($biomaterial->biosourceprovider_id->name, 'node/' . $biomaterial->biosourceprovider_id->nid, array('attributes' => array('target' => '_blank')));
+      }
+      else {
+        $bcontact = $biomaterial->biosourceprovider_id->name;
+      }
+    }
+
     $rows[] = array(
-      $bname, $biomaterial->biomaterial_id
+      $bname,
+      $borganism,
+      $bcontact,
     );
   }
 
-  $num_per_page = 10;
   $current_page = pager_default_initialize(count($rows), $num_per_page, 1);
   $chunks = array_chunk($rows, $num_per_page, TRUE);
   $output = theme('table', array('header' => $headers, 'rows' => $chunks[$current_page]));
-  $output .= theme('pager', array('quantity' => count($rows), 'element' => 1, 'parameters' => array('block' => 'biomaterial_browser')));
+  $output .= theme('pager', array('quantity' => count($rows), 'element' => $element, 'parameters' => array('block' => 'biomaterial_browser')));
 
   print $output;
 

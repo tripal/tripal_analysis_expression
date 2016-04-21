@@ -25,7 +25,7 @@ function tripal_analysis_expression_preprocess_tripal_analysis_biomaterial(&$var
 
   $analysis = $variables['node']->analysis;
   $analysis = chado_expand_var($analysis, 'table', 'analysisprop', array('return_array' => 1));
-  $analysis_name = $analysis->analysis_id;
+  $analysis_id = $analysis->analysis_id;
 
   $sql = "SELECT B.biomaterial_id FROM {biomaterial} B
            INNER JOIN {assay_biomaterial} AB ON B.biomaterial_id = AB.biomaterial_id
@@ -38,11 +38,19 @@ function tripal_analysis_expression_preprocess_tripal_analysis_biomaterial(&$var
          WHERE
            CVT.name = :type_name
          AND 
-           AP.value = :analysis_name";
+           A.analysis_id = :analysis_id";
 
-  $biomaterial_results = chado_query($sql, array(":type_name" => "analysis_expression_associated_analysis_id", ":analysis_name" => $analysis_name));
+  $biomaterial_ids = chado_query($sql, array(":type_name" => "analysis_expression_associated_analysis_id", ":analysis_id" => $analysis_id));
 
-  $variables['associated_biomaterials'] = $biomaterial_results;
+  if ($biomaterial_ids->rowCount() > 0) {
+    foreach ($biomaterial_ids as $biomaterial_id) {
+      $ids[] = $biomaterial_id->biomaterial_id;
+    }
+    $variables['biomaterial_ids'] = $ids;
+  }
+  else {
+    $variables['biomaterial_ids'] = [];
+  }
 
 }
 
@@ -313,12 +321,10 @@ function tripal_analysis_expression_preprocess_tripal_organism_biomaterial(&$var
     foreach ($biomaterial_ids as $biomaterial_id) {
       $ids[] = $biomaterial_id->biomaterial_id;
     }
-    $match['biomaterial_id'] = $ids;
-    $variables['biomaterial_ids'] = $match;
+    $variables['biomaterial_ids'] = $ids;
   }
   else {
-    $match['biomaterial_id'] = [];
-    $variables['biomaterial_ids'] = $match;
+    $variables['biomaterial_ids'] = [];
   }
 }
 
