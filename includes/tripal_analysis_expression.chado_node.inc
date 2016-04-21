@@ -74,10 +74,8 @@ function tripal_analysis_expression_node_info() {
     'name' => t('Analysis: Expression'),
     'base' => 'chado_analysis_expression',
     'description' => t('An expression analysis using the MAGE module of the chado database.'),
-    'has_title' => FALSE,
+    'has_title' => TRUE,
     'title_label' => t('Analysis: Expression'),
-    'has_body' => FALSE,
-    'body_label' => t('Expression Analysis Description'),
     'locked' => TRUE,
     'chado_node_api' => array(
       'base_table' => 'analysis',
