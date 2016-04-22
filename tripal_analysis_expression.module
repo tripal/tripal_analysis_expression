@@ -73,7 +73,7 @@ function tripal_analysis_expression_help($path, $arg) {
       $ret_val .= l(t("Array Design Administrative Pages"), "admin/tripal/extension/tripal_analysis_expression/content_types/arraydesign");
       $ret_val .= "<br>" . l(t("Create Array Design"), "node/add/chado-arraydesign");
       $ret_val .= "<br>" . l(t("Array Design Help"), "admin/tripal/extension/tripal_analysis_expression/content_types/arraydesign/help");
-      $ret_val .= "<br><br><b>" . t("Protocol") . "</b> -" . t("The protocol content type represents") . " ";
+      $ret_val .= "<br><br><b>" . t("Protocol") . "</b> -" . t(" The protocol content type represents") . " ";
       $ret_val .= t("the Chado protocol table. This table is used to describe the protocol, software,") . " ";
       $ret_val .= t("and hardware used in different steps of the experiment. See the protocol description at the") . " ";
       $ret_val .= l(t("GMOD wiki."), "http://gmod.org/wiki/Chado_Tables#Table:_protocol") . "<br>";
@@ -82,8 +82,16 @@ function tripal_analysis_expression_help($path, $arg) {
       $ret_val .= l(t("Protocol Help"), "admin/tripal/extension/tripal_analysis_expression/content_types/protocol/help");
       $ret_val .= '<h3>' . t('Module Data Loaders') . '</h3>';
       $ret_val .= "<p>" . t("This module provides several data loaders.") . '</p>';
-      // $ret_val .= "<b>" . t("Biomaterial Loader") . "</b> - " . t("The biomaterial loader has the ability to load data");.
-      // $ret_val .= t(" from ");.
+      $ret_val .= "<b>" . l(t("Biomaterial Loader"), "admin/tripal/extension/tripal_analysis_expression/biomaterial_loader");
+      $ret_val .= "</b> - " . t("The biomaterial loader has the ability to load ");
+      $ret_val .= l(t("BioSample"), "http://www.ncbi.nlm.nih.gov/biosample/") . t(" data downloaded from NCBI in an xml format. ");
+      $ret_val .= t("The biomaterial loader can also load data from a CSV or TSV file formatted as a ");
+      $ret_val .= l(t("BioSample submission template"), "https://submit.ncbi.nlm.nih.gov/biosample/template/") . t(".");
+      $ret_val .= "<br><br><b>" . l(t("Expression Loader"), "node/add/chado-analysis-expression") . "</b> - ";
+      $ret_val .= t("The expression loader is associated with the Analysis: Expression ");
+      $ret_val .= t("content type. To load expression data, create an Analysis: Expression and configure the expression loading job ");
+      $ret_val .= t("in the Analysis: Expression form. Expression data may be loaded from two types of tab separted formats, ");
+      $ret_val .= t("a matrix file or a column file.") . "<br><br>";
 
       return $ret_val;
       break;
