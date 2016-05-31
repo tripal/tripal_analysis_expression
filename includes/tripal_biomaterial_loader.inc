@@ -383,7 +383,8 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
         $db_id - create_ncbi_db('bioproject', 'NCBI BioProject', '');     
       }
       // First check to see if there is a dbxref record in the database corresponding to the accession number from the file.
-      if (empty(chado_select_record('dbxref', array('dbxref_id'), array('accession' => $line[$index], 'db_id' => $db_id)))) {
+      $record = chado_select_record('dbxref', array('dbxref_id'), array('accession' => $line[$index], 'db_id' => $db_id));
+      if (empty($record)) {
         // Insert value into dbxref table.
         $values = array(
           'accession' => $line[$index],
