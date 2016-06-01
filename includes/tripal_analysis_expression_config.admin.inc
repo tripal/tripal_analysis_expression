@@ -67,10 +67,10 @@ function tripal_analysis_expression_config_admin() {
 
   $form['feature_expression']['expression_display'] = array(
     '#type' => 'radios',
-    '#title' => t('Heatmap Display'),
+    '#title' => t('Default Heatmap Display'),
     '#options' => array(
       'tile' => t('One Dimensional Heatmap'),
-      'column' => t('Column Display'),
+      'column' => t('Chart Display'),
     ),
     '#default_value' => variable_get('chado_feature_expression_expression_display','column'),
   );
