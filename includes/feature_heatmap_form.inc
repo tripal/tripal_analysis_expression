@@ -31,7 +31,7 @@ function feature_heatmap_form($form, &$form_state){
  */
 function feature_heatmap_form_submit($form, &$form_state){
 
-  $sql_feature_uniquename = "SELECT ER.elementresult_id, ER.signal, F.feature_id, F.uniquename, B.name, B.biomaterial_id, B.description FROM {chado.elementresult} ER
+  $sql_feature_uniquename = "SELECT ER.elementresult_id, ER.signal, F.feature_id, F.uniquename, Q.name AS quantification_name, B.name, B.biomaterial_id, B.description FROM {chado.elementresult} ER
            INNER JOIN {chado.element} E ON E.element_id = ER.element_id
            INNER JOIN {chado.feature} F ON F.feature_id = E.feature_id
            INNER JOIN {chado.quantification} Q ON Q.quantification_id = ER.quantification_id
@@ -77,7 +77,9 @@ function feature_heatmap_form_submit($form, &$form_state){
     // Foreach feature, loop through the biomaterials it has and get the signal value (expression data)
     foreach($expressions as $feature_id=>$features){
       foreach($features as $feature){
-            $expression_data[$feature_id][$feature->name]= array('signal'=>(float)$feature->signal, 'description'=>$feature->description);
+            $expression_data[$feature_id][$feature->name]= array('signal'=>(float)$feature->signal, 
+                                                                 'description'=>$feature->description,
+                                                                 'quantification_name'=>$feature->quantification_name);
       }
     }
   
@@ -85,13 +87,13 @@ function feature_heatmap_form_submit($form, &$form_state){
     $z = array();
     $text = array();
     foreach($expression_data as $feature_id=>$values){
-      $y[] = $feature_id;
+      $y[] = '<a href="/feature/'.$feature_id.'">'.$feature_id.'</a>';
       $x = array_keys($values);
       $signals = array();
       $descriptions = array();
       foreach($values as $value){
         $signals[] = $value['signal'];
-        $descriptions[] = 'Description: '.$value['description'];
+        $descriptions[] = 'Treatment: '.$value['quantification_name'].'<br>'.'Description: '.$value['description'];
       }
       $z[] = $signals;
       $text[] = $descriptions; 

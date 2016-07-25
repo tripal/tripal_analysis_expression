@@ -12,12 +12,14 @@
         var heatmap_data = eval(settings.tripal_analysis_expression.heatmap_data); 
         var layout = {
                 title: 'Expression Heatmap',
+                /*
                 xaxis: {
                   title: 'Treatment'
                 },
+                */
                 margin: {
                   b: 100,
-                  l: 350
+                  l: 400
                 }     
             }
         Plotly.newPlot('vis_expression', heatmap_data, layout);
