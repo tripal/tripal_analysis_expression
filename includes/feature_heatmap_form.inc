@@ -43,7 +43,6 @@ function feature_heatmap_form_submit($form, &$form_state){
            F.uniquename = :feature_uniquename";
 
   $expressions = array();
-  $heatmap_feature_id = $form_state['values']['heatmap_feature_id'];
   $heatmap_feature_uniquename = $form_state['values']['heatmap_feature_uniquename'];
 
 
@@ -78,18 +77,28 @@ function feature_heatmap_form_submit($form, &$form_state){
     // Foreach feature, loop through the biomaterials it has and get the signal value (expression data)
     foreach($expressions as $feature_id=>$features){
       foreach($features as $feature){
-            $expression_data[$feature_id][$feature->name] = (float)$feature->signal;
+            $expression_data[$feature_id][$feature->name]= array('signal'=>(float)$feature->signal, 'description'=>$feature->description);
       }
     }
   
     $y = array();
     $z = array();
+    $text = array();
     foreach($expression_data as $feature_id=>$values){
-      $y[] = 'ID:'.$feature_id;
+      $y[] = $feature_id;
       $x = array_keys($values);
-      $z[] = array_values($values); 
+      $signals = array();
+      $descriptions = array();
+      foreach($values as $value){
+        $signals[] = $value['signal'];
+        $descriptions[] = 'Description: '.$value['description'];
+      }
+      $z[] = $signals;
+      $text[] = $descriptions; 
     }
- 
+
+    
+
     // Build variable for plotly function in js file.
     // Note that this variable requires that the x, y, z and type are not within double quotations
     // To build this variable, we first create a string, and then use javascripts' eval() function
@@ -100,6 +109,8 @@ function feature_heatmap_form_submit($form, &$form_state){
                                       x:'.json_encode($x).', 
                                       y:'.json_encode($y).', 
                                       z:'.json_encode($z).', 
+                                      text:'.json_encode($text).',
+                                      hoverinfo: "all",
                                       type:"heatmap"}]';
     } else {
       $_SESSION['heatmap_data'] = '';
