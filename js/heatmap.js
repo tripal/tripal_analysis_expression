@@ -4,6 +4,7 @@
       $(document).ready(function(){
         var heatmap_data = eval(settings.tripal_analysis_expression.heatmap_data); 
         //var layout       = eval(settings.tripal_analysis_expression.heatmap_layout);
+        var left_margin = settings.tripal_analysis_expression.left_margin;
         var layout = {
                 title: 'Expression Heatmap',
                 xaxis: {
@@ -11,7 +12,7 @@
                 },
                 margin: {
                   b: 100,
-                  l: 400
+                  l: left_margin
                 }     
             }
         Plotly.newPlot('vis_expression', heatmap_data, layout);

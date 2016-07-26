@@ -86,7 +86,12 @@ function feature_heatmap_form_submit($form, &$form_state){
     $y = array();
     $z = array();
     $text = array();
+    $max_id_len = 0;
     foreach($expression_data as $feature_id=>$values){
+      // obtain max feature id length
+      if(strlen($feature_id)>$max_id_len){
+        $max_id_len = strlen($feature_id);
+      }
       $y[] = '<a href="/feature/'.$feature_id.'">'.$feature_id.'</a>';
       $x = array_keys($values);
       $signals = array();
@@ -99,7 +104,8 @@ function feature_heatmap_form_submit($form, &$form_state){
       $text[] = $descriptions; 
     }
 
-    
+    // use the max id length times 8 to get an appropriate pixel number for left margin
+    $_SESSION['left_margin'] = $max_id_len * 8;
 
     // Build variable for plotly function in js file.
     // Note that this variable requires that the x, y, z and type are not within double quotations

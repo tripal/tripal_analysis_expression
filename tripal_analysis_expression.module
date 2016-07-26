@@ -791,7 +791,7 @@ function tripal_analysis_expression_block_view($delta = ''){
         $block['subject'] = t('Feature Expression Heatmap');
         $block['content'] = '<div id="vis_expression"></div>';
         drupal_add_js(array('tripal_analysis_expression' => array('heatmap_data' => $_SESSION['heatmap_data'])), array('type' => 'setting'));
-        drupal_add_js(array('tripal_analysis_expression' => array('heatmap_layout' => $_SESSION['heatmap_layout'])), array('type' => 'setting'));
+        drupal_add_js(array('tripal_analysis_expression' => array('left_margin' => $_SESSION['left_margin'])), array('type' => 'setting'));
       } else {
         $block['subject'] = '';
         $block['content'] = t('<b><span style="color:red">Either you have not entered any features or no expression data available for the features you entered.</span></b>');
