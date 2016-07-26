@@ -104,8 +104,18 @@ function feature_heatmap_form_submit($form, &$form_state){
       $text[] = $descriptions; 
     }
 
+    // obtain max length of treatment names
+    $max_treatment_name = 0;
+    foreach($x as $name){
+      if(strlen($name)>$max_treatment_name){
+        $max_treatment_name = strlen($name);
+      }
+    }
+
     // use the max id length times 8 to get an appropriate pixel number for left margin
     $_SESSION['left_margin'] = $max_id_len * 8;
+    // use the max length of treatment name times 7 to get an appropriate pixel number of bottom margin
+    $_SESSION['bottom_margin'] = $max_treatment_name * 7;
 
     // Build variable for plotly function in js file.
     // Note that this variable requires that the x, y, z and type are not within double quotations

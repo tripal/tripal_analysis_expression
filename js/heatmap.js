@@ -5,13 +5,16 @@
         var heatmap_data = eval(settings.tripal_analysis_expression.heatmap_data); 
         //var layout       = eval(settings.tripal_analysis_expression.heatmap_layout);
         var left_margin = settings.tripal_analysis_expression.left_margin;
+        var bottom_margin = settings.tripal_analysis_expression.bottom_margin;
         var layout = {
                 title: 'Expression Heatmap',
+                /*
                 xaxis: {
-                  title: 'Treatment'
+                  title: bottom_margin
                 },
+                */
                 margin: {
-                  b: 100,
+                  b: bottom_margin,
                   l: left_margin
                 }     
             }
