@@ -174,10 +174,8 @@ The following panes are added to the following content types:
 
 ### Biomaterial
 * **Overview (base)** - The generic tripal overview pane.
-* **Feature Browser** - A list of features associated with the biomaterial.
 * **Properties** - Properties associated with the biomaterial.
 * **Cross References** - Accession terms associated with the biomaterial.
-* **Relationships** - Relationships associated with the biomaterial.
  
 ### Array Design
 * **Overview (base)** - The generic tripal overview pane.
@@ -200,7 +198,15 @@ Each Analysis: Expression content type has administrative pages. As an administr
 ![Administrator Pages for Content Types](https://cloud.githubusercontent.com/assets/14822959/13010514/2d2dc7be-d170-11e5-8670-92bdded6659d.png)
 
 ### Expression Display Administrative Page
-The display of expression data on feature pages can be configured.
+The display of expression data on feature pages can be configured. To configure the expression figure, navigate to **Tripal->Extensions->Expression Analysis->Tripal Expression Analysis Settings**. Available options are:
+
+* **Hide Expression Figure** - Hide expression figures on all feature pages. With this option you can load expression data without displaying the expression figure.
+* **Hide Biomaterial Labels** - Hide the name of the biomaterial under the expression figure tile or column. Biomaterial names will still appear in tooltips.
+* **Maximum Label Length** - Set the maximum acceptable biomaterial name length. Biomaterial names that are longer than this length will be truncated.
+* **Expession Column Width** - Change the size of the width of the tile or column in the figure. Value must be 15 or greater. 
+* **Default Heatmap Display** - The default display can be either a one dimensional heatmap or a bar chart. 
+
+
 
 
 

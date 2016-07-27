@@ -464,11 +464,11 @@ function tripal_analysis_expression_add_cvterms() {
  * @ingroup tripal_analysis_expression
  */
 function tripal_analysis_expression_uninstall() {
-
+/*
   // Get localization function for installation.
   $t = get_t();
 
   // Unregister the analysis.
   tripal_unregister_analysis_child('tripal_analysis_expression');
-
+*/
 }

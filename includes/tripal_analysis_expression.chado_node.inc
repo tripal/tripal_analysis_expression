@@ -711,12 +711,18 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
     $re_ext = '/^.+\.(' . $fileext . ')/';
 
     // A matrix file.
-    if ($filetype == 'mat' and is_file($filepath) and preg_match($re_ext,$filepath)) {
+    if ($filetype == 'mat' and is_file($filepath)) {
       $data_ln = 0;
       $mat_fp = fopen($filepath, 'r');
       //Check a single matrix file.
       while($line = fgets($mat_fp)) {
         if ($data_ln == 1 or !$re_start) {
+          // Make sure this is actually a tab separated file.
+          if (!preg_match('/\t/', $line, $matches)) {
+            drupal_set_message(t('Warning: the expression loader expects a tab separated file. Please ensure the expression file is a tab separated file. Warning thrown on line:') . "\n", 'warning');
+            drupal_set_message($line, 'warning');
+            return;
+          }
           $linepart = preg_split('/\t/',$line,-1,PREG_SPLIT_NO_EMPTY);
           // Trim whitespace from biomaterial names.
           foreach ($linepart as $biomaterial) {
