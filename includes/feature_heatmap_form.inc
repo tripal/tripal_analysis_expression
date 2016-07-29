@@ -3,8 +3,7 @@
 function feature_heatmap_form($form, &$form_state){
   $form['descriptions'] = array(
     '#type' => 'item',
-    '#markup' => t('<b>If the feature unique names is not empty, it will search by feature unique names.
-                   otherwise, it will search by feature IDs.</b>')
+    '#markup' => t('<b>Feature unique names need to be separated by comma(,).</b>')
   );
 
   $form['heatmap_feature_uniquename'] = array(
@@ -77,9 +76,22 @@ function feature_heatmap_form_submit($form, &$form_state){
     // Foreach feature, loop through the biomaterials it has and get the signal value (expression data)
     foreach($expressions as $feature_id=>$features){
       foreach($features as $feature){
+            // get treatment
+            $treat = chado_get_property(
+              array('table' => 'biomaterial', 'id' => $feature->biomaterial_id),
+              array('type_name' => 'treatment', 'cv_name' => 'biomaterial_property')
+            );
+        
+            if($treat) {
+              $treatment = $treat->value;
+            }
+            else {
+              $treatment = '';
+            }
+
             $expression_data[$feature_id][$feature->name]= array('signal'=>(float)$feature->signal, 
                                                                  'description'=>$feature->description,
-                                                                 'quantification_name'=>$feature->quantification_name);
+                                                                 'quantification_name'=>$treatment);
       }
     }
   
@@ -115,7 +127,7 @@ function feature_heatmap_form_submit($form, &$form_state){
     // use the max id length times 8 to get an appropriate pixel number for left margin
     $_SESSION['left_margin'] = $max_id_len * 8;
     // use the max length of treatment name times 7 to get an appropriate pixel number of bottom margin
-    $_SESSION['bottom_margin'] = $max_treatment_name * 7;
+    $_SESSION['bottom_margin'] = $max_treatment_name * 9;
 
     // Build variable for plotly function in js file.
     // Note that this variable requires that the x, y, z and type are not within double quotations
