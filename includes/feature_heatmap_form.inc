@@ -30,7 +30,9 @@ function feature_heatmap_form($form, &$form_state){
  */
 function feature_heatmap_form_submit($form, &$form_state){
 
-  $sql_feature_uniquename = "SELECT ER.elementresult_id, ER.signal, F.feature_id, F.uniquename, Q.name AS quantification_name, B.name, B.biomaterial_id, B.description FROM {chado.elementresult} ER
+  $sql_feature_uniquename = "SELECT ER.elementresult_id, ER.signal, F.feature_id, F.uniquename, 
+                                    Q.name AS quantification_name, Q.analysis_id, 
+                                    B.name, B.biomaterial_id, B.description FROM {chado.elementresult} ER
            INNER JOIN {chado.element} E ON E.element_id = ER.element_id
            INNER JOIN {chado.feature} F ON F.feature_id = E.feature_id
            INNER JOIN {chado.quantification} Q ON Q.quantification_id = ER.quantification_id
@@ -76,14 +78,32 @@ function feature_heatmap_form_submit($form, &$form_state){
     // Foreach feature, loop through the biomaterials it has and get the signal value (expression data)
     foreach($expressions as $feature_id=>$features){
       foreach($features as $feature){
+
+            // get analysis URL
+            $analysis_url = '';
+            $analysis_id = $feature->analysis_id;
+            $sql_analysis = "SELECT * FROM chado.analysis WHERE analysis_id=:analysis_id";
+            if(!empty($analysis_id)){
+              $analysis = db_query($sql_analysis, array(':analysis_id'=>$analysis_id))->fetchAllAssoc('analysis_id');        
+              // analysis page url consists of analysis name, sourcename, program and programversion
+              $analysis_url = $analysis[$analysis_id]->name.', '.
+                              $analysis[$analysis_id]->sourcename.' ('.
+                              $analysis[$analysis_id]->program.', '.
+                              $analysis[$analysis_id]->programversion.')';
+              $analysis_url = preg_replace("/[^A-Za-z0-9 ]/", '', $analysis_url); // remove all non-alphanumeric charaters
+              $analysis_url = preg_replace("/\s/", '-', $analysis_url); // replace ' ' with '-'
+              $analysis_url = 'content/'.strtolower($analysis_url);
+            }
             // get treatment
             $treat = chado_get_property(
               array('table' => 'biomaterial', 'id' => $feature->biomaterial_id),
               array('type_name' => 'treatment', 'cv_name' => 'biomaterial_property')
             );
-        
-            if($treat) {
+
+            if($treat) { 
               $treatment = $treat->value;
+              // link analysis_url to treatment
+              $treatment = l($treatment, $analysis_url);
             }
             else {
               $treatment = '';
@@ -91,7 +111,8 @@ function feature_heatmap_form_submit($form, &$form_state){
 
             $expression_data[$feature_id][$feature->name]= array('signal'=>(float)$feature->signal, 
                                                                  'description'=>$feature->description,
-                                                                 'quantification_name'=>$treatment);
+                                                                 'quantification_name'=>$treatment,
+                                                                 'analysis_url'=>$analysis_url);
       }
     }
   
