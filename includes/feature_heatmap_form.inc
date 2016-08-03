@@ -116,6 +116,7 @@ function feature_heatmap_form_submit($form, &$form_state){
       }
     }
   
+    $x = array();
     $y = array();
     $z = array();
     $text = array();
