@@ -9,6 +9,8 @@
  * 
  * @ingroup tripal_analysis_expression
  */
+
+//error_reporting(E_ALL);
 function tripal_biomaterial_loader($form, &$form_state) {
 
   // Set the breadcrumbs. 
@@ -380,7 +382,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
         $db_id = create_ncbi_db('sra', 'NCBI SRA', '');
       }
       else if($name == 'bioproject_accession') { 
-        $db_id - create_ncbi_db('bioproject', 'NCBI BioProject', '');     
+        $db_id = create_ncbi_db('bioproject', 'NCBI BioProject', '');     
       }
       // First check to see if there is a dbxref record in the database corresponding to the accession number from the file.
       $record = chado_select_record('dbxref', array('dbxref_id'), array('accession' => $line[$index], 'db_id' => $db_id));
