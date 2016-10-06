@@ -393,7 +393,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
           'db_id' => $db_id,
         );
         $dbxref = chado_insert_record('dbxref',$values);
-        $dbxref_id = $dbxref->dbxref_id;
+        $dbxref_id = $dbxref['dbxref_id'];
 
         // Insert into the biomaterial_dbxref table.
         // Add error checking?
@@ -402,7 +402,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
           'dbxref_id' => $dbxref_id,
         );
         $biomaterial_dbxref = chado_insert_record('biomaterial_dbxref', $values);
-        $biomaterial_dbxref_id = $biomaterial_dbxref->$biomaterial_dbxref_id; 
+        $biomaterial_dbxref_id = $biomaterial_dbxref['biomaterial_dbxref_id']; 
       }
     }
 
