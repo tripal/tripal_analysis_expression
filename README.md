@@ -65,10 +65,10 @@ Once expression data is loaded. A display will be shown on each feature page tha
 # Loading Biomaterials
 Biomaterials may be loaded from a flat file or from an BioSample xml file downloaded from NCBI. The steps for loading biomaterials are as follows (detailed instructions can be found further below):
 
-1. [First download or generate the flat file or xml biomaterial file you want to load](#downloading-xml-biosample-file-from-ncbi).
-2. Navigate to the Tripal site's Tripal Biomaterial Loader to submit the job with [XML file](#loading-ncbi-xml-biosample-file-into-tripal) or [flat file](#loading-biomaterials-from-a-flat-file). Run the job via command line with Drush command.
-3. [Sync the biomaterial on the Tripal site. Run the sync job via command line with Drush command](#syncing-biomaterials).
-4. Verify that the biomaterial has loaded correctly by viewing it via "Find content".
+1. [First download or generate the flat (.csv, .tsv) or .xml file with biomaterials data you want to load](#downloading-xml-biosample-file-from-ncbi).
+2. Navigate to the Tripal site's Tripal Biomaterial Loader to submit the job with [a .xml file](#loading-ncbi-xml-biosample-file-into-tripal) or [a flat file](#loading-biomaterials-from-a-flat-file). Run the job via command line with Drush command.
+3. [Sync the biomaterial(s) on the Tripal site. Run the sync job via command line with Drush command](#syncing-biomaterials).
+4. Verify that the biomaterial(s) loaded correctly by viewing it via "Find content".
 
 ### Downloading XML BioSample File From NCBI
 To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http://www.ncbi.nlm.nih.gov/biosample/). Search for and select the BioSamples you would like to download. 
