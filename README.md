@@ -5,6 +5,7 @@ This is an extension module for the Tripal project.
 # Tripal Analysis: Expression
 
 1. [Introduction](#introduction)
+2. [Installation](#installation)
 2. [Module Features](#module-features)
 3. [Loading Biomaterials](#loading-biomaterials)
 4. [Loading Expression Data](#loading-expression-data)
