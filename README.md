@@ -5,6 +5,7 @@ This is an extension module for the Tripal project.
 # Tripal Analysis: Expression
 
 1. [Introduction](#introduction)
+2. [Installation](#installation)
 2. [Module Features](#module-features)
 3. [Loading Biomaterials](#loading-biomaterials)
 4. [Loading Expression Data](#loading-expression-data)
@@ -23,6 +24,10 @@ The purpose of the module is to visually represent gene expression for Tripal fe
 6. Tripal Feature
 7. Tripal Organism
 8. Tripal Contact
+
+# Installation
+1. Click on the green "Clone or download" button on the top right corner of this page to obtain the web URL. Download this module by running ```git clone <URL> ``` on command line. 
+2. Place the module folder inside your /sites/all/modules/{modulename} or sites/all/themes/{themename} folder (for more instructions, read the [Drupal documentation page](https://www.drupal.org/node/120641).
 
 # Module Features
 
@@ -58,7 +63,12 @@ Two loaders are provided by this module, a biomaterial loader, and an expression
 Once expression data is loaded. A display will be shown on each feature page that has corresponding biomaterials and expression values.
 
 # Loading Biomaterials
-Biomaterials may be loaded from a flat file or from an BioSample xml file downloaded from NCBI. 
+Biomaterials may be loaded from a flat file or from an BioSample xml file downloaded from NCBI. The steps for loading biomaterials are as follows (detailed instructions can be found further below):
+
+1. [First download or generate the flat (.csv, .tsv) or .xml file with biomaterials data you want to load](#downloading-xml-biosample-file-from-ncbi).
+2. Navigate to the Tripal site's Tripal Biomaterial Loader to submit the job with [a .xml file](#loading-ncbi-xml-biosample-file-into-tripal) or [a flat file](#loading-biomaterials-from-a-flat-file). Run the job via command line with Drush command.
+3. [Sync the biomaterial(s) on the Tripal site. Run the sync job via command line with Drush command](#syncing-biomaterials).
+4. Verify that the biomaterial(s) loaded correctly by viewing it via "Find content".
 
 ### Downloading XML BioSample File From NCBI
 To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http://www.ncbi.nlm.nih.gov/biosample/). Search for and select the BioSamples you would like to download. 
@@ -66,6 +76,7 @@ To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http:/
 
 Click the "Send to:" link. Then select "File" and select "Full XML (text)" as the format. Then click "Create File". 
 ![Download BioSample XML File](https://cloud.githubusercontent.com/assets/14822959/12490242/8cb8b796-c042-11e5-82dc-7a723867ea7a.png)
+
 ### Loading NCBI XML BioSample File into Tripal
 To upload the file into Chado/Tripal, Navigate to:  
 **Tripal->Extensions->Expression Analysis->Tripal Biomaterial Loader**
@@ -73,16 +84,25 @@ To upload the file into Chado/Tripal, Navigate to:
 Select the organism for which you are uploading expression data. Select "NCBI biosample xml file" and then write the path in "File Path" field.
 
 ![NCBI XML BioSample Loader](https://cloud.githubusercontent.com/assets/14822959/12991555/a4afaf70-d0dd-11e5-95b1-ebbc6da404dc.png)
+
+After clicking "Submit job", the page should reload with the job status and Drush command to run the job. Copy and paste the Drush command and run it on command line. Upon running the Drush command, any warning/error/success/status message should be displayed.
+
+Similarily, after clicking "Submit job", the page should reload with the job status and Drush command to run the job. Copy and paste the Drush command and run it on command line. Upon running the Drush command, any warning/error/success/status message should be displayed.
+
 ### Loading Biomaterials From a Flat File
 
 Altenatively biomaterials may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.   
 
 ![Flat File Loader](https://cloud.githubusercontent.com/assets/14822959/12991558/a4b26a30-d0dd-11e5-8419-07216d0cbbc8.png)
+
 ### Syncing Biomaterials
 
 After loading, biomaterials must be synced to create nodes for each biomaterial content type. As an administrator or user with correct permissions, navigate to **Tripal->Extensions->Expression Analysis->Tripal Expression Analysis Content Types->Biomaterial->SYNC**. Select the biomaterials to sync and click "Sync Biomaterials".
 
 ![Syncing Biomaterials](https://cloud.githubusercontent.com/assets/14822959/12991663/243827d6-d0de-11e5-820c-4cae34974283.png)
+
+Similarily, after clicking "Sync Biomaterials", run the Drush command on command line and monitor for any warnings/error messages.
+
 ### Loading a Single Biomaterial
 Biomaterials may also be loaded one at a time. As an administer or a user with permission to create content, go to: **Add content->Biomaterial**. Available biomaterial fields include the following. 
 * **Biomaterial Name (must be unique - required)**
@@ -97,6 +117,7 @@ There is also the ability to add properties or accession values to the biomateri
 
 ### Creating the Experiment Setup
 Before loading data, describe the experimental setup used to collect the data. As an administrator or a user with permission to create content, go to: **Add content->Analysis: Expression**. The "Analysis: Expression" content type is a sub-type of the analysis content type. It contains all fields used in the analysis content type as well as fields that allow the description of the experimental design and the data loader. 
+
 #### Analysis Fields:
 
 * **Analysis Name (required)**

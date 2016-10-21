@@ -9,6 +9,8 @@
  * 
  * @ingroup tripal_analysis_expression
  */
+
+//error_reporting(E_ALL);
 function tripal_biomaterial_loader($form, &$form_state) {
 
   // Set the breadcrumbs. 
@@ -380,7 +382,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
         $db_id = create_ncbi_db('sra', 'NCBI SRA', '');
       }
       else if($name == 'bioproject_accession') { 
-        $db_id - create_ncbi_db('bioproject', 'NCBI BioProject', '');     
+        $db_id = create_ncbi_db('bioproject', 'NCBI BioProject', '');     
       }
       // First check to see if there is a dbxref record in the database corresponding to the accession number from the file.
       $record = chado_select_record('dbxref', array('dbxref_id'), array('accession' => $line[$index], 'db_id' => $db_id));
@@ -391,7 +393,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
           'db_id' => $db_id,
         );
         $dbxref = chado_insert_record('dbxref',$values);
-        $dbxref_id = $dbxref->dbxref_id;
+        $dbxref_id = $dbxref['dbxref_id'];
 
         // Insert into the biomaterial_dbxref table.
         // Add error checking?
@@ -400,7 +402,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
           'dbxref_id' => $dbxref_id,
         );
         $biomaterial_dbxref = chado_insert_record('biomaterial_dbxref', $values);
-        $biomaterial_dbxref_id = $biomaterial_dbxref->$biomaterial_dbxref_id; 
+        $biomaterial_dbxref_id = $biomaterial_dbxref['biomaterial_dbxref_id']; 
       }
     }
 
