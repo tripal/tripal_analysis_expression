@@ -66,7 +66,7 @@ Once expression data is loaded. A display will be shown on each feature page tha
 Biomaterials may be loaded from a flat file or from an BioSample xml file downloaded from NCBI. The steps for loading biomaterials are as follows (detailed instructions can be found further below):
 
 1. [First download or generate the flat file or xml biomaterial file you want to load](#downloading-xml-biosample-file-from-ncbi).
-2. [Navigate to the Tripal site's Tripal Biomaterial Loader to submit the job. Run the job via command line with Drush command](#loading-ncbi-xml-biosample-file-into-tripal).
+2. Navigate to the Tripal site's Tripal Biomaterial Loader to submit the job with [XML file](#loading-ncbi-xml-biosample-file-into-tripal) or [flat file](#loading-biomaterials-from-a-flat-file). Run the job via command line with Drush command].
 3. [Sync the biomaterial on the Tripal site. Run the sync job via command line with Drush command](#syncing-biomaterials).
 4. Verify that the biomaterial has loaded correctly by viewing it via "Find content".
 
@@ -76,6 +76,7 @@ To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http:/
 
 Click the "Send to:" link. Then select "File" and select "Full XML (text)" as the format. Then click "Create File". 
 ![Download BioSample XML File](https://cloud.githubusercontent.com/assets/14822959/12490242/8cb8b796-c042-11e5-82dc-7a723867ea7a.png)
+
 ### Loading NCBI XML BioSample File into Tripal
 To upload the file into Chado/Tripal, Navigate to:  
 **Tripal->Extensions->Expression Analysis->Tripal Biomaterial Loader**
