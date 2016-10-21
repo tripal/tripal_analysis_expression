@@ -63,7 +63,11 @@ Two loaders are provided by this module, a biomaterial loader, and an expression
 Once expression data is loaded. A display will be shown on each feature page that has corresponding biomaterials and expression values.
 
 # Loading Biomaterials
-Biomaterials may be loaded from a flat file or from an BioSample xml file downloaded from NCBI. 
+Biomaterials may be loaded from a flat file or from an BioSample xml file downloaded from NCBI. The steps for loading biomaterials are as follows (detailed instructions can be found further below):
+1. First download or generate the flat file or xml biomaterial file you want to load.
+2. Navigate to the Tripal site's Tripal Biomaterial Loader to submit job. Run the job via command line with Drush command.
+3. Sync the biomaterial on the Tripal site. Run the sync job via command line with Drush command.
+4. Verify that the biomaterial has loaded correctly by viewing it via "Find content".
 
 ### Downloading XML BioSample File From NCBI
 To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http://www.ncbi.nlm.nih.gov/biosample/). Search for and select the BioSamples you would like to download. 
@@ -78,6 +82,11 @@ To upload the file into Chado/Tripal, Navigate to:
 Select the organism for which you are uploading expression data. Select "NCBI biosample xml file" and then write the path in "File Path" field.
 
 ![NCBI XML BioSample Loader](https://cloud.githubusercontent.com/assets/14822959/12991555/a4afaf70-d0dd-11e5-95b1-ebbc6da404dc.png)
+
+After clicking "Submit job", the page should reload with the job status and Drush command to run the job. Copy and paste the Drush command and run it on command line. Upon running the Drush command, any warning/error/success/status message should be displayed.
+
+Similarily, after clicking "Submit job", the page should reload with the job status and Drush command to run the job. Copy and paste the Drush command and run it on command line. Upon running the Drush command, any warning/error/success/status message should be displayed.
+
 ### Loading Biomaterials From a Flat File
 
 Altenatively biomaterials may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.   
