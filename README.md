@@ -24,6 +24,10 @@ The purpose of the module is to visually represent gene expression for Tripal fe
 7. Tripal Organism
 8. Tripal Contact
 
+# Installation
+1. Click on the green "Clone or download" button on the top right corner of this page to obtain the web URL. Download this module by running ```git clone <URL> ``` on command line. 
+2. Place the module folder inside your /sites/all/modules/{modulename} or sites/all/themes/{themename} folder (for more instructions, read the [Drupal documentation page](https://www.drupal.org/node/120641).
+
 # Module Features
 
 ### Content Types
