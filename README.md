@@ -66,7 +66,7 @@ Once expression data is loaded. A display will be shown on each feature page tha
 Biomaterials may be loaded from a flat file or from an BioSample xml file downloaded from NCBI. The steps for loading biomaterials are as follows (detailed instructions can be found further below):
 
 1. [First download or generate the flat file or xml biomaterial file you want to load](#downloading-xml-biosample-file-from-ncbi).
-2. Navigate to the Tripal site's Tripal Biomaterial Loader to submit the job with [XML file](#loading-ncbi-xml-biosample-file-into-tripal) or [flat file](#loading-biomaterials-from-a-flat-file). Run the job via command line with Drush command].
+2. Navigate to the Tripal site's Tripal Biomaterial Loader to submit the job with [XML file](#loading-ncbi-xml-biosample-file-into-tripal) or [flat file](#loading-biomaterials-from-a-flat-file). Run the job via command line with Drush command.
 3. [Sync the biomaterial on the Tripal site. Run the sync job via command line with Drush command](#syncing-biomaterials).
 4. Verify that the biomaterial has loaded correctly by viewing it via "Find content".
 
@@ -94,11 +94,15 @@ Similarily, after clicking "Submit job", the page should reload with the job sta
 Altenatively biomaterials may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.   
 
 ![Flat File Loader](https://cloud.githubusercontent.com/assets/14822959/12991558/a4b26a30-d0dd-11e5-8419-07216d0cbbc8.png)
+
 ### Syncing Biomaterials
 
 After loading, biomaterials must be synced to create nodes for each biomaterial content type. As an administrator or user with correct permissions, navigate to **Tripal->Extensions->Expression Analysis->Tripal Expression Analysis Content Types->Biomaterial->SYNC**. Select the biomaterials to sync and click "Sync Biomaterials".
 
 ![Syncing Biomaterials](https://cloud.githubusercontent.com/assets/14822959/12991663/243827d6-d0de-11e5-820c-4cae34974283.png)
+
+Similarily, after clicking "Sync Biomaterials", run the Drush command on command line and monitor for any warnings/error messages.
+
 ### Loading a Single Biomaterial
 Biomaterials may also be loaded one at a time. As an administer or a user with permission to create content, go to: **Add content->Biomaterial**. Available biomaterial fields include the following. 
 * **Biomaterial Name (must be unique - required)**
@@ -113,6 +117,7 @@ There is also the ability to add properties or accession values to the biomateri
 
 ### Creating the Experiment Setup
 Before loading data, describe the experimental setup used to collect the data. As an administrator or a user with permission to create content, go to: **Add content->Analysis: Expression**. The "Analysis: Expression" content type is a sub-type of the analysis content type. It contains all fields used in the analysis content type as well as fields that allow the description of the experimental design and the data loader. 
+
 #### Analysis Fields:
 
 * **Analysis Name (required)**
