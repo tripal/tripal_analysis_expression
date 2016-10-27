@@ -69,7 +69,7 @@ Biomaterials may be loaded from a flat file or from an BioSample xml file downlo
 2. Add the organism associated with the biomaterial if it doesn't exist yet (**Add content->Organism**). 
 3. Navigate to the Tripal site's Tripal Biomaterial Loader to submit the job with [a .xml file](#loading-ncbi-xml-biosample-file-into-tripal) or [a flat file](#loading-biomaterials-from-a-flat-file). Run the job via command line with Drush command.
 4. [Sync the biomaterial(s) on the Tripal site. Run the sync job via command line with Drush command](#syncing-biomaterials).
-5. Verify that the biomaterial(s) loaded correctly by viewing it via "Find content".
+5. Verify that the biomaterial(s) loaded correctly by viewing it via **Find content**.
 
 ### Downloading XML BioSample File From NCBI
 To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http://www.ncbi.nlm.nih.gov/biosample/). Search for and select the BioSamples you would like to download. 
@@ -125,7 +125,7 @@ The steps for loading expression data are as follows (detailed instructions can 
 2. Add the organism associated with the expression data (**Add content->Organism**) if it hasn't been added. 
 3. Upload all features in the expression data to the Chado database. To bulk upload features, go to **Tripal->Chado Data Loaders->FASTA file Loader** and upload a fasta file (click here to see an example of [fasta file of transcriptome sequences](http://www.hardwoodgenomics.org/sites/default/files/sequences/sugarMaple022416/Acer_saccharum_022416_transcripts.fasta)). Or upload one feature at a time via **Add content->Feature**. Submit the uploading job(s) and run job(s) with Drush command.
 4. [Create the experiment setup](#creating-the-experiment-setup). Provide file path for the expression data or directory and make sure "Submit a job to parse the expression data into Chado" is checked. Save analysis and run the job with Drush command. 
-5. [View the expression data](#viewing-data) by going to **Find content**, and clicking into the features just added.  
+5. [View the expression data](#viewing-data) by going to **Find content** and clicking into the features just added.  
 
 ### Creating the Experiment Setup
 Before loading data, describe the experimental setup used to collect the data. As an administrator or a user with permission to create content, go to: **Add content->Analysis: Expression**. The "Analysis: Expression" content type is a sub-type of the analysis content type. It contains all fields used in the analysis content type as well as fields that allow the description of the experimental design and the data loader. 
@@ -242,10 +242,4 @@ The display of expression data on feature pages can be configured. To configure 
 * **Maximum Label Length** - Set the maximum acceptable biomaterial name length. Biomaterial names that are longer than this length will be truncated.
 * **Expession Column Width** - Change the size of the width of the tile or column in the figure. Value must be 15 or greater. 
 * **Default Heatmap Display** - The default display can be either a one dimensional heatmap or a bar chart. 
-
-
-
-
-
-
 
