@@ -121,7 +121,7 @@ There is also the ability to add properties or accession values to the biomateri
 The steps for loading expression data are as follows (detailed instructions can be found further below):
 
 1. Upload all associated features to Chado database. To bulk upload features, go to **Tripal->Chado Data Loaders->FASTA file Loader** and upload a fasta file (click here to see an example of [fasta file of transcriptome sequences](http://www.hardwoodgenomics.org/sites/default/files/sequences/sugarMaple022416/Acer_saccharum_022416_transcripts.fasta)). Or upload one feature at a time via **Add content->Feature**. Submit the uploading job(s) and run job(s) with Drush command.
-2. [Create the experiment setup](#creating-the-experiment-setup). Provide file path for expression data file or directory and make sure "Submit a job to parse the expression data into Chado" is checked. Click [here to read about the file formats accepted](#data-loader). Save analysis and run the job with Drush command. 
+2. [Create the experiment setup](#creating-the-experiment-setup). Provide file path for expression data file or directory and make sure "Submit a job to parse the expression data into Chado" is checked. Click [here to read about the file formats accepted for expression data](#data-loader). Save analysis and run the job with Drush command. 
 3. [View the expression data](#viewing-data) by going to **Find content**, and clicking into the features just added.  
 
 ### Creating the Experiment Setup
