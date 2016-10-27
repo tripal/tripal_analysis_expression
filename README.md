@@ -77,6 +77,8 @@ To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http:/
 Click the "Send to:" link. Then select "File" and select "Full XML (text)" as the format. Then click "Create File". 
 ![Download BioSample XML File](https://cloud.githubusercontent.com/assets/14822959/12490242/8cb8b796-c042-11e5-82dc-7a723867ea7a.png)
 
+Click [here](example_files/sm125.xml) to see an example XML BioSample file from NCBI.
+
 ### Loading NCBI XML BioSample File into Tripal
 To upload the file into Chado/Tripal, Navigate to:  
 **Tripal->Extensions->Expression Analysis->Tripal Biomaterial Loader**
