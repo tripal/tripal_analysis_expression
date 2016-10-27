@@ -77,7 +77,7 @@ To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http:/
 Click the "Send to:" link. Then select "File" and select "Full XML (text)" as the format. Then click "Create File". 
 ![Download BioSample XML File](https://cloud.githubusercontent.com/assets/14822959/12490242/8cb8b796-c042-11e5-82dc-7a723867ea7a.png)
 
-Click [here](example_files/sm125.xml) to see an example XML BioSample file from NCBI.
+Click [here to see an example XML BioSample file from NCBI](example_files/sm125.xml).
 
 ### Loading NCBI XML BioSample File into Tripal
 To upload the file into Chado/Tripal, Navigate to:  
@@ -93,7 +93,9 @@ Similarily, after clicking "Submit job", the page should reload with the job sta
 
 ### Loading Biomaterials From a Flat File
 
-Altenatively biomaterials may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.   
+Altenatively biomaterials may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.
+
+Click here to see an example of a [CSV file](example_files/CSV_test.csv) and a [TSV file](example_files/test7.tsv).
 
 ![Flat File Loader](https://cloud.githubusercontent.com/assets/14822959/12991558/a4b26a30-d0dd-11e5-8419-07216d0cbbc8.png)
 
