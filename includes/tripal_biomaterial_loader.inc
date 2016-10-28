@@ -231,6 +231,13 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
     $separator = ",";
     $enclosure = '"';
   }
+  
+  // check if the file given is empty
+  $fileSize = filesize($flat_path);
+  if($fileSize == 0){
+        print("ERROR: File at $flat_path is empty. Try again with a new file\n");
+        exit;
+  }
 
   // Count the number of biomaterials in the file.
   $fp = fopen($flat_path, "r");
