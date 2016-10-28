@@ -130,7 +130,7 @@ The steps for loading expression data are as follows (detailed instructions can 
 ### Creating the Experiment Setup
 Before loading data, describe the experimental setup used to collect the data. As an administrator or a user with permission to create content, go to: **Add content->Analysis: Expression**. The "Analysis: Expression" content type is a sub-type of the analysis content type. It contains all fields used in the analysis content type as well as fields that allow the description of the experimental design and the data loader. 
 
-**Note that program name, program version, and source name must be unique as a whole for analysis to be inserted correctly ** (click [here](http://gmod.org/wiki/Chado_Companalysis_Module) to read more about the data structure for analysis).
+**Note that program name, program version, and source name must be unique as a whole for analysis to be inserted correctly** (click [here](http://gmod.org/wiki/Chado_Companalysis_Module) to read more about the data structure for analysis).
 
 #### Analysis Fields:
 
