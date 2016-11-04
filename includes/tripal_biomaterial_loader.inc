@@ -226,6 +226,12 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
     $separator = "\t";
     $enclosure = "\0";
   }
+  /*print("array is $fgetcsv_values\n");
+  foreach($fgetcsv_values as $key => $value){
+    print("$key has the value $value\n");
+  }
+  print_r($fgetcsv_values);
+  */
   if ($flat_file_type == "csv") {
     $fgetcsv_values = array($fp,0,',','"');
     $separator = ",";
@@ -235,24 +241,32 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
   // check if the file given is empty
   $fileSize = filesize($flat_path);
   if($fileSize == 0){
-        print("ERROR: File at $flat_path is empty. Try again with a new file\n");
-        exit;
+     print("ERROR: File at $flat_path is empty. Try again with a new file.\n");
+     exit;
   }
 
   // Count the number of biomaterials in the file.
   $fp = fopen($flat_path, "r");
-
   while($line = fgetcsv($fp,0,$separator,$enclosure)) {
-    foreach($line as $field) { 
+    foreach($line as $field) {
       if(preg_match("/(sample_name)/",$field)) {
+        $foundSampleName = true;
         break 2;
       }
     }
   }
+  
   while($line = fgets($fp)) {
     $num_biosamples++;
   }
   fclose($fp);
+  
+  //print error message and exit if there's no biosample, or that there's no "sample_name" column in flat file
+  if($num_biosamples == 0){
+    print("ERROR: Wrong file format at $flat_path. File must contain a column named 'sample_name'.\n");
+    print("Please try again with a file that contains at least one column named 'sample_name' in its header line, followed by lines of biosample data.\n");
+    exit;
+  }
 
   // Get the file pointer.
   $fp = fopen($flat_path, "r");

@@ -1012,6 +1012,13 @@ function create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $or
 
 function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description) {
   $biomaterial_result = chado_query('select biomaterial_id, taxon_id, description from {biomaterial} where name = :name limit 1',array(':name' => $biomaterial))->fetchObject();
+ 
+
+  // if sample_name already exists in chado db, print warning message 
+  if ($biomaterial_result->taxon_id){
+    print("WARNING: Biomaterial with sample_name of '$biomaterial' alreay exists in the database. Overwriting database entries for $biomaterial...\n");
+  }
+
 
   if ($biomaterial_result->taxon_id and $biomaterial_result->taxon_id != $organism_id) {
     $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
@@ -1073,7 +1080,9 @@ function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosource
       exit;
     }
   }
+  
   if($biomaterial_id) {
+    print("updating record for biomaterial id = $biomaterial_id\n");
     $biomaterial = chado_update_record('biomaterial',
       array('name' => $biomaterial),
       $values,
