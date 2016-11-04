@@ -226,12 +226,7 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
     $separator = "\t";
     $enclosure = "\0";
   }
-  /*print("array is $fgetcsv_values\n");
-  foreach($fgetcsv_values as $key => $value){
-    print("$key has the value $value\n");
-  }
-  print_r($fgetcsv_values);
-  */
+  
   if ($flat_file_type == "csv") {
     $fgetcsv_values = array($fp,0,',','"');
     $separator = ",";
