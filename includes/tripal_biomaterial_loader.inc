@@ -245,7 +245,6 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
   while($line = fgetcsv($fp,0,$separator,$enclosure)) {
     foreach($line as $field) {
       if(preg_match("/(sample_name)/",$field)) {
-        $foundSampleName = true;
         break 2;
       }
     }
