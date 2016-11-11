@@ -6,11 +6,12 @@ This is an extension module for the Tripal project.
 
 1. [Introduction](#introduction)
 2. [Installation](#installation)
-2. [Module Features](#module-features)
-3. [Loading Biomaterials](#loading-biomaterials)
-4. [Loading Expression Data](#loading-expression-data)
-5. [Viewing Data](#viewing-data)
-6. [Administrative Pages](#administrative-pages)
+3. [Module Features](#module-features)
+4. [Loading Biomaterials](#loading-biomaterials)
+5. [Loading Expression Data](#loading-expression-data)
+6. [Viewing Data](#viewing-data)
+7. [Administrative Pages](#administrative-pages)
+8. [Example Files](#example-files)
 
 # Introduction 
 Tripal Analysis: Expression is a [Drupal](https://www.drupal.org/) module built to extend the functionality of the [Tripal](http://tripal.info/) toolset.
@@ -245,3 +246,12 @@ The display of expression data on feature pages can be configured. To configure 
 * **Expession Column Width** - Change the size of the width of the tile or column in the figure. Value must be 15 or greater. 
 * **Default Heatmap Display** - The default display can be either a one dimensional heatmap or a bar chart. 
 
+# Example Files
+
+### Biomaterial Loader
+1. Flat files: [CSV file](example_files/exampleCSV.csv), [TSV file](example_files/exampleTSV.tsv)
+2. [XML file](example_files/sm125.xml)
+
+### Expression Data Loader
+1. [Column file](example_files/exampleExpressionData.rpkm)
+2. [Matrix file](example_files/exampleMatrix.tsv)
