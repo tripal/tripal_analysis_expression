@@ -503,6 +503,13 @@ function xml_biomaterial_parser($xml_path, $organism_id) {
     exit;
   }
 
+  // check if the file given is empty
+  $fileSize = filesize($xml_path);
+  if($fileSize == 0){
+     print("ERROR: File at $xml_path is empty. Try again with a new file.\n");
+     exit;
+  }
+
   // Load the contents of the xml file into a string.
   $xml_raw = file_get_contents($xml_path);
 
@@ -515,6 +522,11 @@ function xml_biomaterial_parser($xml_path, $organism_id) {
   $xml = simplexml_load_string($xml_raw);
 
   $num_biosamples = count($xml->BioSample);
+  
+  if ($num_biosamples == 0){
+	print("ERROR: wrong format at $xml_path. XML file must include'BioSample' tag\n");
+	exit;
+  }
 
   $biomaterial_names = [];
 

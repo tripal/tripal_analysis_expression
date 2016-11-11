@@ -168,6 +168,7 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
   
   $quant_array = array();
   $feature_array = array();
+  
 
   // Count the number of features in the file.
   // Also make sure there are no duplicate features.
@@ -256,13 +257,13 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
     }    
     if ($data_ln == 1 or !$re_start) {
       $linepart = preg_split('/\t/',$line,-1,PREG_SPLIT_NO_EMPTY);
-
       // Trim whitespace from columns.
       $new_linepart = [];
       foreach ($linepart as $col) {
         $new_linepart[] = trim($col); 	
       }
-      $linepart = array_filter($new_linepart);
+      // keep zero values, but get rid of possible null, false, and empty strings
+      $linepart = array_filter($new_linepart, 'strlen');
       $num_col = count($linepart);
       $linepart = array_values($linepart);
 
@@ -1082,7 +1083,7 @@ function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosource
   }
   
   if($biomaterial_id) {
-    print("updating record for biomaterial id = $biomaterial_id\n");
+    print("Updating record for biomaterial id = $biomaterial_id\n");
     $biomaterial = chado_update_record('biomaterial',
       array('name' => $biomaterial),
       $values,
