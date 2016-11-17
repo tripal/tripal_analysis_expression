@@ -168,6 +168,7 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
   
   $quant_array = array();
   $feature_array = array();
+  
 
   // Count the number of features in the file.
   // Also make sure there are no duplicate features.
@@ -256,13 +257,13 @@ function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $
     }    
     if ($data_ln == 1 or !$re_start) {
       $linepart = preg_split('/\t/',$line,-1,PREG_SPLIT_NO_EMPTY);
-
       // Trim whitespace from columns.
       $new_linepart = [];
       foreach ($linepart as $col) {
         $new_linepart[] = trim($col); 	
       }
-      $linepart = array_filter($new_linepart);
+      // keep zero values, but get rid of possible null, false, and empty strings
+      $linepart = array_filter($new_linepart, 'strlen');
       $num_col = count($linepart);
       $linepart = array_values($linepart);
 
@@ -1012,6 +1013,13 @@ function create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $or
 
 function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description) {
   $biomaterial_result = chado_query('select biomaterial_id, taxon_id, description from {biomaterial} where name = :name limit 1',array(':name' => $biomaterial))->fetchObject();
+ 
+
+  // if sample_name already exists in chado db, print warning message 
+  if ($biomaterial_result->taxon_id){
+    print("WARNING: Biomaterial with sample_name of '$biomaterial' alreay exists in the database. Overwriting database entries for $biomaterial...\n");
+  }
+
 
   if ($biomaterial_result->taxon_id and $biomaterial_result->taxon_id != $organism_id) {
     $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
@@ -1073,7 +1081,9 @@ function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosource
       exit;
     }
   }
+  
   if($biomaterial_id) {
+    print("Updating record for biomaterial id = $biomaterial_id\n");
     $biomaterial = chado_update_record('biomaterial',
       array('name' => $biomaterial),
       $values,

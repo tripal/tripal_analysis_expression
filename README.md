@@ -6,11 +6,12 @@ This is an extension module for the Tripal project.
 
 1. [Introduction](#introduction)
 2. [Installation](#installation)
-2. [Module Features](#module-features)
-3. [Loading Biomaterials](#loading-biomaterials)
-4. [Loading Expression Data](#loading-expression-data)
-5. [Viewing Data](#viewing-data)
-6. [Administrative Pages](#administrative-pages)
+3. [Module Features](#module-features)
+4. [Loading Biomaterials](#loading-biomaterials)
+5. [Loading Expression Data](#loading-expression-data)
+6. [Viewing Data](#viewing-data)
+7. [Administrative Pages](#administrative-pages)
+8. [Example Files](#example-files)
 
 # Introduction 
 Tripal Analysis: Expression is a [Drupal](https://www.drupal.org/) module built to extend the functionality of the [Tripal](http://tripal.info/) toolset.
@@ -27,7 +28,7 @@ The purpose of the module is to visually represent gene expression for Tripal fe
 
 # Installation
 1. Click on the green "Clone or download" button on the top right corner of this page to obtain the web URL. Download this module by running ```git clone <URL> ``` on command line. 
-2. Place the module folder inside your /sites/all/modules/{modulename} or sites/all/themes/{themename} folder (for more instructions, read the [Drupal documentation page](https://www.drupal.org/node/120641).
+2. Place the cloned module folder "tripal_analysis_expression" inside your /sites/all/modules or sites/all/themes folder. Then enable the module/theme by running ```drush en tripal_analysis_expression``` (for more instructions, read the [Drupal documentation page](https://www.drupal.org/node/120641)).
 
 # Module Features
 
@@ -66,9 +67,10 @@ Once expression data is loaded. A display will be shown on each feature page tha
 Biomaterials may be loaded from a flat file or from an BioSample xml file downloaded from NCBI. The steps for loading biomaterials are as follows (detailed instructions can be found further below):
 
 1. [First download or generate the flat (.csv, .tsv) or .xml file with biomaterials data you want to load](#downloading-xml-biosample-file-from-ncbi).
-2. Navigate to the Tripal site's Tripal Biomaterial Loader to submit the job with [a .xml file](#loading-ncbi-xml-biosample-file-into-tripal) or [a flat file](#loading-biomaterials-from-a-flat-file). Run the job via command line with Drush command.
-3. [Sync the biomaterial(s) on the Tripal site. Run the sync job via command line with Drush command](#syncing-biomaterials).
-4. Verify that the biomaterial(s) loaded correctly by viewing it via "Find content".
+2. Add the organism associated with the biomaterial if it doesn't exist yet (**Add content->Organism**). 
+3. Navigate to the Tripal site's Tripal Biomaterial Loader to submit the job with [a .xml file](#loading-ncbi-xml-biosample-file-into-tripal) or [a flat file](#loading-biomaterials-from-a-flat-file). Run the job via command line with Drush command.
+4. [Sync the biomaterial(s) on the Tripal site. Run the sync job via command line with Drush command](#syncing-biomaterials). Note that this step is not needed if biomaterial with the same "sample_name" already exists in the database. In that case, the database entries for that biomaterial should be updated.
+5. Verify that the biomaterial(s) loaded correctly by viewing it via **Find content**.
 
 ### Downloading XML BioSample File From NCBI
 To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http://www.ncbi.nlm.nih.gov/biosample/). Search for and select the BioSamples you would like to download. 
@@ -76,6 +78,8 @@ To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http:/
 
 Click the "Send to:" link. Then select "File" and select "Full XML (text)" as the format. Then click "Create File". 
 ![Download BioSample XML File](https://cloud.githubusercontent.com/assets/14822959/12490242/8cb8b796-c042-11e5-82dc-7a723867ea7a.png)
+
+Click [here to see an example XML BioSample file from NCBI](example_files/sm125.xml).
 
 ### Loading NCBI XML BioSample File into Tripal
 To upload the file into Chado/Tripal, Navigate to:  
@@ -91,7 +95,9 @@ Similarily, after clicking "Submit job", the page should reload with the job sta
 
 ### Loading Biomaterials From a Flat File
 
-Altenatively biomaterials may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.   
+Altenatively biomaterials may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.
+
+Click here to see an example of a [CSV file](example_files/exampleCSV.csv) and a [TSV file](example_files/exampleTSV.tsv).
 
 ![Flat File Loader](https://cloud.githubusercontent.com/assets/14822959/12991558/a4b26a30-d0dd-11e5-8419-07216d0cbbc8.png)
 
@@ -114,17 +120,26 @@ Biomaterials may also be loaded one at a time. As an administer or a user with p
 There is also the ability to add properties or accession values to the biomaterial. 
 
 # Loading Expression Data
+The steps for loading expression data are as follows (detailed instructions can be found further below):
+
+1. Obtain expression data. Click [here to read about the file formats accepted for expression data](#data-loader). 
+2. Add the organism associated with the expression data (**Add content->Organism**) if it hasn't been added. 
+3. Upload all features in the expression data to the Chado database. To bulk upload features, go to **Tripal->Chado Data Loaders->FASTA file Loader** or **Tripal->Chado Modules->Features->Import via FASTA file** and upload a fasta file (click here to see an example of [fasta file of transcriptome sequences](http://www.hardwoodgenomics.org/sites/default/files/sequences/sugarMaple022416/Acer_saccharum_022416_transcripts.fasta)). Or upload one feature at a time via **Add content->Feature** or **Tripal->Chado Modules->Features->Add feature->Feature**. Submit and run job with Drush command. Then sync the features via **Tripal->Chado Modules->Features->Sync**. Submit and run job with Drush command. Finally, verify that the features have been added correctly via **Find content**.
+4. [Create the experiment setup](#creating-the-experiment-setup). Provide file path for the expression data or directory and make sure "Submit a job to parse the expression data into Chado" is checked. Save analysis and run the job with Drush command. 
+5. [View the expression data](#viewing-data) by going to **Find content** and clicking into the features just added.  
 
 ### Creating the Experiment Setup
 Before loading data, describe the experimental setup used to collect the data. As an administrator or a user with permission to create content, go to: **Add content->Analysis: Expression**. The "Analysis: Expression" content type is a sub-type of the analysis content type. It contains all fields used in the analysis content type as well as fields that allow the description of the experimental design and the data loader. 
 
+**Note that program name, program version, and source name must be unique as a whole for analysis to be inserted correctly** (click [here](http://gmod.org/wiki/Chado_Companalysis_Module) to read more about the data structure for analysis).
+
 #### Analysis Fields:
 
 * **Analysis Name (required)**
-* **Program, Pipeline Name or Method Name (required)**
-* **Program, Pipeline or Method version (required)**
+* **Program, Pipeline Name or Method Name (required, part of unique constraint)**
+* **Program, Pipeline or Method version (required, part of unique constraint)**
 * **Algorithm**
-* **Source Name (required)**
+* **Source Name (required, part of unique constraint)**
 * **Source Version**
 * **Source URI**
 * **Time Executed (required)**
@@ -165,7 +180,11 @@ The "Experimental Design" fields allow a complete description of the experimenta
 
 #### Data Loader
 
-The data loader fields provide a way for the user to load expression data associated with the experiment. The loader can load data from two types of formats, matrix and column. The matrix format expects a row of data containing biomaterials names. The first column should be unique feature names. Features must already be loaded into the database. Biomaterials will be added if not present. Expression values will map to a library in the column and a feature in the row. Only one matrix file may be loaded at a time. The column format expects the first column to contain features and the second column to be expression values. The biomaterial name will be taken as the name of the file minus the file extension. Features must already be loaded into the database. Biomaterials will be added if not present. Multiple column format files may be loaded at the same time given that the files are in the same directory and contain the same file suffix. Either format may have header or footer information. Regex can be used in the form to only record data after the header and before the footer. Any file suffix can be used. The data loader fields are the following:
+The data loader fields provide a way for the user to load expression data associated with the experiment. The loader can load data from two types of formats, matrix and column. The matrix format expects a row of data containing biomaterials names. The first column should be unique feature names. Features must already be loaded into the database. Biomaterials will be added if not present. Expression values will map to a library in the column and a feature in the row. Only one matrix file may be loaded at a time. The column format expects the first column to contain features and the second column to be expression values. 
+
+For an example column file, click [here](example_files/exampleExpressionData.rpkm). For an example matrix file, click [here](example_files/exampleMatrix.tsv).
+
+The biomaterial name will be taken as the name of the file minus the file extension. Features must already be loaded into the database. Biomaterials will be added if not present. Multiple column format files may be loaded at the same time given that the files are in the same directory and contain the same file suffix. Either format may have header or footer information. Regex can be used in the form to only record data after the header and before the footer. Any file suffix can be used. The data loader fields are the following:
 * **Source File Type** - This can be either "Column Format" or "Matrix Format".
 * **Checkbox** - Check this box to submit a job to parse the data into Chado.
 * **File Type Suffix** - The suffix of the files to load. This is used to submit multiple column format files in the same directory. A suffix is not required for a matrix file.
@@ -227,9 +246,12 @@ The display of expression data on feature pages can be configured. To configure 
 * **Expession Column Width** - Change the size of the width of the tile or column in the figure. Value must be 15 or greater. 
 * **Default Heatmap Display** - The default display can be either a one dimensional heatmap or a bar chart. 
 
+# Example Files
 
+### Biomaterial Loader
+1. Flat files: [CSV file](example_files/exampleCSV.csv), [TSV file](example_files/exampleTSV.tsv)
+2. [XML file](example_files/sm125.xml)
 
-
-
-
-
+### Expression Data Loader
+1. [Column file](example_files/exampleExpressionData.rpkm)
+2. [Matrix file](example_files/exampleMatrix.tsv)
