@@ -8,22 +8,22 @@
 
 /**
  * Implements hook_access().
- * 
- *  @param $node
+ *
+ * @param $node
  *  The node on which the operation is to be peformed, or, if it does not yet exist, the
  *  type of node to be created.
- * 
- *  @param $op
- *  The operation to be performed. 
- *  
- *  @param $account
+ *
+ * @param $op
+ *  The operation to be performed.
+ *
+ * @param $account
  *  A user object representing the user for whom the operation is to be performed.
- * 
- *  @return
+ *
+ * @return
  *  If the permission for the specified operation is not set then return FALSE. If the
- *  permission is set then return NULL as this allows other modules to disable 
- *  access. The only exception is when the $op == 'create'. We will always 
- *  return TRUE if the permission is set. 
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access. The only exception is when the $op == 'create'. We will always
+ *  return TRUE if the permission is set.
  *
  * @ingroup tirpal_analysis_expression
  */
@@ -61,10 +61,10 @@ function chado_analysis_expression_node_access($node, $op, $account) {
 
 /**
  * Implements hook_node_info().
- * 
+ *
  *  Provides information to drupal about the node types that we're creating
- *  in this module. This module creates four content types: Analysis: Expression, 
- *  arraydesign, biomaterial, and protocol.  
+ *  in this module. This module creates four content types: Analysis: Expression,
+ *  arraydesign, biomaterial, and protocol.
  *
  * @ingroup tripal_analysis_expression
  */
@@ -96,7 +96,7 @@ function tripal_analysis_expression_node_info() {
     'base' => 'chado_arraydesign',
     'description' => t('An array design from the chado database.'),
     'has_title' => TRUE,
-    'locked'    => TRUE,
+    'locked' => TRUE,
     'chado_node_api' => array(
       'base_table' => 'arraydesign',
       'hook_prefix' => 'chado_arraydesign',
@@ -116,7 +116,7 @@ function tripal_analysis_expression_node_info() {
     'base' => 'chado_protocol',
     'description' => t('A protocol from the chado database.'),
     'has_title' => TRUE,
-    'locked'    => TRUE,
+    'locked' => TRUE,
     'chado_node_api' => array(
       'base_table' => 'protocol',
       'hook_prefix' => 'chado_protocol',
@@ -136,7 +136,7 @@ function tripal_analysis_expression_node_info() {
     'base' => 'chado_biomaterial',
     'description' => t('A biomaterial from the chado database.'),
     'has_title' => TRUE,
-    'locked'    => TRUE,
+    'locked' => TRUE,
     'chado_node_api' => array(
       'base_table' => 'biomaterial',
       'hook_prefix' => 'chado_biomaterial',
@@ -160,20 +160,20 @@ function tripal_analysis_expression_node_info() {
  *
  * @ingroup tripal_analysis_expression
  */
-function chado_analysis_expression_form($node, $form_state) { 
+function chado_analysis_expression_form($node, $form_state) {
 
   $form = chado_analysis_form($node, $form_state);
 
   $organism_id = '';
   $associated_analysis_id = '';
-  $biosourceprovider_id  = '';
+  $biosourceprovider_id = '';
   $arraydesign_id = '';
   $assaydate = '';
   $assay_description = '';
   $acquisitiondate = '';
   $acquisition_uri = '';
-  $quantificationdate ='';
-  $quantification_uri ='';
+  $quantificationdate = '';
+  $quantification_uri = '';
   $assay_id = '';
   $acquisition_id = '';
   $quantification_id = '';
@@ -182,100 +182,100 @@ function chado_analysis_expression_form($node, $form_state) {
   $fileext = '';
   $filepath = '';
   $re_start = '';
-  $re_end   = '';
+  $re_end = '';
   $acquisition_protocol_id = '';
   $quantification_protocol_id = '';
   $quantification_operator_id = '';
-  $assay_operator_id     = '';
-  $assay_protocol_id     = '';
+  $assay_operator_id = '';
+  $assay_protocol_id = '';
   $feature_uniquenames = 'uniq';
 
   // Load custom fields if present in the database. 
   if (property_exists($node, 'analysis')) {
-    $expression            = $node->analysis->tripal_analysis_expression;
-    $organism_id           = $expression->organism_id;
-    $associated_analysis_id           = $expression->associated_analysis_id;
-    $biosourceprovider_id  = $expression->biosourceprovider_id;
-    $arraydesign_id        = $expression->arraydesign_id;
-    $assaydate             = $expression->assaydate;
-    $assay_description     = $expression->assay_description;
-    $acquisitiondate        = $expression->acquisitiondate;
-    $acquisition_uri        = $expression->acquisition_uri;
-    $quantificationdate    = $expression->quantificationdate;
-    $quantification_uri    = $expression->quantification_uri;
-    $filetype              = $expression->filetype;
-    $submit_job            = $expression->submit_job;
-    $fileext               = $expression->fileext;
-    $filepath              = $expression->filepath;
-    $re_start              = $expression->re_start;
-    $re_end                = $expression->re_end;
+    $expression = $node->analysis->tripal_analysis_expression;
+    $organism_id = $expression->organism_id;
+    $associated_analysis_id = $expression->associated_analysis_id;
+    $biosourceprovider_id = $expression->biosourceprovider_id;
+    $arraydesign_id = $expression->arraydesign_id;
+    $assaydate = $expression->assaydate;
+    $assay_description = $expression->assay_description;
+    $acquisitiondate = $expression->acquisitiondate;
+    $acquisition_uri = $expression->acquisition_uri;
+    $quantificationdate = $expression->quantificationdate;
+    $quantification_uri = $expression->quantification_uri;
+    $filetype = $expression->filetype;
+    $submit_job = $expression->submit_job;
+    $fileext = $expression->fileext;
+    $filepath = $expression->filepath;
+    $re_start = $expression->re_start;
+    $re_end = $expression->re_end;
     $acquisition_protocol_id = $expression->acquisition_protocol_id;
     $quantification_protocol_id = $expression->quantification_protocol_id;
     $quantification_operator_id = $expression->quantification_operator_id;
-    $assay_operator_id     = $expression->assay_operator_id;
-    $assay_protocol_id     = $expression->assay_protocol_id;
-    $feature_uniquenames  = $expression->feature_uniquenames;
+    $assay_operator_id = $expression->assay_operator_id;
+    $assay_protocol_id = $expression->assay_protocol_id;
+    $feature_uniquenames = $expression->feature_uniquenames;
   }
 
   // In the case of a failed validation or an ajax callback, repopulate the fields. 
   if (array_key_exists('values', $form_state)) {
-    $organism_id           = $form_state['values']['organism_id'];
-    $associated_analysis_id           = $form_state['values']['associated_analysis_id'];
-    $biosourceprovider_id  = $form_state['values']['biosourceprovider_id'];
-    $arraydesign_id        = $form_state['values']['arraydesign_id'];
-    $assaydate             = $form_state['values']['assaydate'];
-    $assay_description     = $form_state['values']['description'];
-    $acquisitiondate       = $form_state['values']['acquisitiondate'];
-    $acquisition_uri       = $form_state['values']['acquisition_uri'];
-    $quantificationdate    = $form_state['values']['quantificationdate'];
-    $quantification_uri    = $form_state['values']['quantification_uri'];
-    $filetype              = $form_state['values']['filetype'];
-    $submit_job            = $form_state['values']['submit_job'];
-    $fileext               = $form_state['values']['fileext'];
-    $filepath              = $form_state['values']['filepath'];
-    $re_start              = $form_state['values']['re_start'];
-    $re_end                = $form_state['values']['re_end'];
+    $organism_id = $form_state['values']['organism_id'];
+    $associated_analysis_id = $form_state['values']['associated_analysis_id'];
+    $biosourceprovider_id = $form_state['values']['biosourceprovider_id'];
+    $arraydesign_id = $form_state['values']['arraydesign_id'];
+    $assaydate = $form_state['values']['assaydate'];
+    $assay_description = $form_state['values']['description'];
+    $acquisitiondate = $form_state['values']['acquisitiondate'];
+    $acquisition_uri = $form_state['values']['acquisition_uri'];
+    $quantificationdate = $form_state['values']['quantificationdate'];
+    $quantification_uri = $form_state['values']['quantification_uri'];
+    $filetype = $form_state['values']['filetype'];
+    $submit_job = $form_state['values']['submit_job'];
+    $fileext = $form_state['values']['fileext'];
+    $filepath = $form_state['values']['filepath'];
+    $re_start = $form_state['values']['re_start'];
+    $re_end = $form_state['values']['re_end'];
     $acquisition_protocol_id = $form_state['values']['acquisition_protocol_id'];
     $quantification_protocol_id = $form_state['values']['quantification_protocol_id'];
     $quantification_operator_id = $form_state['values']['quantification_operator_id'];
-    $assay_operator_id     = $form_state['values']['assay_operator_id'];
-    $assay_protocol_id     = $form_state['values']['assay_protocol_id'];
-    $feature_uniquenames  = $form_state['values']['feature_uniquenames'];
-  } 
+    $assay_operator_id = $form_state['values']['assay_operator_id'];
+    $assay_protocol_id = $form_state['values']['assay_protocol_id'];
+    $feature_uniquenames = $form_state['values']['feature_uniquenames'];
+  }
 
   // Rebuilding form after submission from ajax call (is this necessary?).
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-    $organism_id           = $form_state['input']['organism_id'];
-    $associated_analysis_id           = $form_state['input']['associated_analysis_id'];
-    $biosourceprovider_id  = $form_state['input']['biosourceprovider_id'];
-    $arraydesign_id        = $form_state['input']['arraydesign_id'];
-    $assaydate             = $form_state['input']['assaydate'];
-    $assay_description     = $form_state['input']['description'];
-    $acquisitiondate       = $form_state['input']['acquisitiondate'];
-    $acquisition_uri       = $form_state['input']['acquisition_uri'];
-    $quantificationdate    = $form_state['input']['quantificationdate'];
-    $quantification_uri    = $form_state['input']['quantification_uri'];
-    $filetype              = $form_state['input']['filetype'];
-    $submit_job            = $form_state['input']['submit_job'];
-    $fileext               = $form_state['input']['fileext'];
-    $filepath              = $form_state['input']['filepath'];
-    $re_start              = $form_state['input']['re_start'];
-    $re_end                = $form_state['input']['re_end'];
+    $organism_id = $form_state['input']['organism_id'];
+    $associated_analysis_id = $form_state['input']['associated_analysis_id'];
+    $biosourceprovider_id = $form_state['input']['biosourceprovider_id'];
+    $arraydesign_id = $form_state['input']['arraydesign_id'];
+    $assaydate = $form_state['input']['assaydate'];
+    $assay_description = $form_state['input']['description'];
+    $acquisitiondate = $form_state['input']['acquisitiondate'];
+    $acquisition_uri = $form_state['input']['acquisition_uri'];
+    $quantificationdate = $form_state['input']['quantificationdate'];
+    $quantification_uri = $form_state['input']['quantification_uri'];
+    $filetype = $form_state['input']['filetype'];
+    $submit_job = $form_state['input']['submit_job'];
+    $fileext = $form_state['input']['fileext'];
+    $filepath = $form_state['input']['filepath'];
+    $re_start = $form_state['input']['re_start'];
+    $re_end = $form_state['input']['re_end'];
     $acquisition_protocol_id = $form_state['input']['acquisition_protocol_id'];
     $quantification_protocol_id = $form_state['input']['quantification_protocol_id'];
     $quantification_operator_id = $form_state['input']['quantification_operator_id'];
-    $assay_operator_id     = $form_state['input']['assay_operator_id'];
-    $assay_protocol_id     = $form_state['input']['assay_protocol_id'];
-    $feature_uniquenames  = $form_state['input']['feature_uniquenames'];
+    $assay_operator_id = $form_state['input']['assay_operator_id'];
+    $assay_protocol_id = $form_state['input']['assay_protocol_id'];
+    $feature_uniquenames = $form_state['input']['feature_uniquenames'];
   }
- 
+
   // Set submit_job to 0 every time the form loads.
   $submit_job = 0;
 
   $form['experimental_design'] = array(
     '#title' => t('Experimental Design'),
     '#type' => 'fieldset',
-    '#description' => t('Describe the parameters from which the expression data was generated.'), 
+    '#description' => t('Describe the parameters from which the expression data was generated.'),
     '#attributes' => array('id' => 'expression-extra-settings'),
     '#weight' => 1,
   );
@@ -283,14 +283,14 @@ function chado_analysis_expression_form($node, $form_state) {
   $form['loader'] = array(
     '#title' => t('Data Loader'),
     '#type' => 'fieldset',
-    '#description' => t('Select the expression data to loaded into tripal. The expression data loaders expects the data to be in a flat file.'), 
+    '#description' => t('Select the expression data to loaded into tripal. The expression data loaders expects the data to be in a flat file.'),
     '#attributes' => array('id' => 'expression-extra-settings'),
     '#weight' => 2,
   );
 
   $organisms = tripal_get_organism_select_options(TRUE);
 
-  $lt_message = tripal_set_message(t('If the organism is not present in the dropdown list, ') 
+  $lt_message = tripal_set_message(t('If the organism is not present in the dropdown list, ')
     . l(t('add a new organism.'), 'node/add/chado-organism') . t(' An organism is not required.'),
     TRIPAL_INFO, array('return_html' => TRUE)
   );
@@ -310,7 +310,7 @@ function chado_analysis_expression_form($node, $form_state) {
     '#title' => t('Associated Analysis'),
     '#type' => 'select',
     '#description' => t("An analysis associated with the expression analysis. For example, an expression")
-                      . t(" analysis may be associated with a unigene analysis."),
+      . t(" analysis may be associated with a unigene analysis."),
     '#options' => $analyses,
     '#default_value' => $associated_analysis_id,
   );
@@ -348,7 +348,7 @@ function chado_analysis_expression_form($node, $form_state) {
     '#value' => $contacts,
   );
 
-  $lt_message = tripal_set_message(t('If the biomaterial provider is not present in the dropdown list, ') 
+  $lt_message = tripal_set_message(t('If the biomaterial provider is not present in the dropdown list, ')
     . l(t('add a new contact.'), 'node/add/chado-contact') . t(' A biomaterial provider is not required.'),
     TRIPAL_INFO, array('return_html' => TRUE)
   );
@@ -358,14 +358,14 @@ function chado_analysis_expression_form($node, $form_state) {
     '#type' => 'select',
     '#empty_value' => '',
     '#description' => t('The contact who provided the biomaterial. If the biomaterial is already')
-                      . (' present in the database, the biomaterial provider selected here will')
-                      . (' overwrite the biomaterial provider set for the biomaterial in the database.'),
+      . (' present in the database, the biomaterial provider selected here will')
+      . (' overwrite the biomaterial provider set for the biomaterial in the database.'),
     '#default_value' => $biosourceprovider_id,
     '#options' => $form['choose_contact']['#value'],
     '#suffix' => $lt_message,
   );
 
-  $lt_message = tripal_set_message(t('If the array design does not appear in this list, ') 
+  $lt_message = tripal_set_message(t('If the array design does not appear in this list, ')
     . l(t('add a new arraydesign.'), 'node/add/chado-arraydesign')
     . t(' If an array design is not selected, then a generic array design will be created for the analysis.'),
     TRIPAL_INFO, array('return_html' => TRUE)
@@ -377,25 +377,25 @@ function chado_analysis_expression_form($node, $form_state) {
     '#title' => t('Array Design'),
     '#type' => 'select',
     '#description' => t('The array design associated with this analysis. This is not required if the experimental')
-                      . t(' data was gathered from next generation sequencing methods. If an array design is not')
-                      . t(' selected, a generic array design will be used as a place filler.'),
+      . t(' data was gathered from next generation sequencing methods. If an array design is not')
+      . t(' selected, a generic array design will be used as a place filler.'),
     '#options' => $arraydesigns,
     '#default_value' => $arraydesign_id,
     '#suffix' => $lt_message,
-  ); 
+  );
 
   $form['experimental_design']['acquisition_details'] = array(
     '#title' => t('Acquisition Details'),
     '#type' => 'fieldset',
-    '#description' => t('Describe the details of the acquisition process. The acquisition is the process') 
-                      . (' of scanning the experimental data.'),
+    '#description' => t('Describe the details of the acquisition process. The acquisition is the process')
+      . (' of scanning the experimental data.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#weight' => 1,
   );
 
   // Get time saved in chado.
-  $default_time = $acquisitiondate; 
+  $default_time = $acquisitiondate;
   $year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
   $month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
   $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
@@ -403,20 +403,20 @@ function chado_analysis_expression_form($node, $form_state) {
   // If the time is not set, use current time.
   if (!$default_time) {
     $default_time = REQUEST_TIME;
-    $year  = format_date($default_time, 'custom', 'Y');
+    $year = format_date($default_time, 'custom', 'Y');
     $month = format_date($default_time, 'custom', 'n');
-    $day   = format_date($default_time, 'custom', 'j');
+    $day = format_date($default_time, 'custom', 'j');
   }
 
-  $form['experimental_design']['acquisition_details']['acquisitiondate']= array(
+  $form['experimental_design']['acquisition_details']['acquisitiondate'] = array(
     '#type' => 'date',
     '#title' => t('Date Acquisition Run'),
     '#description' => t('If no date is provided, then the current date will be used.'),
     '#required' => TRUE,
     '#default_value' => array(
-       'year' => $year,
-       'month' => $month,
-       'day' => $day,
+      'year' => $year,
+      'month' => $month,
+      'day' => $day,
     ),
   );
 
@@ -425,9 +425,9 @@ function chado_analysis_expression_form($node, $form_state) {
     '#title' => t('Acquisition URI'),
     '#description' => t('URI location that describes the acquisition.'),
     '#default_value' => $acquisition_uri,
-  ); 
+  );
 
-  $lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ') 
+  $lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ')
     . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' An acquisition protocol is not required.'),
     TRIPAL_INFO, array('return_html' => TRUE)
   );
@@ -438,7 +438,7 @@ function chado_analysis_expression_form($node, $form_state) {
     '#title' => t('Acquisition Protocol'),
     '#type' => 'select',
     '#description' => t('The protocol associated with this acquisition.'),
-    '#options' => $acquisitions, 
+    '#options' => $acquisitions,
     '#default_value' => $acquisition_protocol_id,
     '#suffix' => $lt_message,
   );
@@ -446,34 +446,33 @@ function chado_analysis_expression_form($node, $form_state) {
   $form['experimental_design']['quantification_details'] = array(
     '#title' => t('Quantification Details'),
     '#type' => 'fieldset',
-    '#description' => t('Describe the details of the quantification process. The quantification is the process')
-                      . (' of transforming raw expression data into numeric data.'),
+    '#description' => t('Describe the details of the quantification process. The quantification is the process of transforming raw expression data into numeric data.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#weight' => 1,
   );
 
   // Get time saved in chado
-  $default_time = $quantificationdate; 
+  $default_time = $quantificationdate;
   $year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
   $month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
   $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
   // If the time is not set, use current time
   if (!$default_time) {
     $default_time = REQUEST_TIME;
-    $year  = format_date($default_time, 'custom', 'Y');
+    $year = format_date($default_time, 'custom', 'Y');
     $month = format_date($default_time, 'custom', 'n');
-    $day   = format_date($default_time, 'custom', 'j');
+    $day = format_date($default_time, 'custom', 'j');
   }
-  $form['experimental_design']['quantification_details']['quantificationdate']= array(
+  $form['experimental_design']['quantification_details']['quantificationdate'] = array(
     '#type' => 'date',
     '#title' => t('Date Quantification Run'),
     '#description' => t('If no date is provided, then the current date will be used.'),
     '#required' => TRUE,
     '#default_value' => array(
-       'year' => $year,
-       'month' => $month,
-       'day' => $day,
+      'year' => $year,
+      'month' => $month,
+      'day' => $day,
     ),
   );
 
@@ -484,7 +483,7 @@ function chado_analysis_expression_form($node, $form_state) {
     '#default_value' => $quantification_uri,
   );
 
-  $lt_message = tripal_set_message(t('If the quantification operator is not present in the dropdown list, ') 
+  $lt_message = tripal_set_message(t('If the quantification operator is not present in the dropdown list, ')
     . l(t('add a new contact.'), 'node/add/chado-contact') . t('A quantication operator is not required.'),
     TRIPAL_INFO, array('return_html' => TRUE)
   );
@@ -510,12 +509,13 @@ function chado_analysis_expression_form($node, $form_state) {
     '#type' => 'select',
     '#empty_value' => '',
     '#description' => t('The quantification operator. If the operator does not appear in this list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t(' An operator is not required.'),
-    '#default_value' => $quantification_operator_id,  //*** make sure this works -names - contact/operator
+    '#default_value' => $quantification_operator_id,
+    //*** make sure this works -names - contact/operator
     '#options' => $form['choose_contact']['#value'],
     '#suffix' => $lt_message,
   );
 
-  $lt_message = tripal_set_message(t('If the quantification protocol is not present in the dropdown list, ') 
+  $lt_message = tripal_set_message(t('If the quantification protocol is not present in the dropdown list, ')
     . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' A quantification protocol is not required.'),
     TRIPAL_INFO, array('return_html' => TRUE)
   );
@@ -560,11 +560,11 @@ function chado_analysis_expression_form($node, $form_state) {
     '#default_value' => $feature_uniquenames,
   );
 
-/*  $form['loader']['feature_uniquenames'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Use feature uniquename to associate expression values (default is feature name)'),
-    '#default_value' => $feature_uniquenames,
-  );*/
+  /*  $form['loader']['feature_uniquenames'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Use feature uniquename to associate expression values (default is feature name)'),
+      '#default_value' => $feature_uniquenames,
+    );*/
 
   $form['loader']['fileext'] = array(
     '#type' => 'textfield',
@@ -607,33 +607,33 @@ function chado_analysis_expression_form($node, $form_state) {
     '#title' => t('Assay Details'),
     '#type' => 'fieldset',
     '#description' => t('Describe the details of the assay process. The assay is the physical instance of the array')
-                      . t(' used in the experiment.'), 
+      . t(' used in the experiment.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#weight' => 1,
   );
 
   // Get time saved in chado
-  $default_time = $assaydate; 
+  $default_time = $assaydate;
   $year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
   $month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
   $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
   // If the time is not set, use current time
   if (!$default_time) {
     $default_time = REQUEST_TIME;
-    $year  = format_date($default_time, 'custom', 'Y');
+    $year = format_date($default_time, 'custom', 'Y');
     $month = format_date($default_time, 'custom', 'n');
-    $day   = format_date($default_time, 'custom', 'j');
+    $day = format_date($default_time, 'custom', 'j');
   }
-  $form['experimental_design']['assay_details']['assaydate']= array(
+  $form['experimental_design']['assay_details']['assaydate'] = array(
     '#type' => 'date',
     '#title' => t('Date Assay Run'),
     '#description' => t('If no date is provided, then the current date will be used.'),
     '#required' => TRUE,
     '#default_value' => array(
-       'year' => $year,
-       'month' => $month,
-       'day' => $day,
+      'year' => $year,
+      'month' => $month,
+      'day' => $day,
     ),
   );
 
@@ -642,7 +642,7 @@ function chado_analysis_expression_form($node, $form_state) {
     '#title' => t('Assay Description'),
     '#description' => t('A description of the assay used.'),
     '#default_value' => $assay_description,
-  ); 
+  );
 
   // Obtain the list of contacts from the chado contact table. 
   $sql = 'SELECT
@@ -660,7 +660,7 @@ function chado_analysis_expression_form($node, $form_state) {
     '#value' => $contacts,
   );
 
-  $lt_message = tripal_set_message(t('If the assay operator is not present in the dropdown list, ') 
+  $lt_message = tripal_set_message(t('If the assay operator is not present in the dropdown list, ')
     . l(t('add a new contact.'), 'node/add/chado-contact') . t(' If an assay operator is not selected, then a generic assay operator will be created for this analysis.'),
     TRIPAL_INFO, array('return_html' => TRUE)
   );
@@ -670,12 +670,13 @@ function chado_analysis_expression_form($node, $form_state) {
     '#type' => 'select',
     '#empty_value' => '',
     '#description' => t('The assay operator.'),
-    '#default_value' => $assay_operator_id,  //*** make sure this works -names - contact/operator
+    '#default_value' => $assay_operator_id,
+    //*** make sure this works -names - contact/operator
     '#options' => $form['choose_contact']['#value'],
     '#suffix' => $lt_message,
   );
 
-  $lt_message = tripal_set_message(t('If the assay protocol is not present in the dropdown list, ') 
+  $lt_message = tripal_set_message(t('If the assay protocol is not present in the dropdown list, ')
     . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' An assay protocol is not required.'),
     TRIPAL_INFO, array('return_html' => TRUE)
   );
@@ -691,7 +692,7 @@ function chado_analysis_expression_form($node, $form_state) {
     '#suffix' => $lt_message,
   );
 
-return $form;
+  return $form;
 }
 
 
@@ -708,96 +709,97 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
   $form_state['rebuild'] = TRUE;
 
 ///
-    $re_ext = '/^.+\.(' . $fileext . ')/';
+  $re_ext = '/^.+\.(' . $fileext . ')/';
 
-    // A matrix file.
-    if ($filetype == 'mat' and is_file($filepath)) {
-      $data_ln = 0;
-      $mat_fp = fopen($filepath, 'r');
-      //Check a single matrix file.
-      while($line = fgets($mat_fp)) {
-        if ($data_ln == 1 or !$re_start) {
-          // Make sure this is actually a tab separated file.
-          if (!preg_match('/\t/', $line, $matches)) {
-            drupal_set_message(t('Warning: the expression loader expects a tab separated file. Please ensure the expression file is a tab separated file. Warning thrown on line:') . "\n", 'warning');
-            drupal_set_message($line, 'warning');
-            return;
-          }
-          $linepart = preg_split('/\t/',$line,-1,PREG_SPLIT_NO_EMPTY);
-          // Trim whitespace from biomaterial names.
-          foreach ($linepart as $biomaterial) {
-            $new_linepart[] = trim($biomaterial); 	
-          }
-          $linepart = $new_linepart;
-          $num_col = count($linepart);
-          foreach($linepart as $sample) {
-            if(chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $sample), array('has_record'=>TRUE)) < 1)  {
-              if ($first_mes == 0) {
-                drupal_set_message("The following biosamples from the expression file do not have a corresponding biomaterial record in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loading job is submitted a new biomaterial will be created for biomaterials from the expression file without a name match in the Chado database.");
-                $first_mes = 1;
-              }
-              drupal_set_message($sample);
-            }
-          }
-          break;
+  // A matrix file.
+  if ($filetype == 'mat' and is_file($filepath)) {
+    $data_ln = 0;
+    $mat_fp = fopen($filepath, 'r');
+    //Check a single matrix file.
+    while ($line = fgets($mat_fp)) {
+      if ($data_ln == 1 or !$re_start) {
+        // Make sure this is actually a tab separated file.
+        if (!preg_match('/\t/', $line, $matches)) {
+          drupal_set_message(t('Warning: the expression loader expects a tab separated file. Please ensure the expression file is a tab separated file. Warning thrown on line:') . "\n", 'warning');
+          drupal_set_message($line, 'warning');
+          return;
         }
-        if (preg_match('/' . $re_start . '/',$line) and $re_start) {
-          $data_ln = 1;
+        $linepart = preg_split('/\t/', $line, -1, PREG_SPLIT_NO_EMPTY);
+        // Trim whitespace from biomaterial names.
+        foreach ($linepart as $biomaterial) {
+          $new_linepart[] = trim($biomaterial);
         }
-      }
-      if ($first_mes == 0) {
-        drupal_set_message("All biomaterials found in the expression matrix file have a corresponding biomaterial record in the Chado database.");
-      }
-    }
-
-    // The column format.
-    elseif ($filetype == 'col' and is_file($filepath) and preg_match("/^.+\." . $fileext . "$/",$filepath)) {
-      // Check single column file.
-      preg_match('/^.+\/(.+)\.' . $fileext . '$/', $filepath, $biomaterial);
-      if (chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $biomaterial[1]), array('has_record'=>TRUE)) < 1)  {
-        drupal_set_message("The following biomaterial from the expression file does not have a corresponding biomaterial record in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loader job is submitted a new biomaterial will be created for the biomaterial from the expression file without a name match in the Chado database.");
-        $first_mes = 1;
-        drupal_set_message($biomaterial[1]);
-      }
-      if ($first_mes == 0) {
-        drupal_set_message("The biomaterial found in the file has a corresponding biomaterial record in the Chado database.");
-      }
-
-    } else { // Multiple files in the column format.
-      $dir_handle = @opendir($filepath);
-      if (!$dir_handle) {
-        return;
-      }
-      $total_files = count(glob($filepath . '/*.' . $fileext));
-      $num_file = 0;
-
-      // Load all files with of type $fileext in the directory.
-      while ($file = readdir($dir_handle)) {
-        if (preg_match('/(.+)\.' . $fileext . '$/',$file, $biomaterial)) {
-          // Check multiple column files.
-          if (chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $biomaterial[1]), array('has_record'=>TRUE)) < 1)  {
+        $linepart = $new_linepart;
+        $num_col = count($linepart);
+        foreach ($linepart as $sample) {
+          if (chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $sample), array('has_record' => TRUE)) < 1) {
             if ($first_mes == 0) {
               drupal_set_message("The following biosamples from the expression file do not have a corresponding biomaterial record in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loading job is submitted a new biomaterial will be created for biomaterials from the expression file without a name match in the Chado database.");
               $first_mes = 1;
             }
-            drupal_set_message($biomaterial[1]);
+            drupal_set_message($sample);
           }
-          $num_file++;
         }
+        break;
       }
-      if ($first_mes == 0) {
-        drupal_set_message("All biomaterials found in the directory have a corresponding biomaterial record in the Chado database.");
+      if (preg_match('/' . $re_start . '/', $line) and $re_start) {
+        $data_ln = 1;
       }
     }
+    if ($first_mes == 0) {
+      drupal_set_message("All biomaterials found in the expression matrix file have a corresponding biomaterial record in the Chado database.");
+    }
+  }
+
+  // The column format.
+  elseif ($filetype == 'col' and is_file($filepath) and preg_match("/^.+\." . $fileext . "$/", $filepath)) {
+    // Check single column file.
+    preg_match('/^.+\/(.+)\.' . $fileext . '$/', $filepath, $biomaterial);
+    if (chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $biomaterial[1]), array('has_record' => TRUE)) < 1) {
+      drupal_set_message("The following biomaterial from the expression file does not have a corresponding biomaterial record in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loader job is submitted a new biomaterial will be created for the biomaterial from the expression file without a name match in the Chado database.");
+      $first_mes = 1;
+      drupal_set_message($biomaterial[1]);
+    }
+    if ($first_mes == 0) {
+      drupal_set_message("The biomaterial found in the file has a corresponding biomaterial record in the Chado database.");
+    }
+
+  }
+  else { // Multiple files in the column format.
+    $dir_handle = @opendir($filepath);
+    if (!$dir_handle) {
+      return;
+    }
+    $total_files = count(glob($filepath . '/*.' . $fileext));
+    $num_file = 0;
+
+    // Load all files with of type $fileext in the directory.
+    while ($file = readdir($dir_handle)) {
+      if (preg_match('/(.+)\.' . $fileext . '$/', $file, $biomaterial)) {
+        // Check multiple column files.
+        if (chado_select_record('biomaterial', array('biomaterial_id'), array('name' => $biomaterial[1]), array('has_record' => TRUE)) < 1) {
+          if ($first_mes == 0) {
+            drupal_set_message("The following biosamples from the expression file do not have a corresponding biomaterial record in the Chado database. If you have already loaded biomaterial records, please resolve name differences prior to submitting the expression loading job. When the loading job is submitted a new biomaterial will be created for biomaterials from the expression file without a name match in the Chado database.");
+            $first_mes = 1;
+          }
+          drupal_set_message($biomaterial[1]);
+        }
+        $num_file++;
+      }
+    }
+    if ($first_mes == 0) {
+      drupal_set_message("All biomaterials found in the directory have a corresponding biomaterial record in the Chado database.");
+    }
+  }
 ///
 }
 
 
 /**
  * Implementation of hook_validate.
- * 
+ *
  * This function validates the chado_analysis_expression form.
- * 
+ *
  * @ingroup tripal_analysis_expression
  */
 function chado_analysis_expression_validate($node, $form, &$form_state) {
@@ -805,7 +807,7 @@ function chado_analysis_expression_validate($node, $form, &$form_state) {
   if ($node->op == 'Delete') {
     return;
   }
- 
+
   // We are syncing if there is an content_type_id but no node ID. In this case a 
   // validation is not required.  
   if (is_null($node->nid) and property_exists($node, 'content_type_id') and $node->content_type_id != 0) {
@@ -819,16 +821,16 @@ function chado_analysis_expression_validate($node, $form, &$form_state) {
 
   // Remove white space around field values.
   $node->fileext = trim($node->fileext);
-  $node->filepath = trim($node->filepath); 
-  $node->re_start = trim($node->re_start); 
-  $node->re_end = trim($node->re_end); 
+  $node->filepath = trim($node->filepath);
+  $node->re_start = trim($node->re_start);
+  $node->re_end = trim($node->re_end);
 
   // Validate the regular expressions if provided.
   if ($node->re_start and @preg_match('/' . $node->re_start . '/', NULL) === FALSE) {
-    form_set_error('re_start', 'Invalid regular expression for the start of expression data: ' . $node->re_start); 
+    form_set_error('re_start', 'Invalid regular expression for the start of expression data: ' . $node->re_start);
   }
   if ($node->re_end and @preg_match('/' . $node->re_end . '/', NULL) === FALSE) {
-    form_set_error('re_end', 'Invalid regular expression for the end of expression data: ' . $node->re_end); 
+    form_set_error('re_end', 'Invalid regular expression for the end of expression data: ' . $node->re_end);
   }
 
   // Make sure a file type is selected if a file path is provided.
@@ -842,51 +844,51 @@ function chado_analysis_expression_validate($node, $form, &$form_state) {
 
   // Check to see if the matrix file is readable.
   if ($node->filepath and $node->filetype === 'mat' and (!is_file($node->filepath) or !is_readable($node->filepath)) and !is_dir($node->filepath)) {
-    form_set_error('filepath', 'Unable to read expression file: ' . $node->filepath); 
-  } 
+    form_set_error('filepath', 'Unable to read expression file: ' . $node->filepath);
+  }
   elseif ($node->filepath and $node->filetype === 'mat' and is_dir($node->filepath)) {
-    form_set_error('filepath', 'When loading an expression file using the matrix format please provide a path to a single file. The file path must include the file name.'); 
-  } 
+    form_set_error('filepath', 'When loading an expression file using the matrix format please provide a path to a single file. The file path must include the file name.');
+  }
   elseif ($node->filepath and $node->filetype === 'col' and is_file($node->filepath) and !is_readable($node->filepath)) {
-    form_set_error('filepath', 'Unable to read expression file: ' . $node->filepath); 
+    form_set_error('filepath', 'Unable to read expression file: ' . $node->filepath);
   }
   elseif ($node->filepath and $node->filetype === 'col' and is_file($node->filepath) and !$node->fileext) {
-    form_set_error('fileext', 'Please specify a file extension for the column file to be loaded.'); 
+    form_set_error('fileext', 'Please specify a file extension for the column file to be loaded.');
   }
   elseif ($node->filepath and $node->filetype === 'col' and is_dir($node->filepath)) {
     if (empty($node->fileext)) {
-      form_set_error('fileext', 'Please specify a file extension for the column files to be loaded.'); 
+      form_set_error('fileext', 'Please specify a file extension for the column files to be loaded.');
     }
     $anyfile = 0;
     $dir_handle = @opendir($node->filepath);
     if (!$dir_handle) {
-      form_set_error('filepath', 'Unable to open the directory: ' . $node->filepath); 
-    }  
+      form_set_error('filepath', 'Unable to open the directory: ' . $node->filepath);
+    }
     while ($file = readdir($dir_handle)) {
-      if (preg_match('/(.+)\.' . $node->fileext . '$/',$file)) { 
-         $anyfile = 1;
+      if (preg_match('/(.+)\.' . $node->fileext . '$/', $file)) {
+        $anyfile = 1;
       }
-      if (preg_match('/(.+)\.' . $node->fileext . '$/',$file) and !is_readable($node->filepath . '/' . $file)) {
-        form_set_error('filepath', 'At least one file of type: ' . $node->fileext . ' is unreadable. Error caught when attempting to read file: ' . $node->filepath . '/' . $file); 
+      if (preg_match('/(.+)\.' . $node->fileext . '$/', $file) and !is_readable($node->filepath . '/' . $file)) {
+        form_set_error('filepath', 'At least one file of type: ' . $node->fileext . ' is unreadable. Error caught when attempting to read file: ' . $node->filepath . '/' . $file);
       }
     }
     if ($anyfile == 0) {
-      form_set_error('filepath', 'No files of type: ' . $node->fileext . ' are found in the directory: ' . $node->filepath); 
+      form_set_error('filepath', 'No files of type: ' . $node->fileext . ' are found in the directory: ' . $node->filepath);
     }
   }
   //elseif ($node->filepath and $node->filetype === 'col' and !is_dir($node->filepath)) {
-   // form_set_error('filepath', 'Unable to open the directory: ' . $node->filepath . '. Please ensure that the file type suffix is correctly set and that the server has permission to access the file(s) or directory.'); 
- // }
+  // form_set_error('filepath', 'Unable to open the directory: ' . $node->filepath . '. Please ensure that the file type suffix is correctly set and that the server has permission to access the file(s) or directory.');
+  // }
 }
 
 /**
  * Implements hook_insert().
- * 
+ *
  * This function inserts the data from the analysis: expression form into the chado database.
  * The analysis: expression form also allows the user to submit an expression loading job.
- * 
+ *
  * @ingroup tripal_analysis_expression
- */ 
+ */
 function chado_analysis_expression_insert($node) {
 
   // Hook into the tripal analysis insert.
@@ -894,9 +896,9 @@ function chado_analysis_expression_insert($node) {
 
   // Remove white space around field values.
   $node->fileext = trim($node->fileext);
-  $node->filepath = trim($node->filepath); 
-  $node->re_start = trim($node->re_start); 
-  $node->re_end = trim($node->re_end); 
+  $node->filepath = trim($node->filepath);
+  $node->re_start = trim($node->re_start);
+  $node->re_end = trim($node->re_end);
 
   $assaydate = $node->assaydate['year'] . "-" . $node->assaydate['month'] . "-" . $node->assaydate['day'] . " 00:00:00";
   $acquisitiondate = $node->acquisitiondate['year'] . "-" . $node->acquisitiondate['month'] . "-" . $node->acquisitiondate['day'] . " 00:00:00";
@@ -905,30 +907,118 @@ function chado_analysis_expression_insert($node) {
   $record = array('table' => 'analysis', 'id' => $node->analysis_id);
 
   // Add analysis: expression fields. 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_organism_id', 'cv_name' => 'tripal', 'value' => trim($node->organism_id))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_associated_analysis_id', 'cv_name' => 'tripal', 'value' => trim($node->associated_analysis_id))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_biosourceprovider_id', 'cv_name' => 'tripal', 'value' => trim($node->biosourceprovider_id))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_arraydesign_id', 'cv_name' => 'tripal', 'value' => trim($node->arraydesign_id))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_assaydate', 'cv_name' => 'tripal', 'value' => $assaydate)); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_assay_description', 'cv_name' => 'tripal', 'value' => trim($node->assay_description))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_acquisitiondate', 'cv_name' => 'tripal', 'value' => $acquisitiondate)); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_acquisition_uri', 'cv_name' => 'tripal', 'value' => trim($node->acquisition_uri))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_quantificationdate', 'cv_name' => 'tripal', 'value' => $quantificationdate)); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_quantification_uri', 'cv_name' => 'tripal', 'value' => trim($node->quantification_uri))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_assay_protocol_id', 'cv_name' => 'tripal', 'value' => trim($node->assay_protocol_id))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_acquisition_protocol_id', 'cv_name' => 'tripal', 'value' => trim($node->acquisition_protocol_id))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_quantification_protocol_id', 'cv_name' => 'tripal', 'value' => trim($node->quantification_protocol_id))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_assay_operator_id', 'cv_name' => 'tripal', 'value' => trim($node->assay_operator_id))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_quantification_operator_id', 'cv_name' => 'tripal', 'value' => trim($node->quantification_operator_id))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_filetype', 'cv_name' => 'tripal', 'value' => trim($node->filetype))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_submit_job', 'cv_name' => 'tripal', 'value' => trim($node->submit_job))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_fileext', 'cv_name' => 'tripal', 'value' => trim($node->fileext))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_filepath', 'cv_name' => 'tripal', 'value' => trim($node->filepath))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_re_start', 'cv_name' => 'tripal', 'value' => trim($node->re_start))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_re_end', 'cv_name' => 'tripal', 'value' => trim($node->re_end))); 
-  chado_insert_property($record, array('type_name' => 'analysis_expression_feature_uniquenames', 'cv_name' => 'tripal', 'value' => trim($node->feature_uniquenames))); 
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_organism_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->organism_id)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_associated_analysis_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->associated_analysis_id)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_biosourceprovider_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->biosourceprovider_id)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_arraydesign_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->arraydesign_id)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_assaydate',
+    'cv_name' => 'tripal',
+    'value' => $assaydate
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_assay_description',
+    'cv_name' => 'tripal',
+    'value' => trim($node->assay_description)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_acquisitiondate',
+    'cv_name' => 'tripal',
+    'value' => $acquisitiondate
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_acquisition_uri',
+    'cv_name' => 'tripal',
+    'value' => trim($node->acquisition_uri)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_quantificationdate',
+    'cv_name' => 'tripal',
+    'value' => $quantificationdate
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_quantification_uri',
+    'cv_name' => 'tripal',
+    'value' => trim($node->quantification_uri)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_assay_protocol_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->assay_protocol_id)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_acquisition_protocol_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->acquisition_protocol_id)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_quantification_protocol_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->quantification_protocol_id)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_assay_operator_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->assay_operator_id)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_quantification_operator_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->quantification_operator_id)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_filetype',
+    'cv_name' => 'tripal',
+    'value' => trim($node->filetype)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_submit_job',
+    'cv_name' => 'tripal',
+    'value' => trim($node->submit_job)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_fileext',
+    'cv_name' => 'tripal',
+    'value' => trim($node->fileext)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_filepath',
+    'cv_name' => 'tripal',
+    'value' => trim($node->filepath)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_re_start',
+    'cv_name' => 'tripal',
+    'value' => trim($node->re_start)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_re_end',
+    'cv_name' => 'tripal',
+    'value' => trim($node->re_end)
+  ));
+  chado_insert_property($record, array(
+    'type_name' => 'analysis_expression_feature_uniquenames',
+    'cv_name' => 'tripal',
+    'value' => trim($node->feature_uniquenames)
+  ));
 
-  if ($node->submit_job) { 
+  if ($node->submit_job) {
     // Submit the expression loading job.
     chado_analysis_expression_submit_job($node);
   }
@@ -942,7 +1032,7 @@ function chado_analysis_expression_insert($node) {
  * @ingroup tripal_analysis_expression
  */
 function chado_analysis_expression_load($nodes) {
-  
+
   // Load the default analysis fields. 
   chado_analysis_load($nodes);
 
@@ -954,51 +1044,117 @@ function chado_analysis_expression_load($nodes) {
     $record = array('table' => 'analysis', 'id' => $analysis->analysis_id);
 
     // Load the analysis expression property fields. 
-    $organism_id = chado_get_property($record, array('type_name' => 'analysis_expression_organism_id', 'cv_name' => 'tripal'));
-    $associated_analysis_id = chado_get_property($record, array('type_name' => 'analysis_expression_associated_analysis_id', 'cv_name' => 'tripal'));
-    $biosourceprovider_id = chado_get_property($record, array('type_name' => 'analysis_expression_biosourceprovider_id', 'cv_name' => 'tripal'));
-    $arraydesign_id = chado_get_property($record, array('type_name' => 'analysis_expression_arraydesign_id', 'cv_name' => 'tripal'));
-    $assaydate = chado_get_property($record, array('type_name' => 'analysis_expression_assaydate', 'cv_name' => 'tripal'));
-    $assay_description = chado_get_property($record, array('type_name' => 'analysis_expression_assay_description', 'cv_name' => 'tripal'));
-    $acquisitiondate = chado_get_property($record, array('type_name' => 'analysis_expression_acquisitiondate', 'cv_name' => 'tripal'));
-    $acquisition_uri = chado_get_property($record, array('type_name' => 'analysis_expression_acquisition_uri', 'cv_name' => 'tripal'));
-    $quantificationdate = chado_get_property($record, array('type_name' => 'analysis_expression_quantificationdate', 'cv_name' => 'tripal'));
-    $quantification_uri = chado_get_property($record, array('type_name' => 'analysis_expression_quantification_uri', 'cv_name' => 'tripal'));
-    $assay_protocol_id = chado_get_property($record, array('type_name' => 'analysis_expression_assay_protocol_id', 'cv_name' => 'tripal'));
-    $acquisition_protocol_id = chado_get_property($record, array('type_name' => 'analysis_expression_acquisition_protocol_id', 'cv_name' => 'tripal'));
-    $quantification_protocol_id = chado_get_property($record, array('type_name' => 'analysis_expression_quantification_protocol_id', 'cv_name' => 'tripal'));
-    $assay_operator_id = chado_get_property($record, array('type_name' => 'analysis_expression_assay_operator_id', 'cv_name' => 'tripal'));
-    $quantification_operator_id = chado_get_property($record, array('type_name' => 'analysis_expression_quantification_operator_id', 'cv_name' => 'tripal'));
-    $filetype = chado_get_property($record, array('type_name' => 'analysis_expression_filetype', 'cv_name' => 'tripal'));
-    $submit_job = chado_get_property($record, array('type_name' => 'analysis_expression_submit_job', 'cv_name' => 'tripal'));
-    $fileext = chado_get_property($record, array('type_name' => 'analysis_expression_fileext', 'cv_name' => 'tripal'));
-    $filepath = chado_get_property($record, array('type_name' => 'analysis_expression_filepath', 'cv_name' => 'tripal'));
-    $re_start = chado_get_property($record, array('type_name' => 'analysis_expression_re_start', 'cv_name' => 'tripal'));
-    $re_end = chado_get_property($record, array('type_name' => 'analysis_expression_re_end', 'cv_name' => 'tripal'));
-    $feature_uniquenames = chado_get_property($record, array('type_name' => 'analysis_expression_feature_uniquenames', 'cv_name' => 'tripal'));
- 
+    $organism_id = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_organism_id',
+      'cv_name' => 'tripal'
+    ));
+    $associated_analysis_id = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_associated_analysis_id',
+      'cv_name' => 'tripal'
+    ));
+    $biosourceprovider_id = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_biosourceprovider_id',
+      'cv_name' => 'tripal'
+    ));
+    $arraydesign_id = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_arraydesign_id',
+      'cv_name' => 'tripal'
+    ));
+    $assaydate = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_assaydate',
+      'cv_name' => 'tripal'
+    ));
+    $assay_description = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_assay_description',
+      'cv_name' => 'tripal'
+    ));
+    $acquisitiondate = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_acquisitiondate',
+      'cv_name' => 'tripal'
+    ));
+    $acquisition_uri = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_acquisition_uri',
+      'cv_name' => 'tripal'
+    ));
+    $quantificationdate = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_quantificationdate',
+      'cv_name' => 'tripal'
+    ));
+    $quantification_uri = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_quantification_uri',
+      'cv_name' => 'tripal'
+    ));
+    $assay_protocol_id = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_assay_protocol_id',
+      'cv_name' => 'tripal'
+    ));
+    $acquisition_protocol_id = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_acquisition_protocol_id',
+      'cv_name' => 'tripal'
+    ));
+    $quantification_protocol_id = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_quantification_protocol_id',
+      'cv_name' => 'tripal'
+    ));
+    $assay_operator_id = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_assay_operator_id',
+      'cv_name' => 'tripal'
+    ));
+    $quantification_operator_id = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_quantification_operator_id',
+      'cv_name' => 'tripal'
+    ));
+    $filetype = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_filetype',
+      'cv_name' => 'tripal'
+    ));
+    $submit_job = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_submit_job',
+      'cv_name' => 'tripal'
+    ));
+    $fileext = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_fileext',
+      'cv_name' => 'tripal'
+    ));
+    $filepath = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_filepath',
+      'cv_name' => 'tripal'
+    ));
+    $re_start = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_re_start',
+      'cv_name' => 'tripal'
+    ));
+    $re_end = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_re_end',
+      'cv_name' => 'tripal'
+    ));
+    $feature_uniquenames = chado_get_property($record, array(
+      'type_name' => 'analysis_expression_feature_uniquenames',
+      'cv_name' => 'tripal'
+    ));
+
     $analysis->tripal_analysis_expression = new stdClass;
-    $analysis->tripal_analysis_expression->organism_id          = is_object($organism_id)          ? $organism_id->value          : '';
-    $analysis->tripal_analysis_expression->associated_analysis_id = is_object($associated_analysis_id)          ? $associated_analysis_id->value          : '';
+    $analysis->tripal_analysis_expression->organism_id = is_object($organism_id) ? $organism_id->value : '';
+    $analysis->tripal_analysis_expression->associated_analysis_id = is_object($associated_analysis_id) ? $associated_analysis_id->value : '';
     $analysis->tripal_analysis_expression->biosourceprovider_id = is_object($biosourceprovider_id) ? $biosourceprovider_id->value : '';
-    $analysis->tripal_analysis_expression->arraydesign_id       = is_object($arraydesign_id)       ? $arraydesign_id->value       : '';
-    $analysis->tripal_analysis_expression->assaydate            = is_object($assaydate)            ? $assaydate->value            : '';
-    $analysis->tripal_analysis_expression->assay_description    = is_object($assay_description)    ? $assay_description->value    : '';
-    $analysis->tripal_analysis_expression->acquisitiondate      = is_object($acquisitiondate)       ? $acquisitiondate->value      : '';
-    $analysis->tripal_analysis_expression->acquisition_uri      = is_object($acquisition_uri)       ? $acquisition_uri->value      : '';
-    $analysis->tripal_analysis_expression->quantificationdate   = is_object($quantificationdate)    ? $quantificationdate->value      : '';
-    $analysis->tripal_analysis_expression->quantification_uri   = is_object($quantification_uri)    ? $quantification_uri->value      : '';
-    $analysis->tripal_analysis_expression->assay_protocol_id   = is_object($assay_protocol_id)    ? $assay_protocol_id->value      : '';
-    $analysis->tripal_analysis_expression->acquisition_protocol_id   = is_object($acquisition_protocol_id)    ? $acquisition_protocol_id->value      : '';
-    $analysis->tripal_analysis_expression->quantification_protocol_id   = is_object($quantification_protocol_id)    ? $quantification_protocol_id->value      : '';
-    $analysis->tripal_analysis_expression->assay_operator_id   = is_object($assay_operator_id)    ? $assay_operator_id->value      : '';
-    $analysis->tripal_analysis_expression->quantification_operator_id   = is_object($quantification_operator_id)    ? $quantification_operator_id->value      : '';
-    $analysis->tripal_analysis_expression->filetype             = is_object($filetype)             ? $filetype->value             : '';
-    $analysis->tripal_analysis_expression->submit_job           = is_object($submit_job)           ? $submit_job->value           : '';
-    $analysis->tripal_analysis_expression->fileext              = is_object($fileext)              ? $fileext->value              : '';
-    $analysis->tripal_analysis_expression->filepath             = is_object($filepath)             ? $filepath->value             : '';
-    $analysis->tripal_analysis_expression->re_start             = is_object($re_start)             ? $re_start->value             : '';
-    $analysis->tripal_analysis_expression->re_end               = is_object($re_end)               ? $re_end->value               : '';
+    $analysis->tripal_analysis_expression->arraydesign_id = is_object($arraydesign_id) ? $arraydesign_id->value : '';
+    $analysis->tripal_analysis_expression->assaydate = is_object($assaydate) ? $assaydate->value : '';
+    $analysis->tripal_analysis_expression->assay_description = is_object($assay_description) ? $assay_description->value : '';
+    $analysis->tripal_analysis_expression->acquisitiondate = is_object($acquisitiondate) ? $acquisitiondate->value : '';
+    $analysis->tripal_analysis_expression->acquisition_uri = is_object($acquisition_uri) ? $acquisition_uri->value : '';
+    $analysis->tripal_analysis_expression->quantificationdate = is_object($quantificationdate) ? $quantificationdate->value : '';
+    $analysis->tripal_analysis_expression->quantification_uri = is_object($quantification_uri) ? $quantification_uri->value : '';
+    $analysis->tripal_analysis_expression->assay_protocol_id = is_object($assay_protocol_id) ? $assay_protocol_id->value : '';
+    $analysis->tripal_analysis_expression->acquisition_protocol_id = is_object($acquisition_protocol_id) ? $acquisition_protocol_id->value : '';
+    $analysis->tripal_analysis_expression->quantification_protocol_id = is_object($quantification_protocol_id) ? $quantification_protocol_id->value : '';
+    $analysis->tripal_analysis_expression->assay_operator_id = is_object($assay_operator_id) ? $assay_operator_id->value : '';
+    $analysis->tripal_analysis_expression->quantification_operator_id = is_object($quantification_operator_id) ? $quantification_operator_id->value : '';
+    $analysis->tripal_analysis_expression->filetype = is_object($filetype) ? $filetype->value : '';
+    $analysis->tripal_analysis_expression->submit_job = is_object($submit_job) ? $submit_job->value : '';
+    $analysis->tripal_analysis_expression->fileext = is_object($fileext) ? $fileext->value : '';
+    $analysis->tripal_analysis_expression->filepath = is_object($filepath) ? $filepath->value : '';
+    $analysis->tripal_analysis_expression->re_start = is_object($re_start) ? $re_start->value : '';
+    $analysis->tripal_analysis_expression->re_end = is_object($re_end) ? $re_end->value : '';
     $analysis->tripal_analysis_expression->feature_uniquenames = is_object($feature_uniquenames) ? $feature_uniquenames->value : '';
 
     // Acquire the node title.
@@ -1009,10 +1165,10 @@ function chado_analysis_expression_load($nodes) {
 
 /**
  * Implements hook_update().
- * 
- * This function updates the chado_analysis_expression form. 
+ *
+ * This function updates the chado_analysis_expression form.
  * An expression loader job may be submitted from an update.
- * 
+ *
  * @ingroup tripal_analysis_expression
  */
 function chado_analysis_expression_update($node) {
@@ -1022,10 +1178,10 @@ function chado_analysis_expression_update($node) {
 
   // Remove white space around field values.
   $node->fileext = trim($node->fileext);
-  $node->filepath = trim($node->filepath); 
-  $node->re_start = trim($node->re_start); 
-  $node->re_end = trim($node->re_end); 
-  
+  $node->filepath = trim($node->filepath);
+  $node->re_start = trim($node->re_start);
+  $node->re_end = trim($node->re_end);
+
   $record = array('table' => 'analysis', 'id' => $node->analysis_id);
   $options = array('insert_if_missing' => TRUE);
 
@@ -1034,30 +1190,118 @@ function chado_analysis_expression_update($node) {
   $quantificationdate = $node->quantificationdate['year'] . "-" . $node->quantificationdate['month'] . "-" . $node->quantificationdate['day'] . " 00:00:00";
 
   // Update the blast fields. 
-  chado_update_property($record, array('type_name' => 'analysis_expression_organism_id', 'cv_name' => 'tripal', 'value' => trim($node->organism_id)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_associated_analysis_id', 'cv_name' => 'tripal', 'value' => trim($node->associated_analysis_id)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_biosourceprovider_id', 'cv_name' => 'tripal', 'value' => trim($node->biosourceprovider_id)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_arraydesign_id', 'cv_name' => 'tripal', 'value' => trim($node->arraydesign_id)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_assaydate', 'cv_name' => 'tripal', 'value' => $assaydate), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_assay_description', 'cv_name' => 'tripal', 'value' => trim($node->assay_description)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_acquisitiondate', 'cv_name' => 'tripal', 'value' => $acquisitiondate), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_acquisition_uri', 'cv_name' => 'tripal', 'value' => trim($node->acquisition_uri)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_quantificationdate', 'cv_name' => 'tripal', 'value' => $quantificationdate), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_quantification_uri', 'cv_name' => 'tripal', 'value' => trim($node->quantification_uri)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_assay_protocol_id', 'cv_name' => 'tripal', 'value' => trim($node->assay_protocol_id)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_acquisition_protocol_id', 'cv_name' => 'tripal', 'value' => trim($node->acquisition_protocol_id)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_quantification_protocol_id', 'cv_name' => 'tripal', 'value' => trim($node->quantification_protocol_id)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_assay_operator_id', 'cv_name' => 'tripal', 'value' => trim($node->assay_operator_id)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_quantification_operator_id', 'cv_name' => 'tripal', 'value' => trim($node->quantification_operator_id)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_filetype', 'cv_name' => 'tripal', 'value' => trim($node->filetype)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_submit_job', 'cv_name' => 'tripal', 'value' => trim($node->submit_job)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_fileext', 'cv_name' => 'tripal', 'value' => trim($node->fileext)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_filepath', 'cv_name' => 'tripal', 'value' => trim($node->filepath)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_re_start', 'cv_name' => 'tripal', 'value' => trim($node->re_start)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_re_end', 'cv_name' => 'tripal', 'value' => trim($node->re_end)), $options); 
-  chado_update_property($record, array('type_name' => 'analysis_expression_feature_uniquenames', 'cv_name' => 'tripal', 'value' => trim($node->feature_uniquenames)), $options); 
-  
-  if ($node->submit_job) { 
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_organism_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->organism_id)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_associated_analysis_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->associated_analysis_id)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_biosourceprovider_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->biosourceprovider_id)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_arraydesign_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->arraydesign_id)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_assaydate',
+    'cv_name' => 'tripal',
+    'value' => $assaydate
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_assay_description',
+    'cv_name' => 'tripal',
+    'value' => trim($node->assay_description)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_acquisitiondate',
+    'cv_name' => 'tripal',
+    'value' => $acquisitiondate
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_acquisition_uri',
+    'cv_name' => 'tripal',
+    'value' => trim($node->acquisition_uri)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_quantificationdate',
+    'cv_name' => 'tripal',
+    'value' => $quantificationdate
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_quantification_uri',
+    'cv_name' => 'tripal',
+    'value' => trim($node->quantification_uri)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_assay_protocol_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->assay_protocol_id)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_acquisition_protocol_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->acquisition_protocol_id)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_quantification_protocol_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->quantification_protocol_id)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_assay_operator_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->assay_operator_id)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_quantification_operator_id',
+    'cv_name' => 'tripal',
+    'value' => trim($node->quantification_operator_id)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_filetype',
+    'cv_name' => 'tripal',
+    'value' => trim($node->filetype)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_submit_job',
+    'cv_name' => 'tripal',
+    'value' => trim($node->submit_job)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_fileext',
+    'cv_name' => 'tripal',
+    'value' => trim($node->fileext)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_filepath',
+    'cv_name' => 'tripal',
+    'value' => trim($node->filepath)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_re_start',
+    'cv_name' => 'tripal',
+    'value' => trim($node->re_start)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_re_end',
+    'cv_name' => 'tripal',
+    'value' => trim($node->re_end)
+  ), $options);
+  chado_update_property($record, array(
+    'type_name' => 'analysis_expression_feature_uniquenames',
+    'cv_name' => 'tripal',
+    'value' => trim($node->feature_uniquenames)
+  ), $options);
+
+  if ($node->submit_job) {
     // Submit the expression loading job.
     chado_analysis_expression_submit_job($node);
   }
@@ -1065,21 +1309,21 @@ function chado_analysis_expression_update($node) {
 
 /**
  * Implements the tripal_add_job function for expression data.
- * 
+ *
  * @ingroup tripal_analysis_expression
  */
-function chado_analysis_expression_submit_job($node) { 
+function chado_analysis_expression_submit_job($node) {
 
   global $user;
- 
+
   // Add the expression loader job to the job queue. 
   if ($node->submit_job) {
 
-    $job_args= array(
+    $job_args = array(
       $node->organism_id,
       $node->analysis_id,
-      $node->biosourceprovider_id, 
-      $node->arraydesign_id, 
+      $node->biosourceprovider_id,
+      $node->arraydesign_id,
       $node->assaydate,
       $node->acquisitiondate,
       $node->quantificationdate,
@@ -1090,14 +1334,14 @@ function chado_analysis_expression_submit_job($node) {
       $node->re_end,
       $node->feature_uniquenames,
     );
-    tripal_add_job("Loading expression data from: $node->filepath", 'tripal_analysis_expression', 
+    tripal_add_job("Loading expression data from: $node->filepath", 'tripal_analysis_expression',
       'tripal_expression_loader', $job_args, $user->uid);
   }
 }
 
-/** 
- * Implements hook_node_view(). 
- * 
+/**
+ * Implements hook_node_view().
+ *
  * @ingroup tripal_analysis_expression
  */
 function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
@@ -1128,8 +1372,8 @@ function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
           '#markup' => theme('tripal_analysis_expression_teaser', array('node' => $node)),
         );
       }
-    break;
-    
+      break;
+
     case 'chado_arraydesign':
       if ($view_mode == 'full') {
         $node->content['tripal_arraydesign_base'] = array(
@@ -1149,8 +1393,8 @@ function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
           '#markup' => theme('tripal_arraydesign_teaser', array('node' => $node)),
         );
       }
-    break;
-    
+      break;
+
     case 'chado_protocol':
       if ($view_mode == 'full') {
         $node->content['tripal_protocol_base'] = array(
@@ -1170,7 +1414,7 @@ function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
           '#markup' => theme('tripal_protocol_teaser', array('node' => $node)),
         );
       }
-    break;
+      break;
 
     case 'chado_feature':
       if ($view_mode == 'full') {
@@ -1181,7 +1425,7 @@ function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
           '#weight' => -99,
         );
       }
-    break;
+      break;
 
     case 'chado_organism':
       if ($view_mode == 'full') {
@@ -1192,7 +1436,7 @@ function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
           '#weight' => -9,
         );
       }
-    break;    
+      break;
 
     case 'chado_biomaterial':
       if ($view_mode == 'full') {
@@ -1219,48 +1463,48 @@ function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
           '#markup' => theme('tripal_biomaterial_teaser', array('node' => $node)),
         );
       }
-    break;
+      break;
   }
 
 }
 
 /**
- * Implements hook_node_insert(). 
- * Acts on all content types. 
- * 
+ * Implements hook_node_insert().
+ * Acts on all content types.
+ *
  * @ingroup tripal_analysis_expression
  */
-function tripal_analysis_expression_node_insert($node) { 
+function tripal_analysis_expression_node_insert($node) {
   switch ($node->type) {
     case 'chado_analysis_expression':
-  
+
       // Find the a analysis_expression and add details.     
       $analysis_expression_id = chado_get_id_from_nid('analysis', $node->nid);
       $values = array('analysis_expression_id' => $analysis_expression_id);
       $analysis_expression = chado_generate_var('analysis', $values);
       $node->analysis_expression = $analysis_expression;
-     
+
       // Set the node title.  
       $node->title = chado_get_node_title($node);
-     
+
       // Set the URL path.  
       chado_set_node_url($node);
       break;
 
     case 'chado_arraydesign':
-  
+
       // Find the a arraydesign and add details.     
       $arraydesign_id = chado_get_id_from_nid('arraydesign', $node->nid);
       $values = array('arraydesign_id' => $arraydesign_id);
       $arraydesign = chado_generate_var('arraydesign', $values);
       $node->arraydesign = $arraydesign;
-     
+
       // Set the node title.  
       $node->title = chado_get_node_title($node);
-     
+
       // Set the URL path.  
       chado_set_node_url($node);
-    
+
       break;
 
     case 'chado_protocol':
@@ -1294,7 +1538,7 @@ function tripal_analysis_expression_node_insert($node) {
       chado_set_node_url($node);
 
       break;
- }
+  }
 
 
 }
@@ -1302,21 +1546,21 @@ function tripal_analysis_expression_node_insert($node) {
 /**
  * Implements hook_node_update().
  * Acts on all content types.
- * 
+ *
  * @ingroup tripal_analysis_expression
  */
 function tripal_analysis_expression_node_update($node) {
 
   switch ($node->type) {
     case 'chado_analysis_expression':
-      
+
       // Set the node title.  
       $node->title = chado_get_node_title($node);
-      
+
       // Set the URL path.  
       chado_set_node_url($node);
-    
-      break; 
+
+      break;
 
     case 'chado_arraydesign':
 
@@ -1352,19 +1596,19 @@ function tripal_analysis_expression_node_update($node) {
 }
 
 function chado_analysis_expression_delete($node) {
-  
+
   $analysis_id = chado_get_id_from_nid('analysis', $node->nid);
 
-/*  $sql = "SELECT E.element_id FROM chado.element E
-           INNER JOIN chado.elementresult ER ON E.element_id = ER.element_id
-           INNER JOIN chado.quantification Q ON ER.quantification_id = Q.quantification_id
-         WHERE 
-           Q.analysis_id = :analysis_id";
-  $element_ids = chado_query($sql, array(":analysis_id" => $analysis_id));
+  /*  $sql = "SELECT E.element_id FROM chado.element E
+             INNER JOIN chado.elementresult ER ON E.element_id = ER.element_id
+             INNER JOIN chado.quantification Q ON ER.quantification_id = Q.quantification_id
+           WHERE
+             Q.analysis_id = :analysis_id";
+    $element_ids = chado_query($sql, array(":analysis_id" => $analysis_id));
 
-  foreach($element_ids as  $element_id) {
-    chado_delete_record('element', array('element_id' => $element_id->element_id));
-  } */
+    foreach($element_ids as  $element_id) {
+      chado_delete_record('element', array('element_id' => $element_id->element_id));
+    } */
 
   $sql = "SELECT AY.assay_id FROM chado.assay AY
            INNER JOIN {acquisition} ACQ ON ACQ.assay_id = AY.assay_id
@@ -1373,7 +1617,7 @@ function chado_analysis_expression_delete($node) {
            Q.analysis_id = :analysis_id";
   $assay_ids = chado_query($sql, array(":analysis_id" => $analysis_id));
 
-  foreach($assay_ids as  $assay_id) {
+  foreach ($assay_ids as $assay_id) {
     chado_delete_record('assay', array('assay_id' => $assay_id->assay_id));
   }
 
@@ -1386,35 +1630,41 @@ function chado_analysis_expression_delete($node) {
   chado_analysis_delete($node);
 }
 
-function tripal_analysis_expression_node_presave($node) { 
+function tripal_analysis_expression_node_presave($node) {
   switch ($node->type) {
     case 'chado_arraydesign':
       if (property_exists($node, 'arraydesign_name')) {
         $node->title = $node->arraydesign_name;
       }
-      else if (property_exists($node, 'arraydesign')) {
-        $node->title = $node->arraydesign->name;
+      else {
+        if (property_exists($node, 'arraydesign')) {
+          $node->title = $node->arraydesign->name;
+        }
       }
-    break;
+      break;
 
     case 'chado_protocol':
       if (property_exists($node, 'protocol_name')) {
         $node->title = $node->protocol_name;
       }
-      else if (property_exists($node, 'protocol')) {
-        $node->title = $node->protocol->name;
+      else {
+        if (property_exists($node, 'protocol')) {
+          $node->title = $node->protocol->name;
+        }
       }
-    break;
-    
+      break;
+
     case 'chado_biomaterial':
       if (property_exists($node, 'biomaterial_name')) {
         $node->title = $node->biomaterial_name;
       }
-      else if (property_exists($node, 'biomaterial')) {
-        $node->title = $node->biomaterial->name;
+      else {
+        if (property_exists($node, 'biomaterial')) {
+          $node->title = $node->biomaterial->name;
+        }
       }
-    break;
-  } 
+      break;
+  }
 }
 
 
