@@ -1479,8 +1479,8 @@ function tripal_analysis_expression_node_insert($node) {
     case 'chado_analysis_expression':
 
       // Find the a analysis_expression and add details.     
-      $analysis_expression_id = chado_get_id_from_nid('analysis', $node->nid);
-      $values = array('analysis_expression_id' => $analysis_expression_id);
+      $analysis_expression_id = chado_get_id_from_nid('analysis', $node->nid, 'chado.analysis');
+      $values = array('analysis_id' => $analysis_expression_id);
       $analysis_expression = chado_generate_var('analysis', $values);
       $node->analysis_expression = $analysis_expression;
 
