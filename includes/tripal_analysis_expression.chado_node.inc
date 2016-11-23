@@ -711,9 +711,15 @@ function chado_analysis_expression_biomaterial_validator_submit($form, &$form_st
 ///
   $re_ext = '/^.+\.(' . $fileext . ')/';
 
+  // Check if file is readable or issue a warning
+  if(!is_readable($filepath)) {
+    drupal_set_message(t("Error: the file \"$filepath\" is not readable. Please check its permissions."));
+  }
+
   // A matrix file.
   if ($filetype == 'mat' and is_file($filepath)) {
     $data_ln = 0;
+
     $mat_fp = fopen($filepath, 'r');
     //Check a single matrix file.
     while ($line = fgets($mat_fp)) {
@@ -1484,7 +1490,7 @@ function tripal_analysis_expression_node_insert($node) {
       $analysis_expression = chado_generate_var('analysis', $values);
       $node->analysis_expression = $analysis_expression;
 
-      // Set the node title.  
+      // Set the node title.
       $node->title = chado_get_node_title($node);
 
       // Set the URL path.  
