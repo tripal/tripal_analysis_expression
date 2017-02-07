@@ -49,7 +49,8 @@ function feature_heatmap_form_submit($form, &$form_state){
 
 
   if(!empty($heatmap_feature_uniquename)) {  // search with feature uniquename
-    $feature_ids = explode(',', $heatmap_feature_uniquename);
+    $feature_ids = array_filter(preg_split('/[,\s]+/', $heatmap_feature_uniquename)); 
+    //$feature_ids = explode(',', $heatmap_feature_uniquename);
     foreach($feature_ids as $feature_id){
       // trim white space at the beginning and the end
       $feature_id = trim($feature_id);
