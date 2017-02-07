@@ -43,6 +43,7 @@ function feature_heatmap_form_submit($form, &$form_state){
          WHERE
            F.uniquename = :feature_uniquename";
 
+
   $expressions = array();
   $heatmap_feature_uniquename = $form_state['values']['heatmap_feature_uniquename'];
 
@@ -168,6 +169,22 @@ function feature_heatmap_form_submit($form, &$form_state){
       $_SESSION['heatmap_data'] = '';
     }
   }
+  // add SESSION downloadLink
+  $feature_ids_string=NULL;
+  foreach($expressions as $features){
+    foreach($features as $feature){
+      $id = $feature->feature_id;
+      if (is_null($feature_ids_string)){
+         $feature_ids_string = $id;
+      }
+      elseif (strpos($feature_ids_string,$id) === FALSE){
+        $feature_ids_string .=  ',' . $id ;
+      }
+    }
+  }
+  $_SESSION['downloadLink'] =  url('chado/expression/csv', array('query' => array('feature_id'=>$feature_ids_string)));
+
+
 
   /*
   $_SESSION['heatmap_x'] = $x;
