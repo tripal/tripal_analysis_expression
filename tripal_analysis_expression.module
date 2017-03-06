@@ -787,15 +787,20 @@ function tripal_analysis_expression_block_view($delta = ''){
       $block['content'] = drupal_get_form('feature_heatmap_form');
       break;
     case 'heatmap_features':
-      if(!empty($_SESSION['heatmap_data'])){
+      $heatmap = generate_heatmap_values();
+      if(!empty($heatmap['heatmap_data'])){
         $block['subject'] = t('Feature Expression Heatmap');
         $block['content'] = '<div id="vis_expression"></div>';
-        drupal_add_js(array('tripal_analysis_expression' => array('heatmap_data' => $_SESSION['heatmap_data'])), array('type' => 'setting'));
-        drupal_add_js(array('tripal_analysis_expression' => array('left_margin' => $_SESSION['left_margin'])), array('type' => 'setting'));
-        drupal_add_js(array('tripal_analysis_expression' => array('bottom_margin' => $_SESSION['bottom_margin'])), array('type' => 'setting'));
+        drupal_add_js(array('tripal_analysis_expression' => array('heatmap_data' => $heatmap['heatmap_data'])), array('type' => 'setting'));
+        drupal_add_js(array('tripal_analysis_expression' => array('left_margin' => $heatmap['left_margin'])), array('type' => 'setting'));
+        drupal_add_js(array('tripal_analysis_expression' => array('bottom_margin' => $heatmap['bottom_margin'])), array('type' => 'setting'));
       } else {
         $block['subject'] = '';
-        $block['content'] = t('<b><span style="color:red">Either you have not entered any features or no expression data available for the features you entered.</span></b>');
+        if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
+          $block['content'] = t(
+            '<p style="color:red; font-weight: bold; margin-top: 20px">There is no expression data available for the features you entered.</p>'
+          );
+        }
       }
       break;
   }
