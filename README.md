@@ -11,8 +11,7 @@ This is an extension module for the Tripal project.
 5. [Loading Expression Data](#loading-expression-data)
 6. [Viewing Data](#viewing-data)
 7. [Administrative Pages](#administrative-pages)
-8. [2D heatmap](#2d-heatmap)
-9. [Example Files](#example-files)
+8. [Example Files](#example-files)
 
 # Introduction 
 Tripal Analysis: Expression is a [Drupal](https://www.drupal.org/) module built to extend the functionality of the [Tripal](http://tripal.info/) toolset.
@@ -246,20 +245,6 @@ The display of expression data on feature pages can be configured. To configure 
 * **Maximum Label Length** - Set the maximum acceptable biomaterial name length. Biomaterial names that are longer than this length will be truncated.
 * **Expession Column Width** - Change the size of the width of the tile or column in the figure. Value must be 15 or greater. 
 * **Default Heatmap Display** - The default display can be either a one dimensional heatmap or a bar chart. 
-
-# 2D heatmap
-
-The module also provides two blocks (**input_features** and **heatmap_features**) for generating and displaying 2D heatmaps of a list of genes. You can go to **structure**->**blocks** to configure these to blocks. The heatmap is generated with the plotly javascript library.
-
-### Interface for feature input
-
-![feature input](https://cloud.githubusercontent.com/assets/1262709/22209610/2500f872-e155-11e6-9f9d-b3c14e73ed27.png)
-
-### Interface for displaying 2D heatmap
-
-![heatmap](https://cloud.githubusercontent.com/assets/1262709/22209619/28b5466c-e155-11e6-87cb-4eb69f973605.png)
-
-
 
 # Example Files
 
