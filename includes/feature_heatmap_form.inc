@@ -27,9 +27,7 @@ function feature_heatmap_form($form, &$form_state) {
     '#type' => 'textarea',
     '#title' => t('Enter feature unique names'),
     '#description' => t('<b>Example feature unique names:</b> Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6'),
-    '#attributes' => array(
-      'placeholder' => t('Nyssa_sylvatica_10132014_comp23154_c0_seq12_m.8255, Quercus_rubra_120313_comp172643_c0_seq1_m.37896, Liriodendron_tulipifera_10132014_comp16064_c0_seq1'),
-    ),
+    '#value' => 'Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6'
   );
 
   // Escaped get value if it exists
