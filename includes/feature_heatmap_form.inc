@@ -20,29 +20,35 @@ function e($value) {
 function feature_heatmap_form($form, &$form_state) {
   $form['descriptions'] = array(
     '#type' => 'item',
-    '#markup' => t('<b>Feature unique names need to be separated by comma(,).</b>')
+    '#markup' => t(
+      '<b>Feature unique names need to be separated by comma(,).</b>'
+    ),
   );
 
-  /*$form['example_button'] = array(
+  $form['example_button'] = array(
     '#type' => 'button',
     '#value' => 'Try an Example',
     '#attributes' => array(
-      'class' => 'pull-right'
-    )
-  );*/
+      'class' => array('pull-right', 'btn-info'),
+    ),
+  );
 
   $form['heatmap_feature_uniquename'] = array(
     '#type' => 'textarea',
     '#title' => t('Enter feature unique names'),
-    '#description' => t('<b>Example feature unique names:</b> Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6'),
+    '#description' => t(
+      '<b>Example feature unique names:</b> Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6'
+    ),
     '#attributes' => array(
-      'placeholder' => 'Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6'
-    )
+      'placeholder' => 'Example: Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6',
+    ),
   );
 
   // Escaped get value if it exists
   if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
-    $form['heatmap_feature_uniquename']['#value'] = e($_GET['heatmap_feature_uniquename']);
+    $form['heatmap_feature_uniquename']['#value'] = e(
+      $_GET['heatmap_feature_uniquename']
+    );
   }
 
 
@@ -68,13 +74,12 @@ function feature_heatmap_form_submit($form, &$form_state) {
 function generate_heatmap_values() {
   // Escaped get value if it exists
   if (!isset($_GET['heatmap_feature_uniquename']) || empty($_GET['heatmap_feature_uniquename'])) {
-    return null;
+    return NULL;
   }
 
   $heatmap_feature_uniquename = e($_GET['heatmap_feature_uniquename']);
 
-  $sql_feature_uniquename =
-    "SELECT ER.elementresult_id, ER.signal, F.feature_id, F.uniquename, 
+  $sql_feature_uniquename = "SELECT ER.elementresult_id, ER.signal, F.feature_id, F.uniquename, 
             Q.name AS quantification_name, Q.analysis_id, 
             B.name, B.biomaterial_id, B.description FROM {chado.elementresult} ER
            INNER JOIN {chado.element} E ON E.element_id = ER.element_id
@@ -94,7 +99,10 @@ function generate_heatmap_values() {
     foreach ($feature_ids as $feature_id) {
       // trim white space at the beginning and the end
       $feature_id = trim($feature_id);
-      $expressions[$feature_id] = db_query($sql_feature_uniquename, array(":feature_uniquename" => $feature_id))->fetchAllAssoc('elementresult_id');
+      $expressions[$feature_id] = db_query(
+        $sql_feature_uniquename,
+        array(":feature_uniquename" => $feature_id)
+      )->fetchAllAssoc('elementresult_id');
     }
   }
 
@@ -126,14 +134,22 @@ function generate_heatmap_values() {
         $analysis_id = $feature->analysis_id;
         $sql_analysis = "SELECT * FROM chado.analysis WHERE analysis_id=:analysis_id";
         if (!empty($analysis_id)) {
-          $analysis = db_query($sql_analysis, array(':analysis_id' => $analysis_id))->fetchAllAssoc('analysis_id');
+          $analysis = db_query(
+            $sql_analysis,
+            array(':analysis_id' => $analysis_id)
+          )->fetchAllAssoc('analysis_id');
           // analysis page url consists of analysis name, sourcename, program and programversion
-          $analysis_url = $analysis[$analysis_id]->name . ', ' .
-            $analysis[$analysis_id]->sourcename . ' (' .
-            $analysis[$analysis_id]->program . ', ' .
-            $analysis[$analysis_id]->programversion . ')';
-          $analysis_url = preg_replace("/[^A-Za-z0-9 ]/", '', $analysis_url); // remove all non-alphanumeric charaters
-          $analysis_url = preg_replace("/\s/", '-', $analysis_url); // replace ' ' with '-'
+          $analysis_url = $analysis[$analysis_id]->name . ', ' . $analysis[$analysis_id]->sourcename . ' (' . $analysis[$analysis_id]->program . ', ' . $analysis[$analysis_id]->programversion . ')';
+          $analysis_url = preg_replace(
+            "/[^A-Za-z0-9 ]/",
+            '',
+            $analysis_url
+          ); // remove all non-alphanumeric charaters
+          $analysis_url = preg_replace(
+            "/\s/",
+            '-',
+            $analysis_url
+          ); // replace ' ' with '-'
           $analysis_url = 'content/' . strtolower($analysis_url);
         }
         // get treatment
@@ -155,7 +171,7 @@ function generate_heatmap_values() {
           'signal' => (float) $feature->signal,
           'description' => $feature->description,
           'quantification_name' => $treatment,
-          'analysis_url' => $analysis_url
+          'analysis_url' => $analysis_url,
         );
       }
     }
@@ -216,7 +232,7 @@ function generate_heatmap_values() {
     return array(
       'heatmap_data' => $heatmap_data,
       'bottom_margin' => $bottom_margin,
-      'left_margin' => $left_margin
+      'left_margin' => $left_margin,
     );
   }
 
