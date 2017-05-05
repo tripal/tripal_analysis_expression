@@ -231,11 +231,11 @@ This module creates two blocks: one for features input and the other displaying 
 ### Turn On blocks
 Go to **Structure->blocks** and find these two blocks: *tripal_analysis_expression features form for heatmap* and *tripal_elasticsearch block for search form: blast_merged_transcripts*. Config these two blocks to let them display at specific region and page(s). The *tripal_analysis_expression features form for heatmap* will display a form that allow you to input some feature IDs.
 
-![feature-input-form](#https://cloud.githubusercontent.com/assets/1262709/25756810/22149cf4-3196-11e7-8f22-089f316297a0.png)
+![feature-input-form](https://cloud.githubusercontent.com/assets/1262709/25756810/22149cf4-3196-11e7-8f22-089f316297a0.png)
 
 After you enter some feature IDs, you click the "Display Expression Heatmap" button to generate a heatmap for the features. 
 
-![expression-heatmap](#https://cloud.githubusercontent.com/assets/1262709/25756812/23fd629e-3196-11e7-873b-4742c2c41116.png)
+![expression-heatmap](https://cloud.githubusercontent.com/assets/1262709/25756812/23fd629e-3196-11e7-873b-4742c2c41116.png)
 
 
 # Administrative Pages
