@@ -575,8 +575,15 @@ function add_xml_data($organism_id, $biosample) {
   $comment = $biosample->Description->Comment->Paragraph;
   $ncbi_owner = $biosample->Owner->Name;
 
-  $biomaterial_provider = $biosample->Attributes->Attribute[1];
+    //Find the attribute for biomaterial_provider
+    foreach ($biosample->Attributes->Attribute as $attr) {
+        // Get the cvterm name
+        $attr_name = (string) $attr->attributes()->attribute_name;
 
+        if ($attr_name == "biomaterial_provider") {
+            $biomaterial_provider = $attr;
+        }
+    }
   // Create a contact if contact is not present.
 
   if ($biomaterial_provider) {
