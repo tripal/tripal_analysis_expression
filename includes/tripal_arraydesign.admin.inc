@@ -19,27 +19,27 @@
  */
 function tripal_arraydesign_admin() {
 
-  $form = array();
+  $form = [];
 
-  $details = array(
+  $details = [
     'module' => 'tripal_analysis_expression',
     'content_type' => 'chado_arraydesign',
-    'options' => array(
+    'options' => [
       '[arraydesign.name]' => 'Array Design Only',
-    ),
+    ],
     'unique_option' => '[arraydesign.name]',
-  );
+  ];
   chado_add_admin_form_set_title($form, $form_state, $details);
 
-  $details = array(
+  $details = [
     'module' => 'tripal_analysis_expression',
     'content_type' => 'chado_arraydesign',
-  // *** fix these.
-    'options' => array(
+    // *** fix these.
+    'options' => [
       '/arraydesign/[arraydesign.arraydesign_id]' => 'Array Design ID',
       '/arraydesign/[arraydesign.name]' => 'Array Design Name',
-    ),
-  );
+    ],
+  ];
   chado_add_admin_form_set_url($form, $form_state, $details);
 
   return system_settings_form($form);
@@ -61,7 +61,7 @@ function tripal_arraydesign_admin_arraydesign_view() {
 
   // Set the breadcrumbs.
   // *** update this for tripal.
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l(t('Home'), '<front>');
   $breadcrumb[] = l(t('Administration'), 'admin');
   $breadcrumb[] = l(t('Tripal'), 'admin/tripal');
@@ -77,10 +77,7 @@ function tripal_arraydesign_admin_arraydesign_view() {
     $output .= $view;
   }
   else {
-    $output .= '<p>The Tripal Expression module uses primarily views to provide an '
-      . 'administrative interface. Currently one or more views needed for this this '
-      . 'administrative interface are disabled. <br><strong>Click each of the following links to '
-    // *** fix this wording.
+    $output .= '<p>The Tripal Expression module uses primarily views to provide an ' . 'administrative interface. Currently one or more views needed for this this ' . 'administrative interface are disabled. <br><strong>Click each of the following links to ' // *** fix this wording.
       . 'enable the pertinent views</strong>:</b>';
     $output .= '<ul>';
     $output .= '<li>' . l(t('Arraydesign View'), 'admin/tripal/extension/tripal_analysis_expression/content_type/arraydesign/views/arraydesigns/enable') . '</li>';

@@ -4,6 +4,7 @@
  * Escape HTML special characters in a string.
  *
  * @param  $value
+ *
  * @return string
  */
 function e($value) {
@@ -15,54 +16,46 @@ function e($value) {
  *
  * @param $form
  * @param $form_state
+ *
  * @return mixed
  */
 function feature_heatmap_form($form, &$form_state) {
-  $form['descriptions'] = array(
+  $form['descriptions'] = [
     '#type' => 'item',
-    '#markup' => t(
-      '<b>Feature unique names need to be separated by comma, spaces, tabs or newlines.</b>'
-    ),
-  );
+    '#markup' => t('<b>Feature unique names need to be separated by comma, spaces, tabs or newlines.</b>'),
+  ];
 
-  $form['example_button'] = array(
+  $form['example_button'] = [
     '#type' => 'button',
     '#value' => 'Try an Example',
-    '#attributes' => array(
-      'class' => array('pull-right', 'btn-info'),
-    ),
-  );
+    '#attributes' => [
+      'class' => ['pull-right', 'btn-info'],
+    ],
+  ];
 
-  $form['heatmap_feature_uniquename'] = array(
+  $form['heatmap_feature_uniquename'] = [
     '#type' => 'textarea',
     '#title' => t('Enter feature unique names'),
-    '#description' => t(
-      '<b>Example feature unique names:</b> Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6'
-    ),
-    '#attributes' => array(
+    '#description' => t('<b>Example feature unique names:</b> Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6'),
+    '#attributes' => [
       'placeholder' => 'Example: Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6',
-    ),
-  );
+    ],
+  ];
 
   // Escaped get value if it exists
   if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
-    $form['heatmap_feature_uniquename']['#value'] = e(
-      $_GET['heatmap_feature_uniquename']
-    );
+    $form['heatmap_feature_uniquename']['#value'] = e($_GET['heatmap_feature_uniquename']);
   }
 
-
-  $form['submit'] = array(
+  $form['submit'] = [
     '#type' => 'submit',
     '#value' => t('Display Expression Heatmap'),
-  );
+  ];
 
   $form['#method'] = 'get';
 
-
   return $form;
 }
-
 
 /*
  * feature_heatmap_form submit handler
@@ -92,23 +85,20 @@ function generate_heatmap_values() {
          WHERE
            F.uniquename = :feature_uniquename";
 
-  $expressions = array();
+  $expressions = [];
 
   if (!empty($heatmap_feature_uniquename)) {  // search with feature uniquename
     $feature_ids = preg_split("/[\s,]+/", $heatmap_feature_uniquename, -1, PREG_SPLIT_NO_EMPTY);
     foreach ($feature_ids as $feature_id) {
       // trim white space at the beginning and the end
       $feature_id = trim($feature_id);
-      $expressions[$feature_id] = db_query(
-        $sql_feature_uniquename,
-        array(":feature_uniquename" => $feature_id)
-      )->fetchAllAssoc('elementresult_id');
+      $expressions[$feature_id] = db_query($sql_feature_uniquename, [":feature_uniquename" => $feature_id])->fetchAllAssoc('elementresult_id');
     }
   }
 
   if (!empty($expressions)) {
     // Get all biomaterial names from different organisms
-    $biomaterials = array();
+    $biomaterials = [];
     foreach ($expressions as $features) {
       // each feature may have may have multiple expression data from different treatment
       foreach ($features as $feature) {
@@ -118,7 +108,7 @@ function generate_heatmap_values() {
 
     // Loop through all biomaterial so that each feature have all biomaterials (treatment)
     // Assign NULL as expression intensity to all treatment.
-    $expression_data = array();
+    $expression_data = [];
     foreach ($expressions as $feature_id => $features) {
       foreach ($biomaterials as $biomaterial_id) {
         $expression_data[$feature_id][$biomaterial_id] = NULL;
@@ -134,29 +124,18 @@ function generate_heatmap_values() {
         $analysis_id = $feature->analysis_id;
         $sql_analysis = "SELECT * FROM chado.analysis WHERE analysis_id=:analysis_id";
         if (!empty($analysis_id)) {
-          $analysis = db_query(
-            $sql_analysis,
-            array(':analysis_id' => $analysis_id)
-          )->fetchAllAssoc('analysis_id');
+          $analysis = db_query($sql_analysis, [':analysis_id' => $analysis_id])->fetchAllAssoc('analysis_id');
           // analysis page url consists of analysis name, sourcename, program and programversion
           $analysis_url = $analysis[$analysis_id]->name . ', ' . $analysis[$analysis_id]->sourcename . ' (' . $analysis[$analysis_id]->program . ', ' . $analysis[$analysis_id]->programversion . ')';
-          $analysis_url = preg_replace(
-            "/[^A-Za-z0-9 ]/",
-            '',
-            $analysis_url
-          ); // remove all non-alphanumeric charaters
-          $analysis_url = preg_replace(
-            "/\s/",
-            '-',
-            $analysis_url
-          ); // replace ' ' with '-'
+          $analysis_url = preg_replace("/[^A-Za-z0-9 ]/", '', $analysis_url); // remove all non-alphanumeric charaters
+          $analysis_url = preg_replace("/\s/", '-', $analysis_url); // replace ' ' with '-'
           $analysis_url = 'content/' . strtolower($analysis_url);
         }
         // get treatment
-        $treat = chado_get_property(
-          array('table' => 'biomaterial', 'id' => $feature->biomaterial_id),
-          array('type_name' => 'treatment', 'cv_name' => 'biomaterial_property')
-        );
+        $treat = chado_get_property([
+          'table' => 'biomaterial',
+          'id' => $feature->biomaterial_id,
+        ], ['type_name' => 'treatment', 'cv_name' => 'biomaterial_property']);
 
         if ($treat) {
           $treatment = $treat->value;
@@ -167,19 +146,19 @@ function generate_heatmap_values() {
           $treatment = '';
         }
 
-        $expression_data[$feature_id][$feature->name] = array(
+        $expression_data[$feature_id][$feature->name] = [
           'signal' => (float) $feature->signal,
           'description' => $feature->description,
           'quantification_name' => $treatment,
           'analysis_url' => $analysis_url,
-        );
+        ];
       }
     }
 
-    $x = array();
-    $y = array();
-    $z = array();
-    $text = array();
+    $x = [];
+    $y = [];
+    $z = [];
+    $text = [];
     $max_id_len = 0;
     foreach ($expression_data as $feature_id => $values) {
       // obtain max feature id length
@@ -188,8 +167,8 @@ function generate_heatmap_values() {
       }
       $y[] = '<a href="/feature/' . $feature_id . '">' . $feature_id . '</a>';
       $x = array_keys($values);
-      $signals = array();
-      $descriptions = array();
+      $signals = [];
+      $descriptions = [];
       foreach ($values as $value) {
         $signals[] = $value['signal'];
         $descriptions[] = 'Treatment: ' . $value['quantification_name'] . '<br>' . 'Description: ' . $value['description'];
@@ -229,11 +208,11 @@ function generate_heatmap_values() {
       $heatmap_data = '';
     }
 
-    return array(
+    return [
       'heatmap_data' => $heatmap_data,
       'bottom_margin' => $bottom_margin,
       'left_margin' => $left_margin,
-    );
+    ];
   }
 
   return NULL;

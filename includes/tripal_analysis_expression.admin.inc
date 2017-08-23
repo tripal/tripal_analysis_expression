@@ -16,28 +16,28 @@
  */
 function tripal_analysis_expression_admin() {
 
-  $form = array();
+  $form = [];
 
-  $details = array(
+  $details = [
     'module' => 'tripal_analysis_expression',
     'content_type' => 'chado_analysis_expression',
-    'options' => array(
+    'options' => [
       '[analysis_expression.name]' => 'Analysis: Expression Name Only',
-    ),
-  // *** fix  me.
+    ],
+    // *** fix  me.
     'unique_option' => '[analysis_expression.name]',
-  );
+  ];
   chado_add_admin_form_set_title($form, $form_state, $details);
 
-  $details = array(
+  $details = [
     'module' => 'tripal_analysis_expression',
     'content_type' => 'chado_analysis_expression',
-  // *** fix these.
-    'options' => array(
+    // *** fix these.
+    'options' => [
       '/analysis_expression/[analysis_expression.analysis_expression_id]' => 'Analysis: Expression ID (Analysis ID)',
       '/analysis_expression/[analysis_expression.name]' => 'Analysis: Expression Name',
-    ),
-  );
+    ],
+  ];
   chado_add_admin_form_set_url($form, $form_state, $details);
 
   return system_settings_form($form);
@@ -58,7 +58,7 @@ function tripal_analysis_expression_admin_analysis_expression_view() {
   $output = '';
 
   // Set the breadcrumbs.
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l(t('Home'), '<front>');
   $breadcrumb[] = l(t('Administration'), 'admin');
   $breadcrumb[] = l(t('Tripal'), 'admin/tripal');
@@ -74,10 +74,7 @@ function tripal_analysis_expression_admin_analysis_expression_view() {
     $output .= $view;
   }
   else {
-    $output .= '<p>The Tripal Expression module uses primarily views to provide an '
-        . 'administrative interface. Currently one or more views needed for this this '
-        . 'administrative interface are disabled. <br><strong>Click each of the following links to '
-        . 'enable the pertinent views</strong>:</b>';
+    $output .= '<p>The Tripal Expression module uses primarily views to provide an ' . 'administrative interface. Currently one or more views needed for this this ' . 'administrative interface are disabled. <br><strong>Click each of the following links to ' . 'enable the pertinent views</strong>:</b>';
     $output .= '<ul>';
     $output .= '<li>' . l(t('Analysis: Expression View'), 'admin/tripal/extension/tripal_analysis_expression/content_types/analysis_expression/views/analysis_expressions/enable') . '</li>';
     $output .= '</ul>';

@@ -1,12 +1,12 @@
 <?php
 /**
- * @file 
+ * @file
  * Administration interface for deleting multiple analysis expressions.
- */ 
+ */
 
 /**
  * A form for indicating the analysis expressions to delete.
- * 
+ *
  * @ingroup tripal_analysis_expression
  */
 function tripal_analysis_expression_delete_form() {
@@ -19,44 +19,43 @@ function tripal_analysis_expression_delete_form() {
          ORDER BY A.name";
 
   $analysis_expression_rset = chado_query($sql);
-  $analysis_expressions = array();
+  $analysis_expressions = [];
   while ($analysis_expression = $analysis_expression_rset->fetchObject()) {
     $analysis_expressions[$analysis_expression->analysis_id] = "$analysis_expression->name";
   }
 
-
   // Create the delete form.
-  $form['desc'] = array(
+  $form['desc'] = [
     '#markup' => t("Use the following form to delete Analysis: Expressions which may or may
         not be synced."),
-  );
+  ];
 
-  $form['analysis_expressions'] = array(
+  $form['analysis_expressions'] = [
     '#title' => t('Analysis: Expression'),
     '#type' => 'checkboxes',
     '#options' => $analysis_expressions,
     '#prefix' => '<div style="height: 400px; overflow: scroll">',
     '#suffix' => '</div><br>',
-  );
+  ];
 
-  $form['button'] = array(
+  $form['button'] = [
     '#type' => 'submit',
     '#value' => t('Delete Analysis: Expressions'),
-  );
+  ];
   return $form;
 }
 
 /**
  * Submit the delete analysis_expressions form.
- * 
+ *
  * @ingroup tripal_analysis_expression
  */
 function tripal_analysis_expression_delete_form_submit($form, &$form_state) {
   global $user;
 
   // Convert the analysis_expressions input into an array of just ids.
-  $analysis_expressions  = $form_state['values']['analysis_expressions'];
-  $analysis_ids = array();
+  $analysis_expressions = $form_state['values']['analysis_expressions'];
+  $analysis_ids = [];
   foreach ($analysis_expressions as $id => $val) {
     if ($val != 0) {
       $analysis_ids[] = $id;
@@ -64,10 +63,9 @@ function tripal_analysis_expression_delete_form_submit($form, &$form_state) {
   }
 
   if (count($analysis_ids) > 0) {
-    $args = array($analysis_ids);
+    $args = [$analysis_ids];
 
-    tripal_add_job("Delete Analysis: Expression", 'tripal_analysis_expression',
-      'tripal_analysis_expression_delete_analysis_expressions', $args, $user->uid);
+    tripal_add_job("Delete Analysis: Expression", 'tripal_analysis_expression', 'tripal_analysis_expression_delete_analysis_expressions', $args, $user->uid);
     drupal_set_message(t("Analysis: Expressions will disappear from the list below once the job completes."));
   }
   else {
@@ -76,14 +74,14 @@ function tripal_analysis_expression_delete_form_submit($form, &$form_state) {
 }
 
 /**
- * Function that is called by tripal jobs that actually deletes the 
+ * Function that is called by tripal jobs that actually deletes the
  * indicated analysis_expressions.
- * 
+ *
  * @param $analysis_id
- *   The list or analysis_ids of the analysis_expressions to delete. 
+ *   The list or analysis_ids of the analysis_expressions to delete.
  * @param $job
  *   The tripal_job id
- * 
+ *
  * @ingroup tripal_analysis_expression
  */   ///***consistant in name of delete function parameters
 function tripal_analysis_expression_delete_analysis_expressions($analysis, $job = NULL) {
@@ -92,28 +90,24 @@ function tripal_analysis_expression_delete_analysis_expressions($analysis, $job 
 
   // Begin the database transaction.
   $transaction = db_transaction();
-  print "\nNOTE: Deleting Analysis: Expressions is performed using a database transaction. \n" . 
-      "If the delete fails or is terminated prematurely then the entire set of \n" . 
-      "deletions is rolled back the Analysis: Expressions will continue to be found in the database\n\n";
+  print "\nNOTE: Deleting Analysis: Expressions is performed using a database transaction. \n" . "If the delete fails or is terminated prematurely then the entire set of \n" . "deletions is rolled back the Analysis: Expressions will continue to be found in the database\n\n";
 
   try {
-    $values = array(
-      'analysis_id' => $analysis
-    );
-    $num_deletes = chado_select_record('analysis', array('count(*) as cnt'), $values);
+    $values = [
+      'analysis_id' => $analysis,
+    ];
+    $num_deletes = chado_select_record('analysis', ['count(*) as cnt'], $values);
     print "Deleting " . $num_deletes[0]->cnt . " analysis_expressions\n";
     chado_delete_record('analysis', $values);
 
     print "Removing orphaned analysis_expression pages\n";
     chado_cleanup_orphaned_nodes('analysis', $num_deletes[0]->cnt, 'chado_analysis', 'chado_analysis');
-  }
-  catch (Exception $e) {
-    print "\n"; 
+  } catch (Exception $e) {
+    print "\n";
     $transaction->rollback();
     print "FAILED: Rolling back database changes...\n";
-    watchdog_exception('tripal_analysis', $e); 
+    watchdog_exception('tripal_analysis', $e);
     return 0;
   }
   print "\nDONE\n";
 }
-
