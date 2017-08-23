@@ -21,7 +21,7 @@ function feature_heatmap_form($form, &$form_state) {
   $form['descriptions'] = array(
     '#type' => 'item',
     '#markup' => t(
-      '<b>Feature unique names need to be separated by comma(,).</b>'
+      '<b>Feature unique names need to be separated by comma, spaces, tabs or newlines.</b>'
     ),
   );
 
@@ -95,7 +95,7 @@ function generate_heatmap_values() {
   $expressions = array();
 
   if (!empty($heatmap_feature_uniquename)) {  // search with feature uniquename
-    $feature_ids = explode(',', $heatmap_feature_uniquename);
+    $feature_ids = preg_split("/[\s,]+/", $heatmap_feature_uniquename, -1, PREG_SPLIT_NO_EMPTY);
     foreach ($feature_ids as $feature_id) {
       // trim white space at the beginning and the end
       $feature_id = trim($feature_id);

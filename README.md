@@ -10,8 +10,9 @@ This is an extension module for the Tripal project.
 4. [Loading Biomaterials](#loading-biomaterials)
 5. [Loading Expression Data](#loading-expression-data)
 6. [Viewing Data](#viewing-data)
-7. [Administrative Pages](#administrative-pages)
-8. [Example Files](#example-files)
+7. [Searching features and displaying expression data in a heatmap](#Searching features and displaying expression data in a heatmap)
+8. [Administrative Pages](#administrative-pages)
+9. [Example Files](#example-files)
 
 # Introduction 
 Tripal Analysis: Expression is a [Drupal](https://www.drupal.org/) module built to extend the functionality of the [Tripal](http://tripal.info/) toolset.
@@ -28,7 +29,7 @@ The purpose of the module is to visually represent gene expression for Tripal fe
 
 # Installation
 1. Click on the green "Clone or download" button on the top right corner of this page to obtain the web URL. Download this module by running ```git clone <URL> ``` on command line. 
-2. Place the cloned module folder "tripal_analysis_expression" inside your /sites/all/modules or sites/all/themes folder. Then enable the module/theme by running ```drush en tripal_analysis_expression``` (for more instructions, read the [Drupal documentation page](https://www.drupal.org/node/120641)).
+2. Place the cloned module folder "tripal_analysis_expression" inside your /sites/all/modules. Then enable the module by running ```drush en tripal_analysis_expression``` (for more instructions, read the [Drupal documentation page](https://www.drupal.org/node/120641)).
 
 # Module Features
 
@@ -223,6 +224,19 @@ The following panes are added to the following content types:
 
 ### Protocol
 * **Overview (base)** - The generic tripal overview pane.
+
+# Searching features and displaying expression data in a heatmap
+This module creates two blocks: one for features input and the other displaying a heatmap for the input features.
+
+### Turn On blocks
+Go to **Structure->blocks** and find these two blocks: ***tripal_analysis_expression features form for heatmap*** and ***tripal_elasticsearch block for search form: blast_merged_transcripts***. Config these two blocks to let them display at specific region and page(s). The ***tripal_analysis_expression features form for heatmap*** will display a form that allow you to input some feature IDs.
+
+![feature-input-form](https://cloud.githubusercontent.com/assets/1262709/25756810/22149cf4-3196-11e7-8f22-089f316297a0.png)
+
+After you enter some feature IDs, you click the "Display Expression Heatmap" button to generate a heatmap for the features. 
+
+![expression-heatmap](https://cloud.githubusercontent.com/assets/1262709/25756812/23fd629e-3196-11e7-873b-4742c2c41116.png)
+
 
 # Administrative Pages
 
