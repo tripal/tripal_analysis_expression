@@ -257,7 +257,7 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
        array('table' => 'biomaterial', 'id' => $exp->biomaterial_id),
        array('type_name' => 'description', 'cv_name' => 'biomaterial_property')
      );
- 
+
      if($desc) {
        $description = $desc->value;
      }
@@ -291,12 +291,7 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
   $variables['min_num_biomaterials'] = $min_num_biomaterials;
 
   drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css/expression.css');
-  // $variables['styles'] = drupal_get_css();
-
   drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/expression.js');
-  // $variables['scripts'] = drupal_get_js();
-  //$scripts = drupal_get_js();
-
 }
 
 function tripal_analysis_expression_preprocess_tripal_organism_biomaterial(&$variables) {

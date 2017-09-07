@@ -16,45 +16,38 @@ else {
           Hover the mouse over a column in the graph to view expression values.
           <br>
           <a href=''
-             onclick="expSortDown() return false">Sort Descending</a> |
-          <a href='' onclick="expSortUp() return false">Sort Ascending</a> |
+             onclick="expSortDown() return false;">Sort Descending</a> |
+          <a href='' onclick="expSortUp() return false;">Sort Ascending</a> |
           <a href=''
-             onclick="nonZero() return false">Only Non-Zero Values</a> |
-          <a href='' onclick="expChart() return false">Tile/Chart</a> |
-          <a href='' onclick="expNormal() return false">Reset</a>
+             onclick="nonZero() return false;">Only Non-Zero Values</a> |
+          <a href='' onclick="expChart() return false;">Tile/Chart</a> |
+          <a href='' onclick="expNormal() return false;">Reset</a>
       </p>
 
     <?php
+
     tripal_add_d3js();
     $hide_biomaterial_labels = $variables['hide_biomaterial_labels'];
     $json_exp = $variables['json_exp'];
     $limit_label_length = $variables['limit_label_length'];
     $expression_display = $variables['expression_display'];
     $biomaterial_display_width = $variables['biomaterial_display_width']; ?>
-      <script> <?php
-        print 'heatMapRaw=' . $json_exp . ';';
-        print 'maxLength=' . $limit_label_length . ';';
-        print 'showLabels=' . $hide_biomaterial_labels . ';';
-        print 'col="' . $expression_display . '";';
-        print 'colWidth=' . $biomaterial_display_width . ';';
-        ?> </script>
+
       <script type="text/javascript">
+        <?php
+        print 'var heatMapRaw=' . $json_exp . ';';
+        print 'var maxLength=' . $limit_label_length . ';';
+        print 'var showLabels=' . $hide_biomaterial_labels . ';';
+        print 'var col="' . $expression_display . '";';
+        print 'var colWidth=' . $biomaterial_display_width . ';';
+        ?>
         Drupal.behaviors.tripal_analysis_expression = {
           attach: function (context, settings) {
-
-
-            expNormal()
+            expNormal();
           }
-        }
-
+        };
       </script>
 
-    <?php
-    //drupal_add_js('/theme/js/expression.js','file');
-    //$scripts = drupal_get_js();
-    //print $scripts;
-    //print drupal_get_path('module','tripal_analysis_expression') . '/theme/js/expression.js';
-    ?>
       <figure>
 
       </figure>
@@ -63,5 +56,6 @@ else {
 
 
     <?php
+
   }
 }
