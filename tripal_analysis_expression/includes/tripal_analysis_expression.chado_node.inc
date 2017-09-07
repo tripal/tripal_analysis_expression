@@ -11,7 +11,7 @@
  * Implements hook_access().
  *
  * @param $node
- *  The node on which the operation is to be peformed, or, if it does not yet
+ *  The node on which the operation is to be performed, or, if it does not yet
  *   exist, the type of node to be created.
  *
  * @param $op
@@ -85,66 +85,6 @@ function tripal_analysis_expression_node_info() {
       'record_type_title' => [
         'singular' => t('Analysis: Expression'),
         'plural' => t('Analyses: Expression'),
-      ],
-      'sync_filters' => [
-        'type_id' => FALSE,
-        'organism_id' => FALSE,
-        'checkboxes' => ['name'],
-      ],
-    ],
-  ];
-  $nodes['chado_arraydesign'] = [
-    'name' => t('Array Design'),
-    'base' => 'chado_arraydesign',
-    'description' => t('An array design from the chado database.'),
-    'has_title' => TRUE,
-    'locked' => TRUE,
-    'chado_node_api' => [
-      'base_table' => 'arraydesign',
-      'hook_prefix' => 'chado_arraydesign',
-      'record_type_title' => [
-        'singular' => t('Array Design'),
-        'plural' => t('Array Designs'),
-      ],
-      'sync_filters' => [
-        'type_id' => FALSE,
-        'organism_id' => FALSE,
-        'checkboxes' => ['name'],
-      ],
-    ],
-  ];
-  $nodes['chado_protocol'] = [
-    'name' => t('Protocol'),
-    'base' => 'chado_protocol',
-    'description' => t('A protocol from the chado database.'),
-    'has_title' => TRUE,
-    'locked' => TRUE,
-    'chado_node_api' => [
-      'base_table' => 'protocol',
-      'hook_prefix' => 'chado_protocol',
-      'record_type_title' => [
-        'singular' => t('Protocol'),
-        'plural' => t('Protocols'),
-      ],
-      'sync_filters' => [
-        'type_id' => TRUE,
-        'organism_id' => FALSE,
-        'checkboxes' => ['name'],
-      ],
-    ],
-  ];
-  $nodes['chado_biomaterial'] = [
-    'name' => t('Biomaterial'),
-    'base' => 'chado_biomaterial',
-    'description' => t('A biomaterial from the chado database.'),
-    'has_title' => TRUE,
-    'locked' => TRUE,
-    'chado_node_api' => [
-      'base_table' => 'biomaterial',
-      'hook_prefix' => 'chado_biomaterial',
-      'record_type_title' => [
-        'singular' => t('Biomaterial'),
-        'plural' => t('Biomaterials'),
       ],
       'sync_filters' => [
         'type_id' => FALSE,
@@ -357,156 +297,156 @@ function chado_analysis_expression_form($node, $form_state) {
     '#options' => $form['choose_contact']['#value'],
     '#suffix' => $lt_message,
   ];
+  //
+  //$lt_message = tripal_set_message(t('If the array design does not appear in this list, ') . l(t('add a new arraydesign.'), 'node/add/chado-arraydesign') . t(' If an array design is not selected, then a generic array design will be created for the analysis.'), TRIPAL_INFO, ['return_html' => TRUE]);
+  //
+  //$arraydesigns = tripal_get_arraydesign_select_options(TRUE);
+  //
+  //$form['experimental_design']['arraydesign_id'] = [
+  //  '#title' => t('Array Design'),
+  //  '#type' => 'select',
+  //  '#description' => t('The array design associated with this analysis. This is not required if the experimental') . t(' data was gathered from next generation sequencing methods. If an array design is not') . t(' selected, a generic array design will be used as a place filler.'),
+  //  '#options' => $arraydesigns,
+  //  '#default_value' => $arraydesign_id,
+  //  '#suffix' => $lt_message,
+  //];
+  ////
+  //$form['experimental_design']['acquisition_details'] = [
+  //  '#title' => t('Acquisition Details'),
+  //  '#type' => 'fieldset',
+  //  '#description' => t('Describe the details of the acquisition process. The acquisition is the process') . (' of scanning the experimental data.'),
+  //  '#collapsible' => TRUE,
+  //  '#collapsed' => TRUE,
+  //  '#weight' => 1,
+  //];
+  //
+  //// Get time saved in chado.
+  //$default_time = $acquisitiondate;
+  //$year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
+  //$month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
+  //$day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
+  //
+  //// If the time is not set, use current time.
+  //if (!$default_time) {
+  //  $default_time = REQUEST_TIME;
+  //  $year = format_date($default_time, 'custom', 'Y');
+  //  $month = format_date($default_time, 'custom', 'n');
+  //  $day = format_date($default_time, 'custom', 'j');
+  //}
+  //
+  //$form['experimental_design']['acquisition_details']['acquisitiondate'] = [
+  //  '#type' => 'date',
+  //  '#title' => t('Date Acquisition Run'),
+  //  '#description' => t('If no date is provided, then the current date will be used.'),
+  //  '#required' => TRUE,
+  //  '#default_value' => [
+  //    'year' => $year,
+  //    'month' => $month,
+  //    'day' => $day,
+  //  ],
+  //];
+  //
+  //$form['experimental_design']['acquisition_details']['acquisition_uri'] = [
+  //  '#type' => 'textfield',
+  //  '#title' => t('Acquisition URI'),
+  //  '#description' => t('URI location that describes the acquisition.'),
+  //  '#default_value' => $acquisition_uri,
+  //];
+  //
+  //$lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' An acquisition protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
-  $lt_message = tripal_set_message(t('If the array design does not appear in this list, ') . l(t('add a new arraydesign.'), 'node/add/chado-arraydesign') . t(' If an array design is not selected, then a generic array design will be created for the analysis.'), TRIPAL_INFO, ['return_html' => TRUE]);
+  //$acquisitions = tripal_get_protocol_select_options(TRUE, 'Acquisition Protocol');
+  //
+  //$form['experimental_design']['acquisition_details']['acquisition_protocol_id'] = [
+  //  '#title' => t('Acquisition Protocol'),
+  //  '#type' => 'select',
+  //  '#description' => t('The protocol associated with this acquisition.'),
+  //  '#options' => $acquisitions,
+  //  '#default_value' => $acquisition_protocol_id,
+  //  '#suffix' => $lt_message,
+  ////];
+  //
+  //$form['experimental_design']['quantification_details'] = [
+  //  '#title' => t('Quantification Details'),
+  //  '#type' => 'fieldset',
+  //  '#description' => t('Describe the details of the quantification process. The quantification is the process of transforming raw expression data into numeric data.'),
+  //  '#collapsible' => TRUE,
+  //  '#collapsed' => TRUE,
+  //  '#weight' => 1,
+  //];
 
-  $arraydesigns = tripal_get_arraydesign_select_options(TRUE);
-
-  $form['experimental_design']['arraydesign_id'] = [
-    '#title' => t('Array Design'),
-    '#type' => 'select',
-    '#description' => t('The array design associated with this analysis. This is not required if the experimental') . t(' data was gathered from next generation sequencing methods. If an array design is not') . t(' selected, a generic array design will be used as a place filler.'),
-    '#options' => $arraydesigns,
-    '#default_value' => $arraydesign_id,
-    '#suffix' => $lt_message,
-  ];
-
-  $form['experimental_design']['acquisition_details'] = [
-    '#title' => t('Acquisition Details'),
-    '#type' => 'fieldset',
-    '#description' => t('Describe the details of the acquisition process. The acquisition is the process') . (' of scanning the experimental data.'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#weight' => 1,
-  ];
-
-  // Get time saved in chado.
-  $default_time = $acquisitiondate;
-  $year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
-  $month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
-  $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
-
-  // If the time is not set, use current time.
-  if (!$default_time) {
-    $default_time = REQUEST_TIME;
-    $year = format_date($default_time, 'custom', 'Y');
-    $month = format_date($default_time, 'custom', 'n');
-    $day = format_date($default_time, 'custom', 'j');
-  }
-
-  $form['experimental_design']['acquisition_details']['acquisitiondate'] = [
-    '#type' => 'date',
-    '#title' => t('Date Acquisition Run'),
-    '#description' => t('If no date is provided, then the current date will be used.'),
-    '#required' => TRUE,
-    '#default_value' => [
-      'year' => $year,
-      'month' => $month,
-      'day' => $day,
-    ],
-  ];
-
-  $form['experimental_design']['acquisition_details']['acquisition_uri'] = [
-    '#type' => 'textfield',
-    '#title' => t('Acquisition URI'),
-    '#description' => t('URI location that describes the acquisition.'),
-    '#default_value' => $acquisition_uri,
-  ];
-
-  $lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' An acquisition protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
-
-  $acquisitions = tripal_get_protocol_select_options(TRUE, 'Acquisition Protocol');
-
-  $form['experimental_design']['acquisition_details']['acquisition_protocol_id'] = [
-    '#title' => t('Acquisition Protocol'),
-    '#type' => 'select',
-    '#description' => t('The protocol associated with this acquisition.'),
-    '#options' => $acquisitions,
-    '#default_value' => $acquisition_protocol_id,
-    '#suffix' => $lt_message,
-  ];
-
-  $form['experimental_design']['quantification_details'] = [
-    '#title' => t('Quantification Details'),
-    '#type' => 'fieldset',
-    '#description' => t('Describe the details of the quantification process. The quantification is the process of transforming raw expression data into numeric data.'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#weight' => 1,
-  ];
-
-  // Get time saved in chado
-  $default_time = $quantificationdate;
-  $year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
-  $month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
-  $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
-  // If the time is not set, use current time
-  if (!$default_time) {
-    $default_time = REQUEST_TIME;
-    $year = format_date($default_time, 'custom', 'Y');
-    $month = format_date($default_time, 'custom', 'n');
-    $day = format_date($default_time, 'custom', 'j');
-  }
-  $form['experimental_design']['quantification_details']['quantificationdate'] = [
-    '#type' => 'date',
-    '#title' => t('Date Quantification Run'),
-    '#description' => t('If no date is provided, then the current date will be used.'),
-    '#required' => TRUE,
-    '#default_value' => [
-      'year' => $year,
-      'month' => $month,
-      'day' => $day,
-    ],
-  ];
-
-  $form['experimental_design']['quantification_details']['quantification_uri'] = [
-    '#type' => 'textfield',
-    '#title' => t('Quantification URI'),
-    '#description' => t('URI location that describes the quantification.'),
-    '#default_value' => $quantification_uri,
-  ];
-
-  $lt_message = tripal_set_message(t('If the quantification operator is not present in the dropdown list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t('A quantication operator is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+  //// Get time saved in chado
+  //$default_time = $quantificationdate;
+  //$year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
+  //$month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
+  //$day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
+  //// If the time is not set, use current time
+  //if (!$default_time) {
+  //  $default_time = REQUEST_TIME;
+  //  $year = format_date($default_time, 'custom', 'Y');
+  //  $month = format_date($default_time, 'custom', 'n');
+  //  $day = format_date($default_time, 'custom', 'j');
+  //}
+  //$form['experimental_design']['quantification_details']['quantificationdate'] = [
+  //  '#type' => 'date',
+  //  '#title' => t('Date Quantification Run'),
+  //  '#description' => t('If no date is provided, then the current date will be used.'),
+  //  '#required' => TRUE,
+  //  '#default_value' => [
+  //    'year' => $year,
+  //    'month' => $month,
+  //    'day' => $day,
+  //  ],
+  //];
+  //
+  //$form['experimental_design']['quantification_details']['quantification_uri'] = [
+  //  '#type' => 'textfield',
+  //  '#title' => t('Quantification URI'),
+  //  '#description' => t('URI location that describes the quantification.'),
+  //  '#default_value' => $quantification_uri,
+  //];
+  //
+  //$lt_message = tripal_set_message(t('If the quantification operator is not present in the dropdown list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t('A quantication operator is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
   // Obtain the list of contacts from the chado contact table. 
-  $sql = 'SELECT
-            contact_id, name 
-          FROM {contact} 
-          ORDER BY name';
-  $results = chado_query($sql);
-  $contacts = [];
-  while ($contact = $results->fetchObject()) {
-    $contacts[$contact->contact_id] = $contact->name;
-  }
-
-  $form['choose_contact'] = [
-    '#type' => 'value',
-    '#value' => $contacts,
-  ];
-
-  $form['experimental_design']['quantification_details']['quantification_operator_id'] = [
-    '#title' => t('Quantification Operator'),
-    '#type' => 'select',
-    '#empty_value' => '',
-    '#description' => t('The quantification operator. If the operator does not appear in this list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t(' An operator is not required.'),
-    '#default_value' => $quantification_operator_id,
-    //*** make sure this works -names - contact/operator
-    '#options' => $form['choose_contact']['#value'],
-    '#suffix' => $lt_message,
-  ];
-
-  $lt_message = tripal_set_message(t('If the quantification protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' A quantification protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
-
-  $quantifications = tripal_get_protocol_select_options(TRUE, 'Quantification Protocol');
-
-  $form['experimental_design']['quantification_details']['quantification_protocol_id'] = [
-    '#title' => t('Quantification Protocol'),
-    '#type' => 'select',
-    '#description' => t('The protocol associated with this quantification.'),
-    '#options' => $quantifications,
-    '#default_value' => $quantification_protocol_id,
-    '#suffix' => $lt_message,
-  ];
+  //$sql = 'SELECT
+  //          contact_id, name
+  //        FROM {contact}
+  //        ORDER BY name';
+  //$results = chado_query($sql);
+  //$contacts = [];
+  //while ($contact = $results->fetchObject()) {
+  //  $contacts[$contact->contact_id] = $contact->name;
+  //}
+  //
+  //$form['choose_contact'] = [
+  //  '#type' => 'value',
+  //  '#value' => $contacts,
+  //];
+  //
+  //$form['experimental_design']['quantification_details']['quantification_operator_id'] = [
+  //  '#title' => t('Quantification Operator'),
+  //  '#type' => 'select',
+  //  '#empty_value' => '',
+  //  '#description' => t('The quantification operator. If the operator does not appear in this list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t(' An operator is not required.'),
+  //  '#default_value' => $quantification_operator_id,
+  //  //*** make sure this works -names - contact/operator
+  //  '#options' => $form['choose_contact']['#value'],
+  //  '#suffix' => $lt_message,
+  //];
+  //
+  //$lt_message = tripal_set_message(t('If the quantification protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' A quantification protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+  //
+  //$quantifications = tripal_get_protocol_select_options(TRUE, 'Quantification Protocol');
+  //
+  //$form['experimental_design']['quantification_details']['quantification_protocol_id'] = [
+  //  '#title' => t('Quantification Protocol'),
+  //  '#type' => 'select',
+  //  '#description' => t('The protocol associated with this quantification.'),
+  //  '#options' => $quantifications,
+  //  '#default_value' => $quantification_protocol_id,
+  //  '#suffix' => $lt_message,
+  //];
 
   $form['loader']['filetype'] = [
     '#type' => 'radios',
@@ -579,88 +519,88 @@ function chado_analysis_expression_form($node, $form_state) {
     '#suffix' => $lt_message,
     '#submit' => ['chado_analysis_expression_biomaterial_validator_submit'],
   ];
-
-  $form['experimental_design']['assay_details'] = [
-    '#title' => t('Assay Details'),
-    '#type' => 'fieldset',
-    '#description' => t('Describe the details of the assay process. The assay is the physical instance of the array') . t(' used in the experiment.'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#weight' => 1,
-  ];
-
-  // Get time saved in chado
-  $default_time = $assaydate;
-  $year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
-  $month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
-  $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
-  // If the time is not set, use current time
-  if (!$default_time) {
-    $default_time = REQUEST_TIME;
-    $year = format_date($default_time, 'custom', 'Y');
-    $month = format_date($default_time, 'custom', 'n');
-    $day = format_date($default_time, 'custom', 'j');
-  }
-  $form['experimental_design']['assay_details']['assaydate'] = [
-    '#type' => 'date',
-    '#title' => t('Date Assay Run'),
-    '#description' => t('If no date is provided, then the current date will be used.'),
-    '#required' => TRUE,
-    '#default_value' => [
-      'year' => $year,
-      'month' => $month,
-      'day' => $day,
-    ],
-  ];
-
-  $form['experimental_design']['assay_details']['assay_description'] = [
-    '#type' => 'textfield',
-    '#title' => t('Assay Description'),
-    '#description' => t('A description of the assay used.'),
-    '#default_value' => $assay_description,
-  ];
-
-  // Obtain the list of contacts from the chado contact table. 
-  $sql = 'SELECT
-            contact_id, name 
-          FROM {contact} 
-          ORDER BY name';
-  $results = chado_query($sql);
-  $contacts = [];
-  while ($contact = $results->fetchObject()) {
-    $contacts[$contact->contact_id] = $contact->name;
-  }
-
-  $form['choose_contact'] = [
-    '#type' => 'value',
-    '#value' => $contacts,
-  ];
-
-  $lt_message = tripal_set_message(t('If the assay operator is not present in the dropdown list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t(' If an assay operator is not selected, then a generic assay operator will be created for this analysis.'), TRIPAL_INFO, ['return_html' => TRUE]);
-
-  $form['experimental_design']['assay_details']['assay_operator_id'] = [
-    '#title' => t('Assay Operator'),
-    '#type' => 'select',
-    '#empty_value' => '',
-    '#description' => t('The assay operator.'),
-    '#default_value' => $assay_operator_id,
-    //*** make sure this works -names - contact/operator
-    '#options' => $form['choose_contact']['#value'],
-    '#suffix' => $lt_message,
-  ];
-
-  $lt_message = tripal_set_message(t('If the assay protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' An assay protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
-
-  $assays = tripal_get_protocol_select_options(TRUE, 'Assay Protocol');
-
-  $form['experimental_design']['assay_details']['assay_protocol_id'] = [
-    '#title' => t('Assay Protocol'),
-    '#type' => 'select',
-    '#description' => t('The protocol associated with this assay.'),
-    '#options' => $assays,
-    '#default_value' => $assay_protocol_id,
-    '#suffix' => $lt_message,
-  ];
+  //
+  //$form['experimental_design']['assay_details'] = [
+  //  '#title' => t('Assay Details'),
+  //  '#type' => 'fieldset',
+  //  '#description' => t('Describe the details of the assay process. The assay is the physical instance of the array') . t(' used in the experiment.'),
+  //  '#collapsible' => TRUE,
+  //  '#collapsed' => TRUE,
+  //  '#weight' => 1,
+  //];
+  //
+  //// Get time saved in chado
+  //$default_time = $assaydate;
+  //$year = preg_replace("/^(\d+)-\d+-\d+ .*/", "$1", $default_time);
+  //$month = preg_replace("/^\d+-0?(\d+)-\d+ .*/", "$1", $default_time);
+  //$day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
+  //// If the time is not set, use current time
+  //if (!$default_time) {
+  //  $default_time = REQUEST_TIME;
+  //  $year = format_date($default_time, 'custom', 'Y');
+  //  $month = format_date($default_time, 'custom', 'n');
+  //  $day = format_date($default_time, 'custom', 'j');
+  //}
+  //$form['experimental_design']['assay_details']['assaydate'] = [
+  //  '#type' => 'date',
+  //  '#title' => t('Date Assay Run'),
+  //  '#description' => t('If no date is provided, then the current date will be used.'),
+  //  '#required' => TRUE,
+  //  '#default_value' => [
+  //    'year' => $year,
+  //    'month' => $month,
+  //    'day' => $day,
+  //  ],
+  //];
+  //
+  //$form['experimental_design']['assay_details']['assay_description'] = [
+  //  '#type' => 'textfield',
+  //  '#title' => t('Assay Description'),
+  //  '#description' => t('A description of the assay used.'),
+  //  '#default_value' => $assay_description,
+  //];
+  //
+  //// Obtain the list of contacts from the chado contact table.
+  //$sql = 'SELECT
+  //          contact_id, name
+  //        FROM {contact}
+  //        ORDER BY name';
+  //$results = chado_query($sql);
+  //$contacts = [];
+  //while ($contact = $results->fetchObject()) {
+  //  $contacts[$contact->contact_id] = $contact->name;
+  //}
+  //
+  //$form['choose_contact'] = [
+  //  '#type' => 'value',
+  //  '#value' => $contacts,
+  //];
+  //
+  //$lt_message = tripal_set_message(t('If the assay operator is not present in the dropdown list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t(' If an assay operator is not selected, then a generic assay operator will be created for this analysis.'), TRIPAL_INFO, ['return_html' => TRUE]);
+  //
+  //$form['experimental_design']['assay_details']['assay_operator_id'] = [
+  //  '#title' => t('Assay Operator'),
+  //  '#type' => 'select',
+  //  '#empty_value' => '',
+  //  '#description' => t('The assay operator.'),
+  //  '#default_value' => $assay_operator_id,
+  //  //*** make sure this works -names - contact/operator
+  //  '#options' => $form['choose_contact']['#value'],
+  //  '#suffix' => $lt_message,
+  //];
+  //
+  //$lt_message = tripal_set_message(t('If the assay protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' An assay protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+  //
+  //$assays = tripal_get_protocol_select_options(TRUE, 'Assay Protocol');
+  //
+  //$form['experimental_design']['assay_details']['assay_protocol_id'] = [
+  //  '#title' => t('Assay Protocol'),
+  //  '#type' => 'select',
+  //  '#description' => t('The protocol associated with this assay.'),
+  //  '#options' => $assays,
+  //  '#default_value' => $assay_protocol_id,
+  //  '#suffix' => $lt_message,
+  //];
 
   return $form;
 }
@@ -867,10 +807,10 @@ function chado_analysis_expression_insert($node) {
   $node->filepath = trim($node->filepath);
   $node->re_start = trim($node->re_start);
   $node->re_end = trim($node->re_end);
-
-  $assaydate = $node->assaydate['year'] . "-" . $node->assaydate['month'] . "-" . $node->assaydate['day'] . " 00:00:00";
-  $acquisitiondate = $node->acquisitiondate['year'] . "-" . $node->acquisitiondate['month'] . "-" . $node->acquisitiondate['day'] . " 00:00:00";
-  $quantificationdate = $node->quantificationdate['year'] . "-" . $node->quantificationdate['month'] . "-" . $node->quantificationdate['day'] . " 00:00:00";
+  //
+  //$assaydate = $node->assaydate['year'] . "-" . $node->assaydate['month'] . "-" . $node->assaydate['day'] . " 00:00:00";
+  //$acquisitiondate = $node->acquisitiondate['year'] . "-" . $node->acquisitiondate['month'] . "-" . $node->acquisitiondate['day'] . " 00:00:00";
+  //$quantificationdate = $node->quantificationdate['year'] . "-" . $node->quantificationdate['month'] . "-" . $node->quantificationdate['day'] . " 00:00:00";
 
   $record = ['table' => 'analysis', 'id' => $node->analysis_id];
 
@@ -890,66 +830,66 @@ function chado_analysis_expression_insert($node) {
     'cv_name' => 'tripal',
     'value' => trim($node->biosourceprovider_id),
   ]);
-  chado_insert_property($record, [
-    'type_name' => 'analysis_expression_arraydesign_id',
-    'cv_name' => 'tripal',
-    'value' => trim($node->arraydesign_id),
-  ]);
-  chado_insert_property($record, [
-    'type_name' => 'analysis_expression_assaydate',
-    'cv_name' => 'tripal',
-    'value' => $assaydate,
-  ]);
-  chado_insert_property($record, [
-    'type_name' => 'analysis_expression_assay_description',
-    'cv_name' => 'tripal',
-    'value' => trim($node->assay_description),
-  ]);
-  chado_insert_property($record, [
-    'type_name' => 'analysis_expression_acquisitiondate',
-    'cv_name' => 'tripal',
-    'value' => $acquisitiondate,
-  ]);
-  chado_insert_property($record, [
-    'type_name' => 'analysis_expression_acquisition_uri',
-    'cv_name' => 'tripal',
-    'value' => trim($node->acquisition_uri),
-  ]);
-  chado_insert_property($record, [
-    'type_name' => 'analysis_expression_quantificationdate',
-    'cv_name' => 'tripal',
-    'value' => $quantificationdate,
-  ]);
-  chado_insert_property($record, [
-    'type_name' => 'analysis_expression_quantification_uri',
-    'cv_name' => 'tripal',
-    'value' => trim($node->quantification_uri),
-  ]);
-  chado_insert_property($record, [
-    'type_name' => 'analysis_expression_assay_protocol_id',
-    'cv_name' => 'tripal',
-    'value' => trim($node->assay_protocol_id),
-  ]);
-  chado_insert_property($record, [
-    'type_name' => 'analysis_expression_acquisition_protocol_id',
-    'cv_name' => 'tripal',
-    'value' => trim($node->acquisition_protocol_id),
-  ]);
-  chado_insert_property($record, [
-    'type_name' => 'analysis_expression_quantification_protocol_id',
-    'cv_name' => 'tripal',
-    'value' => trim($node->quantification_protocol_id),
-  ]);
-  chado_insert_property($record, [
-    'type_name' => 'analysis_expression_assay_operator_id',
-    'cv_name' => 'tripal',
-    'value' => trim($node->assay_operator_id),
-  ]);
-  chado_insert_property($record, [
-    'type_name' => 'analysis_expression_quantification_operator_id',
-    'cv_name' => 'tripal',
-    'value' => trim($node->quantification_operator_id),
-  ]);
+  //chado_insert_property($record, [
+  //  'type_name' => 'analysis_expression_arraydesign_id',
+  //  'cv_name' => 'tripal',
+  //  'value' => trim($node->arraydesign_id),
+  //]);
+  //chado_insert_property($record, [
+  //  'type_name' => 'analysis_expression_assaydate',
+  //  'cv_name' => 'tripal',
+  //  'value' => $assaydate,
+  //]);
+  //chado_insert_property($record, [
+  //  'type_name' => 'analysis_expression_assay_description',
+  //  'cv_name' => 'tripal',
+  //  'value' => trim($node->assay_description),
+  //]);
+  //chado_insert_property($record, [
+  //  'type_name' => 'analysis_expression_acquisitiondate',
+  //  'cv_name' => 'tripal',
+  //  'value' => $acquisitiondate,
+  //]);
+  //chado_insert_property($record, [
+  //  'type_name' => 'analysis_expression_acquisition_uri',
+  //  'cv_name' => 'tripal',
+  //  'value' => trim($node->acquisition_uri),
+  //]);
+  //chado_insert_property($record, [
+  //  'type_name' => 'analysis_expression_quantificationdate',
+  //  'cv_name' => 'tripal',
+  //  'value' => $quantificationdate,
+  //]);
+  //chado_insert_property($record, [
+  //  'type_name' => 'analysis_expression_quantification_uri',
+  //  'cv_name' => 'tripal',
+  //  'value' => trim($node->quantification_uri),
+  //]);
+  //chado_insert_property($record, [
+  //  'type_name' => 'analysis_expression_assay_protocol_id',
+  //  'cv_name' => 'tripal',
+  //  'value' => trim($node->assay_protocol_id),
+  //]);
+  //chado_insert_property($record, [
+  //  'type_name' => 'analysis_expression_acquisition_protocol_id',
+  //  'cv_name' => 'tripal',
+  //  'value' => trim($node->acquisition_protocol_id),
+  //]);
+  //chado_insert_property($record, [
+  //  'type_name' => 'analysis_expression_quantification_protocol_id',
+  //  'cv_name' => 'tripal',
+  //  'value' => trim($node->quantification_protocol_id),
+  //]);
+  //chado_insert_property($record, [
+  //  'type_name' => 'analysis_expression_assay_operator_id',
+  //  'cv_name' => 'tripal',
+  //  'value' => trim($node->assay_operator_id),
+  //]);
+  //chado_insert_property($record, [
+  //  'type_name' => 'analysis_expression_quantification_operator_id',
+  //  'cv_name' => 'tripal',
+  //  'value' => trim($node->quantification_operator_id),
+  //]);
   chado_insert_property($record, [
     'type_name' => 'analysis_expression_filetype',
     'cv_name' => 'tripal',
