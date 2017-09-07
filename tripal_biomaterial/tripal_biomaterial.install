@@ -1,0 +1,170 @@
+<?php
+/**
+ * @file
+ * Functions used to install the analysis: expression module.
+ */
+
+/**
+ * Implements hook_requirements().
+ *
+ * @ingroup tripal_biomaterial
+ */
+function tripal_biomaterial_requirements($phase) {
+  $requirements = [];
+  if ($phase == 'install') {
+    // Make sure chado is installed.
+    if (!$GLOBALS["chado_is_installed"]) {
+      $requirements['tripal_biomaterial'] = [
+        'title' => "tripal_biomaterial",
+        'value' => "ERROR: Chado must be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
+  }
+  return $requirements;
+}
+
+/**
+ * Implements install_hook().
+ *
+ * Permforms actions when the module is first installed.
+ *
+ * @ingroup tripal_analysis_module
+ */
+function tripal_biomaterial_install() {
+
+  // Get localization function for installation.
+  $t = get_t();
+
+  // Register the analysis.
+  tripal_register_analysis_child('tripal_biomaterial');
+
+  tripal_biomaterial_add_cvs();
+  tripal_biomaterial_add_cvterms();
+
+  // Set default cvs.
+  tripal_set_default_cv('biomaterialprop', 'type_id', 'biomaterial_property');
+  tripal_set_default_cv('biomaterial_relationship', 'type_id', 'biomaterial_relationship');
+
+  // Make sure the arraydesign, biomaterial, and protocol chado tables are a set
+  // as base tables. This allows the tables to be used as base tables in
+  // Drupal Views.
+  $update = db_update('tripal_views')->fields([
+    'base_table' => 1,
+  ])->condition('table_name', 'biomaterial', '=')->execute();
+}
+
+/**
+ * Add controlled vocabulary terms used by the biomaterials module.
+ *
+ * @ingroup tripal_biomaterial
+ */
+function tripal_biomaterial_add_cvs() {
+  // CVs for the biomaterial content type.
+  tripal_insert_cv('biomaterial_property', 'Contains property terms for biomaterials.');
+  tripal_insert_cv('biomaterial_relationship', 'Contains types of relationships between biomaterials.');
+}
+
+/**
+ * Implements hook_schema().
+ *
+ * This function implements the hook schema for biomaterial content type.
+ *
+ * @ingroup tripal_biomaterial
+ */
+function tripal_biomaterial_schema() {
+  $schema['chado_biomaterial'] = [
+    'fields' => [
+      'vid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'biomaterial_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'indexes' => [
+      'biomaterial_id' => ['biomaterial_id'],
+    ],
+    'unique keys' => [
+      'nid_vid' => ['nid', 'vid'],
+      'vid' => ['vid'],
+    ],
+    'primary key' => ['nid'],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Add cvterms related to the analysis: expression module.
+ *
+ * @ingroup tripal_biomaterial
+ */
+function tripal_biomaterial_add_cvterms() {
+
+  // Insert the basic biomaterialprop types. These types are used in the NCBI
+  // BioSample database.
+  tripal_insert_cvterm([
+    'name' => 'sample_name',
+    'def' => 'Sample Name is a name that you choose for the sample. It can have any format, but we suggest that you make it concise, unique and consistent within your lab, and as informative as possible. Every Sample Name from a single Submitter must be unique.',
+    'cv_name' => 'biomaterial_property',
+    'db_name' => 'tripal',
+  ]);
+
+  tripal_insert_cvterm([
+    'name' => 'sample_title',
+    'def' => 'Title of the sample.',
+    'cv_name' => 'biomaterial_property',
+    'db_name' => 'tripal',
+  ]);
+
+  tripal_insert_cvterm([
+    'name' => 'bioproject_accession',
+    'def' => 'The accession number of the BioProject(s) to which the BioSample belongs. If the BioSample belongs to more than one BioProject, enter multiple bioproject_accession columns. A valid BioProject accession has prefix PRJN, PRJE or PRJD, e.g., PRJNA12345.',
+    'cv_name' => 'biomaterial_property',
+    'db_name' => 'tripal',
+  ]);
+
+  tripal_insert_cvterm([
+    'name' => 'organism',
+    'def' => 'The most descriptive organism name for this sample (to the species, if relevant).',
+    'cv_name' => 'biomaterial_property',
+    'db_name' => 'tripal',
+  ]);
+
+  // We use NCBI biosample attributes as to fill the biomaterialprop cv table.
+  // These attributes can be accessed at the following url.
+  $url = "http://www.ncbi.nlm.nih.gov/biosample/docs/attributes/?format=xml";
+  $xml_str = file_get_contents($url);
+  $xml_obj = simplexml_load_string($xml_str);
+
+  foreach ($xml_obj->Attribute as $attribute) {
+    tripal_insert_cvterm([
+      'name' => $attribute->HarmonizedName,
+      'def' => $attribute->Description,
+      'cv_name' => 'biomaterial_property',
+      'db_name' => 'tripal',
+    ]);
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * @ingroup tripal_biomaterial
+ */
+function tripal_biomaterial_uninstall() {
+
+}
+
