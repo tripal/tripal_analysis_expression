@@ -195,14 +195,22 @@ function generate_heatmap_values() {
     // To build this variable, we first create a string, and then use javascripts' eval() function
     // to convert this string into a javascript variable.
     // The eval() function is called in the heatmap.js file.
-    if (!empty($x) and !empty($y) and !empty($x)) {
-      $heatmap_data = '[{' . '
-                                      x:' . json_encode($x) . ', 
-                                      y:' . json_encode($y) . ', 
-                                      z:' . json_encode($z) . ', 
-                                      text:' . json_encode($text) . ',
-                                      hoverinfo: "all",
-                                      type:"heatmap"}]';
+    if (!empty($x) and !empty($y) and !empty($z)) {
+      $heatmap_data = [
+        [
+          'x' => $x,
+          'y' => $z,
+          'text' => $text,
+          'hoverinfo' => 'all',
+          'type' => 'heatmap',
+        ],
+      ];
+      //$heatmap_data = '[{' . 'x:' . json_encode($x) . ',
+      //                    y:' . json_encode($y) . ',
+      //                    z:' . json_encode($z) . ',
+      //                    text:' . json_encode($text) . ',
+      //                    hoverinfo: "all",
+      //                    type:"heatmap"}]';
     }
     else {
       $heatmap_data = '';
