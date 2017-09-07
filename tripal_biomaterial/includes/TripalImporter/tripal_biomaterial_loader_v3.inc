@@ -197,16 +197,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $this->load_biosample_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
     }
 
-    $this->logMessage("These are the arguments", [
-      $file_path,
-      $organism_id,
-      $analysis_id,
-      $file_type,
-      $flat_file_type,
-    ], TRIPAL_DEBUG);
   }
 
-  private function load_biosample_xml($file_path, $organism_id) {
+  /**
+   * @param $file_path
+   * @param $organism_id
+   * Loads biosample from XML file.
+   */
+  private function load_biosample_xml($file_path, $organism_id, $analysis_id) {
 
     // Check file path to see if file is accessible.nsaction = db_transaction();
     try {
@@ -261,7 +259,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       // Load biomaterials.
       for ($i = 0; $i < $num_biosamples; $i++) {
         print "Loading BioSample " . ($i + 1) . " of " . $num_biosamples . "\n";
-        add_xml_data($organism_id, $xml->BioSample[$i]);
+        add_xml_data($organism_id, $xml->BioSample[$i], $analysis_id);
       }
     } catch (Exception $e) {
       print "\n";
@@ -273,7 +271,11 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     return;
   }
 
-  function add_xml_data($organism_id, $biosample) {
+  /**
+   * @param $organism_id
+   * @param $biosample
+   */
+  function add_xml_data($organism_id, $biosample, $analysis_id) {
 
     // Extract data from the xml string.
     $sample_accession = $biosample->Ids->Id[0];
@@ -322,7 +324,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
 
     $biomaterial_description = $comment ? (string) $comment : (string) $description;
 
-    $biomaterial_id = $this->create_biomaterial($unique_name, '', $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $biomaterial_description);
+    $biomaterial_id = $this->create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $biomaterial_description);
 
     // Add to biomaterialprop table.
     add_xml_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id);
@@ -336,6 +338,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     }
   }
 
+  /**
+   * @param $attributes
+   * @param $biomaterial_id
+   */
   function add_xml_biomaterial_properties($attributes, $biomaterial_id) {
 
     $record = [
@@ -380,6 +386,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     }
   }
 
+  /**
+   * @param $file_path
+   * @param $organism_id
+   * @param $analysis_id
+   * @param $file_type
+   * @param $flat_file_type
+   */
   private function load_biosample_flat(
     $file_path,
     $organism_id,
@@ -719,8 +732,16 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     return $db_id;
   }
 
-
-
+  /**
+   * @param $biomaterial
+   * @param $analysis_id
+   * @param $organism_id
+   * @param $biosourceprovider_id
+   * @param $dbxref_id
+   * @param $biomaterial_description
+   *
+   * @return mixed
+   */
   private function create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description) {
     $biomaterial_result = chado_query('select biomaterial_id, taxon_id, description from {biomaterial} where name = :name limit 1', [':name' => $biomaterial])->fetchObject();
 

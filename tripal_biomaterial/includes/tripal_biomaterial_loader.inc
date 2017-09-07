@@ -29,7 +29,7 @@ function tripal_biomaterial_loader($form, &$form_state) {
   $form['#tree'] = TRUE;
 
   $form['description'] = [ //***
-    '#markup' => t('This loader is designed to load data from NCBI BioSample compatible formats.
+    '#markup' => t('<strong>This is the legacy importer for Tripal 2.  We recommend you use the improved Tripal 3 importer, which is located at admin->Tripal->Data Loaders->Chado Biological Sample (Biomaterial) Loader</strong>.<br><br>This loader is designed to load data from NCBI BioSample compatible formats.
       If you have loaded data into NCBI, download download an xml file from NCBI with your 
       BioSamples. This will ensure biomaterials have the BioSample accession number. 
       If you have not uploaded to NCBI, load a flatfile in the NCBI BioSample Submission format. 
