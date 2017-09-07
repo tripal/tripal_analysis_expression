@@ -148,6 +148,15 @@ function tripal_analysis_expression_menu() {
     'weight' => 10,
   ];
 
+  // Heatmap settings
+  $items['admin/tripal/extension/tripal_analysis_expression/heatmap_settings'] = [
+    'title' => 'Expression Visualization Settings',
+    'description' => 'Administrative pages for the Tripal Expression Analysis module.',
+    'access arguments' => ['administer tripal analysis expression'],
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_analysis_expression_heatmap_settings_form']
+  ];
+
   // Expression display on feature pages.
   $items['admin/tripal/extension/tripal_analysis_expression/manage'] = [
     'title' => 'Tripal Expression Analysis Settings',
@@ -272,9 +281,15 @@ function tripal_analysis_expression_views_api() {
  *  template for the analysis: expression content type and a variable
  *  expression template for the feature content type.
  *
- * ***documentation of parameters here????
+ * @param $existing
+ * @param $type
+ * @param $theme
+ * @param $path
+ * @see \theme() for paramaters instructions
  *
  * @ingroup tripal_analysis_expression
+ *
+ * @return array
  */
 function tripal_analysis_expression_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
@@ -348,6 +363,7 @@ function tripal_analysis_expression_block_view($delta = '') {
     case 'input_features':
       $block['subject'] = t('Feature Expression');
       $block['content'] = drupal_get_form('feature_heatmap_form');
+      drupal_add_js(['example' => variable_get('tripal_analysis_expression_heatmap_example')], ['type' => 'setting']);
       drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/example.js');
       break;
     case 'heatmap_features':
