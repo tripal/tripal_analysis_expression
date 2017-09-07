@@ -48,7 +48,6 @@ function tripal_analysis_expression_install() {
   variable_set('chado_feature_expression_biomaterial_display_width', 15);
 }
 
-
 /**
  * Implements hook_uninstall().
  *
@@ -62,4 +61,12 @@ function tripal_analysis_expression_uninstall() {
     // Unregister the analysis.
     tripal_unregister_analysis_child('tripal_analysis_expression');
   */
+}
+
+/**
+ * Add heatmap variables.
+ */
+function tripal_analysis_expression_update_7201() {
+  variable_set('tripal_analysis_expression_heatmap_placeholder', 'Example: orange1.1g022520m, orange1.1g022799m');
+  variable_set('tripal_analysis_expression_heatmap_example', 'orange1.1g022520m, orange1.1g022799m, orange1.1g022520m, orange1.1g022799m');
 }

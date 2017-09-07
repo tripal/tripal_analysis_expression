@@ -12,6 +12,62 @@ function e($value) {
 }
 
 /**
+ * Heatmap settings form.
+ *
+ * @implements HOOK_form()
+ * @param $form
+ * @param $form_state
+ *
+ * @return mixed
+ */
+function tripal_analysis_expression_heatmap_settings_form($form, &$form_state) {
+  $form['help_section'] = [
+    '#type' => 'markup',
+    '#markup' => '<h3>Expression Visualisation Settings</h3>',
+  ];
+
+  $form['placeholder'] = [
+    '#type' => 'textfield',
+    '#title' => 'Placeholder Text',
+    '#description' => 'The placeholder text for the text box.',
+    '#required' => TRUE,
+    '#default_value' => variable_get('tripal_analysis_expression_heatmap_placeholder'),
+  ];
+
+  $form['example'] = [
+    '#type' => 'textarea',
+    '#title' => 'Example Value',
+    '#description' => 'The example generated when the user clicks the "try an example" button',
+    '#required' => TRUE,
+    '#default_value' => variable_get('tripal_analysis_expression_heatmap_example'),
+  ];
+
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => 'Save',
+  ];
+
+  return $form;
+}
+
+/**
+ * Heatmap settings form submit.
+ *
+ * @implements HOOK_form_submit()
+ * @param $form
+ * @param $form_state
+ */
+function tripal_analysis_expression_heatmap_settings_form_submit($form, &$form_state) {
+  $placeholder = $form_state['values']['placeholder'];
+  $example = $form_state['values']['example'];
+
+  variable_set('tripal_analysis_expression_heatmap_placeholder', $placeholder);
+  variable_set('tripal_analysis_expression_heatmap_example', $example);
+
+  drupal_set_message('Settings saved successfully');
+}
+
+/**
  * Create the heatmap form
  *
  * @param $form
@@ -33,12 +89,14 @@ function feature_heatmap_form($form, &$form_state) {
     ],
   ];
 
+  // Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6
+  $example = variable_get('tripal_analysis_expression_heatmap_placeholder');
   $form['heatmap_feature_uniquename'] = [
     '#type' => 'textarea',
     '#title' => t('Enter feature unique names'),
-    '#description' => t('<b>Example feature unique names:</b> Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6'),
+    '#description' => t('<b>Example feature unique names:</b> ' . $example),
     '#attributes' => [
-      'placeholder' => 'Example: Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6',
+      'placeholder' => variable_get('tripal_analysis_expression_heatmap_placeholder'),
     ],
   ];
 
