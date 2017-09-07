@@ -124,7 +124,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       '#title' => t('NCBI biosample flat file'),
       '#states' => [
         'visible' => [
-          ':input[name="file_type"]' => ['value' => 'flat_file'],
+          ':input[name="file_type"]' => ['value' => 'flat'],
         ],
       ],
     ];
@@ -172,7 +172,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       form_set_error('organism_id', 'Please select the organism from which the biomaterials were collected.');
     }
     // Make sure the flat file type is selected when loading a flat file.
-    $flat_file_type = $form_state['values']['flat_file']['flat_file_type'];
+    $flat_file_type = $form_state['values']['flat_file_type'];
+
+
     if ($file_type == 'flat' and !$flat_file_type) {
       form_set_error('flat_file_type', 'Please select a flat file format.');
     }
@@ -393,21 +395,15 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * @param $file_type
    * @param $flat_file_type
    */
+
+
   private function load_biosample_flat(
     $file_path,
     $organism_id,
     $analysis_id,
-    $file_type,
     $flat_file_type
   ) {
 
-    $this->logMessage("These are the arguments", [
-      $file_path,
-      $organism_id,
-      $analysis_id,
-      $file_type,
-      $flat_file_type,
-    ], TRIPAL_DEBUG);
 
     try {
       if (!is_readable($file_path)) {

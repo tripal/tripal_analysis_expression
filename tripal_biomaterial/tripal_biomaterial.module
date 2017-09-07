@@ -20,7 +20,6 @@ require_once "includes/tripal_biomaterial.delete.inc";
 require_once "includes/tripal_biomaterial.chado_node.inc";
 require_once "includes/tripal_biomaterial.delete.inc";
 require_once "includes/tripal_biomaterial.admin.inc";
-require_once "includes/tripal_biomaterial_loader.inc";
 require_once "theme/tripal_biomaterial.theme.inc";
 
 
@@ -222,17 +221,7 @@ function tripal_biomaterial_menu() {
     'weight' => 10,
   ];
 
-
-  // Biomaterial loader form.
-  $items['admin/tripal/extension/tripal_biomaterial/biomaterial_loader'] = [
-    'title' => 'Tripal Biomaterial Loader',
-    'description' => 'Load biosample xml files from NCBI, or biomaterial flat files.',
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_biomaterial_loader'],
-    'weight' => 10,
-  ];
-
+  
   // Admin configuration - biomaterial admin list.
   $items['admin/tripal/extension/tripal_biomaterial/content_types/biomaterial'] = [
     'title' => 'Biomaterial admin config',
