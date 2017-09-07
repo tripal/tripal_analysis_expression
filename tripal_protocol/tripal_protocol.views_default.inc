@@ -24,15 +24,7 @@ function tripal_protocol_views_default_views() {
   $view = tripal_protocol_defaultvalue_user_protocols();
   $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
-
-
-  $view = tripal_protocol_defaultvalue_user_analysis_expressions();
-  $view = tripal_make_view_compatible_with_external($view);
-  $views[$view->name] = $view;
-
-  $view = tripal_protocol_admin_defaultvalue_analysis_expressions();
-  $view = tripal_make_view_compatible_with_external($view);
-  $views[$view->name] = $view;
+  
 
   $view = tripal_arraydesign_admin_defaultview_arraydesigns();
   $view = tripal_make_view_compatible_with_external($view);
