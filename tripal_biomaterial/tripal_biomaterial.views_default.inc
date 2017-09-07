@@ -17,35 +17,11 @@
 function tripal_biomaterial_views_default_views() {
   $views = [];
 
-  $view = tripal_arraydesign_defaultvalue_user_arraydesigns();
-  $view = tripal_make_view_compatible_with_external($view);
-  $views[$view->name] = $view;
-
-  $view = tripal_protocol_defaultvalue_user_protocols();
-  $view = tripal_make_view_compatible_with_external($view);
-  $views[$view->name] = $view;
-
   $view = tripal_biomaterial_defaultvalue_user_biomaterials();
   $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   $view = tripal_biomaterial_defaultvalue_user_ontologies();
-  $view = tripal_make_view_compatible_with_external($view);
-  $views[$view->name] = $view;
-
-  $view = tripal_biomaterial_defaultvalue_user_analysis_expressions();
-  $view = tripal_make_view_compatible_with_external($view);
-  $views[$view->name] = $view;
-
-  $view = tripal_biomaterial_admin_defaultvalue_analysis_expressions();
-  $view = tripal_make_view_compatible_with_external($view);
-  $views[$view->name] = $view;
-
-  $view = tripal_arraydesign_admin_defaultview_arraydesigns();
-  $view = tripal_make_view_compatible_with_external($view);
-  $views[$view->name] = $view;
-
-  $view = tripal_protocol_admin_defaultview_protocols();
   $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
