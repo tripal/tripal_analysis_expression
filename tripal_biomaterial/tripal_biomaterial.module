@@ -20,7 +20,6 @@ require_once "includes/tripal_biomaterial.delete.inc";
 require_once "includes/tripal_biomaterial.chado_node.inc";
 require_once "includes/tripal_biomaterial.delete.inc";
 require_once "includes/tripal_biomaterial.admin.inc";
-require_once "includes/tripal_biomaterial_loader.inc";
 require_once "theme/tripal_biomaterial.theme.inc";
 
 
@@ -202,42 +201,32 @@ function tripal_biomaterial_menu() {
 
   // Admin configuration group.
   $items['admin/tripal/extension/tripal_biomaterial'] = [
-    'title' => 'Expression Analysis',
-    'description' => 'Administrative pages for the Tripal Expression Analysis module.',
+    'title' => 'Biomaterials',
+    'description' => 'Administrative pages for the Biomaterials module.',
     'access arguments' => ['administer tripal analysis expression'],
   ];
 
   // Content type configuration group.
   $items['admin/tripal/extension/tripal_biomaterial/content_types'] = [
-    'title' => 'Tripal Expression Analysis Content Types',
+    'title' => 'Biomaterials Content Types',
     'description' => 'Administer content types provided by the Tripal Expression Analysis module.',
     'access arguments' => ['administer tripal analysis expression'],
   ];
 
   // Module help pages.
   $items['admin/tripal/extension/tripal_biomaterial/help'] = [
-    'title' => 'Tripal Expression Analysis Help',
+    'title' => 'Biomaterials Help',
     'description' => 'A description of expression module content types and loaders.',
-    'access arguments' => ['administer tripal analysis expression'],
+    'access arguments' => ['administer tripal Biomaterial'],
     'weight' => 10,
   ];
 
-
-  // Biomaterial loader form.
-  $items['admin/tripal/extension/tripal_biomaterial/biomaterial_loader'] = [
-    'title' => 'Tripal Biomaterial Loader',
-    'description' => 'Load biosample xml files from NCBI, or biomaterial flat files.',
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_biomaterial_loader'],
-    'weight' => 10,
-  ];
-
+  
   // Admin configuration - biomaterial admin list.
   $items['admin/tripal/extension/tripal_biomaterial/content_types/biomaterial'] = [
-    'title' => 'Biomaterial',
+    'title' => 'Biomaterial admin config',
     'description' => 'A biological material (tissue, cells, serum, etc.).',
-    'access arguments' => ['administer tripal biomaterial'],
+    'access arguments' => ['administer tripal Biomaterial'],
     'page callback' => 'tripal_biomaterial_admin_biomaterial_view',
     'type' => MENU_NORMAL_ITEM,
   ];
