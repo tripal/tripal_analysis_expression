@@ -669,7 +669,7 @@ function create_biomaterial_contact($contact_name) {
   }
   return $contact_id;
 }
-
+//
 function create_ncbi_db($url_name, $db_name, $db_description) {
 
   $url = "http://www.ncbi.nlm.nih.gov/";
