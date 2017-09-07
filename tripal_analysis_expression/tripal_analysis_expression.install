@@ -1,0 +1,65 @@
+<?php
+/**
+ * @file
+ * Functions used to install the analysis: expression module.
+ */
+
+/**
+ * Implements hook_requirements().
+ *
+ * @ingroup tripal_analysis_expression
+ */
+function tripal_analysis_expression_requirements($phase) {
+  $requirements = [];
+  if ($phase == 'install') {
+    // Make sure chado is installed.
+    if (!$GLOBALS["chado_is_installed"]) {
+      $requirements['tripal_analysis_expression'] = [
+        'title' => "tripal_analysis_expression",
+        'value' => "ERROR: Chado must be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
+  }
+  return $requirements;
+}
+
+/**
+ * Implements install_hook().
+ *
+ * Permforms actions when the module is first installed.
+ *
+ * @ingroup tripal_analysis_module
+ */
+function tripal_analysis_expression_install() {
+
+  // Get localization function for installation.
+  $t = get_t();
+
+  // Register the analysis.
+  tripal_register_analysis_child('tripal_analysis_expression');
+
+  // These variables are used to set how expression information is displayed.
+  variable_set('chado_feature_expression_hide_expression', 0);
+  variable_set('chado_feature_expression_hide_biomaterial_labels', 0);
+  variable_set('chado_feature_expression_limit_label_length', 0);
+  variable_set('chado_feature_expression_min_num_biomaterials', 0);
+  variable_set('chado_feature_expression_expression_display', 'column');
+  variable_set('chado_feature_expression_biomaterial_display_width', 15);
+}
+
+
+/**
+ * Implements hook_uninstall().
+ *
+ * @ingroup tripal_analysis_expression
+ */
+function tripal_analysis_expression_uninstall() {
+  /*
+    // Get localization function for installation.
+    $t = get_t();
+
+    // Unregister the analysis.
+    tripal_unregister_analysis_child('tripal_analysis_expression');
+  */
+}

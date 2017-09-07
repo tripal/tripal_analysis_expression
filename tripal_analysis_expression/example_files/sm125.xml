@@ -1,0 +1,56 @@
+<BioSampleSet>
+    <BioSample access="public" publication_date="2016-05-06T08:50:02.560" last_update="2016-05-09T17:03:18.897"
+               submission_date="2016-05-06T08:50:03.817" id="4958045" accession="SAMN04958045">
+        <Ids>
+            <Id db="BioSample" is_primary="1">SAMN04958045</Id>
+            <Id db_label="Sample name">SM125</Id>
+            <Id db="SRA">SRS1426053</Id>
+        </Ids>
+        <Description>
+            <Title>Plant sample from Acer saccharum</Title>
+            <Organism taxonomy_id="4024" taxonomy_name="Acer saccharum">
+                <OrganismName>Acer saccharum</OrganismName>
+            </Organism>
+            <Comment>
+                <Paragraph>Sugar Maple - pooled seedling leaf RNAs, 125 ppb ozone</Paragraph>
+            </Comment>
+        </Description>
+        <Owner>
+            <Name url="https://ag.tennessee.edu/">University of Tennessee Institute of Agriculture</Name>
+            <Contacts>
+                <Contact email="mstaton1@utk.edu">
+                    <Name>
+                        <First>Margaret</First>
+                        <Last>Staton</Last>
+                        <Middle>Elizabeth</Middle>
+                    </Name>
+                </Contact>
+            </Contacts>
+        </Owner>
+        <Models>
+            <Model>Plant</Model>
+        </Models>
+        <Package display_name="Plant; version 1.0">Plant.1.0</Package>
+        <Attributes>
+            <Attribute attribute_name="age" harmonized_name="age" display_name="age">seedling</Attribute>
+            <Attribute attribute_name="biomaterial_provider" harmonized_name="biomaterial_provider"
+                       display_name="biomaterial provider">Scott Schlarbaum, University of Tennessee
+            </Attribute>
+            <Attribute attribute_name="collected_by" harmonized_name="collected_by" display_name="collected by">John
+                Carlson, Penn State University
+            </Attribute>
+            <Attribute attribute_name="cultivar" harmonized_name="cultivar" display_name="cultivar">open pollinated
+                seeds collected from campus tree at University of Missouri
+            </Attribute>
+            <Attribute attribute_name="temp" harmonized_name="temp" display_name="temperature">ambient</Attribute>
+            <Attribute attribute_name="tissue" harmonized_name="tissue" display_name="tissue">leaf</Attribute>
+            <Attribute attribute_name="treatment" harmonized_name="treatment" display_name="treatment">ozone (125ppb)
+            </Attribute>
+            <Attribute attribute_name="geographic_location" harmonized_name="geo_loc_name"
+                       display_name="geographic location">not available
+            </Attribute>
+        </Attributes>
+        <Links/>
+        <Status status="live" when="2016-05-06T08:50:03.815"/>
+    </BioSample>
+</BioSampleSet>
