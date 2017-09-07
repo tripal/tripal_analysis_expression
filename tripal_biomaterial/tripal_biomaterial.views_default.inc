@@ -14,7 +14,7 @@
  *
  * @ingroup tripal_analyis_expression
  */
-function tripal_biomaterials_views_default_views() {
+function tripal_biomaterial_views_default_views() {
   $views = [];
 
   $view = tripal_arraydesign_defaultvalue_user_arraydesigns();
@@ -33,11 +33,11 @@ function tripal_biomaterials_views_default_views() {
   $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
-  $view = tripal_biomaterials_defaultvalue_user_analysis_expressions();
+  $view = tripal_biomaterial_defaultvalue_user_analysis_expressions();
   $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
-  $view = tripal_biomaterials_admin_defaultvalue_analysis_expressions();
+  $view = tripal_biomaterial_admin_defaultvalue_analysis_expressions();
   $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
@@ -173,7 +173,7 @@ function tripal_biomaterial_defaultvalue_user_ontologies() {
  * This function contains the default view for the biomaterial
  * content type for admin users.
  *
- * @ingroup tripal_biomaterials
+ * @ingroup tripal_biomaterial
  */
 function tripal_biomaterial_admin_defaultview_biomaterials() {
 
@@ -479,7 +479,7 @@ function tripal_biomaterial_admin_defaultview_biomaterials() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
-  $handler->display->display_options['path'] = 'admin/tripal/extension/tripal_biomaterials/content_types/biomaterial/biomaterials';
+  $handler->display->display_options['path'] = 'admin/tripal/extension/tripal_biomaterial/content_types/biomaterial/biomaterials';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Biomaterials';
   $handler->display->display_options['menu']['description'] = 'A list of biomaterials.';
@@ -495,7 +495,7 @@ function tripal_biomaterial_admin_defaultview_biomaterials() {
  * This function contains the default view for the biomaterial
  * content type for anonymous users.
  *
- * @ingroup tripal_biomaterials
+ * @ingroup tripal_biomaterial
  */
 function tripal_biomaterial_defaultvalue_user_biomaterials() {
 

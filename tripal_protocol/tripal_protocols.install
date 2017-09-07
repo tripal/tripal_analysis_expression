@@ -7,15 +7,15 @@
 /**
  * Implements hook_requirements().
  *
- * @ingroup tripal_protocols
+ * @ingroup tripal_protocol
  */
-function tripal_protocols_requirements($phase) {
+function tripal_protocol_requirements($phase) {
   $requirements = [];
   if ($phase == 'install') {
     // Make sure chado is installed.
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements['tripal_protocols'] = [
-        'title' => "tripal_protocols",
+      $requirements['tripal_protocol'] = [
+        'title' => "tripal_protocol",
         'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
       ];
@@ -31,16 +31,16 @@ function tripal_protocols_requirements($phase) {
  *
  * @ingroup tripal_analysis_module
  */
-function tripal_protocols_install() {
+function tripal_protocol_install() {
 
   // Get localization function for installation.
   $t = get_t();
 
   // Register the analysis.
-  tripal_register_analysis_child('tripal_protocols');
+  tripal_register_analysis_child('tripal_protocol');
 
-  tripal_protocols_add_cvs();
-  tripal_protocols_add_cvterms();
+  tripal_protocol_add_cvs();
+  tripal_protocol_add_cvterms();
 
   // Set default cvs.
   tripal_set_default_cv('arraydesignprop', 'type_id', 'arraydesign_property');
@@ -60,9 +60,9 @@ function tripal_protocols_install() {
 /**
  * Add controlled vocabulary terms used by the analyis: expression module.
  *
- * @ingroup tripal_protocols
+ * @ingroup tripal_protocol
  */
-function tripal_protocols_add_cvs() {
+function tripal_protocol_add_cvs() {
   // CVs for the array design content type.
   tripal_insert_cv('arraydesign_property', 'Contains property terms for arraydesigns.');
   tripal_insert_cv('arraydesign_platformtype', 'Contains microarray platform types.');
@@ -78,9 +78,9 @@ function tripal_protocols_add_cvs() {
  * This function implments the hook schema for arraydesign, biomaterial,
  * and protocol content types.
  *
- * @ingroup tripal_protocols
+ * @ingroup tripal_protocol
  */
-function tripal_protocols_schema() {
+function tripal_protocol_schema() {
   $schema['chado_arraydesign'] = [
     'fields' => [
       'vid' => [
@@ -145,9 +145,9 @@ function tripal_protocols_schema() {
 /**
  * Add cvterms related to the protocols module.
  *
- * @ingroup tripal_protocols
+ * @ingroup tripal_protocol
  */
-function tripal_protocols_add_cvterms() {
+function tripal_protocol_add_cvterms() {
 
   tripal_insert_cvterm([
     'name' => 'photochemical_oligo',
@@ -341,8 +341,8 @@ function tripal_protocols_add_cvterms() {
 /**
  * Implements hook_uninstall().
  *
- * @ingroup tripal_protocols
+ * @ingroup tripal_protocol
  */
-function tripal_protocols_uninstall() {
+function tripal_protocol_uninstall() {
 
 }

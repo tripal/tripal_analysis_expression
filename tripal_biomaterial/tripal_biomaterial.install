@@ -7,15 +7,15 @@
 /**
  * Implements hook_requirements().
  *
- * @ingroup tripal_biomaterials
+ * @ingroup tripal_biomaterial
  */
-function tripal_biomaterials_requirements($phase) {
+function tripal_biomaterial_requirements($phase) {
   $requirements = [];
   if ($phase == 'install') {
     // Make sure chado is installed.
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements['tripal_biomaterials'] = [
-        'title' => "tripal_biomaterials",
+      $requirements['tripal_biomaterial'] = [
+        'title' => "tripal_biomaterial",
         'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
       ];
@@ -31,16 +31,16 @@ function tripal_biomaterials_requirements($phase) {
  *
  * @ingroup tripal_analysis_module
  */
-function tripal_biomaterials_install() {
+function tripal_biomaterial_install() {
 
   // Get localization function for installation.
   $t = get_t();
 
   // Register the analysis.
-  tripal_register_analysis_child('tripal_biomaterials');
+  tripal_register_analysis_child('tripal_biomaterial');
 
-  tripal_biomaterials_add_cvs();
-  tripal_biomaterials_add_cvterms();
+  tripal_biomaterial_add_cvs();
+  tripal_biomaterial_add_cvterms();
 
   // Set default cvs.
   tripal_set_default_cv('biomaterialprop', 'type_id', 'biomaterial_property');
@@ -57,9 +57,9 @@ function tripal_biomaterials_install() {
 /**
  * Add controlled vocabulary terms used by the biomaterials module.
  *
- * @ingroup tripal_biomaterials
+ * @ingroup tripal_biomaterial
  */
-function tripal_biomaterials_add_cvs() {
+function tripal_biomaterial_add_cvs() {
   // CVs for the biomaterial content type.
   tripal_insert_cv('biomaterial_property', 'Contains property terms for biomaterials.');
   tripal_insert_cv('biomaterial_relationship', 'Contains types of relationships between biomaterials.');
@@ -70,9 +70,9 @@ function tripal_biomaterials_add_cvs() {
  *
  * This function implements the hook schema for biomaterial content type.
  *
- * @ingroup tripal_biomaterials
+ * @ingroup tripal_biomaterial
  */
-function tripal_biomaterials_schema() {
+function tripal_biomaterial_schema() {
   $schema['chado_biomaterial'] = [
     'fields' => [
       'vid' => [
@@ -109,9 +109,9 @@ function tripal_biomaterials_schema() {
 /**
  * Add cvterms related to the analysis: expression module.
  *
- * @ingroup tripal_biomaterials
+ * @ingroup tripal_biomaterial
  */
-function tripal_biomaterials_add_cvterms() {
+function tripal_biomaterial_add_cvterms() {
 
   // Insert the basic biomaterialprop types. These types are used in the NCBI
   // BioSample database.
@@ -162,9 +162,9 @@ function tripal_biomaterials_add_cvterms() {
 /**
  * Implements hook_uninstall().
  *
- * @ingroup tripal_biomaterials
+ * @ingroup tripal_biomaterial
  */
-function tripal_biomaterials_uninstall() {
+function tripal_biomaterial_uninstall() {
 
 }
 

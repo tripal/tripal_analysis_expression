@@ -14,7 +14,7 @@
  *
  * @ingroup tripal_analyis_expression
  */
-function tripal_protocols_views_default_views() {
+function tripal_protocol_views_default_views() {
   $views = [];
 
   $view = tripal_arraydesign_defaultvalue_user_arraydesigns();
@@ -26,11 +26,11 @@ function tripal_protocols_views_default_views() {
   $views[$view->name] = $view;
 
 
-  $view = tripal_protocols_defaultvalue_user_analysis_expressions();
+  $view = tripal_protocol_defaultvalue_user_analysis_expressions();
   $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
-  $view = tripal_protocols_admin_defaultvalue_analysis_expressions();
+  $view = tripal_protocol_admin_defaultvalue_analysis_expressions();
   $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
@@ -50,7 +50,7 @@ function tripal_protocols_views_default_views() {
  * This function contains the default view for the arraydesign
  * content type for anonymous users.
  *
- * @ingroup tripal_protocols
+ * @ingroup tripal_protocol
  */
 function tripal_arraydesign_defaultvalue_user_arraydesigns() {
 
@@ -272,7 +272,7 @@ function tripal_arraydesign_defaultvalue_user_arraydesigns() {
  * This function contains the default view for the arraydesign
  * content type for admin users.
  *
- * @ingroup tripal_protocols
+ * @ingroup tripal_protocol
  */
 function tripal_arraydesign_admin_defaultview_arraydesigns() {
 
@@ -507,7 +507,7 @@ function tripal_arraydesign_admin_defaultview_arraydesigns() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
-  $handler->display->display_options['path'] = 'admin/tripal/extension/tripal_protocols/content_types/arraydesign/arraydesigns';
+  $handler->display->display_options['path'] = 'admin/tripal/extension/tripal_protocol/content_types/arraydesign/arraydesigns';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Array Design';
   $handler->display->display_options['menu']['description'] = 'An array design.';
@@ -523,7 +523,7 @@ function tripal_arraydesign_admin_defaultview_arraydesigns() {
  * This function contains the default view for the protocol
  * content type for admin users.
  *
- * @ingroup tripal_protocols
+ * @ingroup tripal_protocol
  */
 function tripal_protocol_admin_defaultview_protocols() {
 
@@ -656,7 +656,7 @@ function tripal_protocol_admin_defaultview_protocols() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
-  $handler->display->display_options['path'] = 'admin/tripal/extension/tripal_protocols/content_types/protocol/protocols';
+  $handler->display->display_options['path'] = 'admin/tripal/extension/tripal_protocol/content_types/protocol/protocols';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Protocols';
   $handler->display->display_options['menu']['description'] = 'A list of protocols. ';
@@ -672,7 +672,7 @@ function tripal_protocol_admin_defaultview_protocols() {
  * This function contains the default view for the protocol
  * content type for anonymous users.
  *
- * @ingroup tripal_protocols
+ * @ingroup tripal_protocol
  */
 function tripal_protocol_defaultvalue_user_protocols() {
 
