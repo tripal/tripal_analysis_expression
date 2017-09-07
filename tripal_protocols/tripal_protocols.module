@@ -19,19 +19,13 @@ require_once "includes/tripal_protocols_config.admin.inc";
 require_once "includes/tripal_protocols.delete.inc";
 require_once "includes/tripal_arraydesign.chado_node.inc";
 require_once "includes/tripal_arraydesign.delete.inc";
-require_once "includes/tripal_biomaterial.chado_node.inc";
-require_once "includes/tripal_biomaterial.delete.inc";
 require_once "includes/tripal_arraydesign.admin.inc";
 require_once "includes/tripal_protocol.chado_node.inc";
 require_once "includes/tripal_protocol.admin.inc";
 require_once "includes/tripal_protocol.delete.inc";
-require_once "includes/tripal_biomaterial.admin.inc";
-require_once "includes/tripal_expression_loader.inc";
-require_once "includes/tripal_biomaterial_loader.inc";
 require_once "theme/tripal_protocols.theme.inc";
 require_once "api/tripal_arraydesign.api.inc";
 require_once "api/tripal_protocol.api.inc";
-require_once drupal_get_path('module', 'tripal_protocols') . '/includes/feature_heatmap_form.inc';
 
 /**
  * Implements hook_help().
@@ -112,26 +106,6 @@ function tripal_protocols_help($path, $arg) {
  */
 function tripal_protocols_permission() {
   return [
-    'access chado_analysis_expression content' => [
-      'title' => t('View Analysis: Expressions'),
-      'description' => t('Allow users to view analysis: expression pages.'),
-    ],
-    'create chado_analysis_expression content' => [
-      'title' => t('Create Analysis: Expressions'),
-      'description' => t('Allow users to create new analysis: expression pages.'),
-    ],
-    'delete chado_analysis_expression content' => [
-      'title' => t('Delete Analysis: Expressions'),
-      'description' => t('Allow users to delete analysis: expression pages.'),
-    ],
-    'edit chado_analysis_expression content' => [
-      'title' => t('Edit Analysis: Expressions'),
-      'description' => t('Allow users to edit analysis: expression pages.'),
-    ],
-    'administer tripal analysis expression' => [
-      'title' => t('Administer Analysis: Expressions'),
-      'description' => t('Allow users to administer all analysis: expressions.'),
-    ],
     'access chado_arraydesign content' => [
       'title' => t('View Arraydesigns'),
       'description' => t('Allow users to view arraydesign pages.'),
@@ -151,26 +125,6 @@ function tripal_protocols_permission() {
     'administer tripal arraydesign' => [
       'title' => t('Administer Arraydesigns'),
       'description' => t('Allow users to administer all arraydesigns.'),
-    ],
-    'access chado_biomaterial content' => [
-      'title' => t('View Biomaterials'),
-      'description' => t('Allow users to view biomaterial pages.'),
-    ],
-    'create chado_biomaterial content' => [
-      'title' => t('Create Biomaterials'),
-      'description' => t('Allow users to create new biomaterial pages.'),
-    ],
-    'delete chado_biomaterial content' => [
-      'title' => t('Delete Biomaterials'),
-      'description' => t('Allow users to delete biomaterial pages.'),
-    ],
-    'edit chado_biomaterial content' => [
-      'title' => t('Edit Biomaterials'),
-      'description' => t('Allow users to edit biomaterial pages.'),
-    ],
-    'administer tripal biomaterial' => [
-      'title' => t('Administer Biomaterials'),
-      'description' => t('Allow users to administer all biomaterials.'),
     ],
     'access chado_protocol content' => [
       'title' => t('View Protocols'),
@@ -228,25 +182,6 @@ function tripal_protocols_menu() {
     'title' => 'Tripal Expression Analysis Help',
     'description' => 'A description of expression module content types and loaders.',
     'access arguments' => ['administer tripal analysis expression'],
-    'weight' => 10,
-  ];
-
-  // Expression display on feature pages.
-  $items['admin/tripal/extension/tripal_protocols/manage'] = [
-    'title' => 'Tripal Expression Analysis Settings',
-    'description' => 'Manage the display of expression information.',
-    'access arguments' => ['administer tripal analysis expression'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_protocols_config_admin'],
-  ];
-
-  // Biomaterial loader form.
-  $items['admin/tripal/extension/tripal_protocols/biomaterial_loader'] = [
-    'title' => 'Tripal Biomaterial Loader',
-    'description' => 'Load biosample xml files from NCBI, or biomaterial flat files.',
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_biomaterial_loader'],
     'weight' => 10,
   ];
 
@@ -420,179 +355,6 @@ function tripal_protocols_menu() {
     ],
   ];
 
-  // Admin configuration - biomaterial admin list.
-  $items['admin/tripal/extension/tripal_protocols/content_types/biomaterial'] = [
-    'title' => 'Biomaterial',
-    'description' => 'A biological material (tissue, cells, serum, etc.).',
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'tripal_biomaterial_admin_biomaterial_view',
-    'type' => MENU_NORMAL_ITEM,
-  ];
-
-  // Admin configuration - biomaterial settings.
-  $items['admin/tripal/extension/tripal_protocols/content_types/biomaterial/configuration'] = [
-    'title' => 'Settings',
-    'description' => 'Manage Tripal Expression: Biomaterial settings and configurations.',
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_biomaterial_admin'],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 5,
-  ];
-
-  // Admin configuration - biomaterial TOC.
-  $items['admin/tripal/extension/tripal_protocols/content_types/biomaterial/chado_biomaterial_toc'] = [
-    'title' => 'TOC',
-    'description' => 'Manage the table of contents for biomaterial nodes.',
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => [
-      'tripal_core_content_type_toc_form',
-      'chado_biomaterial',
-    ],
-    'file' => 'includes/tripal_core.toc.inc',
-    'file path' => drupal_get_path('module', 'tripal_core'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 3,
-  ];
-
-  // Admin configuration - biomaterial sync.
-  $items['admin/tripal/extension/tripal_protocols/content_types/biomaterial/sync'] = [
-    'title' => 'Sync',
-    'description' => 'Create pages on this site for biomaterials stored in Chado.',
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => [
-      'chado_node_sync_form',
-      'tripal_protocols',
-      'chado_biomaterial',
-    ],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 2,
-  ];
-
-  // Admin configuration - biomaterial delete.
-  $items['admin/tripal/extension/tripal_protocols/content_types/biomaterial/delete'] = [
-    'title' => "Delete",
-    'description' => 'Delete multiple biomaterials from Chado',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_biomaterial_delete_form'],
-    'access arguments' => ['administer tripal protoocl'],
-    'type' => MENU_LOCAL_TASK,
-    'file path' => drupal_get_path('module', 'tripal_protocols'),
-    'file' => 'includes/tripal_biomaterial.delete.inc',
-    'weight' => 3,
-  ];
-
-  // Admin configuration - biomaterial help.
-  $items['admin/tripal/extension/tripal_protocols/content_types/biomaterial/help'] = [
-    'title' => 'Help',
-    'description' => "A description of the Tripal Biomaterial content type including a short description of it's usage.",
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'theme',
-    'page arguments' => ['tripal_biomaterial_help'],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10,
-  ];
-
-  // Admin configuration -  biomaterial enable view.
-  $items['admin/tripal/extension/tripal_protocols/content_types/biomaterial/views/biomaterials/enable'] = [
-    'title' => 'Enable Biomaterial Administrative View',
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'tripal_enable_view',
-    'page arguments' => [
-      'tripal_biomaterial_admin_biomaterials',
-      'tripal_protocols',
-      'admin/tripal/extension/tripal_protocols/biomaterial',
-    ],
-  ];
-
-  // Admin configuration - analysis_expression admin list.
-  $items['admin/tripal/extension/tripal_protocols/content_types/analysis_expression'] = [
-    'title' => 'Analysis: Expression',
-    'description' => 'An expression analysis from the chado database.',
-    'access arguments' => ['administer tripal analysis expression'],
-    'page callback' => 'tripal_protocols_admin_analysis_expression_view',
-    'type' => MENU_NORMAL_ITEM,
-  ];
-
-  // Admin configuration - analysis_expression settings.
-  $items['admin/tripal/extension/tripal_protocols/content_types/analysis_expression/configuration'] = [
-    'title' => 'Settings',
-    'description' => 'Manage Analysis: Expression settings and configurations.',
-    'access arguments' => ['administer tripal analysis expression'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_protocols_admin'],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 5,
-  ];
-
-  // Admin configuration - analysis_expression TOC.
-  $items['admin/tripal/extension/tripal_protocols/content_types/analysis_expression/chado_analysis_expression_toc'] = [
-    'title' => 'TOC',
-    'description' => 'Manage the table of contents for analysis_expression nodes.',
-    'access arguments' => ['administer tripal analysis expression'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => [
-      'tripal_core_content_type_toc_form',
-      'chado_analysis_expression',
-    ],
-    'file' => 'includes/tripal_core.toc.inc',
-    'file path' => drupal_get_path('module', 'tripal_core'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 3,
-  ];
-
-  // Admin configuration - analysis_expression sync.
-  $items['admin/tripal/extension/tripal_protocols/content_types/analysis_expression/sync'] = [
-    'title' => 'Sync',
-    'description' => 'Create pages on this site for analysis_expressions stored in Chado.',
-    'access arguments' => ['administer tripal analysis expression'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => [
-      'chado_node_sync_form',
-      'tripal_protocols',
-      'chado_analysis_expression',
-    ],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 2,
-  ];
-
-  // Admin configuration - analysis_expression delete.
-  $items['admin/tripal/extension/tripal_protocols/content_types/analysis_expression/delete'] = [
-    'title' => "Delete",
-    'description' => 'Delete multiple analysis_expressions from Chado',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_protocols_delete_form'],
-    'access arguments' => ['administer tripal protoocl'],
-    'type' => MENU_LOCAL_TASK,
-    'file path' => drupal_get_path('module', 'tripal_protocols'),
-    'file' => 'includes/tripal_protocols.delete.inc',
-    'weight' => 3,
-  ];
-
-  // Admin configuration - analysis_expression help.
-  $items['admin/tripal/extension/tripal_protocols/content_types/analysis_expression/help'] = [
-    'title' => 'Help',
-    'description' => "A description of the Tripal Analysis: Expression content type including a short description of it's usage.",
-    'access arguments' => ['administer tripal analysis expression'],
-    'page callback' => 'theme',
-    'page arguments' => ['tripal_protocols_help'],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10,
-  ];
-
-  // Admin configuration - analysis_expression enable view.
-  $items['admin/tripal/extension/tripal_protocols/content_types/analysis_expression/views/analysis_expressions/enable'] = [
-    'title' => 'Enable Analysis: Expression Administrative View',
-    'access arguments' => ['administer tripal analysis expression'],
-    'page callback' => 'tripal_enable_view',
-    'page arguments' => [
-      'tripal_protocols_admin_analysis_expressions',
-      'tripal_protocols',
-      'admin/tripal/extension/tripal_protocols/analysis_expression',
-    ],
-  ];
 
   return $items;
 }
@@ -630,7 +392,7 @@ function tripal_protocols_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
   $items = [
-    'node__chado_analysis_expression' => [
+    'node__chado_tripal_protocols' => [
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
@@ -703,118 +465,8 @@ function tripal_protocols_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_protocol_help',
       'path' => "$path/theme/templates",
     ],
-    'node__chado_biomaterial' => [
-      'template' => 'node--chado-generic',
-      'render element' => 'node',
-      'base hook' => 'node',
-      'path' => "$core_path/theme/templates",
-    ],
-    'tripal_biomaterial_base' => [
-      'variables' => ['node' => NULL],
-      'template' => 'tripal_biomaterial_base',
-      'path' => "$path/theme/templates",
-    ],
-    'tripal_biomaterial_properties' => [
-      'variables' => ['node' => NULL],
-      'template' => 'tripal_biomaterial_properties',
-      'path' => "$path/theme/templates",
-    ],
-    'tripal_biomaterial_references' => [
-      'variables' => ['node' => NULL],
-      'template' => 'tripal_biomaterial_references',
-      'path' => "$path/theme/templates",
-    ],
-    'tripal_biomaterial_teaser' => [
-      'variables' => ['node' => NULL],
-      'template' => 'tripal_biomaterial_teaser',
-      'path' => "$path/theme/templates",
-    ],
-    'tripal_biomaterial_help' => [
-      'variables' => ['node' => NULL],
-      'template' => 'tripal_biomaterial_help',
-      'path' => "$path/theme/templates",
-    ],
-    'tripal_organism_biomaterial' => [
-      'variables' => ['node' => NULL],
-      'template' => 'tripal_organism_biomaterial',
-      'path' => "$path/theme/templates",
-    ],
-    'tripal_feature_expression' => [
-      'variables' => ['node' => NULL],
-      'template' => 'tripal_feature_expression',
-      'path' => "$path/theme/templates",
-    ],
-    'tripal_analysis_biomaterial' => [
-      'variables' => ['node' => NULL],
-      'template' => 'tripal_analysis_biomaterial',
-      'path' => "$path/theme/templates",
-    ],
+
   ];
   return $items;
-}
-
-/*
- * Implement hook_block_info()
- * Define two blocks one for input features
- * the other one for display heatmap
- */
-function tripal_protocols_block_info() {
-  // Define two blocks: one for features input form
-  // the other one for heatmap display
-  $blocks = [];
-  $blocks['input_features'] = [
-    'info' => t('tripal_protocols features form for heatmap'),
-    'status' => 1,
-    'region' => 'content',
-    'weight' => 24,
-    'cache' => DRUPAL_NO_CACHE,
-  ];
-
-  $blocks['heatmap_features'] = [
-    'info' => t('tripal_protocols heatmap display'),
-    'status' => 1,
-    'region' => 'content',
-    'weight' => 25,
-    'cache' => DRUPAL_NO_CACHE,
-  ];
-
-  return $blocks;
-}
-
-/*
- * Implement hook_block_view()
- */
-function tripal_protocols_block_view($delta = '') {
-  $block = [];
-  switch ($delta) {
-    case 'input_features':
-      $block['subject'] = t('Feature Expression');
-      $block['content'] = drupal_get_form('feature_heatmap_form');
-      drupal_add_js(drupal_get_path('module', 'tripal_protocols') . '/js/example.js');
-      break;
-    case 'heatmap_features':
-      $heatmap = generate_heatmap_values();
-      if (!empty($heatmap['heatmap_data'])) {
-        $block['subject'] = t('Feature Expression Heatmap');
-        $block['content'] = '<div id="vis_expression"></div>';
-        drupal_add_js(['tripal_protocols' => ['heatmap_data' => $heatmap['heatmap_data']]], ['type' => 'setting']);
-        drupal_add_js(['tripal_protocols' => ['left_margin' => $heatmap['left_margin']]], ['type' => 'setting']);
-        drupal_add_js(['tripal_protocols' => ['bottom_margin' => $heatmap['bottom_margin']]], ['type' => 'setting']);
-      }
-      else {
-        $block['subject'] = '';
-        if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
-          $block['content'] = t('<p style="color:red; font-weight: bold; margin-top: 20px">There is no expression data available for the features you entered.</p>');
-        }
-      }
-      break;
-  }
-
-  //drupal_add_js(array('tripal_protocols' => array('heatmap_data' => $_SESSION['heatmap_data'])), array('type' => 'setting'));
-  //drupal_add_js('https://cdn.plot.ly/plotly-latest.min.js', 'external');
-  drupal_add_js(drupal_get_path('module', 'tripal_protocols') . '/theme/js/plotly-latest.min.js');
-  drupal_add_js(drupal_get_path('module', 'tripal_protocols') . '/theme/js/heatmap.js');
-
-  return $block;
 }
 
