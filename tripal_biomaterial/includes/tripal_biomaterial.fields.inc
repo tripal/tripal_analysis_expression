@@ -38,12 +38,12 @@ function tripal_biomaterial_bundle_fields_info($entity_type, $bundle) {
   $fields = [];
   if (isset($bundle->data_table) AND ($bundle->data_table == 'organism')) {
     // First add my term.
-    /*tripal_insert_cvterm([
+    tripal_insert_cvterm([
       'id' => 'sep:00195',
-      'name' => 'biological_sample',
+      'name' => 'biological sample',
       'cv_name' => 'sep',
       'definition' => 'List of biomaterials related to an organism',
-    ]);*/
+    ]);
 
     // Then describe the field defined by that term.
     $field_name = 'sep__biological_sample';
