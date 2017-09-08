@@ -106,7 +106,10 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
         $bcontact = '';
 
         if (property_exists($biomaterial, 'nid')) {
-          $bname = l($bname, 'bio_data/' . $biomaterial->nid, ['attributes' => ['target' => '_blank']]);
+          $bname = l($bname, 'node/' . $biomaterial->nid, ['attributes' => ['target' => '_blank']]);
+        }
+        else {
+          $bname = l($bname, 'bio_data/' . chado_get_record_entity_by_table('biomaterial', $biomaterials->biomaterial_id));
         }
 
         if ($biomaterial->taxon_id) {
@@ -150,7 +153,8 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
         'element' => $element,
         'parameters' => ['block' => 'biomaterial_browser'],
       ]);
-    } else {
+    }
+    else {
       $output = '';
     }
 
