@@ -83,8 +83,8 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $field = 'sep__biological_sample';
     $variables = $entity->{$field}['und'][0];
-    if (count($variables['biomaterial_ids']) > 0) {
-      $element = 1;
+    if (!empty($variables['biomaterial_ids'])) {
+      $elements = 1;
       $num_per_page = 10;
 
       $biomaterials = [];
@@ -93,23 +93,18 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
         $biomaterials[] = chado_generate_var('biomaterial', $values);
       }
 
-      dpm($biomaterials);
-
       $output = '<div class="tripal_organism-data-block-desc tripal-data-block-desc">The following browser provides a list of biomaterials associated with this organism.</div>';
 
-      $headers = ['Biomaterial Name', 'Organism', 'Biomaterial Provider'];
+      $headers = ['Biomaterial Name', 'Biomaterial Provider'];
       $rows = [];
 
       foreach ($biomaterials as $biomaterial) {
         $bname = $biomaterial->name;
-        $borganism = '';
         $bcontact = '';
+        $id = chado_get_record_entity_by_table('biomaterial', $biomaterial->biomaterial_id);
 
-        if (property_exists($biomaterial, 'nid')) {
-          $bname = l($bname, 'node/' . $biomaterial->nid, ['attributes' => ['target' => '_blank']]);
-        }
-        else {
-          $bname = l($bname, 'bio_data/' . chado_get_record_entity_by_table('biomaterial', $biomaterials->biomaterial_id));
+        if($id) {
+          $bname = l($bname, 'bio_data/' . $id);
         }
 
         if ($biomaterial->taxon_id) {
@@ -117,13 +112,11 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
             $bgenus = $biomaterial->taxon_id->genus;
             $bspecies = $biomaterial->taxon_id->species;
             $bcommon_name = $biomaterial->taxon_id->common_name;
-            $borganism = l($bgenus . ' ' . $bspecies . ' (' . $bcommon_name . ')', 'node/' . $biomaterial->taxon_id->nid, ['attributes' => ['target' => '_blank']]);
           }
           else {
             $bgenus = $biomaterial->taxon_id->nid;
             $bspecies = $biomaterial->taxon_id->species;
             $bcommon_name = $biomaterial->taxon_id->common_name;
-            $borganism = $bgenus . ' ' . $bspecies . ' (' . $bcommon_name . ')';
           }
         }
 
@@ -137,20 +130,21 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
         }
         $rows[] = [
           $bname,
-          $borganism,
-          $bcontact,
+          $bcontact ?: 'Unknown',
         ];
       }
 
       $current_page = pager_default_initialize(count($rows), $num_per_page, 1);
       $chunks = array_chunk($rows, $num_per_page, TRUE);
+
       $output .= theme('table', [
         'header' => $headers,
         'rows' => $chunks[$current_page],
       ]);
+
       $output .= theme('pager', [
         'quantity' => 5,
-        'element' => $element,
+        'element' => $elements,
         'parameters' => ['block' => 'biomaterial_browser'],
       ]);
     }
