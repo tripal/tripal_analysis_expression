@@ -20,8 +20,8 @@ require_once "includes/tripal_biomaterial.delete.inc";
 require_once "includes/tripal_biomaterial.chado_node.inc";
 require_once "includes/tripal_biomaterial.delete.inc";
 require_once "includes/tripal_biomaterial.admin.inc";
+require_once "includes/tripal_biomaterial.fields.inc";
 require_once "theme/tripal_biomaterial.theme.inc";
-
 
 /**
  * Implements hook_help().
@@ -221,7 +221,6 @@ function tripal_biomaterial_menu() {
     'weight' => 10,
   ];
 
-  
   // Admin configuration - biomaterial admin list.
   $items['admin/tripal/extension/tripal_biomaterial/content_types/biomaterial'] = [
     'title' => 'Biomaterial admin config',

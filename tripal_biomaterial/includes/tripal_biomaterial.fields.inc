@@ -34,24 +34,20 @@
  *   it doesn't already exist. To trigger create of fields when developing call
  *   tripal_refresh_bundle_fields() for the specific bundle.
  */
-function tripal_analysis_expression_bundle_fields_info($entity_type, $bundle) {
+function tripal_biomaterial_bundle_fields_info($entity_type, $bundle) {
   $fields = [];
-
-  // Because we are expecting data housed in Chado we can use the 'data_table'
-  // property of the bundle to determine if this bundle is really the one
-  // we want the field to be associated with.
-  if (isset($bundle->data_table) AND ($bundle->data_table == 'feature')) {
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'organism')) {
     // First add my term.
-    tripal_insert_cvterm([
-      'id' => 'data:2603',
-      'name' => 'gene_expression_data',
-      'cv_name' => 'EDAM',
-      'definition' => 'Visualize expression data',
-    ]);
+    /*tripal_insert_cvterm([
+      'id' => 'sep:00195',
+      'name' => 'biological_sample',
+      'cv_name' => 'sep',
+      'definition' => 'List of biomaterials related to an organism',
+    ]);*/
 
     // Then describe the field defined by that term.
-    $field_name = 'data__gene_expression_data';
-    $field_type = 'data__gene_expression_data';
+    $field_name = 'sep__biological_sample';
+    $field_type = 'sep__biological_sample';
     $fields[$field_name] = [
       'field_name' => $field_name,
       'type' => $field_type,
@@ -90,39 +86,35 @@ function tripal_analysis_expression_bundle_fields_info($entity_type, $bundle) {
  *   defaults for any settings you use in your field. Each entry in this array
  *   will be used to create an instance of an already existing field.
  */
-function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle) {
+function tripal_biomaterial_bundle_instances_info($entity_type, $bundle) {
   $instances = [];
-
-  // ORGANISM.
-  //===============
-  if (isset($bundle->data_table) AND ($bundle->data_table == 'feature')) {
-    $field_name = 'data__gene_expression_data';
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'organism')) {
+    $field_name = 'sep__biological_sample';
     $instances[$field_name] = [
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Expression',
-      'description' => 'Visualize expression data',
+      'label' => 'Biomaterial Browser',
+      'description' => 'List of biomaterials related to an organism',
       'required' => FALSE,
       'settings' => [
-        'auto_attach' => TRUE,
+        'auto_attach' => FALSE,
         'chado_table' => $bundle->data_table,
-        'chado_column' => 'feature_id',
+        'chado_column' => 'organism_id',
         'base_table' => $bundle->data_table,
       ],
       'widget' => [
-        'type' => 'data__gene_expression_data_widget',
+        'type' => 'sep__biological_sample_widget',
         'settings' => [],
       ],
       'display' => [
         'default' => [
           'label' => 'hidden',
-          'type' => 'data__gene_expression_data_formatter',
+          'type' => 'sep__biological_sample_formatter',
           'settings' => [],
         ],
       ],
     ];
   }
-
   return $instances;
 }

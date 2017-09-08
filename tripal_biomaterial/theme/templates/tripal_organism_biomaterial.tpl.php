@@ -17,7 +17,8 @@ if (sizeof($variables['biomaterial_ids']) > 0) {
     ];
     $biomaterials[] = chado_generate_var('biomaterial', $values);
   } ?>
-    <div class="tripal_organism-data-block-desc tripal-data-block-desc">The following browser provides a list of biomaterials associated with this organism.</div> <?php
+    <div class="tripal_organism-data-block-desc tripal-data-block-desc">The following browser provides a list of biomaterials associated with this organism.</div>
+  <?php
 
   $headers = ['Biomaterial Name', 'Organism', 'Biomaterial Provider'];
   $rows = [];
