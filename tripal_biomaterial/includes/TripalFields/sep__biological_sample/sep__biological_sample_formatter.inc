@@ -103,26 +103,14 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
         $bcontact = '';
         $id = chado_get_record_entity_by_table('biomaterial', $biomaterial->biomaterial_id);
 
-        if($id) {
+        if ($id) {
           $bname = l($bname, 'bio_data/' . $id);
         }
 
-        if ($biomaterial->taxon_id) {
-          if (property_exists($biomaterial->taxon_id, 'nid')) {
-            $bgenus = $biomaterial->taxon_id->genus;
-            $bspecies = $biomaterial->taxon_id->species;
-            $bcommon_name = $biomaterial->taxon_id->common_name;
-          }
-          else {
-            $bgenus = $biomaterial->taxon_id->nid;
-            $bspecies = $biomaterial->taxon_id->species;
-            $bcommon_name = $biomaterial->taxon_id->common_name;
-          }
-        }
-
         if ($biomaterial->biosourceprovider_id) {
-          if (property_exists($biomaterial->biosourceprovider_id, 'nid')) {
-            $bcontact = l($biomaterial->biosourceprovider_id->name, 'node/' . $biomaterial->biosourceprovider_id->nid, ['attributes' => ['target' => '_blank']]);
+          $id = chado_get_record_entity_by_table('contact', $biomaterial->biosourceprovider_id);
+          if ($id) {
+            $bcontact = l($biomaterial->biosourceprovider_id->name, 'bio_data/' . $id, ['attributes' => ['target' => '_blank']]);
           }
           else {
             $bcontact = $biomaterial->biosourceprovider_id->name;
