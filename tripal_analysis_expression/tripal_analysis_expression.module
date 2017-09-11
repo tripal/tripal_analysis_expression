@@ -14,7 +14,6 @@ require_once "includes/tripal_analysis_expression.admin.inc";
 require_once "includes/tripal_analysis_expression_config.admin.inc";
 require_once "includes/tripal_analysis_expression.delete.inc";
 require_once "includes/tripal_analysis_expression.fields.inc";
-require_once "includes/tripal_expression_loader.inc";
 require_once "theme/tripal_analysis_expression.theme.inc";
 require_once drupal_get_path('module', 'tripal_analysis_expression') . '/includes/feature_heatmap_form.inc';
 
