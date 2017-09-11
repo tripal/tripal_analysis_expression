@@ -14,4 +14,5 @@ dependencies[] = tripal_analysis
 dependencies[] = tripal_feature
 dependencies[] = tripal_organism
 dependencies[] = tripal_contact
-
+dependencies[] = tripal_biomaterial
+dependencies[] = tripal_protocol
