@@ -335,7 +335,6 @@ class tripal_expression_data_loader extends TripalImporter{
 
   public function formValidate($form, &$form_state) {
 
-    dpm($form_state['values']);
     $filetype = $form_state['values']['filetype'];
     $fileext = $form_state['values']['fileext'];
     $re_start = $form_state['values']['re_start'];
@@ -346,7 +345,7 @@ class tripal_expression_data_loader extends TripalImporter{
       form_set_error('re_start', 'Invalid regular expression for the start of expression data: ' . $re_start);
     }
     if ($re_end and @preg_match('/' . $re_end . '/', NULL) === FALSE) {
-      form_set_error('re_end', 'Invalid regular expression for the end of expression data: ' . re_end);
+      form_set_error('re_end', 'Invalid regular expression for the end of expression data: ' . $re_end);
     }
     if (empty($fileext) and $filetype === 'col') {
       form_set_error('fileext', 'Please specify a file extension for the column files to be loaded.');
@@ -361,7 +360,7 @@ class tripal_expression_data_loader extends TripalImporter{
     //Retrieve arguments
     $arguments = $this->arguments['run_args'];
     $filepath = $this->arguments['file']['file_path'];
-    $fileext = $this->arguments['file_ext'];
+    $fileext = $arguments['file_ext'];
     $filetype = $arguments['file_type'];
     $re_start = $arguments['re_start'];
     $re_stop = $arguments['re_stop'];
@@ -370,7 +369,7 @@ class tripal_expression_data_loader extends TripalImporter{
     $feature_uniquenames = $arguments['feature_uniquenames'];
     $arraydesign_id = $arguments['arraydesign_id'];
     $acquisitiondate = $arguments['acquisitiondate'];
-
+    $create_biosamples = $arguments['create_biosamples'];
     $quantificationdate = $arguments['quantificationdate'];
 
     //missing
@@ -419,7 +418,7 @@ class tripal_expression_data_loader extends TripalImporter{
     //  'value' => trim($node->feature_uniquenames),
     //]);
 
-    $this->tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames);
+    $this->tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples);
   }
 
   /**
@@ -465,6 +464,9 @@ class tripal_expression_data_loader extends TripalImporter{
    * @param $filetype
    *  The file type can either by mat for matrix or col for column.
    *
+   * @param $create_biosamples
+   * Allow creation of new biosamples.  Defaults to false: we want users to load in annotated biosamples instead.
+   *
    * @ingroup tripal_analysis_expression
    */
 
@@ -481,13 +483,17 @@ class tripal_expression_data_loader extends TripalImporter{
     $filetype,
     $re_start,
     $re_stop,
-    $feature_uniquenames
+    $feature_uniquenames,
+  $create_biosamples
   ) {
 
     //these should be passed in parameters but are optional and apparently not used.
+    //BC
     $assay_id = NULL;
     $acquisition_id = NULL;
     $quantification_id = NULL;
+
+    die("file path:    " .  $filepath);
 
     $features = [];
 
@@ -502,6 +508,7 @@ class tripal_expression_data_loader extends TripalImporter{
 
       // A matrix file.
       if ($filetype == 'mat' and is_file($filepath) and preg_match($re_ext, $filepath)) {
+
         tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames);
       }
 
