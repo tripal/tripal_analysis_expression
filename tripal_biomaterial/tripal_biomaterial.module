@@ -12,7 +12,6 @@
  * the Analysis module.
  * @}
  */
-
 require_once "includes/tripal_biomaterial.chado_node.inc";
 require_once "includes/tripal_biomaterial.admin.inc";
 require_once "includes/tripal_biomaterial_config.admin.inc";
@@ -22,6 +21,8 @@ require_once "includes/tripal_biomaterial.delete.inc";
 require_once "includes/tripal_biomaterial.admin.inc";
 require_once "includes/tripal_biomaterial.fields.inc";
 require_once "theme/tripal_biomaterial.theme.inc";
+
+require_once "api/tripal_biomaterial.api.inc";
 
 /**
  * Implements hook_help().
