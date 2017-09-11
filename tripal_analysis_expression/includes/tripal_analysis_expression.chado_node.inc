@@ -477,11 +477,6 @@ function chado_analysis_expression_form($node, $form_state) {
     '#default_value' => $feature_uniquenames,
   ];
 
-  /*  $form['loader']['feature_uniquenames'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Use feature uniquename to associate expression values (default is feature name)'),
-      '#default_value' => $feature_uniquenames,
-    );*/
 
   $form['loader']['fileext'] = [
     '#type' => 'textfield',
