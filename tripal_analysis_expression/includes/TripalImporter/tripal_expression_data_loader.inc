@@ -321,11 +321,11 @@ class tripal_expression_data_loader extends TripalImporter{
       '#description' => t('If the expression file to be loaded has a footer text, use a regular expression to describe the line that occurs after the end of the expression data. If the file has no footer text, this line may be left blank.'),
     ];
 
-    $form['create_biosamples'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Create New Biosamples (Caution!  Read below!)'),
-      '#description' => t('Each expression set must be associated with a biosample.  We strongly recommend creating descriptive biosamples on your site or, ideally, in the NCBI Biosample database and importing the resulting xml into Chado.  Checking the box above will create a new biosample if the name does not match any records in the database.'),
-    ];
+    //$form['create_biosamples'] = [
+    //  '#type' => 'checkbox',
+    //  '#title' => t('Create New Biosamples (Caution!  Read below!)'),
+    //  '#description' => t('Each expression set must be associated with a biosample.  We strongly recommend creating descriptive biosamples on your site or, ideally, in the NCBI Biosample database and importing the resulting xml into Chado.  Checking the box above will create a new biosample if the name does not match any records in the database.'),
+    //];
     return $form;
   }
 
@@ -334,6 +334,8 @@ class tripal_expression_data_loader extends TripalImporter{
    */
 
   public function formValidate($form, &$form_state) {
+
+    dpm($form_state['values']);
 
     $filetype = $form_state['values']['filetype'];
     $fileext = $form_state['values']['fileext'];
@@ -361,7 +363,7 @@ class tripal_expression_data_loader extends TripalImporter{
     $arguments = $this->arguments['run_args'];
     $filepath = $this->arguments['file']['file_path'];
     $fileext = $arguments['file_ext'];
-    $filetype = $arguments['file_type'];
+    $filetype = $arguments['filetype'];
     $re_start = $arguments['re_start'];
     $re_stop = $arguments['re_stop'];
     $organism_id = $arguments['organism_id'];
@@ -373,9 +375,9 @@ class tripal_expression_data_loader extends TripalImporter{
     $quantificationdate = $arguments['quantificationdate'];
 
     //missing
-   // $assaydate = $arguments['assaydate'];
+    // $assaydate = $arguments['assaydate'];
 
-   // $contact_id = $arguments['contact_id'];
+    // $contact_id = $arguments['contact_id'];
 
     //
     //$record = ['table' => 'analysis', 'id' => $node->analysis_id];
@@ -465,7 +467,8 @@ class tripal_expression_data_loader extends TripalImporter{
    *  The file type can either by mat for matrix or col for column.
    *
    * @param $create_biosamples
-   * Allow creation of new biosamples.  Defaults to false: we want users to load in annotated biosamples instead.
+   * Allow creation of new biosamples.  Defaults to false: we want users to
+   *   load in annotated biosamples instead.
    *
    * @ingroup tripal_analysis_expression
    */
@@ -484,16 +487,15 @@ class tripal_expression_data_loader extends TripalImporter{
     $re_start,
     $re_stop,
     $feature_uniquenames,
-  $create_biosamples
+    $create_biosamples
   ) {
+
 
     //these should be passed in parameters but are optional and apparently not used.
     //BC
     $assay_id = NULL;
     $acquisition_id = NULL;
     $quantification_id = NULL;
-
-    die("file path:    " .  $filepath);
 
     $features = [];
 
