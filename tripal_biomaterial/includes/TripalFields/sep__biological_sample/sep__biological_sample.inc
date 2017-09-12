@@ -144,28 +144,21 @@ class sep__biological_sample extends ChadoField {
     $field = get_class();
     $entity->{$field}['und'][0]['value'] = $entity->chado_record_id;
     $variables = $entity->{$field}['und'][0];
+    $variables['show_organism'] = true;
     $analysis_id = $variables['value'];
 
-    $sql = 'SELECT B.biomaterial_id FROM {biomaterial} B
+    $sql = 'SELECT B.biomaterial_id, B.name, O.organism_id, O.genus, O.species, O.common_name, C.contact_id, C.name AS contact_name
+              FROM {biomaterial} B
               JOIN {assay_biomaterial} AB ON B.biomaterial_id = AB.biomaterial_id
               JOIN {assay} A ON A.assay_id = AB.assay_id
               JOIN {acquisition} AQ ON AQ.assay_id = A.assay_id
               JOIN {quantification} Q ON Q.acquisition_id = AQ.acquisition_id
               JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
-             WHERE AN.analysis_id=:analysis_id';
+              JOIN {organism} O ON O.organism_id = B.taxon_id
+              LEFT JOIN {contact} C ON B.biosourceprovider_id = C.contact_id
+              WHERE AN.analysis_id=:analysis_id';
 
-    $biomaterial_ids = chado_query($sql, [":analysis_id" => $analysis_id]);
-
-    if ($biomaterial_ids->rowCount() > 0) {
-      $ids = [];
-      foreach ($biomaterial_ids as $biomaterial_id) {
-        $ids[] = $biomaterial_id->biomaterial_id;
-      }
-      $variables['biomaterial_ids'] = $ids;
-    }
-    else {
-      $variables['biomaterial_ids'] = [];
-    }
+    $variables['biomaterials'] = chado_query($sql, [":analysis_id" => $analysis_id])->fetchAll();
 
     $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
 
@@ -182,6 +175,7 @@ class sep__biological_sample extends ChadoField {
   protected function load_for_organism(&$entity) {
     $field = get_class();
     $variables = $entity->{$field}['und'][0];
+    $variables['show_organism'] = false;
     $organism_id = $variables['value'];
 
     $sql = 'SELECT B.biomaterial_id FROM {biomaterial} B

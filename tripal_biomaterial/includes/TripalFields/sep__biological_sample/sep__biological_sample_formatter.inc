@@ -76,50 +76,64 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
    * @param $items
    * @param $display
    *
-   * @return
+   * @return void
    *    An element array compatible with that returned by the
    *    hook_field_formatter_view() function.
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $field = 'sep__biological_sample';
     $variables = $entity->{$field}['und'][0];
-    if (!empty($variables['biomaterial_ids'])) {
+    if (!empty($variables['biomaterials'])) {
       $elements = 1;
       $num_per_page = 10;
 
-      $biomaterials = [];
-      foreach ($variables['biomaterial_ids'] as $biomaterial_id) {
-        $values = ['biomaterial_id' => $biomaterial_id];
-        $biomaterials[] = chado_generate_var('biomaterial', $values);
-      }
+      $biomaterials = $variables['biomaterials'];
 
       $output = '<div class="tripal_organism-data-block-desc tripal-data-block-desc">The following browser provides a list of biomaterials associated with this organism.</div>';
 
       $headers = ['Biomaterial Name', 'Biomaterial Provider'];
+
+      if ($variables['show_organism']) {
+        $headers[] = 'Organism';
+      }
+
       $rows = [];
 
       foreach ($biomaterials as $biomaterial) {
-        $bname = $biomaterial->name;
-        $bcontact = '';
+        $b_name = $biomaterial->name;
+        $b_contact = '';
         $id = chado_get_record_entity_by_table('biomaterial', $biomaterial->biomaterial_id);
 
         if ($id) {
-          $bname = l($bname, 'bio_data/' . $id);
+          $b_name = l($b_name, 'bio_data/' . $id);
         }
 
-        if ($biomaterial->biosourceprovider_id) {
-          $id = chado_get_record_entity_by_table('contact', $biomaterial->biosourceprovider_id);
+        if ($biomaterial->contact_id) {
+          $id = chado_get_record_entity_by_table('contact', $biomaterial->contact_id);
+          $b_contact = $biomaterial->contact_name;
+
           if ($id) {
-            $bcontact = l($biomaterial->biosourceprovider_id->name, 'bio_data/' . $id, ['attributes' => ['target' => '_blank']]);
-          }
-          else {
-            $bcontact = $biomaterial->biosourceprovider_id->name;
+            $b_contact = l($biomaterial->contact_name, 'bio_data/' . $id, ['attributes' => ['target' => '_blank']]);
           }
         }
-        $rows[] = [
-          $bname,
-          $bcontact ?: 'Unknown',
+
+        $row = [
+          $b_name,
+          $b_contact ?: 'Unknown',
         ];
+
+        if ($variables['show_organism']) {
+          $id = chado_get_record_entity_by_table('organism', $biomaterial->organism_id);
+          $organism_name = "{$biomaterial->common_name} ({$biomaterial->genus} {$biomaterial->species})";
+
+          if ($id) {
+            $organism_name = l($organism_name, "bio_data/{$id}", ['attributes' => ['target' => '_blank']]);
+          }
+
+          $row[] = $organism_name;
+        }
+
+        $rows[] = $row;
       }
 
       $current_page = pager_default_initialize(count($rows), $num_per_page, 1);
