@@ -125,6 +125,61 @@ class sep__biological_sample extends ChadoField {
     // need to implement this function. However, if you need to add any
     // additional data to be used in the display, you should add it here.
     parent::load($entity);
+
+    if ($entity->chado_table == 'analysis') {
+      return $this->load_for_analysis($entity);
+    }
+
+    return $this->load_for_organism($entity);
+  }
+
+  /**
+   * Load data for analysis pages.
+   *
+   * @param $entity
+   *
+   * @return mixed
+   */
+  protected function load_for_analysis(&$entity) {
+    $field = get_class();
+    $entity->{$field}['und'][0]['value'] = $entity->chado_record_id;
+    $variables = $entity->{$field}['und'][0];
+    $analysis_id = $variables['value'];
+
+    $sql = 'SELECT B.biomaterial_id FROM {biomaterial} B
+              JOIN {assay_biomaterial} AB ON B.biomaterial_id = AB.biomaterial_id
+              JOIN {assay} A ON A.assay_id = AB.assay_id
+              JOIN {acquisition} AQ ON AQ.assay_id = A.assay_id
+              JOIN {quantification} Q ON Q.acquisition_id = AQ.acquisition_id
+              JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
+             WHERE AN.analysis_id=:analysis_id';
+
+    $biomaterial_ids = chado_query($sql, [":analysis_id" => $analysis_id]);
+
+    if ($biomaterial_ids->rowCount() > 0) {
+      $ids = [];
+      foreach ($biomaterial_ids as $biomaterial_id) {
+        $ids[] = $biomaterial_id->biomaterial_id;
+      }
+      $variables['biomaterial_ids'] = $ids;
+    }
+    else {
+      $variables['biomaterial_ids'] = [];
+    }
+
+    $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
+
+    return $entity;
+  }
+
+  /**
+   * Load data for organism pages.
+   *
+   * @param $entity
+   *
+   * @return mixed
+   */
+  protected function load_for_organism(&$entity) {
     $field = get_class();
     $variables = $entity->{$field}['und'][0];
     $organism_id = $variables['value'];
