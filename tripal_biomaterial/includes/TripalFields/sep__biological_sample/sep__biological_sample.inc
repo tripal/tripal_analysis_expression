@@ -178,22 +178,13 @@ class sep__biological_sample extends ChadoField {
     $variables['show_organism'] = false;
     $organism_id = $variables['value'];
 
-    $sql = 'SELECT B.biomaterial_id FROM {biomaterial} B
-            INNER JOIN {organism} O ON B.taxon_id = O.organism_id
+    $sql = 'SELECT B.biomaterial_id, B.name, O.organism_id, O.genus, O.species, O.common_name, C.contact_id, C.name AS contact_name
+            FROM {biomaterial} B
+            JOIN {organism} O ON B.taxon_id = O.organism_id
+            LEFT JOIN {contact} C ON B.biosourceprovider_id = C.contact_id
             WHERE O.organism_id = :organism_id';
 
-    $biomaterial_ids = chado_query($sql, [":organism_id" => $organism_id]);
-
-    if ($biomaterial_ids->rowCount() > 0) {
-      $ids = [];
-      foreach ($biomaterial_ids as $biomaterial_id) {
-        $ids[] = $biomaterial_id->biomaterial_id;
-      }
-      $variables['biomaterial_ids'] = $ids;
-    }
-    else {
-      $variables['biomaterial_ids'] = [];
-    }
+    $variables['biomaterials'] = chado_query($sql, [":organism_id" => $organism_id])->fetchAll();
 
     $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
 
