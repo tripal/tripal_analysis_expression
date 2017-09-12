@@ -1,6 +1,6 @@
 <?php
 
-class tripal_biomaterial_loader_v3 extends TripalImporter{
+class tripal_biomaterial_loader_v3 extends TripalImporter {
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -162,9 +162,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
-
-    dpm($form_state);
-
     // Make sure an organism is selected.
     $organism_id = $form_state['values']['organism_id'];
     $file_type = $form_state['values']['file_type'];
@@ -173,7 +170,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     }
     // Make sure the flat file type is selected when loading a flat file.
     $flat_file_type = $form_state['values']['flat_file_type'];
-
 
     if ($file_type == 'flat' and !$flat_file_type) {
       form_set_error('flat_file_type', 'Please select a flat file format.');
@@ -198,7 +194,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     else {
       $this->load_biosample_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
     }
-
   }
 
   /**
@@ -206,7 +201,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * @param $organism_id
    * Loads biosample from XML file.
    */
-  private function load_biosample_xml($file_path, $organism_id, $analysis_id) {
+  protected function load_biosample_xml($file_path, $organism_id, $analysis_id) {
 
     // Check file path to see if file is accessible.nsaction = db_transaction();
     try {
@@ -261,7 +256,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       // Load biomaterials.
       for ($i = 0; $i < $num_biosamples; $i++) {
         print "Loading BioSample " . ($i + 1) . " of " . $num_biosamples . "\n";
-        add_xml_data($organism_id, $xml->BioSample[$i], $analysis_id);
+        $this->add_xml_data($organism_id, $xml->BioSample[$i], $analysis_id);
       }
     } catch (Exception $e) {
       print "\n";
@@ -277,7 +272,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * @param $organism_id
    * @param $biosample
    */
-  function add_xml_data($organism_id, $biosample, $analysis_id) {
+  protected function add_xml_data($organism_id, $biosample, $analysis_id) {
 
     // Extract data from the xml string.
     $sample_accession = $biosample->Ids->Id[0];
@@ -329,7 +324,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     $biomaterial_id = $this->create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $biomaterial_description);
 
     // Add to biomaterialprop table.
-    add_xml_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id);
+    $this->add_xml_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id);
 
     // Add to biomaterial_dbxref table.
     if ($sra_accession) {
@@ -344,7 +339,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * @param $attributes
    * @param $biomaterial_id
    */
-  function add_xml_biomaterial_properties($attributes, $biomaterial_id) {
+  protected function add_xml_biomaterial_properties($attributes, $biomaterial_id) {
 
     $record = [
       'table' => 'biomaterial',
@@ -395,16 +390,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * @param $file_type
    * @param $flat_file_type
    */
-
-
-  private function load_biosample_flat(
-    $file_path,
-    $organism_id,
-    $analysis_id,
-    $flat_file_type
-  ) {
-
-
+  protected function load_biosample_flat($file_path, $organism_id, $analysis_id, $flat_file_type) {
     try {
       if (!is_readable($file_path)) {
         print "ERROR: File is not readable or not present.";
@@ -415,13 +401,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $cur_biosample = 0;
 
       if ($flat_file_type == "tsv") {
-        $fgetcsv_values = [$fp, 0, "\t"];
         $separator = "\t";
         $enclosure = "\0";
-      }
-
-      if ($flat_file_type == "csv") {
-        $fgetcsv_values = [$fp, 0, ',', '"'];
+      } else {
+        // Auto assume file is using csv format
         $separator = ",";
         $enclosure = '"';
       }
@@ -446,6 +429,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       while ($line = fgets($fp)) {
         $num_biosamples++;
       }
+
       fclose($fp);
 
       //print error message and exit if there's no biosample, or that there's no "sample_name" column in flat file
@@ -478,8 +462,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         print "Please make sure there is only one instance of each " . "header in the biomaterial file\n";
         exit;
       }
-
-      $hit = 0;
 
       $biomaterial_names = [];
 
@@ -522,20 +504,12 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         print "Loading BioSample " . ($cur_biosample + 1) . " of " . $num_biosamples . "\n";
 
         $cur_biosample++;
-
         $unique_name = '';
         $description = '';
-        //    $organism_id = '';
         $biosourceprovider_id = '';
         $dbxref_id = '';
 
-        /*if (in_array($line[$biomaterial_headers['sample_name']],$biomaterial_names)) {
-          print "ERROR: Two BioSamples have the same sample_name. BioSamples must have different sample_names";
-          exit;
-        }
-        else { */
         $biomaterial_names[] = $line[$biomaterial_headers['sample_name']];
-        //}
 
         // Gather the fields to insert into the biomaterial table.
         foreach ($biomaterial_headers as $name => $index) {
@@ -557,23 +531,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
             ];
             $dbxref = chado_insert_record('dbxref', $values);
             $dbxref_id = $dbxref->dbxref_id;
-            //$value['primary_dbxref'] = $line[$index];
           }
         }
-
-        // Create an accession to the bioproject
-        //  $ncbi_bioproject_id = create_ncbi_db('bioproject', 'NCBI BioSample', '');
-
-        // Create entry in the dbxref table.
-        /*  $dbxref_bioproject= tripal_insert_dbxref(array(
-            'db_id' => $ncbi_bioproject_id,
-            'accession' => $line[$acc_header['bioproject_accession']],
-           // 'version' => $version,
-            'description' => '',
-            )
-          );
-          $dbxref_bioproject_id = $dbxref_bioproject->dbxref_id;
-         */
 
         // Create the biomaterial based on the values given.
         $biomaterial_id = $this->create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $description);
@@ -617,7 +576,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         // Insert into the biomaterialprop table.
         foreach ($prop_headers as $name => $index) {
 
-          ////
           // Insert into database. If the type is already in the database the function will not update.
           if (!tripal_insert_cvterm([
             'name' => $name,
@@ -630,8 +588,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
             print "ERROR: Could not insert biomaterial attribute name into the controlled vocabulary table.";
             exit;
           }
-
-          ////
 
           /*if (chado_select_record('biomaterialprop', array('biomaterialprop_id'), array('name' => $name))) {
             tripal_insert_cvterm(array(
@@ -808,5 +764,4 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
 
     return $biomaterial_id;
   }
-
 }

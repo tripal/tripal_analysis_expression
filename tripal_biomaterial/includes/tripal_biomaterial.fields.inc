@@ -36,7 +36,7 @@
  */
 function tripal_biomaterial_bundle_fields_info($entity_type, $bundle) {
   $fields = [];
-  if (isset($bundle->data_table) AND ($bundle->data_table == 'organism')) {
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'organism' || $bundle->data_table == 'analysis')) {
     // First add my term.
     tripal_insert_cvterm([
       'id' => 'sep:00195',
@@ -88,7 +88,7 @@ function tripal_biomaterial_bundle_fields_info($entity_type, $bundle) {
  */
 function tripal_biomaterial_bundle_instances_info($entity_type, $bundle) {
   $instances = [];
-  if (isset($bundle->data_table) AND ($bundle->data_table == 'organism')) {
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'organism' || $bundle->data_table == 'analysis')) {
     $field_name = 'sep__biological_sample';
     $instances[$field_name] = [
       'field_name' => $field_name,
@@ -100,7 +100,7 @@ function tripal_biomaterial_bundle_instances_info($entity_type, $bundle) {
       'settings' => [
         'auto_attach' => FALSE,
         'chado_table' => $bundle->data_table,
-        'chado_column' => 'organism_id',
+        'chado_column' => $bundle->data_table == 'organism' ? 'organism_id' : 'analysis_id',
         'base_table' => $bundle->data_table,
       ],
       'widget' => [
