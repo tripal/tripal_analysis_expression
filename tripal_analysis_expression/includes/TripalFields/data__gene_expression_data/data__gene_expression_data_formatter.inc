@@ -83,16 +83,20 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $field = 'data__gene_expression_data';
     $variables = $entity->{$field}['und'][0];
+    $content = '';
 
-    if (!$variables['has_exp'] and $variables['json_exp']) {
+    if (!$variables['has_exp'] && $variables['json_exp']) {
       $content = 'No biomaterial libraries express this feature.';
     }
-    else {
-      if ($variables['json_exp']) {
-        drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css/expression.css');
-        drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/expression.js');
+    elseif ($variables['json_exp']) {
+      drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css/expression.css');
+      drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/expression.js');
 
-        $content = '
+      if ($variables['analysis']) {
+        $content .= '<p>Visit analysis: ' . l($variables['analysis']->name, $variables['analysis']->url) . '</p>';
+      }
+
+      $content .= '
             <p>
               Hover the mouse over a column in the graph to view expression values.
             </p>
@@ -105,14 +109,14 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
             </p>
             ';
 
-        tripal_add_d3js();
-        $hide_biomaterial_labels = $variables['hide_biomaterial_labels'];
-        $json_exp = $variables['json_exp'];
-        $limit_label_length = $variables['limit_label_length'];
-        $expression_display = $variables['expression_display'];
-        $biomaterial_display_width = $variables['biomaterial_display_width'];
+      tripal_add_d3js();
+      $hide_biomaterial_labels = $variables['hide_biomaterial_labels'];
+      $json_exp = $variables['json_exp'];
+      $limit_label_length = $variables['limit_label_length'];
+      $expression_display = $variables['expression_display'];
+      $biomaterial_display_width = $variables['biomaterial_display_width'];
 
-        $content .= '<script type="text/javascript">
+      $content .= '<script type="text/javascript">
             var heatMapRaw=' . $json_exp . '
             var maxLength=' . $limit_label_length . '
             var showLabels=' . $hide_biomaterial_labels . '
@@ -132,10 +136,9 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
           </script>
           <figure></figure>
           <a href="#expression-top">back to top</a>';
-      }
-      else {
-        $content = 'No biomaterial libraries express this feature.';
-      }
+    }
+    else {
+      $content = 'No biomaterial libraries express this feature.';
     }
 
     $element[] = [
