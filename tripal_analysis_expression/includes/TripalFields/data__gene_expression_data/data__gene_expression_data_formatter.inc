@@ -188,7 +188,6 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
    * @return string
    *   A string that provides a very brief summary of the field settings
    *   to the user.
-   *
    */
   public function settingsSummary($view_mode) {
     return '';

@@ -1,6 +1,6 @@
 <?php
 
-class tripal_expression_data_loader extends TripalImporter{
+class tripal_expression_data_loader extends TripalImporter {
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -335,8 +335,6 @@ class tripal_expression_data_loader extends TripalImporter{
 
   public function formValidate($form, &$form_state) {
 
-    dpm($form_state['values']);
-
     $filetype = $form_state['values']['filetype'];
     $fileext = $form_state['values']['fileext'];
     $re_start = $form_state['values']['re_start'];
@@ -375,10 +373,8 @@ class tripal_expression_data_loader extends TripalImporter{
     $quantificationdate = $arguments['quantificationdate'];
 
     //missing
-    // $assaydate = $arguments['assaydate'];
-
-    // $contact_id = $arguments['contact_id'];
-
+    $assaydate = '';//$arguments['assaydate'];
+    $contact_id = '';//$arguments['contact_id'];
     //
     //$record = ['table' => 'analysis', 'id' => $node->analysis_id];
     //
@@ -474,20 +470,7 @@ class tripal_expression_data_loader extends TripalImporter{
    */
 
   function tripal_expression_loader(
-    $organism_id,
-    $analysis_id,
-    $contact_id,
-    $arraydesign_id,
-    $assaydate,
-    $acquisitiondate,
-    $quantificationdate,
-    $filepath,
-    $fileext,
-    $filetype,
-    $re_start,
-    $re_stop,
-    $feature_uniquenames,
-    $create_biosamples
+    $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples
   ) {
 
 
@@ -620,19 +603,7 @@ class tripal_expression_data_loader extends TripalImporter{
    */
 
   function tripal_expression_load_mat_file(
-    $filepath,
-    $fileext,
-    $arraydesign_id,
-    $organism_id,
-    $analysis_id,
-    $contact_id,
-    $assay_id,
-    $acquisition_id,
-    $quantification_id,
-    $re_start,
-    $re_stop,
-    $uniq_name,
-    $feature_uniquenames
+    $filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames
   ) {
 
     $data_ln = 0;
@@ -874,19 +845,7 @@ class tripal_expression_data_loader extends TripalImporter{
    */
 
   function tripal_expression_load_col_file(
-    $filepath,
-    $fileext,
-    $arraydesign_id,
-    $organism_id,
-    $analysis_id,
-    $contact_id,
-    $assay_id,
-    $acquisition_id,
-    $quantification_id,
-    $re_start,
-    $re_stop,
-    $uniq_name,
-    $feature_uniquenames
+    $filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames
   ) {
     $inter = 0;
     $data_ln = 0;
@@ -1031,5 +990,4 @@ class tripal_expression_data_loader extends TripalImporter{
     fclose($col_fp);
     return $features;
   }
-
 }
