@@ -92,11 +92,27 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
       drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css/expression.css');
       drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/expression.js');
 
-      if ($variables['analysis']) {
-        $content .= '<p>Visit analysis: ' . l($variables['analysis']->name, $variables['analysis']->url) . '</p>';
+      $num_of_analyses = count($variables['analyses']);
+      if ($num_of_analyses > 1) {
+        $content .= '<h3>Available Expression Analyses</h3>';
+        $rows = [];
+        foreach ($variables['analyses'] as $analysis) {
+          $rows[] = [l($analysis->name, $analysis->url)];
+        }
+
+        $content .= theme('table', [
+          'header' => [],
+          'rows' => $rows,
+        ]);
+      }
+      elseif ($num_of_analyses === 1) {
+        $content .= '<h3>Available Expression Analyses</h3>';
+        $analysis = current($variables['analyses']);
+        $content .= '<p>' . l($analysis->name, $analysis->url) . '</p>';
       }
 
       $content .= '
+            <h3>Expression Heat Map</h3>
             <p>
               Hover the mouse over a column in the graph to view expression values.
             </p>
