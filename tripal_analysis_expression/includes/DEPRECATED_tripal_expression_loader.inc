@@ -548,39 +548,4 @@ function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $
   return $features;
 }
 
-/**
- *
- * Implements a function that find the find the feature_id from a feature name.
- *
- * @param $feature
- *  The name of the feature to be found.
- *
- * @ingroup tripal_analysis_expression
- */
 
-function tripal_expression_find_feature_id($feature, $organism_id, $feature_uniquenames) {
-
-  if ($feature_uniquenames == 'uniq') {
-    $sql = "SELECT feature_id, organism_id FROM {feature} WHERE uniquename = :feature";
-  }
-  else {
-    $sql = "SELECT feature_id, organism_id FROM {feature} WHERE name = :feature";
-  }
-
-  $feature_object = chado_query($sql, [':feature' => $feature])->fetchObject();
-
-  if (!$feature_object) {
-    print "ERROR: The feature, " . $feature . ", found in the expression file " . "was not found in the Chado database. Please ensure that the " . "feature has been loaded into the database and that the feature name is " . "both unique and correct.\n\n";
-    exit;
-  }
-
-  if ($feature_object->organism_id != $organism_id) {
-    $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
-    $analysis_org = chado_query($sql, [":organism_id" => $organism_id])->fetchObject();
-    $feature_org = chado_query($sql, [":organism_id" => $feature_object->organism_id])->fetchObject();
-    print "ERROR: Mismatch between the organism selected in the expression analysis " . "and the organism of a feature from the expression file.\n" . "  Analysis organism: " . $analysis_org->genus . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n" . "  Feature organism: " . $feature_org->genus . " " . $feature_org->species . " (" . $feature_org->common_name . ")\n" . "  On feature: " . $feature . "\n" . "Please ensure that the organism selected for the expression " . "analysis and the organism for each feature in the expression " . "file are the same.\n";
-    exit;
-  }
-
-  return $feature_object->feature_id;
-}
