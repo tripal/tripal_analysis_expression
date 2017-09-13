@@ -96,35 +96,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     }
 
     //create an empty form value for the biomaterial fields we will check once a file is added.
-    $form["fields_to_check"] = [
-      '#type' => 'value',
-      '#value' => [],
-    ];
-
-    if ($form_state['values']['file_upload']) {
-      $fid = $form_state['values']['file_upload'];
-      $file = file_load($fid);
-      $file_path = base_path() . drupal_realpath($file->uri);
-      $file_type = $form_state['values']['file_type'];
-      $flat_file_type = $form_state['values']['flat_file_type'];
-      $organism_id = $form_state['values']['organism_id'];
-      $analysis_id = $form_state['values']['analysis_id'];
-
-      // Make sure the form rebuilds.
-      $form_state['rebuild'] = TRUE;
-
-      if ($file_type == 'xml') {
-        $attributes_list = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
-      }
-      if ($file_type == 'flat') {
-       test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
-      }
-      $form["fields_to_check"]['value'] = $attributes_list;
-    }
-
-    dpm($form_state);
-
-
 
     $form['description'] = [ //***
       '#markup' => t('Description for the biomaterial / biosample loader'),
@@ -192,10 +163,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       '#ajax' => [
         'callback' => 'cvterm_validator_callback',
         'wrapper' => 'cvterm_configuration_div',
-        'method' => 'replace',
-        'effect' => 'fade',
       ],
+      '#executes_submit_callback' => false,
+      '#submit' => array(''),
     ];
+
+    $fields_to_check = [];
+
 
     $form['cvterm_configuration'] = [
       '#type' => 'fieldset',
@@ -205,7 +179,30 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       '#suffix' => '</div>',
     ];
 
-    $fields = ["tissue", "age"];
+    $fid = isset($form_state['values']['file_upload']) ? $form_state['values']['file_upload'] : '';
+    if (!empty($fid)) {
+      $file = file_load($fid);
+      $file_path = base_path() . drupal_realpath($file->uri);
+      $file_type = $form_state['values']['file_type'];
+      $flat_file_type = $form_state['values']['flat_file_type'];
+      $organism_id = $form_state['values']['organism_id'];
+      $analysis_id = $form_state['values']['analysis_id'];
+
+      dpm($file_path);
+      // Make sure the form rebuilds.
+      // $form_state['rebuild'] = TRUE;
+
+      if ($file_type == 'xml') {
+        $attributes_list = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
+      }
+      if ($file_type == 'flat') {
+        test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
+      }
+      $fields_to_check =  $attributes_list;
+      dpm($fields_to_check);
+    }
+
+    $fields = $fields_to_check;
 
     foreach ($fields as $field) {
       $settings = [];
