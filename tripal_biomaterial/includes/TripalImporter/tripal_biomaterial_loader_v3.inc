@@ -95,6 +95,37 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $organisms[$org->organism_id] = $org->common_name;
     }
 
+    //create an empty form value for the biomaterial fields we will check once a file is added.
+    $form["fields_to_check"] = [
+      '#type' => 'value',
+      '#value' => [],
+    ];
+
+    if ($form_state['values']['file_upload']) {
+      $fid = $form_state['values']['file_upload'];
+      $file = file_load($fid);
+      $file_path = base_path() . drupal_realpath($file->uri);
+      $file_type = $form_state['values']['file_type'];
+      $flat_file_type = $form_state['values']['flat_file_type'];
+      $organism_id = $form_state['values']['organism_id'];
+      $analysis_id = $form_state['values']['analysis_id'];
+
+      // Make sure the form rebuilds.
+      $form_state['rebuild'] = TRUE;
+
+      if ($file_type == 'xml') {
+        $attributes_list = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
+      }
+      if ($file_type == 'flat') {
+       test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
+      }
+      $form["fields_to_check"]['value'] = $attributes_list;
+    }
+
+    dpm($form_state);
+
+
+
     $form['description'] = [ //***
       '#markup' => t('Description for the biomaterial / biosample loader'),
     ];
@@ -158,14 +189,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     $form['biomaterial_cvterm_validator'] = [
       '#type' => 'button',
       '#value' => t('Check Biomaterials'),
-      '#ajax' => array(
+      '#ajax' => [
         'callback' => 'cvterm_validator_callback',
         'wrapper' => 'cvterm_configuration_div',
         'method' => 'replace',
         'effect' => 'fade',
-      ),
+      ],
     ];
-
 
     $form['cvterm_configuration'] = [
       '#type' => 'fieldset',
@@ -186,7 +216,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
   where CVT.name =:field";
 
       $existing_field_terms = chado_query($sql, [":field" => $field])->fetchAll();
-      foreach($existing_field_terms as $field_term){
+      foreach ($existing_field_terms as $field_term) {
         $cv_array[] = $field_term->name;
       }
       // add default CV options
@@ -212,17 +242,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     return $form;
   }
 
-
-  function cvterm_validator_sample_file( $form, $form_state){
+  function cvterm_validator_sample_file($form, $form_state) {
     dpm("opening file happens here");
 
     //this doesnt work!  need this!
     $arguments = $this->arguments['run_args'];
     $file_path = $this->arguments['file']['file_path'];
     dpm($file_path);
-
   }
-
 
   /**
    * @see TripalImporter::formValidate()
@@ -858,30 +885,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
   }
 }
 
-function chado_analysis_expression_biomaterial_cvterm_validator_submit(
-  $form,
-  &$form_state
-) {
-  //$file_path = $form_state['file']['file_path'];
-  //need to access file path some how
-
-  $file_type = $form_state['values']['file_type'];
-  $flat_file_type = $form_state['values']['flat_file_type'];
-  $organism_id = $form_state['values']['organism_id'];
-  $analysis_id = $form_state['values']['analysis_id'];
-  $first_mes = 0;
-
-  // Make sure the form rebuilds.
-  $form_state['rebuild'] = TRUE;
-
-  if ($file_type == 'xml') {
-    test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
-  }
-  if ($file_type == 'flat') {
-    $this->text_biosample_cvterms_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
-  }
-}
-
 /**
  * @param $file_path
  * @param $organism_id
@@ -923,41 +926,43 @@ function test_biosample_cvterms_xml(
       $biomaterial_names[] = $xml->BioSample[$i]->Ids->Id[1];
     }
 
+    $attribute_list = [];
+
     // Test all biomaterials
     for ($i = 0; $i < $num_biosamples; $i++) {
-      test_xml_data($organism_id, $xml->BioSample[$i], $analysis_id);
+      $attribute_list = test_xml_data($organism_id, $xml->BioSample[$i], $analysis_id, $attribute_list);
     }
   } catch (Exception $e) {
     print "\n";
     watchdog_exception('T_expression_load', $e);
   }
-  return;
+  return $attribute_list;
 }
 
 /**
  * @param $organism_id
  * @param $biosample
  */
-function test_xml_data($organism_id, $biosample, $analysis_id) {
+function test_xml_data(
+  $organism_id,
+  $biosample,
+  $analysis_id,
+  $attribute_list
+) {
 
-  // Extract data from the xml string.
-  $sample_accession = $biosample->Ids->Id[0];
-  $unique_name = $biosample->Ids->Id[1];
-  $sra_accession = $biosample->Ids->Id[2];
-  $description = $biosample->Description->Title;
-  $organism = $biosample->Description->Organism->OrganismName;
-  $comment = $biosample->Description->Comment->Paragraph;
-  $ncbi_owner = $biosample->Owner->Name;
-  $biomaterial_provider = $biosample->Attributes->Attribute[1];
-  $biomaterial_description = $comment ? (string) $comment : (string) $description;
-  dpm($biosample->Attributes);
+  //get xml attributes
+  $attributes = $biosample->Attributes->Attribute;
+
+  // Iterate through each property
+  foreach ($attributes as $attr) {
+    // Get the cvterm name
+    $attr_name = (string) $attr->attributes()->attribute_name;
+    $attribute_list[$attr_name] = $attr_name;
+  }
+  return ($attribute_list);
 }
 
-
-
 function cvterm_validator_callback($form, $form_state) {
-  dpm("HEY!!! ajax callback!");
-  dpm($form_state);
-  dpm($form);
+
   return $form['cvterm_configuration'];
 }
