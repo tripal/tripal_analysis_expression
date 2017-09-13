@@ -158,18 +158,21 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     ];
 
     $form['biomaterial_cvterm_validator'] = [
-      '#type' => 'button',
+      '#type' => 'submit',
       '#value' => t('Check Biomaterials'),
       '#ajax' => [
         'callback' => 'cvterm_validator_callback',
         'wrapper' => 'cvterm_configuration_div',
       ],
-      '#executes_submit_callback' => false,
-      '#submit' => array(''),
+      '#executes_submit_callback' => FALSE,
+      '#submit' => [''],
+      '#class' =>'use-ajax-submit',
+      '#name' => 'biomat_checker',
     ];
 
-    $fields_to_check = [];
 
+
+    $fields_to_check = [];
 
     $form['cvterm_configuration'] = [
       '#type' => 'fieldset',
@@ -198,7 +201,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       if ($file_type == 'flat') {
         test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
       }
-      $fields_to_check =  $attributes_list;
+      $fields_to_check = $attributes_list;
       dpm($fields_to_check);
     }
 
@@ -239,33 +242,22 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     return $form;
   }
 
-  function cvterm_validator_sample_file($form, $form_state) {
-    dpm("opening file happens here");
-
-    //this doesnt work!  need this!
-    $arguments = $this->arguments['run_args'];
-    $file_path = $this->arguments['file']['file_path'];
-    dpm($file_path);
-  }
-
   /**
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
-
-    dpm("validating");
     // Make sure an organism is selected.
-    $organism_id = $form_state['values']['organism_id'];
-    $file_type = $form_state['values']['file_type'];
-    if (!$organism_id) {
-      form_set_error('organism_id', 'Please select the organism from which the biomaterials were collected.');
-    }
-    // Make sure the flat file type is selected when loading a flat file.
-    $flat_file_type = $form_state['values']['flat_file_type'];
-
-    if ($file_type == 'flat' and !$flat_file_type) {
-      form_set_error('flat_file_type', 'Please select a flat file format.');
-    }
+    //$organism_id = $form_state['values']['organism_id'];
+    //$file_type = $form_state['values']['file_type'];
+    //if (!$organism_id) {
+    //  form_set_error('organism_id', 'Please select the organism from which the biomaterials were collected.');
+    //}
+    //// Make sure the flat file type is selected when loading a flat file.
+    //$flat_file_type = $form_state['values']['flat_file_type'];
+    //
+    //if ($file_type == 'flat' and !$flat_file_type) {
+    //  form_set_error('flat_file_type', 'Please select a flat file format.');
+    //}
   }
 
   /**
