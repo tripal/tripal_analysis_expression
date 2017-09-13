@@ -1,6 +1,6 @@
 <?php
 
-class tripal_biomaterial_loader_v3 extends TripalImporter{
+class tripal_biomaterial_loader_v3 extends TripalImporter {
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -158,19 +158,16 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     ];
 
     $form['biomaterial_cvterm_validator'] = [
-      '#type' => 'submit',
+      '#type' => 'button',
       '#value' => t('Check Biomaterials'),
       '#ajax' => [
         'callback' => 'cvterm_validator_callback',
         'wrapper' => 'cvterm_configuration_div',
       ],
-      '#executes_submit_callback' => FALSE,
-      '#submit' => [''],
-      '#class' =>'use-ajax-submit',
-      '#name' => 'biomat_checker',
+      '#submit' => ['cvterm_validator_callback_submit'],
+      //'#executes_submit_callback' => FALSE,
+      //'#limit_validation_errors' => [],
     ];
-
-
 
     $fields_to_check = [];
 
@@ -191,18 +188,16 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $organism_id = $form_state['values']['organism_id'];
       $analysis_id = $form_state['values']['analysis_id'];
 
-      dpm($file_path);
       // Make sure the form rebuilds.
       // $form_state['rebuild'] = TRUE;
-
+      $attributes_list = [];
       if ($file_type == 'xml') {
         $attributes_list = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
       }
       if ($file_type == 'flat') {
-        test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
+        //test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
       }
       $fields_to_check = $attributes_list;
-      dpm($fields_to_check);
     }
 
     $fields = $fields_to_check;
@@ -212,8 +207,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $cv_array = [];
       //Get terms
       $sql = "SELECT CV.name FROM {cvterm} AS CVT
-  INNER JOIN {CV} AS CV ON CVT.cv_id = CV.cv_id
-  where CVT.name =:field";
+              INNER JOIN {CV} AS CV ON CVT.cv_id = CV.cv_id
+              WHERE CVT.name =:field";
 
       $existing_field_terms = chado_query($sql, [":field" => $field])->fetchAll();
       foreach ($existing_field_terms as $field_term) {
@@ -286,9 +281,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * Loads biosample from XML file.
    */
   protected function load_biosample_xml(
-    $file_path,
-    $organism_id,
-    $analysis_id
+    $file_path, $organism_id, $analysis_id
   ) {
 
     // Check file path to see if file is accessible.nsaction = db_transaction();
@@ -428,8 +421,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * @param $biomaterial_id
    */
   protected function add_xml_biomaterial_properties(
-    $attributes,
-    $biomaterial_id
+    $attributes, $biomaterial_id
   ) {
 
     $record = [
@@ -482,10 +474,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * @param $flat_file_type
    */
   protected function load_biosample_flat(
-    $file_path,
-    $organism_id,
-    $analysis_id,
-    $flat_file_type
+    $file_path, $organism_id, $analysis_id, $flat_file_type
   ) {
     try {
       if (!is_readable($file_path)) {
@@ -796,12 +785,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * @return mixed
    */
   private function create_biomaterial(
-    $biomaterial,
-    $analysis_id,
-    $organism_id,
-    $biosourceprovider_id,
-    $dbxref_id,
-    $biomaterial_description
+    $biomaterial, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description
   ) {
     $biomaterial_result = chado_query('select biomaterial_id, taxon_id, description from {biomaterial} where name = :name limit 1', [':name' => $biomaterial])->fetchObject();
 
@@ -879,9 +863,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
  * @param $organism_id
  */
 function test_biosample_cvterms_xml(
-  $file_path,
-  $organism_id,
-  $analysis_id
+  $file_path, $organism_id, $analysis_id
 ) {
 
   try {
@@ -933,10 +915,7 @@ function test_biosample_cvterms_xml(
  * @param $biosample
  */
 function test_xml_data(
-  $organism_id,
-  $biosample,
-  $analysis_id,
-  $attribute_list
+  $organism_id, $biosample, $analysis_id, $attribute_list
 ) {
 
   //get xml attributes
@@ -951,7 +930,6 @@ function test_xml_data(
   return ($attribute_list);
 }
 
-function cvterm_validator_callback($form, $form_state) {
-
-  return $form['cvterm_configuration'];
+function cvterm_validator_callback(&$form, &$form_state) {
+  return $form['class_elements']['cvterm_configuration'];
 }
