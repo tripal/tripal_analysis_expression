@@ -20,14 +20,14 @@
  *
  * @return
  * If the permission for the specified operation is not set then return FALSE.
- *   If the permissions is set then return NULL as this allwos other modules to
+ *   If the permissions is set then return NULL as this allows other modules to
  *   disable access. The only exception is when the $op == 'create'. We will
  *   always return TRUE if the permission is set.
  *
  * @ingroup tripal_protocol
  *
  */
-function chado_protocol_node_access($node, $op, $account) {
+function tripal_protocol_node_access($node, $op, $account) {
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;
@@ -60,6 +60,63 @@ function chado_protocol_node_access($node, $op, $account) {
 }
 
 /**
+ * Implements hook_node_info().
+ *
+ *  Provides information to drupal about the node types that we're creating
+ *  in this module. This module creates four content types: Analysis:
+ * Expression, arraydesign, biomaterial, and protocol.
+ *
+ * @ingroup tripal_analysis_expression
+ */
+function tripal_protocol_node_info() {
+  $nodes = [];
+  $nodes['chado_protocol'] = [
+    'name' => t('Protocol'),
+    'base' => 'chado_protocol',
+    'description' => t('A protocol.'),
+    'has_title' => TRUE,
+    'title_label' => t('Protocol'),
+    'locked' => TRUE,
+    'chado_node_api' => [
+      'base_table' => 'protocol',
+      'hook_prefix' => 'chado_protocol',
+      'record_type_title' => [
+        'singular' => t('Protocol'),
+        'plural' => t('Protocols'),
+      ],
+      'sync_filters' => [
+        'type_id' => FALSE,
+        'organism_id' => FALSE,
+        'checkboxes' => ['name'],
+      ],
+    ],
+  ];
+  $nodes['chado_arraydesign'] = [
+    'name' => t('Array design'),
+    'base' => 'chado_arraydesign',
+    'description' => t('Array design'),
+    'has_title' => TRUE,
+    'title_label' => t('Array Design'),
+    'locked' => TRUE,
+    'chado_node_api' => [
+      'base_table' => 'arraydesign',
+      'hook_prefix' => 'chado_array_design',
+      'record_type_title' => [
+        'singular' => t('Array design'),
+        'plural' => t('Array designs'),
+      ],
+      'sync_filters' => [
+        'type_id' => FALSE,
+        'organism_id' => FALSE,
+        'checkboxes' => ['name'],
+      ],
+    ],
+  ];
+
+  return $nodes;
+}
+
+/**
  * Implements hook_form()
  *
  * When editing or create a new node of type 'chado_protocol' we need
@@ -67,10 +124,10 @@ function chado_protocol_node_access($node, $op, $account) {
  *
  * @ingroup tripal_protocol
  */
-function chado_protocol_form($node, $form_state) {
+function chado_protocol_form($node, &$form_state) {
   $form = [];
 
-  // Not sure what this is for. Is this line necessary? 
+  // Not sure what this is for. Is this line necessary?
   $form['#attribute']['enctype'] = 'multipart/form-data';
 
   $protocol_name = '';
@@ -179,7 +236,7 @@ function chado_protocol_form($node, $form_state) {
   // Get the cv_id of protocol_type. This is necessary to create the 
   // correct link in the platform form description so the user can create a new 
   // protocol_type cv_term.  
-  $cv_id = tripal_cv_get_cv(['name' => 'protocol_type'])->cv_id;
+  $cv_id = tripal_get_cv(['name' => 'protocol_type'])->cv_id;
 
   $lt_message = tripal_set_message(t('If the protocol type does not appear in the this list, ') . l(t('add a new protocol type'), 'admin/tripal/chado/tripal_cv/cv/' . $cv_id . '/cvterm/add') . t(' to the protocol_type controlled vocabulary. A protocol type is required'), TRIPAL_INFO, ['return_html' => TRUE]);
 
