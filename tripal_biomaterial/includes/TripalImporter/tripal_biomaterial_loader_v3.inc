@@ -166,6 +166,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       ),
     ];
 
+
     $form['cvterm_configuration'] = [
       '#type' => 'fieldset',
       '#title' => t('CVterm Field Configuration'),
@@ -212,10 +213,23 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
   }
 
 
+  function cvterm_validator_sample_file( $form, $form_state){
+    dpm("opening file happens here");
+
+    //this doesnt work!  need this!
+    $arguments = $this->arguments['run_args'];
+    $file_path = $this->arguments['file']['file_path'];
+    dpm($file_path);
+
+  }
+
+
   /**
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
+
+    dpm("validating");
     // Make sure an organism is selected.
     $organism_id = $form_state['values']['organism_id'];
     $file_type = $form_state['values']['file_type'];
@@ -942,7 +956,8 @@ function test_xml_data($organism_id, $biosample, $analysis_id) {
 
 
 function cvterm_validator_callback($form, $form_state) {
-  dpm("HEY!!!");
+  dpm("HEY!!! ajax callback!");
+  dpm($form_state);
+  dpm($form);
   return $form['cvterm_configuration'];
-
 }
