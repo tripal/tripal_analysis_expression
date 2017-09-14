@@ -156,7 +156,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         $attributes_list = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
       }
       else {
-        test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id);
+        $attributes_list = test_biosample_cvterms_flat($file_path);
       }
       $fields = $attributes_list;
     }
@@ -972,9 +972,8 @@ function test_xml_data(
  *
  */
 function test_biosample_cvterms_flat(
-  $file_path,
-  $organism_id,
-  $analysis_id
+  $file_path
+
 ) {
   $attribute_list = [];
 
@@ -1047,37 +1046,23 @@ function test_biosample_cvterms_flat(
   for ($i = 0; $i < count($headers); $i++) {
     $header = trim(str_replace("*", "", $headers[$i]));
     if ($header == 'sample_name') {
-      $biomaterial_headers['sample_name'] = $i;
     }
     if ($header == 'organism') {
-      $biomaterial_headers['organism'] = $i;
     }
     if ($header == 'description') {
-      $biomaterial_headers['description'] = $i;
     }
     if ($header == 'biomaterial_provider') {
-      $biomaterial_headers['biomaterial_provider'] = $i;
     }
     if ($header == 'biomaterial_accession') {
-      $acc_headers['biomaterial_accession'] = $i;
     }
     if ($header == 'sra_accession') {
-      $acc_headers['sra_accession'] = $i;
     }
     if ($header == 'bioproject_accession') {
-      $acc_headers['bioproject_accession'] = $i;
     }
     else {
-      $prop_headers[$headers[$i]] = $i;
+      $attribute_list[] = $header;
     }
   }
-
-  $biomaterial_names[] = $line[$biomaterial_headers['sample_name']];
-
-  foreach ($prop_headers as $name => $index) {
-    $attribute_list[] = $name;
-  }
-
   return ($attribute_list);
 }
 
