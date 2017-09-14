@@ -193,8 +193,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $link = variable_get('website_base_url') . "admin/tripal/loaders/chado_cv/cvterm/add.";
       $description = t('This section will allow you to check the CVterms associated with your biomaterial.  Ideally, each property should get the term for type and value from a Controlled Vocabulary (CV).  Alternatively you can create ad hoc terms in the biomaterialprop CV.  If the CVterm does not exist in a suitable CV, you can insert terms <a href = "' . $link . '"> using the Tripal CVterm loader</a>');
 
-      // Make sure the form rebuilds.
-      // $form_state['rebuild'] = TRUE;
       $attributes_list = [];
       if ($file_type == 'xml') {
         $attributes_list = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
@@ -273,8 +271,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
-    $field_info = $form_state['values']['cvterm_configuration'];
-    dpm($field_info);
+
+
   }
 
   /**
@@ -399,7 +397,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     $unique_name = $biosample->Ids->Id[1];
     $sra_accession = $biosample->Ids->Id[2];
     $description = $biosample->Description->Title;
-    $organism = $biosample->Description->Organism->OrganismName;
+    $organism = $biosample->Description->Organism->OrganismName;// Right now we use the organism_id on the form instead of the organism value from the XML here.  If the user was uploading an xml file with mixed organisms, this would be problematic.
+
     $comment = $biosample->Description->Comment->Paragraph;
     $ncbi_owner = $biosample->Owner->Name;
 
