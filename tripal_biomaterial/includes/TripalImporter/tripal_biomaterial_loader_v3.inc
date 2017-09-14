@@ -173,19 +173,18 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
 
     $description = t('After submitting uploading your file(s), you can configure individual cvterms for your biomaterial properties here.');
 
-
-  //TODO:  should the importer class provide a "get files" method?
-    if (isset($form_state['values']['file_local'])) {
-      $file_path = trim($form_state['values']['file_local']);
-    }
-    if (isset($form_state['values']['file_upload'])) {
-      $fid = trim($form_state['values']['file_upload']);
-      if (!empty($fid)) {
-        $file = file_load($fid);
-        $file_path = base_path() . drupal_realpath($file->uri);
+    //TODO:  should the importer class provide a "get files" method?
+    if ((isset($form_state['values']['file_local'])) || isset($form_state['values']['file_upload'])) {
+      if (isset($form_state['values']['file_local'])) {
+        $file_path = trim($form_state['values']['file_local']);
       }
-    }
-
+      if (isset($form_state['values']['file_upload'])) {
+        $fid = trim($form_state['values']['file_upload']);
+        if (!empty($fid)) {
+          $file = file_load($fid);
+          $file_path = base_path() . drupal_realpath($file->uri);
+        }
+      }
 
       $file_type = $form_state['values']['file_type'];
       $flat_file_type = $form_state['values']['flat_file_type'];
@@ -201,10 +200,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         $attributes_list = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
       }
       if ($file_type == 'flat') {
-        //test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
+        test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
       }
       $fields = $attributes_list;
-
+    }
 
     $form['cvterm_configuration'] = [
       '#type' => 'fieldset',
@@ -275,9 +274,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    */
   public function formValidate($form, &$form_state) {
     $field_info = $form_state['values']['cvterm_configuration'];
-dpm($field_info);
-
-
+    dpm($field_info);
   }
 
   /**
