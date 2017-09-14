@@ -1,7 +1,10 @@
 (function ($) {
   Drupal.behaviors.tripal_analysis_expression_example = {
     attach: function (context, settings) {
-      var example = settings.example;
+      var example = settings.visual_expression_example;
+      if(!example) {
+        return;
+      }
       //'Fraxinus_pennsylvanica_120313_comp59663_c0_seq1,
       // Fraxinus_pennsylvanica_120313_comp59663_c0_seq2,
       // Fraxinus_pennsylvanica_120313_comp56723_c0_seq1,

@@ -1,6 +1,12 @@
 <?php
 
 function tripal_protocol_preprocess_tripal_protocol_base(&$variables) {
+  if (!isset($variables['node'])) {
+    return;
+  }
+  if (!isset($variables['node']->analysis)) {
+    return;
+  }
 
   $analysis = $variables['node']->analysis;
   $analysis = chado_expand_var($analysis, 'table', 'analysisprop', ['return_array' => 1]);
@@ -11,10 +17,10 @@ function tripal_protocol_preprocess_tripal_protocol_base(&$variables) {
       switch ($property->type_id->name) {
         case 'analysis_expression_organism_id':
           $variables['organism'] = chado_select_record('organism', [
-              'genus',
-              'species',
-              'common_name',
-            ], ['organism_id' => $property->value]);
+            'genus',
+            'species',
+            'common_name',
+          ], ['organism_id' => $property->value]);
           $variables['organism']['nid'] = chado_get_nid_from_id('organism', $property->value, 'chado_organism');
           break;
       }
@@ -23,7 +29,12 @@ function tripal_protocol_preprocess_tripal_protocol_base(&$variables) {
 }
 
 function tripal_protocol_preprocess_tripal_analysis_biomaterial(&$variables) {
-
+  if (!isset($variables['node'])) {
+    return;
+  }
+  if (!isset($variables['node']->analysis)) {
+    return;
+  }
   $analysis = $variables['node']->analysis;
   $analysis = chado_expand_var($analysis, 'table', 'analysisprop', ['return_array' => 1]);
   $analysis_id = $analysis->analysis_id;
@@ -122,10 +133,10 @@ function tripal_protocol_preprocess_tripal_protocol_protocols(&$variables) {
       //case 'analysis_expression_organism_id':
       if ($property->type_id->name == 'analysis_expression_organism_id') {
         $variables['organism'] = chado_select_record('organism', [
-            'genus',
-            'species',
-            'common_name',
-          ], ['organism_id' => $property->value]);
+          'genus',
+          'species',
+          'common_name',
+        ], ['organism_id' => $property->value]);
         $variables['organism']['nid'] = chado_get_nid_from_id('organism', $property->value, 'chado_organism');
       } //break;
 

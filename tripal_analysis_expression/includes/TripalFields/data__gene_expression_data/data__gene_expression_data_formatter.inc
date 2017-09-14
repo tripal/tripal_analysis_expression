@@ -143,15 +143,14 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
                 var $ = jQuery;
                 expNormal();
                 $(document).on("tripal_ds_pane_expanded", function(event) {
-                    if($(event.id).text().indexOf("Hover the mouse over a column in the graph to view expression values") > -1) {
+                    if($(event.id).text().indexOf("Hover the mouse") > -1) {
                       expNormal();
                     }
                 });
               }
             };
           </script>
-          <figure></figure>
-          <a href="#expression-top">back to top</a>';
+          <figure></figure>';
     }
     else {
       $content = 'No biomaterial libraries express this feature.';
