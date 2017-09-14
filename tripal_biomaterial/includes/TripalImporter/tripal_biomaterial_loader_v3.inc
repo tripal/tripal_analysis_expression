@@ -486,7 +486,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
 
       // Insert into database.  Only insert into db if an existing CVTerm wasn't chosen
       $cv_name = 'biomaterial_property';
-      if (key_exists($insert_fields[$attr_name])) {
+      if (isset($insert_fields[$attr_name])) {
         $cv_name = $insert_fields[$attr_name]["cv"];
       }
       else {
