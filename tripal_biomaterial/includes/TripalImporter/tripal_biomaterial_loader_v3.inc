@@ -173,10 +173,20 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
 
     $description = t('After submitting uploading your file(s), you can configure individual cvterms for your biomaterial properties here.');
 
-    $fid = isset($form_state['values']['file_upload']) ? $form_state['values']['file_upload'] : '';
-    if (!empty($fid)) {
-      $file = file_load($fid);
-      $file_path = base_path() . drupal_realpath($file->uri);
+
+// TO DO: PUT THIS INCLASS METHOD INSTEAD
+    if (isset($form_state['values']['file_local'])) {
+      $file_path = trim($form_state['values']['file_local']);
+    }
+    if (isset($form_state['values']['file_upload'])) {
+      $fid = trim($form_state['values']['file_upload']);
+      if (!empty($fid)) {
+        $file = file_load($fid);
+        $file_path = base_path() . drupal_realpath($file->uri);
+      }
+    }
+
+
       $file_type = $form_state['values']['file_type'];
       $flat_file_type = $form_state['values']['flat_file_type'];
       $organism_id = $form_state['values']['organism_id'];
