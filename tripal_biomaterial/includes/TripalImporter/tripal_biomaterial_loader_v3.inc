@@ -204,7 +204,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         //test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
       }
       $fields = $attributes_list;
-    }
+
 
     $form['cvterm_configuration'] = [
       '#type' => 'fieldset',
