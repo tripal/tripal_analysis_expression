@@ -108,30 +108,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       '#description' => t('The organism from which the biosamples were collected.'),
       '#options' => $organisms,
     ];
-
-    $form['file_type'] = [
-      '#title' => t('File type'),
-      '#type' => 'radios',
-      '#required' => TRUE,
-      '#options' => [
-        'xml' => t('NCBI BioSample xml file'),
-        'flat' => t('Flat file (CSV, TSV)'),
-      ],
-    ];
-
-    // Flat file will require a regexp
-
-    $form['flat_file'] = [
-      '#type' => 'fieldset',
-      '#title' => t('NCBI biosample flat file'),
-      '#states' => [
-        'visible' => [
-          ':input[name="file_type"]' => ['value' => 'flat'],
-        ],
-      ],
-    ];
-
-    $form['flat_file']['regex_description'] = [
+    
+    $form['regex_description'] = [
       '#markup' => t('The flat file loader expects a file where the first line is the title of each column. 
     The only field that is required to create a biomaterial is the name of the biomaterial (column: sample_name). 
     It is recommended that a description (column: description), organism (column: organism), biomaterial provider 
@@ -142,15 +120,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     be uploaded using a bulk loader template.'),
     ];
 
-    $form['flat_file']['flat_file_type'] = [
+    $form['flat_file_type'] = [
       '#title' => t('Flat file type'),
       '#type' => 'radios',
-      //'#required' => TRUE,
-      '#states' => [
-        'required' => [
-          ':input[name="file_type"]' => ['value' => 'flat'],
-        ],
-      ],
       '#options' => [
         'csv' => t('CSV file'),
         'tsv' => t('TSV file'),
@@ -186,7 +158,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         }
       }
 
-      $file_type = $form_state['values']['file_type'];
+      $extension = explode('.', $file_path);
+      $extension = $extension[count($extension) - 1];
+      $file_type = $extension;
       $flat_file_type = $form_state['values']['flat_file_type'];
       $organism_id = $form_state['values']['organism_id'];
       $analysis_id = $form_state['values']['analysis_id'];
@@ -197,7 +171,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       if ($file_type == 'xml') {
         $attributes_list = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
       }
-      if ($file_type == 'flat') {
+      else {
         test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
       }
       $fields = $attributes_list;
@@ -296,7 +270,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $insert_fields[$field] = $chosen_cv;
     }
 
-    if ($file_type == "xml") {
+    $extension = explode('.', $file_path);
+    $extension = $extension[count($extension) - 1];
+
+    if ($extension == "xml") {
       $this->load_biosample_xml($file_path, $organism_id, $analysis_id, $insert_fields);
     }
     else {
