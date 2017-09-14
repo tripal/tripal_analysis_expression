@@ -174,7 +174,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     $description = t('After submitting uploading your file(s), you can configure individual cvterms for your biomaterial properties here.');
 
 
-// TO DO: PUT THIS INCLASS METHOD INSTEAD
+  //TODO:  should the importer class provide a "get files" method?
     if (isset($form_state['values']['file_local'])) {
       $file_path = trim($form_state['values']['file_local']);
     }
@@ -274,6 +274,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
+    $field_info = $form_state['values']['cvterm_configuration'];
+dpm($field_info);
+
 
   }
 
@@ -487,7 +490,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       // Insert into database.  Only insert into db if an existing CVTerm wasn't chosen
       $cv_name = 'biomaterial_property';
       if (isset($insert_fields[$attr_name])) {
-        $cv_name = $insert_fields[$attr_name]["cv"];
+        $cv_name = $insert_fields[$attr_name];
       }
       else {
         if (!tripal_insert_cvterm([
