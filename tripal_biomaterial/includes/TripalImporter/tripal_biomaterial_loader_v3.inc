@@ -95,12 +95,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $organisms[$org->organism_id] = $org->common_name;
     }
 
-    //create an empty form value for the biomaterial fields we will check once a file is added.
-
-    $form['description'] = [ //***
-      '#markup' => t('Description for the biomaterial / biosample loader'),
-    ];
-
     $form['organism_id'] = [
       '#title' => t('Organism'),
       '#type' => t('select'),
@@ -108,25 +102,16 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       '#description' => t('The organism from which the biosamples were collected.'),
       '#options' => $organisms,
     ];
-    
+
     $form['regex_description'] = [
-      '#markup' => t('The flat file loader expects a file where the first line is the title of each column. 
+      '#markup' => t('If loading a flat file, the loader expects the first line to be the title of each column. 
     The only field that is required to create a biomaterial is the name of the biomaterial (column: sample_name). 
     It is recommended that a description (column: description), organism (column: organism), biomaterial provider 
     (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), 
     and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column 
-    titles not already present in the database.<br><br>This loader will create dbxref records for the following 
+    titles not associated with a cvterm below.  <br><br>This loader will create dbxref records for the following 
     column headers if present, biosample_accession, bioproject_accession, and sra_accession. Other accessions should
     be uploaded using a bulk loader template.'),
-    ];
-
-    $form['flat_file_type'] = [
-      '#title' => t('Flat file type'),
-      '#type' => 'radios',
-      '#options' => [
-        'csv' => t('CSV file'),
-        'tsv' => t('TSV file'),
-      ],
     ];
 
     $form['biomaterial_cvterm_validator'] = [
@@ -161,7 +146,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $extension = explode('.', $file_path);
       $extension = $extension[count($extension) - 1];
       $file_type = $extension;
-      $flat_file_type = $form_state['values']['flat_file_type'];
       $organism_id = $form_state['values']['organism_id'];
       $analysis_id = $form_state['values']['analysis_id'];
       $link = variable_get('website_base_url') . "admin/tripal/loaders/chado_cv/cvterm/add.";
@@ -172,7 +156,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         $attributes_list = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
       }
       else {
-        test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id, $flat_file_type);
+        test_biosample_cvterms_flat($file_path, $organism_id, $analysis_id);
       }
       $fields = $attributes_list;
     }
@@ -230,12 +214,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         '#options' => $rows,
         '#multiple' => FALSE,
       ];
-
-      ////TO DO:  WE WANT TO HAVE THE CV, DB, AND ACCESSION ALL AVAILABLE IN THE FORM STATE.
-      //$form['cvterm_configuration'][$field]["field_mapping_candidates"] = [
-      //  '#type' => 'value',
-      //  '#value' => $rows
-      //];
     }
 
     return $form;
@@ -257,9 +235,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     $arguments = $this->arguments['run_args'];
     $file_path = $this->arguments['file']['file_path'];
     $organism_id = $arguments['organism_id'];
-    $file_type = $arguments['file_type'];
     $analysis_id = $arguments['analysis_id'];
-    $flat_file_type = $arguments['flat_file_type'];
     $field_info = $arguments['cvterm_configuration'];
 
     //generate list of cvterm properties to associate with each field
@@ -277,7 +253,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $this->load_biosample_xml($file_path, $organism_id, $analysis_id, $insert_fields);
     }
     else {
-      $this->load_biosample_flat($file_path, $organism_id, $analysis_id, $flat_file_type, $insert_fields);
+      $this->load_biosample_flat($file_path, $organism_id, $analysis_id, $insert_fields);
     }
   }
 
@@ -500,7 +476,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     $file_path,
     $organism_id,
     $analysis_id,
-    $flat_file_type,
     $insert_fields
   ) {
     try {
@@ -512,7 +487,17 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $num_biosamples = 0;
       $cur_biosample = 0;
 
-      if ($flat_file_type == "tsv") {
+      // check if the file given is empty
+      $fileSize = filesize($file_path);
+      if ($fileSize == 0) {
+        print("ERROR: File at $file_path is empty. Try again with a new file.\n");
+        exit;
+      }
+
+      $extension = explode('.', $file_path);
+      $extension = $extension[count($extension) - 1];
+
+      if ($extension == "tsv") {
         $separator = "\t";
         $enclosure = "\0";
       }
@@ -520,13 +505,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         // Auto assume file is using csv format
         $separator = ",";
         $enclosure = '"';
-      }
-
-      // check if the file given is empty
-      $fileSize = filesize($file_path);
-      if ($fileSize == 0) {
-        print("ERROR: File at $file_path is empty. Try again with a new file.\n");
-        exit;
       }
 
       // Count the number of biomaterials in the file.
@@ -980,6 +958,126 @@ function test_xml_data(
     $attr_name = (string) $attr->attributes()->attribute_name;
     $attribute_list[$attr_name] = $attr_name;
   }
+  return ($attribute_list);
+}
+
+/**
+ * @param $file_path
+ * @param $organism_id
+ * @param $analysis_id
+ *
+ * @return array
+ *
+ * This function goes through a flat file and will return the headers
+ *
+ */
+function test_biosample_cvterms_flat(
+  $file_path,
+  $organism_id,
+  $analysis_id
+) {
+  $attribute_list = [];
+
+  $num_biosamples = 0;
+  $cur_biosample = 0;
+
+  // check if the file given is empty
+  $fileSize = filesize($file_path);
+  if ($fileSize == 0) {
+    tripal_set_message("ERROR: File at $file_path is empty. Try again with a new file.", "warning");
+    exit;
+  }
+  //Figure out CSV vs TSV
+  $extension = explode('.', $file_path);
+  $extension = $extension[count($extension) - 1];
+
+  if ($extension == "tsv") {
+    $separator = "\t";
+    $enclosure = "\0";
+  }
+  else {
+    // Auto assume file is using csv format
+    $separator = ",";
+    $enclosure = '"';
+  }
+
+  // Count the number of biomaterials in the file.
+  $fp = fopen($file_path, "r");
+  while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
+    foreach ($line as $field) {
+      if (preg_match("/(sample_name)/", $field)) {
+        break 2;
+      }
+    }
+  }
+
+  while ($line = fgets($fp)) {
+    $num_biosamples++;
+  }
+
+  fclose($fp);
+
+  //print error message and exit if there's no biosample, or that there's no "sample_name" column in flat file
+  if ($num_biosamples == 0) {
+    tripal_set_message("ERROR: Wrong file format at $file_path. File must contain a column named 'sample_name'.", "warning");
+    exit;
+  }
+
+  // Get the file pointer.
+  $fp = fopen($file_path, "r");
+  while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
+    foreach ($line as $field) {
+      if (preg_match("/(sample_name)/", $field)) {
+        break 2;
+      }
+    }
+  }
+  $headers = $line;
+
+  // Make sure there are not duplicate biomaterial headers.
+  if (count($header_repeats = array_diff_assoc($headers, array_unique($headers))) > 0) {
+    tripal_set_message("ERROR: The header" . $header_repeats[0] . " is present more than once.  Please make sure there is only one instance of each header.");
+    exit;
+  }
+  $biomaterial_names = [];
+  $biomaterial_headers = [];
+  $prop_headers = [];
+  $acc_headers = [];
+
+  for ($i = 0; $i < count($headers); $i++) {
+    $header = trim(str_replace("*", "", $headers[$i]));
+    if ($header == 'sample_name') {
+      $biomaterial_headers['sample_name'] = $i;
+    }
+    if ($header == 'organism') {
+      $biomaterial_headers['organism'] = $i;
+    }
+    if ($header == 'description') {
+      $biomaterial_headers['description'] = $i;
+    }
+    if ($header == 'biomaterial_provider') {
+      $biomaterial_headers['biomaterial_provider'] = $i;
+    }
+    if ($header == 'biomaterial_accession') {
+      $acc_headers['biomaterial_accession'] = $i;
+    }
+    if ($header == 'sra_accession') {
+      $acc_headers['sra_accession'] = $i;
+    }
+    if ($header == 'bioproject_accession') {
+      $acc_headers['bioproject_accession'] = $i;
+    }
+    else {
+      $prop_headers[$headers[$i]] = $i;
+    }
+  }
+
+  $biomaterial_names[] = $line[$biomaterial_headers['sample_name']];
+
+  foreach ($prop_headers as $name => $index) {
+    $attribute_list[] = $name;
+  }
+
   return ($attribute_list);
 }
 
