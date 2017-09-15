@@ -37,12 +37,15 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * Provides information to the user about the file upload.  Typically this
    * may include a description of the file types allowed.
    */
-  public static $upload_description = 'Please upload an NCBI BioSample file.  This can be in XML with an .xml extension, or "flat file" format with a tsv or csv extension.';
+  public static $upload_description = "Please upload an NCBI BioSample file.  This can be in XML with an .xml extension, or flat file format with a .tsv or .csv extension.<br><br> If loading a CSV/TSV flat file, the first line must be the column name.  The only field that is required to create a biomaterial is the name (column: sample_name). It is recommended that a description (column: description), biomaterial provider (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column 
+    titles not associated with a cvterm below.  <br>This loader will create dbxref records for the following 
+    column headers if present: biosample_accession, bioproject_accession, and sra_accession. Other accessions should
+    be uploaded using a bulk loader template. ";
 
   /**
    * The title that should appear above the upload button.
    */
-  public static $upload_title = 'New NCBI BioSample file';
+  public static $upload_title = 'Import new Biosamples/Biomaterials';
 
   /**
    * If the loader should require an analysis record.  To maintain provenance
@@ -66,7 +69,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * Text that should appear on the button at the bottom of the importer
    * form.
    */
-  public static $button_text = 'Import NCBI BioSample File';
+  public static $button_text = 'Import Biosamples';
 
   /**
    * Indicates the methods that the file uploader will support.
@@ -87,6 +90,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    */
   public function form($form, &$form_state) {
 
+
+
     // get a list of organisms for the user to choose
     $sql = "SELECT * FROM {organism} ORDER BY genus, species";
     $results = chado_query($sql);
@@ -99,19 +104,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       '#title' => t('Organism'),
       '#type' => t('select'),
       '#required' => TRUE,
-      '#description' => t('The organism from which the biosamples were collected.'),
+      '#description' => t('The organism from which the biosamples were collected.  Each upload must consist of samples from the same organism.'),
       '#options' => $organisms,
-    ];
-
-    $form['regex_description'] = [
-      '#markup' => t('If loading a flat file, the loader expects the first line to be the title of each column. 
-    The only field that is required to create a biomaterial is the name of the biomaterial (column: sample_name). 
-    It is recommended that a description (column: description), organism (column: organism), biomaterial provider 
-    (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), 
-    and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column 
-    titles not associated with a cvterm below.  <br><br>This loader will create dbxref records for the following 
-    column headers if present, biosample_accession, bioproject_accession, and sra_accession. Other accessions should
-    be uploaded using a bulk loader template.'),
     ];
 
     $form['biomaterial_cvterm_validator'] = [
@@ -122,13 +116,11 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         'wrapper' => 'cvterm_configuration_div',
       ],
       '#submit' => ['cvterm_validator_callback_submit'],
-      //'#executes_submit_callback' => FALSE,
-      //'#limit_validation_errors' => [],
     ];
 
     $fields = [];
 
-    $description = t('After submitting uploading your file(s), you can configure individual cvterms for your biomaterial properties here.');
+    $description = t('After submitting uploading your file(s) and clicking the Check Biomaterials button, you can configure individual cvterms for your biomaterial properties here.');
 
     //TODO:  should the importer class provide a "get files" method?
     if ((isset($form_state['values']['file_local'])) || isset($form_state['values']['file_upload'])) {
@@ -149,7 +141,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $organism_id = $form_state['values']['organism_id'];
       $analysis_id = $form_state['values']['analysis_id'];
       $link = variable_get('website_base_url') . "admin/tripal/loaders/chado_cv/cvterm/add.";
-      $description = t('This section will allow you to check the CVterms associated with your biomaterial.  Ideally, each property should get the term for type and value from a Controlled Vocabulary (CV).  Alternatively you can create ad hoc terms in the biomaterialprop CV.  If the CVterm does not exist in a suitable CV, you can insert terms <a href = "' . $link . '"> using the Tripal CVterm loader</a>');
+      $description = t('This section will allow you to check the CVterms associated with your biomaterial.  Ideally, each property should get the term for type and value from a Controlled Vocabulary (CV).  Alternatively you can create ad hoc terms in the biomaterialprop CV.  If the CVterm does not exist in a suitable CV, you can insert terms <a href = "' . $link . '"> using the Tripal CVterm loader.</a>');
 
       $attributes_list = [];
       if ($file_type == 'xml') {
@@ -192,7 +184,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
 
       $form['cvterm_configuration'][$field] = [
         '#type' => 'fieldset',
-        '#title' => t('Settings for field: <b>' . $field . '</b>'),
+        '#title' => t( $field ),
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,
       ];
@@ -1038,10 +1030,6 @@ function test_biosample_cvterms_flat(
     tripal_set_message("ERROR: The header" . $header_repeats[0] . " is present more than once.  Please make sure there is only one instance of each header.");
     exit;
   }
-  $biomaterial_names = [];
-  $biomaterial_headers = [];
-  $prop_headers = [];
-  $acc_headers = [];
 
   for ($i = 0; $i < count($headers); $i++) {
     $header = trim(str_replace("*", "", $headers[$i]));
