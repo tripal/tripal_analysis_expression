@@ -20,7 +20,7 @@ class tripal_expression_data_loader extends TripalImporter {
    * The machine name for this loader. This name will be used to construct
    * the URL for the loader.
    */
-  public static $machine_name = 'Chado Expression Data Loader';
+  public static $machine_name = 'Chado_Expression_Data_Loader';
 
   /**
    * A brief description for this loader.  This description will be
@@ -302,7 +302,7 @@ class tripal_expression_data_loader extends TripalImporter {
       ],
       '#required' => TRUE,
     ];
-    
+
     $form['fileext'] = [
       '#type' => 'textfield',
       '#title' => t('File Type Suffix'),
