@@ -80,64 +80,67 @@ function tripal_protocol_add_cvs() {
  * @ingroup tripal_protocol
  */
 function tripal_protocol_schema() {
-  $schema['chado_arraydesign'] = [
-    'fields' => [
-      'vid' => [
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
+  $schema = [];
+  if (!db_table_exists('chado_arraydesign')) {
+    $schema['chado_arraydesign'] = [
+      'fields' => [
+        'vid' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ],
+        'nid' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ],
+        'arraydesign_id' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 0,
+        ],
       ],
-      'nid' => [
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
+      'indexes' => [
+        'arraydesign_id' => ['arraydesign_id'],
       ],
-      'arraydesign_id' => [
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
+      'unique keys' => [
+        'nid_vid' => ['nid', 'vid'],
+        'vid' => ['vid'],
       ],
-    ],
-    'indexes' => [
-      'arraydesign_id' => ['arraydesign_id'],
-    ],
-    'unique keys' => [
-      'nid_vid' => ['nid', 'vid'],
-      'vid' => ['vid'],
-    ],
-    'primary key' => ['nid'],
-  ];
-  $schema['chado_protocol'] = [
-    'fields' => [
-      'vid' => [
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
+      'primary key' => ['nid'],
+    ];
+    $schema['chado_protocol'] = [
+      'fields' => [
+        'vid' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ],
+        'nid' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ],
+        'protocol_id' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 0,
+        ],
       ],
-      'nid' => [
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
+      'indexes' => [
+        'protocol_id' => ['protocol_id'],
       ],
-      'protocol_id' => [
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
+      'unique keys' => [
+        'nid_vid' => ['nid', 'vid'],
+        'vid' => ['vid'],
       ],
-    ],
-    'indexes' => [
-      'protocol_id' => ['protocol_id'],
-    ],
-    'unique keys' => [
-      'nid_vid' => ['nid', 'vid'],
-      'vid' => ['vid'],
-    ],
-    'primary key' => ['nid'],
-  ];
+      'primary key' => ['nid'],
+    ];
+  }
   return $schema;
 }
 
@@ -401,6 +404,165 @@ function tripal_protocol_update_7201() {
     'term_name' => 'protocol',
     'storage_args' => [
       'data_table' => 'protocol',
+    ],
+  ];
+  $term = tripal_load_term_entity([
+    'vocabulary' => $args['vocabulary'],
+    'accession' => $args['accession'],
+  ]);
+  $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      throw new Exception($error['!message']);
+    }
+  }
+}
+
+/**
+ * Create array design bundle.
+ */
+function tripal_protocol_update_7202() {
+  // Insert semweb cv terms for chado.arraydesign table
+
+  // arraydesign.name
+  $term = tripal_insert_cvterm([
+    'id' => 'schema:name',
+    'name' => 'name',
+    'cv_name' => 'schema',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'name', $term);
+
+  // arraydesign.version
+  $term = tripal_insert_cvterm([
+    'id' => 'local:array_design_version',
+    'name' => 'array_design_version',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'version', $term);
+
+  // arraydesign.description
+  $term = tripal_insert_cvterm([
+    'id' => 'local:array_design_description',
+    'name' => 'array_design_description',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'description', $term);
+
+  // arraydesign.array_dimensions
+  $term = tripal_insert_cvterm([
+    'id' => 'local:array_dimensions',
+    'name' => 'array_dimensions',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'array_dimensions', $term);
+  // arraydesign.element_dimensions
+  $term = tripal_insert_cvterm([
+    'id' => 'local:element_dimensions',
+    'name' => 'element_dimensions',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'element_dimensions', $term);
+  // arraydesign.num_of_elements
+  $term = tripal_insert_cvterm([
+    'id' => 'local:num_of_elements',
+    'name' => 'num_of_elements',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'num_of_elements', $term);
+  // arraydesign.num_array_columns
+  $term = tripal_insert_cvterm([
+    'id' => 'local:num_array_columns',
+    'name' => 'num_array_columns',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'num_array_columns', $term);
+
+  // arraydesign.num_array_rows
+  $term = tripal_insert_cvterm([
+    'id' => 'local:num_array_rows',
+    'name' => 'num_array_rows',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'num_array_rows', $term);
+
+  // arraydesign.num_grid_columns
+  $term = tripal_insert_cvterm([
+    'id' => 'local:num_grid_columns',
+    'name' => 'num_grid_columns',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'num_grid_columns', $term);
+
+  // arraydesign.num_grid_rows
+  $term = tripal_insert_cvterm([
+    'id' => 'local:num_grid_rows',
+    'name' => 'num_grid_rows',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'num_grid_rows', $term);
+
+  // arraydesign.num_sub_columns
+  $term = tripal_insert_cvterm([
+    'id' => 'local:num_sub_columns',
+    'name' => 'num_sub_columns',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'num_sub_columns', $term);
+
+  // arraydesign.num_sub_rows
+  $term = tripal_insert_cvterm([
+    'id' => 'local:num_sub_rows',
+    'name' => 'num_sub_rows',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'num_sub_rows', $term);
+
+  // arraydesign.manufacturer_id
+  $term = tripal_insert_cvterm([
+    'id' => 'local:manufacturer_id',
+    'name' => 'manufacturer_id',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'manufacturer_id', $term);
+
+  // arraydesign.platformtype_id
+  $term = tripal_insert_cvterm([
+    'id' => 'local:platformtype_id',
+    'name' => 'platformtype_id',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'platformtype_id', $term);
+
+  // arraydesign.substratetype_id
+  $term = tripal_insert_cvterm([
+    'id' => 'local:substratetype_id',
+    'name' => 'substratetype_id',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'substratetype_id', $term);
+
+  // arraydesign.protocol_id
+  $term = tripal_insert_cvterm([
+    'id' => 'local:protocol_id',
+    'name' => 'protocol_id',
+    'cv_name' => 'local',
+  ]);
+  tripal_associate_chado_semweb_term('arraydesign', 'protocol_id', $term);
+
+  // Create the 'Array Design' entity type. This uses the EFO:0000269 term.
+  tripal_insert_cvterm([
+    'id' => 'EFO:0000269',
+    'name' => 'array design',
+    'cv_name' => 'EFO',
+    'definition' => 'A protocol is a process which is a parameterizable description of a process.',
+  ]);
+  $error = [];
+  $args = [
+    'vocabulary' => 'EFO',
+    'accession' => '0000269',
+    'term_name' => 'array design',
+    'storage_args' => [
+      'data_table' => 'arraydesign',
     ],
   ];
   $term = tripal_load_term_entity([
