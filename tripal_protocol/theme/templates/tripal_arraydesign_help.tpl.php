@@ -1,11 +1,10 @@
 <h3> Array Design Content Type Description:</h3>
 <p> The content type
     <b>Array Design</b> is one of the content types specified by the
-    Tripal Expression module. The Tripal Expression module is built on top of the chado
+    Tripal Protocol module. The Tripal Protocol module is built on top of the chado
     MAGE module. The array design content type is used to detail the design of an array
     used in a microarray experiment. If your expression data does not use an array design
-    (e.g., next generation sequencing), you may specify a null array design for your
-    expression analysis.</p>
+    (e.g., next generation sequencing), you may specify a null array design.</p>
 
 <ul>
     <li>For more information on the chado arraydesign table see the Chado Mage module
@@ -17,12 +16,12 @@
 </ul>
 
 <h3>Setup Instructions:</h3>
-<p>After installation of the Tripal Expression module, the following tasks should be performed.</p>
+<p>After installation of the Tripal Protocol module, the following tasks should be performed.</p>
 <ul>
     <li><p>
             <b>Set Permissions</b>: By default only the site administrator account has access to
             create, edit, delete or administer array designs. Navigate to the <?php print
-          l('permissions page', 'admin/people/permissions') ?> and set the permissions under the 'Tripal Expression'
+          l('permissions page', 'admin/people/permissions') ?> and set the permissions under the 'Tripal Protocol'
             section as appropriate for your site. For a simple setup, allow anonymous users access to
             view content and create a special role for creating, editing and other administrative tasks.
         </p></li>

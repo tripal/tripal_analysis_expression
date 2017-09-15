@@ -55,7 +55,7 @@
             <a href="https://www.drupal.org/project/views">Drupal Views</a>
             which must be installed to see the search tool. Look for it in the navigation menu under the item "Search Data".
         </p></li>
-</ul>   
- 
- 
+</ul>
+
+
 

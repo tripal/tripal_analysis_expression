@@ -31,52 +31,9 @@ function tripal_analysis_expression_help($path, $arg) {
     case 'admin/tripal/extension/tripal_analysis_expression/help' :
     case 'admin/help#tripal_analysis_expression' : {
       $ret_val = '<h3>' . t('Module Content Types') . '</h3>';
-      $ret_val .= '<p>' . t('The expression module allows the user to load and display expression information.') . '</p>';
-      $ret_val .= "<b>" . t("Analysis: Expression") . "</b> - " . t("This analysis: expression content type") . " ";
-      $ret_val .= t("provides the ability") . " ";
-      $ret_val .= t("to describe either microarray expression data or next generation sequencing") . " ";
-      $ret_val .= t("expression data (such as data obtained from RNASeq). The analysis: expression content") . " ";
-      $ret_val .= t("type also provides a") . " ";
-      $ret_val .= t("form to load expression data associated with the analysis.") . "<br>";
-      $ret_val .= l(t("Analysis: Expression Administrative Pages"), "admin/tripal/extension/tripal_analysis_expression/content_types/analysis_expression");
-      $ret_val .= "<br>" . l(t("Create Analysis: Expression"), "node/add/chado-analysis-expression");
-      $ret_val .= "<br>" . l(t("Analysis: Expression Help"), "admin/tripal/extension/tripal_analysis_expression/content_types/analysis_expression/help");
-      $ret_val .= "<br><br><b>" . t("Biomaterial") . "</b> - " . t("The biomaterial content type") . " ";
-      $ret_val .= t("represents the Chado biomaterial table. The Chado biomaterial table is a member") . " ";
-      $ret_val .= t("of the Chado MAGE module. The biomaterial content type is similar to the") . " ";
-      $ret_val .= l(t("BioSample"), "http://www.ncbi.nlm.nih.gov/books/NBK169436/") . " ";
-      $ret_val .= t("content type provided by NCBI. See the biomaterial description at the") . " ";
-      $ret_val .= l(t("GMOD wiki."), "http://gmod.org/wiki/Chado_Mage_Module#Table:_biomaterial") . "<br>";
-      $ret_val .= l(t("Biomaterial Administrative Pages"), "admin/tripal/extension/tripal_analysis_expression/content_types/biomaterial");
-      $ret_val .= "<br>" . l(t("Create Biomaterial"), "node/add/chado-biomaterial");
-      $ret_val .= "<br>" . l(t("Biomaterial Help"), "admin/tripal/extension/tripal_analysis_expression/content_types/biomaterial/help");
-      $ret_val .= "<br><br><b>" . t("Array Design") . "</b> - " . t("The array design content type") . " ";
-      $ret_val .= t("represents the Chado arraydesign table. This table is only used when describing") . " ";
-      $ret_val .= t("the experimental design of data collected from a microarray expression experiment.") . " ";
-      $ret_val .= t("See the arraydesign description at the");
-      $ret_val .= l(t(" GMOD wiki."), "http://gmod.org/wiki/Chado_Mage_Module#Table:_arraydesign") . "<br>";
-      $ret_val .= l(t("Array Design Administrative Pages"), "admin/tripal/extension/tripal_analysis_expression/content_types/arraydesign");
-      $ret_val .= "<br>" . l(t("Create Array Design"), "node/add/chado-arraydesign");
-      $ret_val .= "<br>" . l(t("Array Design Help"), "admin/tripal/extension/tripal_analysis_expression/content_types/arraydesign/help");
-      $ret_val .= "<br><br><b>" . t("Protocol") . "</b> -" . t(" The protocol content type represents") . " ";
-      $ret_val .= t("the Chado protocol table. This table is used to describe the protocol, software,") . " ";
-      $ret_val .= t("and hardware used in different steps of the experiment. See the protocol description at the") . " ";
-      $ret_val .= l(t("GMOD wiki."), "http://gmod.org/wiki/Chado_Tables#Table:_protocol") . "<br>";
-      $ret_val .= l(t("Protocol Administrative Pages"), "admin/tripal/extension/tripal_analysis_expression/content_types/protocol");
-      $ret_val .= "<br>" . l(t("Create Protocol"), "node/add/chado-protocol") . "<br>";
-      $ret_val .= l(t("Protocol Help"), "admin/tripal/extension/tripal_analysis_expression/content_types/protocol/help");
-      $ret_val .= '<h3>' . t('Module Data Loaders') . '</h3>';
-      $ret_val .= "<p>" . t("This module provides several data loaders.") . '</p>';
-      $ret_val .= "<b>" . l(t("Biomaterial Loader"), "admin/tripal/extension/tripal_analysis_expression/biomaterial_loader");
-      $ret_val .= "</b> - " . t("The biomaterial loader has the ability to load ");
-      $ret_val .= l(t("BioSample"), "http://www.ncbi.nlm.nih.gov/biosample/") . t(" data downloaded from NCBI in an xml format. ");
-      $ret_val .= t("The biomaterial loader can also load data from a CSV or TSV file formatted as a ");
-      $ret_val .= l(t("BioSample submission template"), "https://submit.ncbi.nlm.nih.gov/biosample/template/") . t(".");
-      $ret_val .= "<br><br><b>" . l(t("Expression Loader"), "node/add/chado-analysis-expression") . "</b> - ";
-      $ret_val .= t("The expression loader is associated with the Analysis: Expression ");
-      $ret_val .= t("content type. To load expression data, create an Analysis: Expression and configure the expression loading job ");
-      $ret_val .= t("in the Analysis: Expression form. Expression data may be loaded from two types of tab separted formats, ");
-      $ret_val .= t("a matrix file or a column file.") . "<br><br>";
+      $ret_val .= '<p>' . t('The expression module allows the user to load and display expression information.  It relies on the protocols and biomaterial modules to store the data in Chado.') . '</p>';
+    $ret_val .= "<b>" . l(t("Expression Loader V3"), "loaders/Chado_Expression_Data_Loader") . "</b> - ";
+    $ret_val .= t("The Tripal expression loader.  Data is loaded in matrix or column file format.  Expession data is associated with an analysis and biomaterial, and values are linked to individual features (generally an expression level in a biomaterial)<br><br>");
 
       return $ret_val;
       break;
@@ -99,14 +56,6 @@ function tripal_analysis_expression_permission() {
     'administer tripal analysis expression' => [
       'title' => t('Administer Analysis: Expressions'),
       'description' => t('Allow users to administer all analysis: expressions.'),
-    ],
-    'access chado_arraydesign content' => [
-      'title' => t('View Arraydesigns'),
-      'description' => t('Allow users to view arraydesign pages.'),
-    ],
-    'create chado_arraydesign content' => [
-      'title' => t('Create Arraydesigns'),
-      'description' => t('Allow users to create new arraydesign pages.'),
     ],
   ];
 }

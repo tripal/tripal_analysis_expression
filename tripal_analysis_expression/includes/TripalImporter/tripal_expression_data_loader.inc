@@ -20,13 +20,13 @@ class tripal_expression_data_loader extends TripalImporter {
    * The machine name for this loader. This name will be used to construct
    * the URL for the loader.
    */
-  public static $machine_name = 'Chado Expression Data Loader';
+  public static $machine_name = 'Chado_Expression_Data_Loader';
 
   /**
    * A brief description for this loader.  This description will be
    * presented to the site user.
    */
-  public static $description = 'Import expression data for a single or multiple biomaterial/biosample and an analysis';
+  public static $description = 'Import expression data.  Requires an analaysis and biomaterial.';
 
   /**
    * An array containing the extensions of allowed file types.
@@ -37,7 +37,7 @@ class tripal_expression_data_loader extends TripalImporter {
    * Provides information to the user about the file upload.  Typically this
    * may include a description of the file types allowed.
    */
-  public static $upload_description = 'Expression data can be loaded from two format types. Select the column format for files that have two columns - transcript id and expression value. Select the matrix format for files that specify biosample by column and transcript by row. If "Column Format" is selected, the name of the column file will be taken as the biomaterial name. It is recommended to avoid the use of white space in column file names and in biomaterial names.)';
+  public static $upload_description = 'Expression data can be loaded from two format types. Select the column format for files that have two columns - transcript id and expression value. Select the matrix format for files that specify biosample by column and transcript by row. If "Column Format" is selected, the name of the column file will be taken as the biomaterial name. It is recommended to avoid the use of white space in column file names and in biomaterial names.<br>  Please verify the column or file names match the intended biomaterial name in the database.';
 
   /**
    * The title that should appear above the upload button.
@@ -134,7 +134,7 @@ class tripal_expression_data_loader extends TripalImporter {
       '#attributes' => ['id' => 'expression-extra-settings'],
       '#weight' => 1,
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#collapsed' => FALSE,
     ];
 
     // Obtain the list of contacts from the chado contact table.
@@ -321,11 +321,6 @@ class tripal_expression_data_loader extends TripalImporter {
       '#description' => t('If the expression file to be loaded has a footer text, use a regular expression to describe the line that occurs after the end of the expression data. If the file has no footer text, this line may be left blank.'),
     ];
 
-    //$form['create_biosamples'] = [
-    //  '#type' => 'checkbox',
-    //  '#title' => t('Create New Biosamples (Caution!  Read below!)'),
-    //  '#description' => t('Each expression set must be associated with a biosample.  We strongly recommend creating descriptive biosamples on your site or, ideally, in the NCBI Biosample database and importing the resulting xml into Chado.  Checking the box above will create a new biosample if the name does not match any records in the database.'),
-    //];
     return $form;
   }
 

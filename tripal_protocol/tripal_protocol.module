@@ -40,27 +40,7 @@ function tripal_protocol_help($path, $arg) {
     // Both of the following cases should display the below HTML.
     case 'admin/tripal/extension/tripal_protocol/help' :
     case 'admin/help#tripal_protocol' : {
-      $ret_val = '<h3>' . t('Module Content Types') . '</h3>';
-      $ret_val .= '<p>' . t('The expression module allows the user to load and display expression information.') . '</p>';
-      $ret_val .= "<b>" . t("Analysis: Expression") . "</b> - " . t("This analysis: expression content type") . " ";
-      $ret_val .= t("provides the ability") . " ";
-      $ret_val .= t("to describe either microarray expression data or next generation sequencing") . " ";
-      $ret_val .= t("expression data (such as data obtained from RNASeq). The analysis: expression content") . " ";
-      $ret_val .= t("type also provides a") . " ";
-      $ret_val .= t("form to load expression data associated with the analysis.") . "<br>";
-      $ret_val .= l(t("Analysis: Expression Administrative Pages"), "admin/tripal/extension/tripal_protocol/content_types/analysis_expression");
-      $ret_val .= "<br>" . l(t("Create Analysis: Expression"), "node/add/chado-analysis-expression");
-      $ret_val .= "<br>" . l(t("Analysis: Expression Help"), "admin/tripal/extension/tripal_protocol/content_types/analysis_expression/help");
-      $ret_val .= "<br><br><b>" . t("Biomaterial") . "</b> - " . t("The biomaterial content type") . " ";
-      $ret_val .= t("represents the Chado biomaterial table. The Chado biomaterial table is a member") . " ";
-      $ret_val .= t("of the Chado MAGE module. The biomaterial content type is similar to the") . " ";
-      $ret_val .= l(t("BioSample"), "http://www.ncbi.nlm.nih.gov/books/NBK169436/") . " ";
-      $ret_val .= t("content type provided by NCBI. See the biomaterial description at the") . " ";
-      $ret_val .= l(t("GMOD wiki."), "http://gmod.org/wiki/Chado_Mage_Module#Table:_biomaterial") . "<br>";
-      $ret_val .= l(t("Biomaterial Administrative Pages"), "admin/tripal/extension/tripal_protocol/content_types/biomaterial");
-      $ret_val .= "<br>" . l(t("Create Biomaterial"), "node/add/chado-biomaterial");
-      $ret_val .= "<br>" . l(t("Biomaterial Help"), "admin/tripal/extension/tripal_protocol/content_types/biomaterial/help");
-      $ret_val .= "<br><br><b>" . t("Array Design") . "</b> - " . t("The array design content type") . " ";
+      $ret_val = "<br><br><b>" . t("Array Design") . "</b> - " . t("The array design content type") . " ";
       $ret_val .= t("represents the Chado arraydesign table. This table is only used when describing") . " ";
       $ret_val .= t("the experimental design of data collected from a microarray expression experiment.") . " ";
       $ret_val .= t("See the arraydesign description at the");
@@ -75,19 +55,6 @@ function tripal_protocol_help($path, $arg) {
       $ret_val .= l(t("Protocol Administrative Pages"), "admin/tripal/extension/tripal_protocol/content_types/protocol");
       $ret_val .= "<br>" . l(t("Create Protocol"), "node/add/chado-protocol") . "<br>";
       $ret_val .= l(t("Protocol Help"), "admin/tripal/extension/tripal_protocol/content_types/protocol/help");
-      $ret_val .= '<h3>' . t('Module Data Loaders') . '</h3>';
-      $ret_val .= "<p>" . t("This module provides several data loaders.") . '</p>';
-      $ret_val .= "<b>" . l(t("Biomaterial Loader"), "admin/tripal/extension/tripal_protocol/biomaterial_loader");
-      $ret_val .= "</b> - " . t("The biomaterial loader has the ability to load ");
-      $ret_val .= l(t("BioSample"), "http://www.ncbi.nlm.nih.gov/biosample/") . t(" data downloaded from NCBI in an xml format. ");
-      $ret_val .= t("The biomaterial loader can also load data from a CSV or TSV file formatted as a ");
-      $ret_val .= l(t("BioSample submission template"), "https://submit.ncbi.nlm.nih.gov/biosample/template/") . t(".");
-      $ret_val .= "<br><br><b>" . l(t("Expression Loader"), "node/add/chado-analysis-expression") . "</b> - ";
-      $ret_val .= t("The expression loader is associated with the Analysis: Expression ");
-      $ret_val .= t("content type. To load expression data, create an Analysis: Expression and configure the expression loading job ");
-      $ret_val .= t("in the Analysis: Expression form. Expression data may be loaded from two types of tab separted formats, ");
-      $ret_val .= t("a matrix file or a column file.") . "<br><br>";
-
       return $ret_val;
       break;
     }
@@ -165,23 +132,23 @@ function tripal_protocol_menu() {
 
   // Admin configuration group.
   $items['admin/tripal/extension/tripal_protocol'] = [
-    'title' => 'Expression Analysis',
-    'description' => 'Administrative pages for the Tripal Expression Analysis module.',
-    'access arguments' => ['administer tripal analysis expression'],
+    'title' => 'Protocol',
+    'description' => 'Administrative pages for the Tripal Protocol module.',
+    'access arguments' => ['administer tripal protocol'],
   ];
 
   // Content type configuration group.
   $items['admin/tripal/extension/tripal_protocol/content_types'] = [
-    'title' => 'Tripal Expression Analysis Content Types',
-    'description' => 'Administer content types provided by the Tripal Expression Analysis module.',
-    'access arguments' => ['administer tripal analysis expression'],
+    'title' => 'Protocol Content Types',
+    'description' => 'Administer content types provided by the Tripal Protocol module.',
+    'access arguments' => ['administer tripal protocol'],
   ];
 
   // Module help pages.
   $items['admin/tripal/extension/tripal_protocol/help'] = [
-    'title' => 'Tripal Expression Analysis Help',
-    'description' => 'A description of expression module content types and loaders.',
-    'access arguments' => ['administer tripal analysis expression'],
+    'title' => 'Tripal Protocol Help',
+    'description' => 'A description of protocol content types.',
+    'access arguments' => ['administer tripal protocol'],
     'weight' => 10,
   ];
 
@@ -197,7 +164,7 @@ function tripal_protocol_menu() {
   // Admin configuration - arraydesign settings.
   $items['admin/tripal/extension/tripal_protocol/content_types/arraydesign/configuration'] = [
     'title' => 'Settings',
-    'description' => 'Manage Tripal Expression: Array Design settings and configurations.',
+    'description' => 'Manage Tripal Protocol: Array Design settings and configurations.',
     'access arguments' => ['administer tripal arraydesign'],
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_arraydesign_admin'],
@@ -283,7 +250,7 @@ function tripal_protocol_menu() {
   // Admin configuration - protocol settings.
   $items['admin/tripal/extension/tripal_protocol/content_types/protocol/configuration'] = [
     'title' => 'Settings',
-    'description' => 'Manage Tripal Expression: Protocol settings and configurations.',
+    'description' => 'Manage Tripal Protocol: Protocol settings and configurations.',
     'access arguments' => ['administer tripal protocol'],
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_protocol_admin'],

@@ -1,10 +1,10 @@
 <h3> Protocol Content Type Description:</h3>
 <p> The content type
     <b>Protocol</b> is one of the content types specified by the
-    Tripal Expression module. The Tripal Expression module is built on top of the chado
-    MAGE module. The array design content type is used to detail a protocol. A protocol
+    Tripal Protocol module which utilizes the tables described in the chado
+    MAGE module.  A protocol
     is used by the following tables: acquisition, arraydesign, assay, quantification
-    and treatment. If you do not have a protocol, you may use an null protocol.
+    and treatment. If you do not have a protocol, you may use a null protocol.
 </p>
 
 <ul>
@@ -37,7 +37,7 @@
                     <a href="<?php print url('admin/tripal/extension/tripal_analysis_expression/content_types/protocol/sync') ?>">Protocol syncing page</a>
                     to sync array designs. </p></li>
             <li><p>
-                    <b>Manually Add An Array Design</b>: If your protocol is not already present in the Chado database
+                    <b>Manually Add a Protocol</b>: If your protocol is not already present in the Chado database
                     you can create a protocol using the
                     <a href="<?php print url('node/add/chado-protocol') ?>">Create Protocol page</a>.
                     Once saved, the array design will be present in Chado and also "synced".
@@ -45,18 +45,4 @@
         </ol>
     </li>
 </ul>
-
-<h3>Features of this Module:</h3>
-<p>Aside from array design page setup (as described in the Setup section above),
-    The Tripal Expression module also provides the following functionality</p>
-<ul>
-    <li><p>
-            <b>Simple Search Tool</b>: A <?php print l('simple search tool', 'chado/protocol') ?> is provided for
-            finding protocols. This tool relies on Drupal Views.
-            <a href="https://www.drupal.org/project/views">Drupal Views</a>
-            which must be installed to see the search tool. Look for it in the navigation menu under the item "Search Data".
-        </p></li>
-</ul>   
- 
- 
 
