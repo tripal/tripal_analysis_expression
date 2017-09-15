@@ -348,13 +348,13 @@ function tripal_protocol_uninstall() {
 /**
  * Create protocol bundle.
  */
-function tripal_protocol_update_7204() {
+function tripal_protocol_update_7201() {
   // Insert semweb cvterms for protocol table
   tripal_insert_cvterm([
     'id' => 'sep:00101',
     'name' => 'protocol',
     'cv_name' => 'sep',
-    'definition' => 'URL of the item.',
+    'definition' => 'A protocol is a process which is a parameterizable description of a process.',
   ]);
 
   // protocol.uri
@@ -370,7 +370,7 @@ function tripal_protocol_update_7204() {
   $term = tripal_insert_cvterm([
     'id' => 'local:protocol_description',
     'name' => 'protocol_description',
-    'cv_name' => 'schema',
+    'cv_name' => 'local',
     'definition' => 'A description of the protocol.',
   ]);
   tripal_associate_chado_semweb_term('protocol', 'protocoldescription', $term);
@@ -379,7 +379,7 @@ function tripal_protocol_update_7204() {
   $term = tripal_insert_cvterm([
     'id' => 'local:hardware_description',
     'name' => 'hardware_description',
-    'cv_name' => 'schema',
+    'cv_name' => 'local',
     'definition' => 'A description of the hardware.',
   ]);
   tripal_associate_chado_semweb_term('protocol', 'hardwaredescription', $term);
@@ -388,7 +388,7 @@ function tripal_protocol_update_7204() {
   $term = tripal_insert_cvterm([
     'id' => 'local:software_description',
     'name' => 'software_description',
-    'cv_name' => 'schema',
+    'cv_name' => 'local',
     'definition' => 'A description of the software.',
   ]);
   tripal_associate_chado_semweb_term('protocol', 'softwaredescription', $term);

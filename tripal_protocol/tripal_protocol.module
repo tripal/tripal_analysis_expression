@@ -25,6 +25,7 @@ require_once "includes/tripal_protocol.delete.inc";
 require_once "theme/tripal_protocol.theme.inc";
 require_once "api/tripal_arraydesign.api.inc";
 require_once "api/tripal_protocol.api.inc";
+require_once "includes/tripal_protocol.fields.inc";
 
 /**
  * Implements hook_help().
