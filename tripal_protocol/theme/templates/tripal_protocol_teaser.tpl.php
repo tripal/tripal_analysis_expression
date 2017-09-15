@@ -1,4 +1,4 @@
-<?php
+    <?php
 $node = $variables['node'];
 $protocol = $variables['node']->protocol;
 $protocol = chado_expand_var($protocol, 'field', 'protocol.protocoldescription'); ?>
