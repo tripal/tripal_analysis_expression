@@ -7,18 +7,16 @@
  * Display:
  * Configuration:
  */
-class data__gene_expression_data_formatter extends ChadoFieldFormatter {
+class local__protocol_type_formatter extends ChadoFieldFormatter {
 
   // The default label for this field.
-  public static $default_label = 'Expression';
+  public static $default_label = 'Protocol Type';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = ['data__gene_expression_data'];
+  public static $field_types = ['local__protocol_type'];
 
   // The list of default settings for this formatter.
-  public static $default_settings = [
-    'setting1' => 'default_value',
-  ];
+  public static $default_settings = [];
 
   /**
    * Provides the field's setting form.
@@ -76,90 +74,14 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
    * @param $items
    * @param $display
    *
-   * @return void
+   * @return
    *    An element array compatible with that returned by the
    *    hook_field_formatter_view() function.
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    $field = 'data__gene_expression_data';
-    $variables = $entity->{$field}['und'][0];
-    $content = '';
 
-    if (!$variables['has_exp'] && $variables['json_exp']) {
-      $content = 'No biomaterial libraries express this feature.';
-    }
-    elseif ($variables['json_exp']) {
-      drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css/expression.css');
-      drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/expression.js');
-
-      $num_of_analyses = count($variables['analyses']);
-      if ($num_of_analyses > 1) {
-        $content .= '<h3>Available Expression Analyses</h3>';
-        $rows = [];
-        foreach ($variables['analyses'] as $analysis) {
-          $rows[] = [l($analysis->name, $analysis->url)];
-        }
-
-        $content .= theme('table', [
-          'header' => [],
-          'rows' => $rows,
-        ]);
-      }
-      elseif ($num_of_analyses === 1) {
-        $content .= '<h3>Available Expression Analyses</h3>';
-        $analysis = current($variables['analyses']);
-        $content .= '<p>' . l($analysis->name, $analysis->url) . '</p>';
-      }
-
-      $content .= '
-            <h3>Expression Heat Map</h3>
-            <p>
-              Hover the mouse over a column in the graph to view expression values.
-            </p>
-            <p>
-              <a href="javascript:;" onclick="expSortDown()">Sort Descending</a> |
-              <a href="javascript:;" onclick="expSortUp()">Sort Ascending</a> |
-              <a href="javascript:;" onclick="nonZero()">Only Non-Zero Values</a> |
-              <a href="javascript:;" onclick="expChart()">Tile/Chart</a> |
-              <a href="javascript:;" onclick="expNormal()">Reset</a>
-            </p>
-            ';
-
-      tripal_add_d3js();
-      $hide_biomaterial_labels = $variables['hide_biomaterial_labels'];
-      $json_exp = $variables['json_exp'];
-      $limit_label_length = $variables['limit_label_length'];
-      $expression_display = $variables['expression_display'];
-      $biomaterial_display_width = $variables['biomaterial_display_width'];
-
-      $content .= '<script type="text/javascript">
-            var heatMapRaw=' . $json_exp . '
-            var maxLength=' . $limit_label_length . '
-            var showLabels=' . $hide_biomaterial_labels . '
-            var col="' . $expression_display . '"
-            var colWidth=' . $biomaterial_display_width . '
-            Drupal.behaviors.tripal_analysis_expression = {
-              attach: function (context, settings) {
-                var $ = jQuery;
-                expNormal();
-                $(document).on("tripal_ds_pane_expanded", function(event) {
-                    if($(event.id).text().indexOf("Hover the mouse") > -1) {
-                      expNormal();
-                    }
-                });
-              }
-            };
-          </script>
-          <figure></figure>';
-    }
-    else {
-      $content = 'No biomaterial libraries express this feature.';
-    }
-
-    $element[] = [
-      '#type' => 'markup',
-      '#markup' => $content,
-    ];
+    // Get the settings
+    $settings = $display['settings'];
   }
 
   /**
@@ -187,6 +109,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
    * @return string
    *   A string that provides a very brief summary of the field settings
    *   to the user.
+   *
    */
   public function settingsSummary($view_mode) {
     return '';

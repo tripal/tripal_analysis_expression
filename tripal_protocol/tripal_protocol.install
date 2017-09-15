@@ -45,7 +45,6 @@ function tripal_protocol_install() {
   // Set default cvs.
   tripal_set_default_cv('arraydesignprop', 'type_id', 'arraydesign_property');
 
-
   // Make sure the arraydesign, biomateria, and protocol chado tables are a set
   // as base tables. This allows the tables to be used as base tables in
   // Drupal Views.
@@ -335,7 +334,6 @@ function tripal_protocol_add_cvterms() {
     'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ]);
-
 }
 
 /**
@@ -349,22 +347,67 @@ function tripal_protocol_uninstall() {
 
 /**
  * Create protocol bundle.
- *
- * @throws \Exception
  */
 function tripal_protocol_update_7201() {
+  // Insert semweb cvterms for protocol table
+  tripal_insert_cvterm([
+    'id' => 'sep:00101',
+    'name' => 'protocol',
+    'cv_name' => 'sep',
+    'definition' => 'A protocol is a process which is a parameterizable description of a process.',
+  ]);
+
+  // protocol.uri
+  $term = tripal_insert_cvterm([
+    'id' => 'schema:url',
+    'name' => 'url',
+    'cv_name' => 'schema',
+    'definition' => 'URL of the item.',
+  ]);
+  tripal_associate_chado_semweb_term('protocol', 'uri', $term);
+
+  // protocol.protocoldescription
+  $term = tripal_insert_cvterm([
+    'id' => 'local:protocol_description',
+    'name' => 'protocol_description',
+    'cv_name' => 'local',
+    'definition' => 'A description of the protocol.',
+  ]);
+  tripal_associate_chado_semweb_term('protocol', 'protocoldescription', $term);
+
+  // protocol.hardwaredescription
+  $term = tripal_insert_cvterm([
+    'id' => 'local:hardware_description',
+    'name' => 'hardware_description',
+    'cv_name' => 'local',
+    'definition' => 'A description of the hardware.',
+  ]);
+  tripal_associate_chado_semweb_term('protocol', 'hardwaredescription', $term);
+
+  // protocol.softwaredescription
+  $term = tripal_insert_cvterm([
+    'id' => 'local:software_description',
+    'name' => 'software_description',
+    'cv_name' => 'local',
+    'definition' => 'A description of the software.',
+  ]);
+  tripal_associate_chado_semweb_term('protocol', 'softwaredescription', $term);
+
   // Create the 'Protocol' entity type. This uses the sep:00101 term.
-  $error = '';
-  $args = array(
+  $error = [];
+  $args = [
     'vocabulary' => 'sep',
     'accession' => '00101',
     'term_name' => 'protocol',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'protocol',
-    )
-  );
-  $term = tripal_load_term_entity(array('vocabulary' => $args['vocabulary'], 'accession' => $args['accession']));
-  $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    ],
+  ];
+  $term = tripal_load_term_entity([
+    'vocabulary' => $args['vocabulary'],
+    'accession' => $args['accession'],
+  ]);
+  $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
   if (!$term or !$bundle) {
     if (!tripal_create_bundle($args, $error)) {
       throw new Exception($error['!message']);

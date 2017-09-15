@@ -362,7 +362,7 @@ function tripal_analysis_expression_block_view($delta = '') {
     case 'input_features':
       $block['subject'] = t('Feature Expression');
       $block['content'] = drupal_get_form('feature_heatmap_form');
-      drupal_add_js(['example' => variable_get('tripal_analysis_expression_heatmap_example')], ['type' => 'setting']);
+      drupal_add_js(['visual_expression_example' => variable_get('tripal_analysis_expression_heatmap_example')], ['type' => 'setting']);
       drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/example.js');
       break;
     case 'heatmap_features':
@@ -370,9 +370,11 @@ function tripal_analysis_expression_block_view($delta = '') {
       if (!empty($heatmap['heatmap_data'])) {
         $block['subject'] = t('Feature Expression Heatmap');
         $block['content'] = '<div id="vis_expression"></div>';
+        drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
         drupal_add_js(['tripal_analysis_expression' => ['heatmap_data' => $heatmap['heatmap_data']]], ['type' => 'setting']);
         drupal_add_js(['tripal_analysis_expression' => ['left_margin' => $heatmap['left_margin']]], ['type' => 'setting']);
         drupal_add_js(['tripal_analysis_expression' => ['bottom_margin' => $heatmap['bottom_margin']]], ['type' => 'setting']);
+        drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap.js');
       }
       else {
         $block['subject'] = '';
@@ -382,9 +384,6 @@ function tripal_analysis_expression_block_view($delta = '') {
       }
       break;
   }
-
-  drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
-  drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap.js');
 
   return $block;
 }
