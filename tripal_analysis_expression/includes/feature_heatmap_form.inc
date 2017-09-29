@@ -250,9 +250,9 @@ function tripal_analysis_expression_generate_heatmap_values() {
   }
 
   // use the max id length times 8 to get an appropriate pixel number for left margin
-  $left_margin = $max_id_len * 12;
+  $left_margin = ($max_id_len * 12) / 1.5;
   // use the max length of treatment name times 7 to get an appropriate pixel number of bottom margin
-  $bottom_margin = $max_treatment_name * 12;
+  $bottom_margin = ($max_treatment_name * 12) / 1.5;
 
   // Build variable for plotly function in js file.
   // Note that this variable requires that the x, y, z and type are not within double quotations
