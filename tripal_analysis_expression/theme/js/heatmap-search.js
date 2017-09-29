@@ -33,11 +33,11 @@
     },
 
     loadingShow: function () {
-      $('#heatmap-form-throbber').show();
+      $('#heatmap-form-throbber').css('display', 'block');
     },
 
     loadingHide: function () {
-      $('#heatmap-form-throbber').hide();
+      $('#heatmap-form-throbber').css('display', 'none!important');
     },
 
     search: function () {

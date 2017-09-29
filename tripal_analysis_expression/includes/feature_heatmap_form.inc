@@ -293,7 +293,7 @@ function feature_heatmap_search_form($form, &$form_state) {
   ];
 
   $form['search_results_fieldset'] = [
-    '#markup' => '<div id="feature-heatmap-search-results-wrapper"><div class="ajax-progress ajax-progress-throbber" id="heatmap-form-throbber"></div><div id="feature-heatmap-search-results"></div></div>',
+    '#markup' => '<div id="feature-heatmap-search-results-wrapper"><div class="ajax-progress ajax-progress-throbber" id="heatmap-form-throbber" style="display: none!important;"></div><div id="feature-heatmap-search-results"></div></div>',
     '#type' => 'markup',
   ];
 
