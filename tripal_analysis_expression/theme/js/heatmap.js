@@ -14,10 +14,14 @@
         }).node();
 
         var heatmap_data  = settings.tripal_analysis_expression.heatmap_data;
-        //var left_margin   = settings.tripal_analysis_expression.left_margin;
-        //var bottom_margin = settings.tripal_analysis_expression.bottom_margin;
+        var left_margin   = settings.tripal_analysis_expression.left_margin;
+        var bottom_margin = settings.tripal_analysis_expression.bottom_margin;
         var layout        = {
-          title: 'Expression Heatmap'
+          title : 'Expression Heatmap',
+          margin: {
+            l: left_margin,
+            b: bottom_margin
+          }
         };
         Plotly.plot(node, heatmap_data, layout);
 
