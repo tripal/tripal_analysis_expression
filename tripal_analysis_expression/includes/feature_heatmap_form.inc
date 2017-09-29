@@ -314,11 +314,11 @@ function tripal_analysis_expression_search_features_callback() {
 
   $sql = "SELECT feature_uniquename AS uniquename, organism_common_name AS common_name 
             FROM {expression_feature}
-            WHERE feature_uniquename LIKE :feature_uniquename
+            WHERE LOWER(feature_uniquename) LIKE :feature_uniquename
             ORDER BY feature_uniquename
             LIMIT 10";
 
-  $results = chado_query($sql, [':feature_uniquename' => '%' . db_like($_GET['terms']) . '%']);
+  $results = chado_query($sql, [':feature_uniquename' => '%' . db_like(strtolower($_GET['terms'])) . '%']);
 
   if (!$results) {
     drupal_json_output(['data' => []]);
