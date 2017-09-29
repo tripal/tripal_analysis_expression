@@ -322,6 +322,12 @@ function tripal_analysis_expression_search_features_callback() {
             ORDER BY F.uniquename
             LIMIT 20";
 
+  $sql = "SELECT F.uniquename, O.common_name FROM {feature} F
+            INNER JOIN {organism} O ON F.organism_id = O.organism_id
+            WHERE F.uniquename LIKE :feature_uniquename
+            ORDER BY F.uniquename
+            LIMIT 20";
+
   $results = chado_query($sql, [':feature_uniquename' => '%' . db_like($_GET['terms']) . '%']);
 
   drupal_json_output(['data' => $results->fetchAll()]);
