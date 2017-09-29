@@ -312,8 +312,9 @@ function tripal_analysis_expression_search_features_callback() {
     return;
   }
 
-  $sql = "SELECT  F.uniquename, O.common_name FROM {expression_feature} EF
-            WHERE EF.feature_uniquename LIKE :feature_uniquename
+  $sql = "SELECT feature_uniquename AS uniquename, organism_common_name AS common_name 
+            FROM {expression_feature}
+            WHERE feature_uniquename LIKE :feature_uniquename
             ORDER BY EF.feature_uniquename
             LIMIT 10";
 
