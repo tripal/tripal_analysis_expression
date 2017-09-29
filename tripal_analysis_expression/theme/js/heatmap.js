@@ -19,7 +19,6 @@
         var layout        = {
           title: 'Expression Heatmap'
         };
-        console.log(heatmap_data)
         Plotly.plot(node, heatmap_data, layout);
 
         $(window).on('resize', function () {

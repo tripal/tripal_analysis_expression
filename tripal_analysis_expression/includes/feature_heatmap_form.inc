@@ -320,7 +320,7 @@ function tripal_analysis_expression_search_features_callback() {
             INNER JOIN {organism} O ON F.organism_id = O.organism_id
             WHERE F.uniquename LIKE :feature_uniquename
             ORDER BY F.uniquename
-            LIMIT 50";
+            LIMIT 20";
 
   $results = chado_query($sql, [':feature_uniquename' => '%' . db_like($_GET['terms']) . '%']);
 
