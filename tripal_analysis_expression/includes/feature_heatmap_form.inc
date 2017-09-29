@@ -312,22 +312,14 @@ function tripal_analysis_expression_search_features_callback() {
     return;
   }
 
-  $sql = "SELECT DISTINCT F.uniquename, O.common_name FROM {feature} F
-            RIGHT JOIN {organism} O ON F.organism_id = O.organism_id
-            RIGHT JOIN {element} E ON E.feature_id = F.feature_id
-            RIGHT JOIN {elementresult} ER ON ER.element_id = E.element_id
-            RIGHT JOIN {quantification} Q ON Q.quantification_id = ER.quantification_id
-            RIGHT JOIN {acquisition} AC ON AC.acquisition_id = Q.acquisition_id
-            RIGHT JOIN {assay} A ON A.assay_id = AC.assay_id
-            RIGHT JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
-            RIGHT JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
-            WHERE F.uniquename LIKE :feature_uniquename
-            ORDER BY F.uniquename
+  $sql = "SELECT  F.uniquename, O.common_name FROM {expression_feature} EF
+            WHERE EF.feature_uniquename LIKE :feature_uniquename
+            ORDER BY EF.feature_uniquename
             LIMIT 10";
 
   $results = chado_query($sql, [':feature_uniquename' => '%' . db_like($_GET['terms']) . '%']);
 
-  if(!$results) {
+  if (!$results) {
     drupal_json_output(['data' => []]);
     return;
   }
