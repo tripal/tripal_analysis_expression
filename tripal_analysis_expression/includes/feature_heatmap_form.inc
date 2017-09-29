@@ -149,6 +149,9 @@ function tripal_analysis_expression_generate_heatmap_values() {
 
   if (!empty($heatmap_feature_uniquename)) {  // search with feature uniquename
     $feature_ids = preg_split("/[\s,]+/", $heatmap_feature_uniquename, -1, PREG_SPLIT_NO_EMPTY);
+    if (count($feature_ids) < 2) {
+      return FALSE;
+    }
     foreach ($feature_ids as $feature_id) {
       // trim white space at the beginning and the end
       $feature_id = trim($feature_id);

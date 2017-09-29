@@ -23,6 +23,7 @@
             b: bottom_margin
           }
         };
+
         Plotly.plot(node, heatmap_data, layout);
 
         $(window).on('resize', function () {
