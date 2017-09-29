@@ -5,17 +5,39 @@
   max-height: 200px;
   overflow-y: auto;
 
-  > p,
+  > p {
+    padding: .5rem;
+    margin: 0;
+    color: #999;
+    &.heatmap-dropdown-header {
+      text-align: center;
+      background-color: #f9f9f9;
+      border-bottom: 1px solid #f7f7f7;
+    }
+  }
+
   .heatmap-results-item {
     padding: 0.5rem 1rem;
     margin: 0;
     display: block;
     border-bottom: 1px solid rgba(#000, .05);
+    font-weight: bold;
 
     &.disabled {
       color: #777;
-      text-decoration: none;
       cursor: default;
+    }
+
+    > div {
+      color: #666;
+      font-weight: normal;
+    }
+
+    &:hover {
+      text-decoration: none;
+      &, > div {
+        color: #000;
+      }
     }
   }
 }

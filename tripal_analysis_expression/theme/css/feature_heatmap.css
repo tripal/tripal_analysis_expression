@@ -63,18 +63,53 @@
   overflow-y: auto;
 }
 
-#feature-heatmap-search-results > p,
+#feature-heatmap-search-results > p {
+  padding: .5rem;
+  margin: 0;
+  color: #999;
+}
+
+#feature-heatmap-search-results > p.heatmap-dropdown-header {
+  text-align: center;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #f7f7f7;
+}
+
 #feature-heatmap-search-results .heatmap-results-item {
   padding: 0.5rem 1rem;
   margin: 0;
   display: block;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font-weight: bold;
 }
 
-#feature-heatmap-search-results > p.disabled,
 #feature-heatmap-search-results .heatmap-results-item.disabled {
   color: #777;
-  text-decoration: none;
   cursor: default;
+}
+
+#feature-heatmap-search-results .heatmap-results-item > div {
+  color: #666;
+  font-weight: normal;
+}
+
+#feature-heatmap-search-results .heatmap-results-item:hover {
+  text-decoration: none;
+}
+
+#feature-heatmap-search-results .heatmap-results-item:hover,
+#feature-heatmap-search-results .heatmap-results-item:hover > div {
+  color: #000;
+}
+
+#feature-heatmap-search-results-wrapper {
+  position: relative;
+}
+
+#heatmap-form-throbber {
+  position: absolute;
+  top: 7px;
+  right: 0;
+  display: none;
 }
 

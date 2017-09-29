@@ -9,17 +9,21 @@
           return;
         }
 
+        var node = Plotly.d3.select('#vis_expression').style({
+          width: '100%'
+        }).node();
+
         var heatmap_data  = settings.tripal_analysis_expression.heatmap_data;
         var left_margin   = settings.tripal_analysis_expression.left_margin;
         var bottom_margin = settings.tripal_analysis_expression.bottom_margin;
         var layout        = {
-          title : 'Expression Heatmap',
-          margin: {
-            b: bottom_margin,
-            l: left_margin
-          }
+          title : 'Expression Heatmap'
         };
-        Plotly.newPlot('vis_expression', heatmap_data, layout);
+        Plotly.newPlot(node, heatmap_data, layout);
+
+        $(window).on('resize', function () {
+          Plotly.Plots.resize(node);
+        });
       });
     }
   };

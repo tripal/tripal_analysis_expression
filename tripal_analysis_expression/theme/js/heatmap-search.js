@@ -13,20 +13,31 @@
       this.reset();
 
       this.term_field.on('keyup', this.search.bind(this));
+
+      var that = this;
+
       $(document).on('click', '.heatmap-results-item', function (event) {
-        var link = $(event.target);
+        var link = $(this);
 
         if (link.is('.disabled')) {
           return;
         }
 
-        this.chooseFeature(link.data('value'));
-        $(event.target).addClass('disabled');
-      }.bind(this));
+        that.chooseFeature(link.data('value'));
+        link.addClass('disabled');
+      });
     },
 
     reset: function () {
       this.results_block.html('<p>Type a search term above to search for features</p>');
+    },
+
+    loadingShow: function () {
+      $('#heatmap-form-throbber').show();
+    },
+
+    loadingHide: function () {
+      $('#heatmap-form-throbber').hide();
     },
 
     search: function () {
@@ -36,17 +47,22 @@
         return this.reset();
       }
 
+      this.loadingShow();
       $.get('/tripal/analysis-expression/heatmap/search', {
         terms: terms
       }, this.renderSearchResults.bind(this), 'json').error(function (a, b, c) {
+        this.loadingHide();
         console.log('Search failed with status code: ' + a.status, b, c);
-      });
+      }.bind(this));
     },
 
     renderSearchResults: function (response) {
+      this.loadingHide();
+
       var html = '<p>No results found</p>';
       if (response.data.length > 0) {
-        html = response.data.map(this.renderRow.bind(this)).join('');
+        html = '<p class="heatmap-dropdown-header">Select Features</p>';
+        html += response.data.map(this.renderRow.bind(this)).join('');
       }
       this.results_block.html(html);
     },
@@ -58,6 +74,7 @@
 
       return '<a href="javascript:void(0);" class="heatmap-results-item' + disabled + '" data-value="' + name + '">'
           + name
+          + '<div>Organism: ' + row.common_name + '</div>'
           + '</a>';
     },
 
