@@ -1,7 +1,7 @@
 (function ($) {
   Drupal.behaviors.tripal_analysis_expression = {
     attach: function (context, settings) {
-      $(document).ready(function () {
+      $(function () {
         if (typeof settings.tripal_analysis_expression === 'undefined') {
           return;
         }
@@ -9,7 +9,7 @@
           return;
         }
 
-        var heatmap_data = settings.tripal_analysis_expression.heatmap_data;
+        var heatmap_data  = settings.tripal_analysis_expression.heatmap_data;
         var left_margin   = settings.tripal_analysis_expression.left_margin;
         var bottom_margin = settings.tripal_analysis_expression.bottom_margin;
         var layout        = {

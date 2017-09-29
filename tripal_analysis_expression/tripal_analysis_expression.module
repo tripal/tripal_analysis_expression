@@ -32,8 +32,8 @@ function tripal_analysis_expression_help($path, $arg) {
     case 'admin/help#tripal_analysis_expression' : {
       $ret_val = '<h3>' . t('Module Content Types') . '</h3>';
       $ret_val .= '<p>' . t('The expression module allows the user to load and display expression information.  It relies on the protocols and biomaterial modules to store the data in Chado.') . '</p>';
-    $ret_val .= "<b>" . l(t("Expression Loader V3"), "loaders/Chado_Expression_Data_Loader") . "</b> - ";
-    $ret_val .= t("The Tripal expression loader.  Data is loaded in matrix or column file format.  Expession data is associated with an analysis and biomaterial, and values are linked to individual features (generally an expression level in a biomaterial)<br><br>");
+      $ret_val .= "<b>" . l(t("Expression Loader V3"), "loaders/Chado_Expression_Data_Loader") . "</b> - ";
+      $ret_val .= t("The Tripal expression loader.  Data is loaded in matrix or column file format.  Expession data is associated with an analysis and biomaterial, and values are linked to individual features (generally an expression level in a biomaterial)<br><br>");
 
       return $ret_val;
       break;
@@ -102,7 +102,7 @@ function tripal_analysis_expression_menu() {
     'description' => 'Administrative pages for the Tripal Expression Analysis module.',
     'access arguments' => ['administer tripal analysis expression'],
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_analysis_expression_heatmap_settings_form']
+    'page arguments' => ['tripal_analysis_expression_heatmap_settings_form'],
   ];
 
   // Expression display on feature pages.
@@ -201,6 +201,13 @@ function tripal_analysis_expression_menu() {
     ],
   ];
 
+  $items['tripal/analysis-expression/heatmap/search'] = [
+    'title' => '',
+    'access arguments' => ['access content'],
+    'page callback' => 'tripal_analysis_expression_search_features_callback',
+    'type' => MENU_CALLBACK,
+  ];
+
   return $items;
 }
 
@@ -233,6 +240,7 @@ function tripal_analysis_expression_views_api() {
  * @param $type
  * @param $theme
  * @param $path
+ *
  * @see \theme() for paramaters instructions
  *
  * @ingroup tripal_analysis_expression
@@ -285,7 +293,7 @@ function tripal_analysis_expression_block_info() {
   $blocks = [];
   $blocks['input_features'] = [
     'info' => t('tripal_analysis_expression features form for heatmap'),
-    'status' => 1,
+    //'status' => 0,
     'region' => 'content',
     'weight' => 24,
     'cache' => DRUPAL_NO_CACHE,
@@ -293,13 +301,28 @@ function tripal_analysis_expression_block_info() {
 
   $blocks['heatmap_features'] = [
     'info' => t('tripal_analysis_expression heatmap display'),
-    'status' => 1,
+    //'status' => 0,
     'region' => 'content',
     'weight' => 25,
     'cache' => DRUPAL_NO_CACHE,
   ];
 
   return $blocks;
+}
+
+function tripal_analysis_expression_generate_feature_map_input_block() {
+  $content = '<div class="heatmap-columns">';
+  $input_textarea = drupal_get_form('feature_heatmap_form');
+  $content .= '<div class="heatmap-column">' . render($input_textarea) . '</div>';
+  $search_form = drupal_get_form('feature_heatmap_search_form');
+  $content .= '<div class="heatmap-column is-3">' . render($search_form) . '</div>';
+  $content .= '</div>';
+
+  drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css/feature_heatmap.css');
+  drupal_add_js(['visual_expression_example' => variable_get('tripal_analysis_expression_heatmap_example')], ['type' => 'setting']);
+  drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/example.js');
+
+  return $content;
 }
 
 /*
@@ -309,13 +332,12 @@ function tripal_analysis_expression_block_view($delta = '') {
   $block = [];
   switch ($delta) {
     case 'input_features':
-      $block['subject'] = t('Feature Expression');
-      $block['content'] = drupal_get_form('feature_heatmap_form');
-      drupal_add_js(['visual_expression_example' => variable_get('tripal_analysis_expression_heatmap_example')], ['type' => 'setting']);
-      drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/example.js');
+      $block['subject'] = t('Feature Expression Visualization');
+      $block['content'] = tripal_analysis_expression_generate_feature_map_input_block();
+      drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap-search.js');
       break;
     case 'heatmap_features':
-      $heatmap = generate_heatmap_values();
+      $heatmap = tripal_analysis_expression_generate_heatmap_values();
       if (!empty($heatmap['heatmap_data'])) {
         $block['subject'] = t('Feature Expression Heatmap');
         $block['content'] = '<div id="vis_expression"></div>';

@@ -1,0 +1,40 @@
+.heatmap-columns {
+  @include flexbox();
+  @include flex-wrap(nowrap);
+  margin: 0 -22px;
+
+  @media (max-width: 800px) {
+    @include flex-wrap(wrap);
+    @include flex-direction(column-reverse);
+    margin: 0;
+  }
+}
+.heatmap-column {
+  padding: 22px;
+
+  &:not([class*="is-"]) {
+    @include flex(1);
+  }
+
+  $column-width: 1 / 12;
+  &.is-1 {
+    width: percentage($column-width);
+  }
+
+  &.is-2 {
+    width: percentage($column-width * 2);
+  }
+
+  &.is-3 {
+    width: percentage($column-width * 3);
+  }
+
+  &.is-3 {
+    width: percentage($column-width * 4);
+  }
+
+  @media (max-width: 800px) {
+    width: 100% !important;
+    padding: 22px 0;
+  }
+}
