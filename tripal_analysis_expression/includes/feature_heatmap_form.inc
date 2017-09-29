@@ -263,7 +263,8 @@ function tripal_analysis_expression_generate_heatmap_values() {
     $heatmap_data = [
       [
         'x' => $x,
-        'y' => $z,
+        'y' => $y,
+        'z' => $z,
         'text' => $text,
         'hoverinfo' => 'all',
         'type' => 'heatmap',

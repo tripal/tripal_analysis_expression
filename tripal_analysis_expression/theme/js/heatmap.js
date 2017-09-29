@@ -20,7 +20,7 @@
           title: 'Expression Heatmap'
         };
         console.log(heatmap_data)
-        Plotly.newPlot(node, heatmap_data, layout);
+        Plotly.plot(node, heatmap_data, layout);
 
         $(window).on('resize', function () {
           Plotly.Plots.resize(node);
