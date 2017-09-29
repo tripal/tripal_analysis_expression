@@ -33,11 +33,11 @@
     },
 
     loadingShow: function () {
-      $('#heatmap-form-throbber').css('display', 'block');
+      $('#heatmap-form-throbber').addClass('ajax-progress').addClass('ajax-progress-throbber');
     },
 
     loadingHide: function () {
-      $('#heatmap-form-throbber').css('display', 'none!important');
+      $('#heatmap-form-throbber').removeClass('ajax-progress').removeClass('ajax-progress-throbber');
     },
 
     search: function () {

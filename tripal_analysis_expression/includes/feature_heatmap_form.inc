@@ -296,7 +296,7 @@ function feature_heatmap_search_form($form, &$form_state) {
   ];
 
   $form['search_results_fieldset'] = [
-    '#markup' => '<div id="feature-heatmap-search-results-wrapper"><div class="ajax-progress ajax-progress-throbber" id="heatmap-form-throbber" style="display: none!important;"></div><div id="feature-heatmap-search-results"></div></div>',
+    '#markup' => '<div id="feature-heatmap-search-results-wrapper"><div id="heatmap-form-throbber"></div><div id="feature-heatmap-search-results"></div></div>',
     '#type' => 'markup',
   ];
 
@@ -312,26 +312,25 @@ function tripal_analysis_expression_search_features_callback() {
     return;
   }
 
-  $sql = "SELECT DISTINCT(F.uniquename), O.common_name FROM {elementresult} ER
-            INNER JOIN {element} E ON E.element_id = ER.element_id
-            INNER JOIN {feature} F ON F.feature_id = E.feature_id
-            INNER JOIN {quantification} Q ON Q.quantification_id = ER.quantification_id
-            INNER JOIN {acquisition} AQ ON AQ.acquisition_id = Q.acquisition_id
-            INNER JOIN {assay} A ON A.assay_id = AQ.assay_id
-            INNER JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
-            INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
-            INNER JOIN {organism} O ON F.organism_id = O.organism_id
+  $sql = "SELECT DISTINCT F.uniquename, O.common_name FROM {feature} F
+            RIGHT JOIN {organism} O ON F.organism_id = O.organism_id
+            RIGHT JOIN {element} E ON E.feature_id = F.feature_id
+            RIGHT JOIN {elementresult} ER ON ER.element_id = E.element_id
+            RIGHT JOIN {quantification} Q ON Q.quantification_id = ER.quantification_id
+            RIGHT JOIN {acquisition} AC ON AC.acquisition_id = Q.acquisition_id
+            RIGHT JOIN {assay} A ON A.assay_id = AC.assay_id
+            RIGHT JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
+            RIGHT JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
             WHERE F.uniquename LIKE :feature_uniquename
             ORDER BY F.uniquename
-            LIMIT 20";
-
-  $sql = "SELECT F.uniquename, O.common_name FROM {feature} F
-            INNER JOIN {organism} O ON F.organism_id = O.organism_id
-            WHERE F.uniquename LIKE :feature_uniquename
-            ORDER BY F.uniquename
-            LIMIT 20";
+            LIMIT 10";
 
   $results = chado_query($sql, [':feature_uniquename' => '%' . db_like($_GET['terms']) . '%']);
+
+  if(!$results) {
+    drupal_json_output(['data' => []]);
+    return;
+  }
 
   drupal_json_output(['data' => $results->fetchAll()]);
   return;

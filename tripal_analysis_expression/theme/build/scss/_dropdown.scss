@@ -2,7 +2,7 @@
 #feature-heatmap-search-results {
   box-shadow: 0 0 1px rgba(#000, .25), 0 2px 4px rgba(#000, .125);
   border-radius: 5px;
-  max-height: 200px;
+  max-height: 400px;
   overflow-y: auto;
 
   > p {
@@ -17,6 +17,7 @@
   }
 
   .heatmap-results-item {
+    word-break: break-all;
     padding: 0.5rem 1rem;
     margin: 0;
     display: block;
