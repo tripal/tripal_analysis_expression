@@ -318,7 +318,7 @@ function tripal_analysis_expression_search_features_callback() {
             INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
             WHERE F.uniquename LIKE :feature_uniquename
             ORDER BY F.uniquename
-            LIMIT 10";
+            LIMIT 50";
 
   $results = chado_query($sql, [':feature_uniquename' => '%' . db_like($_GET['terms']) . '%']);
 
