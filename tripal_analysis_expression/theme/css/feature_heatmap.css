@@ -1,1 +1,80 @@
-.heatmap-columns{display:-webkit-box;display:-moz-flex;display:-ms-flexbox;display:flex;-ms-flex-wrap:none;flex-wrap:nowrap;margin:0 -22px}@media (max-width:800px){.heatmap-columns{-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-direction:reverse;-webkit-box-orient:vertical;-moz-flex-direction:column-reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse;margin:0}}.heatmap-column{padding:22px}.heatmap-column:not([class*=is-]){-webkit-box-flex:1;-moz-flex:1;-ms-flex:1;flex:1}.heatmap-column.is-1{width:8.33333333%}.heatmap-column.is-2{width:16.66666667%}.heatmap-column.is-3{width:25%;width:33.33333333%}@media (max-width:800px){.heatmap-column{width:100%!important;padding:22px 0}}#feature-heatmap-search-results{-webkit-box-shadow:0 0 1px rgba(0,0,0,.25),0 2px 4px rgba(0,0,0,.125);box-shadow:0 0 1px rgba(0,0,0,.25),0 2px 4px rgba(0,0,0,.125);border-radius:5px}#feature-heatmap-search-results .heatmap-results-item,#feature-heatmap-search-results>p{padding:1rem;margin:0;display:block}
+.heatmap-columns {
+  display: -webkit-box;
+  display: -moz-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: none;
+  flex-wrap: nowrap;
+  margin: 0 -22px;
+}
+
+@media (max-width: 800px) {
+  .heatmap-columns {
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -webkit-box-direction: reverse;
+    -webkit-box-orient: vertical;
+    -moz-flex-direction: column-reverse;
+    -ms-flex-direction: column-reverse;
+    flex-direction: column-reverse;
+    margin: 0;
+  }
+}
+
+.heatmap-column {
+  padding: 22px;
+}
+
+.heatmap-column:not([class*="is-"]) {
+  -webkit-box-flex: 1;
+  -moz-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+}
+
+.heatmap-column.is-1 {
+  width: 8.33333333%;
+}
+
+.heatmap-column.is-2 {
+  width: 16.66666667%;
+}
+
+.heatmap-column.is-3 {
+  width: 25%;
+}
+
+.heatmap-column.is-3 {
+  width: 33.33333333%;
+}
+
+@media (max-width: 800px) {
+  .heatmap-column {
+    width: 100% !important;
+    padding: 22px 0;
+  }
+}
+
+#feature-heatmap-search-results {
+  -webkit-box-shadow: 0 0 1px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.125);
+          box-shadow: 0 0 1px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.125);
+  border-radius: 5px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+#feature-heatmap-search-results > p,
+#feature-heatmap-search-results .heatmap-results-item {
+  padding: 0.5rem 1rem;
+  margin: 0;
+  display: block;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+#feature-heatmap-search-results > p.disabled,
+#feature-heatmap-search-results .heatmap-results-item.disabled {
+  color: #777;
+  text-decoration: none;
+  cursor: default;
+}
+

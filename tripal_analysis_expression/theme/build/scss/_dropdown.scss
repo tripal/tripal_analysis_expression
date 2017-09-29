@@ -2,11 +2,20 @@
 #feature-heatmap-search-results {
   box-shadow: 0 0 1px rgba(#000, .25), 0 2px 4px rgba(#000, .125);
   border-radius: 5px;
+  max-height: 200px;
+  overflow-y: auto;
 
   > p,
   .heatmap-results-item {
-    padding: 1rem;
+    padding: 0.5rem 1rem;
     margin: 0;
     display: block;
+    border-bottom: 1px solid rgba(#000, .05);
+
+    &.disabled {
+      color: #777;
+      text-decoration: none;
+      cursor: default;
+    }
   }
 }

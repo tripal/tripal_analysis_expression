@@ -14,7 +14,14 @@
 
       this.term_field.on('keyup', this.search.bind(this));
       $(document).on('click', '.heatmap-results-item', function (event) {
-        this.chooseFeature($(event.target).data('value'));
+        var link = $(event.target);
+
+        if (link.is('.disabled')) {
+          return;
+        }
+
+        this.chooseFeature(link.data('value'));
+        $(event.target).addClass('disabled');
       }.bind(this));
     },
 
@@ -39,25 +46,31 @@
     renderSearchResults: function (response) {
       var html = '<p>No results found</p>';
       if (response.data.length > 0) {
-        html = response.data.map(this.renderRow.bind(this)).join();
+        html = response.data.map(this.renderRow.bind(this)).join('');
       }
       this.results_block.html(html);
     },
 
     renderRow: function (row) {
       var name = row.uniquename;
-      return '<a href="javascript:void(0);" class="heatmap-results-item" data-value="' + name + '">'
+
+      var disabled = this.feature_textarea.val().indexOf(name) > -1 ? ' disabled' : '';
+
+      return '<a href="javascript:void(0);" class="heatmap-results-item' + disabled + '" data-value="' + name + '">'
           + name
           + '</a>';
     },
 
     chooseFeature: function (feature) {
-      var value     = this.feature_textarea.val();
-      var selection = value.split(',', value);
-      console.log(selection);
+      var value = this.feature_textarea.val().trim();
+      if (value.length === 0) {
+        this.feature_textarea.val(feature);
+        return;
+      }
+
+      var selection = value.split(',');
       selection.push(feature);
-      console.log(selection);
-      this.feature_textarea.val(selection.join(','));
+      this.feature_textarea.val(selection.join(',').trim());
     }
   };
 })(jQuery);
