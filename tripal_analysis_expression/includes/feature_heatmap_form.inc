@@ -326,7 +326,7 @@ function tripal_analysis_expression_search_features_callback() {
             LEFT JOIN {cvterm} CVT ON CVT.cvterm_id = FC.cvterm_id
             LEFT JOIN {dbxref} DXR ON DXR.dbxref_id = CVT.dbxref_id
             WHERE LOWER(EF.feature_uniquename) LIKE :feature_uniquename OR LOWER(EF.organism_common_name) LIKE :organism_name
-                  OR LOWER(DXR.accession) = :accession
+                  OR LOWER(DXR.accession) LIKE :accession
             ORDER BY feature_uniquename
             LIMIT 20";
 
@@ -335,7 +335,7 @@ function tripal_analysis_expression_search_features_callback() {
   $results = chado_query($sql, [
     ':feature_uniquename' => $term,
     ':organism_name' => $term,
-    ':accession' => strtolower($_GET['terms']),
+    ':accession' => $term
   ]);
 
   if (!$results) {
