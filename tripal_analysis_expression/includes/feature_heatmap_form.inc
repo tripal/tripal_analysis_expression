@@ -91,8 +91,7 @@ function feature_heatmap_form($form, &$form_state) {
     ],
   ];
 
-  // Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6
-  $example = variable_get('tripal_analysis_expression_heatmap_placeholder');
+  $example = variable_get('tripal_analysis_expression_heatmap_example');
   $form['heatmap_feature_uniquename'] = [
     '#type' => 'textarea',
     '#title' => t('Enter feature unique names'),
