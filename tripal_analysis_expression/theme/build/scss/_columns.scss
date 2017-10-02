@@ -13,7 +13,7 @@
   padding: 22px;
 
   &:not([class*="is-"]) {
-    @include flex(1);
+    @include flex-grow(100%);
   }
 
   $column-width: 1 / 12;
