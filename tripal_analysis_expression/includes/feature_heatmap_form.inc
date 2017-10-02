@@ -131,7 +131,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
     return NULL;
   }
 
-  $heatmap_feature_uniquename = e($_GET['heatmap_feature_uniquename']);
+  $heatmap_feature_uniquename = $_GET['heatmap_feature_uniquename'];
 
   $sql = "SELECT ER.elementresult_id, ER.signal, F.feature_id, F.uniquename, 
             Q.name AS quantification_name, Q.analysis_id, 
@@ -143,19 +143,28 @@ function tripal_analysis_expression_generate_heatmap_values() {
             INNER JOIN {assay} A ON A.assay_id = AQ.assay_id
             INNER JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
             INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
-            WHERE F.uniquename = :feature_uniquename";
+            WHERE F.uniquename IN (:feature_uniquename)";
 
   $expressions = [];
 
   if (!empty($heatmap_feature_uniquename)) {  // search with feature uniquename
-    $feature_ids = preg_split("/[\s,]+/", $heatmap_feature_uniquename, -1, PREG_SPLIT_NO_EMPTY);
+    $feature_ids = explode(',', $heatmap_feature_uniquename);
+
     if (count($feature_ids) < 2) {
       return FALSE;
     }
-    foreach ($feature_ids as $feature_id) {
-      // trim white space at the beginning and the end
-      $feature_id = trim($feature_id);
-      $expressions[$feature_id] = chado_query($sql, [":feature_uniquename" => $feature_id])->fetchAllAssoc('elementresult_id');
+
+    $expressions = [];
+    // Trim white space at the beginning and the end
+    foreach ($feature_ids as $key => $feature_id) {
+      $feature_ids[$key] = $feature_id = trim($feature_id);
+      $expressions[$feature_id] = [];
+    }
+
+    $expressions_all = chado_query($sql, [":feature_uniquename" => $feature_ids])->fetchAll();
+
+    foreach ($expressions_all as $expression) {
+      $expressions[$expression->uniquename][] = $expression;
     }
   }
 
@@ -175,6 +184,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
   // Loop through all biomaterial so that each feature have all biomaterials (treatment)
   // Assign NULL as expression intensity to all treatment.
   $expression_data = [];
+  $ids = [];
   foreach ($expressions as $feature_id => $features) {
     foreach ($biomaterials as $biomaterial_id) {
       $expression_data[$feature_id][$biomaterial_id] = NULL;
@@ -184,18 +194,13 @@ function tripal_analysis_expression_generate_heatmap_values() {
   // Foreach feature, loop through the biomaterials it has and get the signal value (expression data)
   foreach ($expressions as $feature_id => $features) {
     foreach ($features as $feature) {
+      $ids[$feature_id] = $feature->feature_id;
 
       // get analysis URL
       $analysis_url = '';
       $analysis_id = $feature->analysis_id;
-      $sql_analysis = "SELECT * FROM chado.analysis WHERE analysis_id=:analysis_id";
       if (!empty($analysis_id)) {
-        $analysis = db_query($sql_analysis, [':analysis_id' => $analysis_id])->fetchAllAssoc('analysis_id');
-        // analysis page url consists of analysis name, sourcename, program and programversion
-        $analysis_url = $analysis[$analysis_id]->name . ', ' . $analysis[$analysis_id]->sourcename . ' (' . $analysis[$analysis_id]->program . ', ' . $analysis[$analysis_id]->programversion . ')';
-        $analysis_url = preg_replace("/[^A-Za-z0-9 ]/", '', $analysis_url); // remove all non-alphanumeric charaters
-        $analysis_url = preg_replace("/\s/", '-', $analysis_url); // replace ' ' with '-'
-        $analysis_url = 'content/' . strtolower($analysis_url);
+        $analysis_url = 'bio_data/' . tripal_get_chado_entity_id('analysis', $analysis_id);
       }
 
       // get treatment
@@ -229,10 +234,15 @@ function tripal_analysis_expression_generate_heatmap_values() {
   $max_id_len = 0;
   foreach ($expression_data as $feature_id => $values) {
     // obtain max feature id length
-    if (strlen($feature_id) > $max_id_len) {
-      $max_id_len = strlen($feature_id);
+    $max_id_len = max(strlen($feature_id), $max_id_len);
+
+    if (isset($ids[$feature_id])) {
+      $y[] = l($feature_id, 'bio_data/' . tripal_get_chado_entity_id('feature', $ids[$feature_id]));
     }
-    $y[] = '<a href="/feature/' . $feature_id . '">' . $feature_id . '</a>';
+    else {
+      $y[] = $feature_id;
+    }
+
     $x = array_keys($values);
     $signals = [];
     $descriptions = [];
@@ -257,11 +267,9 @@ function tripal_analysis_expression_generate_heatmap_values() {
   // use the max length of treatment name times 7 to get an appropriate pixel number of bottom margin
   $bottom_margin = ($max_treatment_name * 12) / 1.5;
 
-  // Build variable for plotly function in js file.
-  // Note that this variable requires that the x, y, z and type are not within double quotations
-  // To build this variable, we first create a string, and then use javascripts' eval() function
-  // to convert this string into a javascript variable.
-  // The eval() function is called in the heatmap.js file.
+  // Build data for plotly function in js file.
+  $heatmap_data = [];
+
   if (!empty($x) and !empty($y) and !empty($z)) {
     $heatmap_data = [
       [
@@ -273,9 +281,6 @@ function tripal_analysis_expression_generate_heatmap_values() {
         'type' => 'heatmap',
       ],
     ];
-  }
-  else {
-    $heatmap_data = '';
   }
 
   return [
