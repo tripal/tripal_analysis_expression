@@ -322,9 +322,9 @@ function tripal_analysis_expression_search_features_callback() {
 
   $sql = "SELECT DISTINCT EF.feature_uniquename AS uniquename, EF.organism_common_name AS common_name, DXR.accession AS accession 
             FROM {expression_feature} EF
-            FULL OUTER JOIN {feature_cvterm} FC ON EF.feature_id = FC.feature_id
-            FULL OUTER JOIN {cvterm} CVT ON CVT.cvterm_id = FC.cvterm_id
-            FULL OUTER JOIN {dbxref} DXR ON DXR.dbxref_id = CVT.dbxref_id
+            JOIN {feature_cvterm} FC ON EF.feature_id = FC.feature_id
+            JOIN {cvterm} CVT ON CVT.cvterm_id = FC.cvterm_id
+            JOIN {dbxref} DXR ON DXR.dbxref_id = CVT.dbxref_id
             WHERE LOWER(EF.feature_uniquename) LIKE :feature_uniquename 
                   OR LOWER(EF.organism_common_name) LIKE :organism_name
                   OR LOWER(DXR.accession) LIKE :accession
