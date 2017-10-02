@@ -26,10 +26,11 @@
 }
 
 .heatmap-column:not([class*="is-"]) {
-  -webkit-box-flex: 100%;
-  -moz-flex-grow: 100%;
-  -ms-flex-positive: 100%;
-  flex-grow: 100%;
+  -webkit-box-flex: 1;
+  -moz-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  word-break: break-all;
 }
 
 .heatmap-column.is-1 {
