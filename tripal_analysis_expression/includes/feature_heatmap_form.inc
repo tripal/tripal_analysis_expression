@@ -33,6 +33,9 @@ function tripal_analysis_expression_heatmap_settings_form($form, &$form_state) {
     '#description' => 'The placeholder text for the text box.',
     '#required' => TRUE,
     '#default_value' => variable_get('tripal_analysis_expression_heatmap_placeholder'),
+    '#attributes' => [
+      'maxlength' => ''
+    ]
   ];
 
   $form['example'] = [
