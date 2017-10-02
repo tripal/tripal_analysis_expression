@@ -2,7 +2,8 @@
   Drupal.behaviors.tripal_analysis_expression_example = {
     attach: function (context, settings) {
       var example = settings.visual_expression_example;
-      if(!example) {
+      console.log(example);
+      if (!example) {
         return;
       }
       //'Fraxinus_pennsylvanica_120313_comp59663_c0_seq1,
@@ -16,7 +17,7 @@
       $('#edit-example-button').click(function (e) {
         e.preventDefault();
         $(this).val('Creating example heat map. Please wait...');
-        $('#edit-heatmap-feature-uniquename').val(example);
+        $('#heatmap_feature_uniquename').val(example);
         $(this).parents('form').submit();
       });
     }
