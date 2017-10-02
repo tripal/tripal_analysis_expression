@@ -59,8 +59,6 @@
     renderSearchResults: function (response) {
       this.loadingHide();
 
-      console.log(response);
-
       var html = '<p>No results found</p>';
       if (response.data.length > 0) {
         html = '<p class="heatmap-dropdown-header">Select Features</p>';
@@ -103,7 +101,9 @@
         return [];
       }
 
-      return value.split(',');
+      return value.split(',').map(function(m) {
+        return m.trim();
+      });
     }
   };
 })(jQuery);
