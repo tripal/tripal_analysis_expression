@@ -292,7 +292,7 @@ function feature_heatmap_search_form($form, &$form_state) {
     '#attributes' => [
       'placeholder' => t('Search features'),
       'id' => 'heatmap-search_term',
-      'autocomplete' => 'no',
+      'autocomplete' => 'off',
       'maxlength' => '',
       'size' => '',
     ],
