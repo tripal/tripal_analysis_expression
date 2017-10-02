@@ -10,6 +10,7 @@
       this.term_field       = $('#heatmap-search_term');
       this.results_block    = $('#feature-heatmap-search-results');
       this.feature_textarea = $('#heatmap_feature_uniquename');
+      this.request          = null;
       this.reset();
 
       this.term_field.on('keyup', this.search.bind(this));
@@ -40,20 +41,43 @@
       $('#heatmap-form-throbber').removeClass('ajax-progress').removeClass('ajax-progress-throbber');
     },
 
-    search: function () {
+    search: function (event) {
       var terms = this.term_field.val();
 
       if (terms.length === 0) {
         return this.reset();
       }
 
+      // Accept only alphanumeric characters and backspace
+      var input = String.fromCharCode(event.keyCode);
+      if (!/[a-zA-Z0-9-_ ]/.test(input) && event.keyCode !== 8) {
+        return;
+      }
+
+      if (this.request !== null) {
+        this.request.abort();
+      }
+
+      this.request = new window.XMLHttpRequest();
+
       this.loadingShow();
-      $.get('/tripal/analysis-expression/heatmap/search', {
-        terms: terms
-      }, this.renderSearchResults.bind(this), 'json').error(function (a, b, c) {
-        this.loadingHide();
-        console.log('Search failed with status code: ' + a.status, b, c);
-      }.bind(this));
+      $.ajax({
+        url     : '/tripal/analysis-expression/heatmap/search',
+        data    : {terms: terms},
+        success : this.renderSearchResults.bind(this),
+        error   : function (a, b, c) {
+          if (a.status === 0) {
+            return;
+          }
+          this.loadingHide();
+          console.log('Search failed with status code: ' + a.status, b, c);
+        }.bind(this),
+        type    : 'get',
+        dataType: 'json',
+        xhr     : function () {
+          return this.request;
+        }.bind(this)
+      });
     },
 
     renderSearchResults: function (response) {
@@ -101,7 +125,7 @@
         return [];
       }
 
-      return value.split(',').map(function(m) {
+      return value.split(',').map(function (m) {
         return m.trim();
       });
     }
