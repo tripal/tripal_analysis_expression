@@ -292,6 +292,9 @@ function feature_heatmap_search_form($form, &$form_state) {
     '#attributes' => [
       'placeholder' => t('Search features'),
       'id' => 'heatmap-search_term',
+      'autocomplete' => 'no',
+      'maxlength' => '',
+      'size' => '',
     ],
   ];
 
@@ -314,11 +317,16 @@ function tripal_analysis_expression_search_features_callback() {
 
   $sql = "SELECT feature_uniquename AS uniquename, organism_common_name AS common_name 
             FROM {expression_feature}
-            WHERE LOWER(feature_uniquename) LIKE :feature_uniquename
+            WHERE LOWER(feature_uniquename) LIKE :feature_uniquename OR LOWER(organism_common_name) LIKE :organism_name
             ORDER BY feature_uniquename
-            LIMIT 10";
+            LIMIT 20";
 
-  $results = chado_query($sql, [':feature_uniquename' => '%' . db_like(strtolower($_GET['terms'])) . '%']);
+  $term = '%' . db_like(strtolower($_GET['terms'])) . '%';
+
+  $results = chado_query($sql, [
+    ':feature_uniquename' => $term,
+    ':organism_name' => $term,
+  ]);
 
   if (!$results) {
     drupal_json_output(['data' => []]);

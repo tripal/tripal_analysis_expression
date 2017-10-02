@@ -70,7 +70,7 @@
     renderRow: function (row) {
       var name = row.uniquename;
 
-      var disabled = this.feature_textarea.val().indexOf(name) > -1 ? ' disabled' : '';
+      var disabled = this.getFeatures().indexOf(name) > -1 ? ' disabled' : '';
 
       return '<a href="javascript:void(0);" class="heatmap-results-item' + disabled + '" data-value="' + name + '">'
           + name
@@ -79,15 +79,22 @@
     },
 
     chooseFeature: function (feature) {
-      var value = this.feature_textarea.val().trim();
+      var value = this.getFeatures();
       if (value.length === 0) {
         this.feature_textarea.val(feature);
         return;
       }
+      value.push(feature);
+      this.feature_textarea.val(value.join(',').trim());
+    },
 
-      var selection = value.split(',');
-      selection.push(feature);
-      this.feature_textarea.val(selection.join(',').trim());
+    getFeatures: function() {
+      var value = this.feature_textarea.val().trim();
+      if (value.length === 0) {
+        return [];
+      }
+
+     return value.split(',');
     }
   };
 })(jQuery);
