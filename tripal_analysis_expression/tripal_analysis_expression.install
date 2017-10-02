@@ -70,3 +70,53 @@ function tripal_analysis_expression_update_7201() {
   variable_set('tripal_analysis_expression_heatmap_placeholder', 'Example: orange1.1g022520m, orange1.1g022799m');
   variable_set('tripal_analysis_expression_heatmap_example', 'orange1.1g022520m, orange1.1g022799m, orange1.1g022520m, orange1.1g022799m');
 }
+
+function tripal_analysis_expression_update_7202() {
+  $mv_name = 'expression_feature';
+  $comment = 'Store list of features that have expression data';
+  $schema = [
+    'table' => $mv_name,
+    'description' => $comment,
+    'fields' => [
+      'feature_id' => [
+        'size' => 'big',
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'organism_id' => [
+        'size' => 'big',
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'feature_uniquename' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'organism_common_name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+    ],
+    'indexes' => [
+      'expression_feature_feature_id_index' => ['feature_id'],
+      'expression_feature_organism_id_index' => ['organism_id'],
+      'expression_feature_feature_uniquename_index' => ['feature_uniquename'],
+      'expression_feature_organism_common_name_index' => ['organism_common_name'],
+    ],
+  ];
+
+  $sql = 'SELECT DISTINCT F.feature_id, O.organism_id, F.uniquename AS feature_uniquename, O.common_name AS organism_common_name
+            FROM {feature} F
+            INNER JOIN {organism} O ON F.organism_id = O.organism_id
+            INNER JOIN {element} E ON E.feature_id = F.feature_id
+            INNER JOIN {elementresult} ER ON ER.element_id = E.element_id
+            INNER JOIN {quantification} Q ON Q.quantification_id = ER.quantification_id
+            INNER JOIN {acquisition} AC ON AC.acquisition_id = Q.acquisition_id
+            INNER JOIN {assay} A ON A.assay_id = AC.assay_id
+            INNER JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
+            INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id';
+
+  tripal_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment);
+}

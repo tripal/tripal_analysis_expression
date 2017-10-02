@@ -16,6 +16,10 @@ function tripal_protocol_bundle_fields_info_alter(&$fields, $bundle, $term) {
     $fields['schema__url']['type'] = 'text';
     $fields['schema__name']['type'] = 'text';
   }
+
+  //if (isset($bundle->data_table) AND ($bundle->data_table == 'arraydesign')) {
+  //  $fields['local__manufacturer_id']['type'] = 'chado_linker__contact';
+  //}
 }
 
 /**
@@ -52,6 +56,14 @@ function tripal_protocol_bundle_instances_info_alter(&$instances, $bundle, $term
     $instances['schema__url']['required'] = TRUE;
     $instances['schema__url']['weight'] = 1;
   }
+
+  // Not gonna change manufacturer id to contacts type until the contacts field
+  // widget is capable of recognizing the correct column name (manufacturer_id
+  // rather than contact_id).
+  //if (isset($bundle->data_table) AND ($bundle->data_table == 'arraydesign')) {
+  //  $instances['local__manufacturer_id']['label'] = 'Manufacturer';
+  //  $instances['local__manufacturer_id']['widget']['type'] = 'chado_linker__contact_widget';
+  //}
 }
 
 /**
