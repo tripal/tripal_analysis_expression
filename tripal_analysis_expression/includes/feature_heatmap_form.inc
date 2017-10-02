@@ -320,9 +320,12 @@ function tripal_analysis_expression_search_features_callback() {
     return;
   }
 
-  $sql = "SELECT feature_uniquename AS uniquename, organism_common_name AS common_name 
-            FROM {expression_feature}
-            WHERE LOWER(feature_uniquename) LIKE :feature_uniquename OR LOWER(organism_common_name) LIKE :organism_name
+  $sql = "SELECT EF.feature_uniquename AS uniquename, EF.organism_common_name AS common_name, DXR.accession AS accession 
+            FROM {expression_feature} EF
+            INNER JOIN {feature_cvterm} FC ON EF.feature_id = FC.feature_id
+            INNER JOIN {cvterm} CVT ON CVT.cvterm_id = FC.cvterm_id
+            INNER JOIN {dbxref} DXR ON DXR.dbxref_id = CVT.dbxref_id
+            WHERE LOWER(EF.feature_uniquename) LIKE :feature_uniquename OR LOWER(EF.organism_common_name) LIKE :organism_name
             ORDER BY feature_uniquename
             LIMIT 20";
 
