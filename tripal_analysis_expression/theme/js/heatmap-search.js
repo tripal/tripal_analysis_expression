@@ -74,10 +74,17 @@
 
       var disabled = this.getFeatures().indexOf(name) > -1 ? ' disabled' : '';
 
-      return '<a href="javascript:void(0);" class="heatmap-results-item' + disabled + '" data-value="' + name + '">'
+      var html = '<a href="javascript:void(0);" class="heatmap-results-item' + disabled + '" data-value="' + name + '">'
           + name
-          + '<div>Organism: ' + row.common_name + '</div>'
-          + '</a>';
+          + '<div><small>Organism: ' + row.common_name + '</small></div>';
+
+      if (row.accession) {
+        html += '<div><small>Accession: ' + row.accession + '</small></div>';
+      }
+
+      html += '</a>';
+
+      return html;
     },
 
     chooseFeature: function (feature) {
@@ -90,13 +97,13 @@
       this.feature_textarea.val(value.join(',').trim());
     },
 
-    getFeatures: function() {
+    getFeatures: function () {
       var value = this.feature_textarea.val().trim();
       if (value.length === 0) {
         return [];
       }
 
-     return value.split(',');
+      return value.split(',');
     }
   };
 })(jQuery);

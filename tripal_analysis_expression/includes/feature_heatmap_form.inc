@@ -322,10 +322,11 @@ function tripal_analysis_expression_search_features_callback() {
 
   $sql = "SELECT EF.feature_uniquename AS uniquename, EF.organism_common_name AS common_name, DXR.accession AS accession 
             FROM {expression_feature} EF
-            INNER JOIN {feature_cvterm} FC ON EF.feature_id = FC.feature_id
-            INNER JOIN {cvterm} CVT ON CVT.cvterm_id = FC.cvterm_id
-            INNER JOIN {dbxref} DXR ON DXR.dbxref_id = CVT.dbxref_id
+            LEFT JOIN {feature_cvterm} FC ON EF.feature_id = FC.feature_id
+            LEFT JOIN {cvterm} CVT ON CVT.cvterm_id = FC.cvterm_id
+            LEFT JOIN {dbxref} DXR ON DXR.dbxref_id = CVT.dbxref_id
             WHERE LOWER(EF.feature_uniquename) LIKE :feature_uniquename OR LOWER(EF.organism_common_name) LIKE :organism_name
+                  OR LOWER(DXR.accession) = :accession
             ORDER BY feature_uniquename
             LIMIT 20";
 
@@ -334,6 +335,7 @@ function tripal_analysis_expression_search_features_callback() {
   $results = chado_query($sql, [
     ':feature_uniquename' => $term,
     ':organism_name' => $term,
+    ':accession' => strtolower($_GET['terms']),
   ]);
 
   if (!$results) {
