@@ -157,11 +157,14 @@ function tripal_analysis_expression_populate_es_index() {
   foreach ($records as $record) {
     $es->createEntry($index, $index, FALSE, $record);
     $i++;
-    if ($i % floor($count / 100)) {
-      $progress = number_format(($i / $count) * 100);
+    if ($i % 100) {
+      $progress = ($i / $count) * 100;
       print "Progress: %$progress\n";
     }
   }
+
+  $progress = ($i / $count) * 100;
+  print "Progress: %$progress\n";
 
   print "Index populated successfully.\n";
 }
