@@ -136,3 +136,10 @@ function tripal_analysis_expression_update_7203() {
 
   tripal_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment);
 }
+
+/**
+ * Set default value for elasticsearch dependency.
+ */
+function tripal_analysis_expression_update_7204() {
+  variable_set('analysis_expression_heatmap_db', 'mview');
+}
