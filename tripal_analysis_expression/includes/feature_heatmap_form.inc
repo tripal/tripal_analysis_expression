@@ -157,7 +157,7 @@ function tripal_analysis_expression_populate_es_index() {
   foreach ($records as $record) {
     $es->createEntry($index, $index, FALSE, $record);
     $i++;
-    if ($i % 100) {
+    if (!($i % 100)) {
       $progress = number_format(($i / $count) * 100, 10);
       print "Progress: %$progress Remaining: " . ($count - $i) . " records \n";
     }
