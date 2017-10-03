@@ -158,7 +158,7 @@ function tripal_analysis_expression_populate_es_index() {
     $es->createEntry($index, $index, FALSE, $record);
     $i++;
     if ($i % floor($count / 100)) {
-      $progress = floor(($i / $count) * 100);
+      $progress = number_format(($i / $count) * 100);
       print "Progress: %$progress\n";
     }
   }
