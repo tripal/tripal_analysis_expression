@@ -337,7 +337,7 @@ function tripal_analysis_expression_search_features_callback() {
     return;
   }
 
-  drupal_json_output(['data' => $results->fetchAll()]);
+  drupal_json_output(['data' => $results]);
   return;
 }
 
@@ -352,7 +352,13 @@ function tripal_analysis_expression_search_features($field, $value) {
 
   $term = '%' . db_like(strtolower($value)) . '%';
 
-  return chado_query($sql, [
+  $results = chado_query($sql, [
     ":$field" => $term,
   ]);
+
+  if($results) {
+    return $results->fetchAll();
+  }
+
+  return $results;
 }
