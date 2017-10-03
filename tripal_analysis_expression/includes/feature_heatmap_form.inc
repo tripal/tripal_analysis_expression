@@ -320,27 +320,17 @@ function tripal_analysis_expression_search_features_callback() {
     return;
   }
 
-  $sql = "SELECT EF.feature_uniquename AS uniquename,
-                 EF.organism_common_name AS common_name,
-                 EF.accession AS accession 
-            FROM {expression_feature} EF
-            WHERE LOWER(EF.feature_uniquename) LIKE :feature_uniquename 
-                  OR LOWER(EF.accession) LIKE :accession";
+  $terms = $_GET['terms'];
 
-  if (preg_match('/^IPR|^GO/i', $_GET['terms']) !== 0) {
-    $sql .= " AND EF.accession IS NOT NULL";
+  $results = tripal_analysis_expression_search_features('accession', $terms);
+
+  if (!$results) {
+    $results = tripal_analysis_expression_search_features('feature_uniquename', $terms);
   }
 
-  $sql .= " ORDER BY feature_uniquename
-            LIMIT 20";
-
-  $term = '%' . db_like(strtolower($_GET['terms'])) . '%';
-
-  $results = chado_query($sql, [
-    ':feature_uniquename' => $term,
-    //':organism_name' => $term,
-    ':accession' => $term,
-  ]);
+  if (!$results) {
+    tripal_analysis_expression_search_features('organism_common_name', $terms);
+  }
 
   if (!$results) {
     drupal_json_output(['data' => []]);
@@ -349,4 +339,20 @@ function tripal_analysis_expression_search_features_callback() {
 
   drupal_json_output(['data' => $results->fetchAll()]);
   return;
+}
+
+function tripal_analysis_expression_search_features($field, $value) {
+  $sql = "SELECT EF.feature_uniquename AS uniquename,
+                 EF.organism_common_name AS common_name,
+                 EF.accession AS accession 
+            FROM {expression_feature} EF
+            WHERE LOWER(EF.$field) LIKE :$field
+            ORDER BY feature_uniquename
+            LIMIT 20";
+
+  $term = '%' . db_like(strtolower($value)) . '%';
+
+  return chado_query($sql, [
+    ":$field" => $term,
+  ]);
 }
