@@ -325,7 +325,6 @@ function tripal_analysis_expression_search_features_callback() {
                  EF.accession AS accession 
             FROM {expression_feature} EF
             WHERE LOWER(EF.feature_uniquename) LIKE :feature_uniquename 
-                  OR LOWER(EF.organism_common_name) LIKE :organism_name
                   OR LOWER(EF.accession) LIKE :accession";
 
   if (preg_match('/^IPR|^GO/i', $_GET['terms']) !== 0) {
