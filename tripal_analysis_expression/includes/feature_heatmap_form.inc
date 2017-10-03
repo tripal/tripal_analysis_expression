@@ -158,7 +158,7 @@ function tripal_analysis_expression_populate_es_index() {
     $es->createEntry($index, $index, FALSE, $record);
     $i++;
     if ($i % 100) {
-      $progress = ($i / $count) * 100;
+      $progress = number_format(($i / $count) * 100, 10);
       print "Progress: %$progress Memory Usage: " . memory_get_usage() . " bytes\n";
     }
   }
