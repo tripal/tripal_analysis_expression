@@ -320,7 +320,7 @@ function tripal_analysis_expression_search_features_callback() {
     return;
   }
 
-  $sql = "SELECT EF.feature_uniquename AS uniquename,
+  $sql = "SELECT DISTINCT EF.feature_uniquename AS uniquename,
                  EF.organism_common_name AS common_name,
                  EF.accession AS accession 
             FROM {expression_feature} EF
