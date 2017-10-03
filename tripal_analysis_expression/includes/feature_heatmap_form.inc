@@ -133,7 +133,7 @@ function tripal_analysis_expression_populate_es_index() {
   if (!$result) {
     throw new Exception('Couldn\'t get data from materialized view. Please make sure that the expression_feature materialized view is populated.');
   }
-  $count = $result->fetchObject()->count;
+  $count = $result->fetchField(0);
 
   $sql = 'SELECT feature_id, organism_id, feature_uniquename, organism_common_name, accession
             FROM {expression_feature}';
