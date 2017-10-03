@@ -136,9 +136,6 @@ function tripal_analysis_expression_populate_es_index() {
   $count = $result->fetchObject();
   $count = intval($count->count);
 
-  var_dump($count);
-  return;
-
   $sql = 'SELECT feature_id, organism_id, feature_uniquename, organism_common_name, accession
             FROM {expression_feature}';
 
