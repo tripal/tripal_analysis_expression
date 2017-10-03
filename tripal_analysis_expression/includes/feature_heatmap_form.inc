@@ -350,7 +350,7 @@ function tripal_analysis_expression_search_features($field, $value) {
             ORDER BY $field
             LIMIT 20";
 
-  $term = '%' . db_like(strtolower($value)) . '%';
+  $term = db_like(strtolower($value)) . '%';
 
   $results = chado_query($sql, [
     ":$field" => $term,
