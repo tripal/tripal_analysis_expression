@@ -338,7 +338,7 @@ function tripal_analysis_expression_search_features_callback() {
 
   $results = chado_query($sql, [
     ':feature_uniquename' => $term,
-    ':organism_name' => $term,
+    //':organism_name' => $term,
     ':accession' => $term,
   ]);
 
