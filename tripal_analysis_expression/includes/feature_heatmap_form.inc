@@ -320,14 +320,19 @@ function tripal_analysis_expression_search_features_callback() {
     return;
   }
 
-  $sql = "SELECT DISTINCT EF.feature_uniquename AS uniquename,
+  $sql = "SELECT EF.feature_uniquename AS uniquename,
                  EF.organism_common_name AS common_name,
                  EF.accession AS accession 
             FROM {expression_feature} EF
             WHERE LOWER(EF.feature_uniquename) LIKE :feature_uniquename 
                   OR LOWER(EF.organism_common_name) LIKE :organism_name
-                  OR LOWER(EF.accession) LIKE :accession               
-            ORDER BY feature_uniquename
+                  OR LOWER(EF.accession) LIKE :accession";
+
+  if (preg_match('/^IPR|^GO/', $_GET['terms']) !== 0) {
+    $sql .= " AND EF.accession IS NOT NULL";
+  }
+
+  $sql .= " ORDER BY feature_uniquename
             LIMIT 20";
 
   $term = '%' . db_like(strtolower($_GET['terms'])) . '%';
@@ -335,7 +340,7 @@ function tripal_analysis_expression_search_features_callback() {
   $results = chado_query($sql, [
     ':feature_uniquename' => $term,
     ':organism_name' => $term,
-    ':accession' => $term
+    ':accession' => $term,
   ]);
 
   if (!$results) {
