@@ -497,13 +497,18 @@ function tripal_analysis_expression_search_features_es() {
       ];
     }, $results);
 
-    drupal_json_output(['data' => $data, 'error' => FALSE]);
+    drupal_json_output([
+      'data' => $data,
+      'error' => FALSE,
+      'source' => 'ES',
+    ]);
   } catch (Exception $exception) {
     drupal_set_message($exception->getMessage(), 'error');
 
     drupal_json_output([
       'data' => [],
       'error' => json_decode($exception->getMessage()),
+      'source' => 'ES',
     ]);
   }
 }
@@ -525,11 +530,15 @@ function tripal_analysis_expression_search_features_mview() {
   }
 
   if (!$results) {
-    drupal_json_output(['data' => [], 'error' => FALSE]);
+    drupal_json_output(['data' => [], 'error' => FALSE, 'source' => 'mview']);
     return;
   }
 
-  drupal_json_output(['data' => $results, 'error' => FALSE]);
+  drupal_json_output([
+    'data' => $results,
+    'error' => FALSE,
+    'source' => 'mview',
+  ]);
 }
 
 /**
