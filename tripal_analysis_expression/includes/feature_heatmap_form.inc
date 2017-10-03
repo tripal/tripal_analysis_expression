@@ -347,7 +347,7 @@ function tripal_analysis_expression_search_features($field, $value) {
                  EF.accession AS accession 
             FROM {expression_feature} EF
             WHERE LOWER(EF.$field) LIKE :$field
-            ORDER BY feature_uniquename
+            ORDER BY $field
             LIMIT 20";
 
   $term = '%' . db_like(strtolower($value)) . '%';
