@@ -329,7 +329,7 @@ function tripal_analysis_expression_search_features_callback() {
   }
 
   if (!$results) {
-    tripal_analysis_expression_search_features('organism_common_name', $terms);
+    $results = tripal_analysis_expression_search_features('organism_common_name', $terms);
   }
 
   if (!$results) {
