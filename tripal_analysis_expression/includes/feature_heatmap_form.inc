@@ -328,7 +328,7 @@ function tripal_analysis_expression_search_features_callback() {
                   OR LOWER(EF.organism_common_name) LIKE :organism_name
                   OR LOWER(EF.accession) LIKE :accession";
 
-  if (preg_match('/^IPR|^GO/', $_GET['terms']) !== 0) {
+  if (preg_match('/^IPR|^GO/i', $_GET['terms']) !== 0) {
     $sql .= " AND EF.accession IS NOT NULL";
   }
 
