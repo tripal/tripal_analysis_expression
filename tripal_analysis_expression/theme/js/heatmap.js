@@ -18,7 +18,8 @@
         width: '100%'
       }).node();
 
-      var heatmap_data  = settings.tripal_analysis_expression.heatmap_data;
+      var heatmap_data = settings.tripal_analysis_expression.heatmap_data;
+
       var left_margin   = settings.tripal_analysis_expression.left_margin;
       var bottom_margin = settings.tripal_analysis_expression.bottom_margin;
       var layout        = {

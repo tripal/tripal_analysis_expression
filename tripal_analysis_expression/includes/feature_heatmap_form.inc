@@ -293,8 +293,9 @@ function feature_heatmap_search_form($form, &$form_state) {
   $form['search_term'] = [
     '#type' => 'textfield',
     '#title' => t('Search Features'),
+    '#description' => 'Search by name or accession.',
     '#attributes' => [
-      'placeholder' => t('Search features'),
+      'placeholder' => t('Example: IPR003576'),
       'id' => 'heatmap-search_term',
       'autocomplete' => 'off',
       'maxlength' => '',
