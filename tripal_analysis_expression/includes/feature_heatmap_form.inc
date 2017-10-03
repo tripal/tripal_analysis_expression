@@ -136,37 +136,26 @@ function tripal_analysis_expression_populate_es_index() {
   $count = $result->fetchObject();
   $count = intval($count->count);
 
-  $sql = 'SELECT feature_id, organism_id, feature_uniquename, organism_common_name, accession
-            FROM {expression_feature}';
-
-  $result = chado_query($sql);
-
-  if (!$result) {
-    throw new Exception('Couldn\'t get data from materialized view. Please make sure that the expression_feature materialized view is populated.');
-  }
-
-  $records = $result->fetchAll();
   $index = 'expression_feature';
-
   print "Clearing index of all records.\n";
   $es->deleteAllRecords($index);
 
   print "Populating index please wait.\n";
-  $i = 0;
-  print "Progress: %0\n";
-  foreach ($records as $record) {
-    $es->createEntry($index, $index, FALSE, $record);
-    $i++;
-    if (!($i % 100)) {
-      $progress = number_format(($i / $count) * 100, 10);
-      print "Progress: %$progress Remaining: " . ($count - $i) . " records \n";
+
+  for ($i = 0; $i < $count; $i + 500 < $count ? ($i += 500) : ($i += $count - $i)) {
+    $sql = 'SELECT feature_id, organism_id, feature_uniquename, organism_common_name, accession
+            FROM {expression_feature} OFFSET ' . $i . ' LIMIT 500';
+    $result = chado_query($sql);
+    $records = $result->fetchAll();
+
+    $es->bulkIndex($index, $records);
+
+    if (!($i % 100) || $i === 0) {
+      tripal_bulk_loader_progress_bar($i, $count, 100);
     }
   }
 
-  $progress = ($i / $count) * 100;
-  print "Progress: %$progress\n";
-
-  print "Index populated successfully.\n";
+  print "\n\nIndex populated successfully.\n";
 }
 
 /**
