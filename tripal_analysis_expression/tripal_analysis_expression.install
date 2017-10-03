@@ -71,7 +71,10 @@ function tripal_analysis_expression_update_7201() {
   variable_set('tripal_analysis_expression_heatmap_example', 'orange1.1g022520m, orange1.1g022799m, orange1.1g022520m, orange1.1g022799m');
 }
 
-function tripal_analysis_expression_update_7202() {
+/**
+ * Add expression feature materialized view
+ */
+function tripal_analysis_expression_update_7203() {
   $mv_name = 'expression_feature';
   $comment = 'Store list of features that have expression data';
   $schema = [
@@ -98,16 +101,26 @@ function tripal_analysis_expression_update_7202() {
         'length' => 255,
         'not null' => TRUE,
       ],
+      'accession' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ],
     ],
     'indexes' => [
       'expression_feature_feature_id_index' => ['feature_id'],
       'expression_feature_organism_id_index' => ['organism_id'],
       'expression_feature_feature_uniquename_index' => ['feature_uniquename'],
       'expression_feature_organism_common_name_index' => ['organism_common_name'],
+      'expression_feature_accession_index' => ['accession'],
     ],
   ];
 
-  $sql = 'SELECT DISTINCT F.feature_id, O.organism_id, F.uniquename AS feature_uniquename, O.common_name AS organism_common_name
+  $sql = 'SELECT DISTINCT (F.feature_id) AS feature_id,
+                O.organism_id AS organism_id,
+                F.uniquename AS feature_uniquename,
+                O.common_name AS organism_common_name,
+                DXR.accession AS accession
             FROM {feature} F
             INNER JOIN {organism} O ON F.organism_id = O.organism_id
             INNER JOIN {element} E ON E.feature_id = F.feature_id
@@ -116,7 +129,17 @@ function tripal_analysis_expression_update_7202() {
             INNER JOIN {acquisition} AC ON AC.acquisition_id = Q.acquisition_id
             INNER JOIN {assay} A ON A.assay_id = AC.assay_id
             INNER JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
-            INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id';
+            INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
+            LEFT JOIN {feature_cvterm} FC ON F.feature_id = FC.feature_id
+            LEFT JOIN {cvterm} CVT ON CVT.cvterm_id = FC.cvterm_id
+            LEFT JOIN {dbxref} DXR ON DXR.dbxref_id = CVT.dbxref_id';
 
   tripal_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment);
+}
+
+/**
+ * Set default value for elasticsearch dependency.
+ */
+function tripal_analysis_expression_update_7204() {
+  variable_set('analysis_expression_heatmap_db', 'mview');
 }

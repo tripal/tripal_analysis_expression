@@ -28,7 +28,7 @@ function tripal_analysis_expression_heatmap_settings_form($form, &$form_state) {
   ];
 
   $form['placeholder'] = [
-    '#type' => 'textfield',
+    '#type' => 'textarea',
     '#title' => 'Placeholder Text',
     '#description' => 'The placeholder text for the text box.',
     '#required' => TRUE,
@@ -43,12 +43,26 @@ function tripal_analysis_expression_heatmap_settings_form($form, &$form_state) {
     '#default_value' => variable_get('tripal_analysis_expression_heatmap_example'),
   ];
 
+  $form['use_elasticsearch'] = [
+    '#type' => 'checkbox',
+    '#title' => 'Enable elasticsearch integration. (Requires installing tripal_elasticsearch module)',
+    '#default_value' => variable_get('analysis_expression_heatmap_db') === 'elasticsearch',
+  ];
+
   $form['submit'] = [
     '#type' => 'submit',
     '#value' => 'Save',
   ];
 
   return $form;
+}
+
+function tripal_analysis_expression_heatmap_settings_form_validate($form, &$form_state) {
+  $use_elasticsearch = $form_state['values']['use_elasticsearch'];
+
+  if ($use_elasticsearch && !module_exists('tripal_elasticsearch')) {
+    form_set_error('use_elasticsearch', 'Tripal Elasticsearch module is not installed. Please install and enable it first before attempting to enable Elasticsearch integration.');
+  }
 }
 
 /**
@@ -62,11 +76,111 @@ function tripal_analysis_expression_heatmap_settings_form($form, &$form_state) {
 function tripal_analysis_expression_heatmap_settings_form_submit($form, &$form_state) {
   $placeholder = $form_state['values']['placeholder'];
   $example = $form_state['values']['example'];
+  $use_elasticsearch = $form_state['values']['use_elasticsearch'];
 
   variable_set('tripal_analysis_expression_heatmap_placeholder', $placeholder);
   variable_set('tripal_analysis_expression_heatmap_example', $example);
+  variable_set('analysis_expression_heatmap_db', $use_elasticsearch ? 'elasticsearch' : 'mview');
 
   drupal_set_message('Settings saved successfully');
+
+  if ($use_elasticsearch) {
+    try {
+      $es = new ESInstance();
+      $indices = $es->getIndices();
+
+      // Create the index if does't exist.
+      if (!in_array('expression_feature', $indices)) {
+        $es->setIndexParams('expression_feature', 5, 0, 'standard', [], [
+          'feature_id' => 'integer',
+          'organism_id' => 'integer',
+          'feature_uniquename' => 'string',
+          'organism_common_name' => 'string',
+          'accession' => 'string',
+        ])->createIndex();
+      }
+
+      global $user;
+      $job_name = 'Populate Elasticsearch expression feature index';
+      $job_module = 'tripal_analysis_expression';
+      $job_callback = 'tripal_analysis_expression_populate_es_index';
+      tripal_add_job($job_name, $job_module, $job_callback, [], $user->uid);
+    } catch (Exception $exception) {
+      drupal_set_message($exception->getMessage(), 'error');
+      return;
+    }
+    drupal_set_message('Elasticsearch indexing job initiated. Make sure cron is running.');
+  }
+}
+
+/**
+ * Populate the expression_feature index.
+ *
+ * @throws \Exception
+ */
+function tripal_analysis_expression_populate_es_index() {
+  try {
+    $es = new ESInstance();
+  } catch (Exception $exception) {
+    print $exception->getMessage();
+    return;
+  }
+
+  tripal_analysis_expression_insert_es_index();
+
+  $sql = 'SELECT COUNT(feature_id) AS count FROM {expression_feature}';
+  $result = chado_query($sql);
+  if (!$result) {
+    throw new Exception('Couldn\'t get data from materialized view. Please make sure that the expression_feature materialized view is populated.');
+  }
+  $count = $result->fetchObject()->count;
+
+  $sql = 'SELECT feature_id, organism_id, feature_uniquename, organism_common_name, accession
+            FROM {expression_feature}';
+
+  $result = chado_query($sql);
+
+  if (!$result) {
+    throw new Exception('Couldn\'t get data from materialized view. Please make sure that the expression_feature materialized view is populated.');
+  }
+
+  $records = $result->fetchAll();
+  $index = 'expression_feature';
+
+  print "Clearing index of all records.\n";
+  $es->deleteAllRecords($index);
+
+  print "Populating index please wait.\n";
+  $i = 0;
+  print "Progress: %0\n";
+  foreach ($records as $record) {
+    $es->createEntry($index, $index, FALSE, $record);
+    $i++;
+    if ($i % 10) {
+      $progress = floor(($i / $count) * 100);
+      print "Progress: %$progress\n";
+    }
+  }
+
+  print "Index populated successfully.\n";
+}
+
+/**
+ * If the index entry doesn't exist then create it
+ *    in `public.tripal_elasticsearch_indices`
+ */
+function tripal_analysis_expression_insert_es_index() {
+  $query = "SELECT COUNT(*) AS count FROM {tripal_elasticsearch_indices} WHERE index_name='expression_feature'";
+  $result = db_query($query);
+  if ($result->fetchField('count') === 0) {
+    //insert index record into database for all types.
+    $insert = [
+      ':index_name' => 'expression_feature',
+      ':table_name' => 'expression_feature',
+      ':exposed' => 0,
+    ];
+    db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
+  }
 }
 
 /**
@@ -91,8 +205,7 @@ function feature_heatmap_form($form, &$form_state) {
     ],
   ];
 
-  // Fraxinus_pennsylvanica_120313_comp59663_c0_seq1, Fraxinus_pennsylvanica_120313_comp59663_c0_seq2, Fraxinus_pennsylvanica_120313_comp56723_c0_seq1, Fraxinus_pennsylvanica_120313_comp60325_c0_seq16, Fraxinus_pennsylvanica_120313_comp61194_c0_seq4, Fraxinus_pennsylvanica_120313_comp61194_c0_seq5, Fraxinus_pennsylvanica_120313_comp61194_c0_seq8, Fraxinus_pennsylvanica_120313_comp61194_c0_seq6
-  $example = variable_get('tripal_analysis_expression_heatmap_placeholder');
+  $example = variable_get('tripal_analysis_expression_heatmap_example');
   $form['heatmap_feature_uniquename'] = [
     '#type' => 'textarea',
     '#title' => t('Enter feature unique names'),
@@ -125,6 +238,11 @@ function feature_heatmap_form_submit($form, &$form_state) {
 
 }
 
+/**
+ * Generate heat map values.
+ *
+ * @return array|boolean
+ */
 function tripal_analysis_expression_generate_heatmap_values() {
   // Escaped get value if it exists
   if (!isset($_GET['heatmap_feature_uniquename']) || empty($_GET['heatmap_feature_uniquename'])) {
@@ -290,12 +408,21 @@ function tripal_analysis_expression_generate_heatmap_values() {
   ];
 }
 
+/**
+ * Create a search form.
+ *
+ * @param $form
+ * @param $form_state
+ *
+ * @return mixed
+ */
 function feature_heatmap_search_form($form, &$form_state) {
   $form['search_term'] = [
     '#type' => 'textfield',
     '#title' => t('Search Features'),
+    '#description' => 'Search by name or accession.',
     '#attributes' => [
-      'placeholder' => t('Search features'),
+      'placeholder' => t('Example: IPR003576'),
       'id' => 'heatmap-search_term',
       'autocomplete' => 'off',
       'maxlength' => '',
@@ -320,24 +447,124 @@ function tripal_analysis_expression_search_features_callback() {
     return;
   }
 
-  $sql = "SELECT feature_uniquename AS uniquename, organism_common_name AS common_name 
-            FROM {expression_feature}
-            WHERE LOWER(feature_uniquename) LIKE :feature_uniquename OR LOWER(organism_common_name) LIKE :organism_name
-            ORDER BY feature_uniquename
-            LIMIT 20";
+  $db = variable_get('analysis_expression_heatmap_db');
 
-  $term = '%' . db_like(strtolower($_GET['terms'])) . '%';
+  if ($db === 'elasticsearch') {
+    tripal_analysis_expression_search_features_es();
+  }
+  else {
+    tripal_analysis_expression_search_features_mview();
+  }
+}
 
-  $results = chado_query($sql, [
-    ':feature_uniquename' => $term,
-    ':organism_name' => $term,
-  ]);
+function tripal_analysis_expression_search_features_es() {
+  $terms = '*' . strtolower($_GET['terms']) . '*';
 
-  if (!$results) {
-    drupal_json_output(['data' => []]);
+  // Connect to ES
+  try {
+    $es = new ESInstance();
+  } catch (Exception $exception) {
+    // Fallback to use the mview since ES failed to connect.
+    tripal_analysis_expression_search_features_mview();
     return;
   }
 
-  drupal_json_output(['data' => $results->fetchAll()]);
-  return;
+  try {
+    $index = 'expression_feature';
+    $query = [
+      'bool' => [
+        'should' => [
+          [
+            'wildcard' => [
+              'feature_uniquename' => $terms,
+            ],
+          ],
+          [
+            'wildcard' => [
+              'accession' => $terms,
+            ],
+          ],
+          [
+            'wildcard' => [
+              'organism_common_name' => $terms,
+            ],
+          ],
+        ],
+      ],
+    ];
+
+    $results = $es->setTableSearchParams($index, $index, $query, [0, 20])
+                  ->search();
+
+    $data = array_map(function ($result) {
+      return [
+        'uniquename' => $result['feature_uniquename'],
+        'common_name' => $result['organism_common_name'],
+        'accession' => $result['accession'],
+      ];
+    }, $results);
+
+    drupal_json_output(['data' => $data, 'error' => FALSE]);
+  } catch (Exception $exception) {
+    drupal_set_message($exception->getMessage(), 'error');
+
+    drupal_json_output([
+      'data' => [],
+      'error' => json_decode($exception->getMessage()),
+    ]);
+  }
+}
+
+/**
+ * Search using expression_feature mview.
+ */
+function tripal_analysis_expression_search_features_mview() {
+  $terms = $_GET['terms'];
+
+  $results = tripal_analysis_expression_search_features('accession', $terms);
+
+  if (!$results) {
+    $results = tripal_analysis_expression_search_features('feature_uniquename', $terms);
+  }
+
+  if (!$results) {
+    $results = tripal_analysis_expression_search_features('organism_common_name', $terms);
+  }
+
+  if (!$results) {
+    drupal_json_output(['data' => [], 'error' => FALSE]);
+    return;
+  }
+
+  drupal_json_output(['data' => $results, 'error' => FALSE]);
+}
+
+/**
+ * Perform search by field.
+ *
+ * @param $field
+ * @param $value
+ *
+ * @return bool|\DatabaseStatementInterface
+ */
+function tripal_analysis_expression_search_features($field, $value) {
+  $sql = "SELECT DISTINCT EF.feature_uniquename AS uniquename,
+                 EF.organism_common_name AS common_name,
+                 EF.accession AS accession 
+            FROM {expression_feature} EF
+            WHERE LOWER(EF.$field) LIKE :$field
+            ORDER BY $field
+            LIMIT 20";
+
+  $term = db_like(strtolower($value)) . '%';
+
+  $results = chado_query($sql, [
+    ":$field" => $term,
+  ]);
+
+  if ($results) {
+    return $results->fetchAll();
+  }
+
+  return $results;
 }

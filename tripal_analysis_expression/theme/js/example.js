@@ -2,7 +2,6 @@
   Drupal.behaviors.tripal_analysis_expression_example = {
     attach: function (context, settings) {
       var example = settings.visual_expression_example;
-      console.log(example);
       if (!example) {
         return;
       }
