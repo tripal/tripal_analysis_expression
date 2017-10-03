@@ -128,12 +128,13 @@ function tripal_analysis_expression_populate_es_index() {
 
   tripal_analysis_expression_insert_es_index();
 
-  $sql = 'SELECT COUNT(feature_id) AS count FROM {expression_feature}';
+  $sql = 'SELECT COUNT(feature_id) FROM {expression_feature}';
   $result = chado_query($sql);
   if (!$result) {
     throw new Exception('Couldn\'t get data from materialized view. Please make sure that the expression_feature materialized view is populated.');
   }
-  $count = $result->fetchField();
+  $count = $result->fetchObject();
+  $count = intval($count->count);
 
   $sql = 'SELECT feature_id, organism_id, feature_uniquename, organism_common_name, accession
             FROM {expression_feature}';
