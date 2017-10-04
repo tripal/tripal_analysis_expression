@@ -142,7 +142,7 @@ function tripal_analysis_expression_populate_es_index() {
 
   print "Populating index please wait.\n";
 
-  for ($i = 0; $i < $count; $i + 500 < $count ? ($i += 500) : ($i += $count - $i)) {
+  for ($i = 0; $i < $count; $i + 500 < $count ? ($i += 500) : ($i += $count - $i - 1)) {
     $sql = 'SELECT feature_id, organism_id, feature_uniquename, organism_common_name, accession
             FROM {expression_feature} OFFSET ' . $i . ' LIMIT 500';
     $result = chado_query($sql);
@@ -150,7 +150,7 @@ function tripal_analysis_expression_populate_es_index() {
 
     $es->bulkIndex($index, $records);
 
-    if (!($i % 100) || $i === 0) {
+    if (!($i % 100)) {
       tripal_bulk_loader_progress_bar($i, $count, 100);
     }
   }
@@ -211,7 +211,7 @@ function feature_heatmap_form($form, &$form_state) {
 
   // Escaped get value if it exists
   if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
-    $form['heatmap_feature_uniquename']['#value'] = e($_GET['heatmap_feature_uniquename']);
+    $form['heatmap_feature_uniquename']['#value'] = $_GET['heatmap_feature_uniquename'];
   }
 
   $form['submit'] = [
