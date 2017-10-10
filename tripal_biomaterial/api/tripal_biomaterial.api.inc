@@ -266,7 +266,6 @@ function expression_create_biomaterial_structure(
   $assay_biomaterial_id = create_assay_biomaterial($assay_id, $biomaterial_id, $channel_id);
 
   //Attach the units to the quantification
-
   if ($quantificationunits) {
     //insert cvterm.
     //TODO  move to install.
@@ -284,7 +283,6 @@ function expression_create_biomaterial_structure(
       'value' => $quantificationunits,
     ];
     $result = chado_insert_record('quantificationprop', $values);
-
   }
 
   return $quantification_id;
