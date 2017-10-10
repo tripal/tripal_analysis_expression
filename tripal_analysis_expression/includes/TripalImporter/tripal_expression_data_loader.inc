@@ -1,6 +1,6 @@
 <?php
 
-class tripal_expression_data_loader extends TripalImporter {
+class tripal_expression_data_loader extends TripalImporter{
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -86,6 +86,7 @@ class tripal_expression_data_loader extends TripalImporter {
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
+
 
     $default_time = REQUEST_TIME;
     $year = format_date($default_time, 'custom', 'Y');
@@ -471,7 +472,21 @@ class tripal_expression_data_loader extends TripalImporter {
    */
 
   protected function tripal_expression_loader(
-    $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $quantificationunits, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples
+    $organism_id,
+    $analysis_id,
+    $contact_id,
+    $arraydesign_id,
+    $assaydate,
+    $acquisitiondate,
+    $quantificationdate,
+    $quantificationunits,
+    $filepath,
+    $fileext,
+    $filetype,
+    $re_start,
+    $re_stop,
+    $feature_uniquenames,
+    $create_biosamples
   ) {
 
 
@@ -604,7 +619,20 @@ class tripal_expression_data_loader extends TripalImporter {
    */
 
   function tripal_expression_load_mat_file(
-    $filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames
+    $filepath,
+    $fileext,
+    $arraydesign_id,
+    $organism_id,
+    $analysis_id,
+    $contact_id,
+    $assay_id,
+    $acquisition_id,
+    $quantification_id,
+    $quantificationunits,
+    $re_start,
+    $re_stop,
+    $uniq_name,
+    $feature_uniquenames
   ) {
 
     $data_ln = 0;
@@ -846,7 +874,20 @@ class tripal_expression_data_loader extends TripalImporter {
    */
 
   function tripal_expression_load_col_file(
-    $filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames
+    $filepath,
+    $fileext,
+    $arraydesign_id,
+    $organism_id,
+    $analysis_id,
+    $contact_id,
+    $assay_id,
+    $acquisition_id,
+    $quantification_id,
+    $quantificationunits,
+    $re_start,
+    $re_stop,
+    $uniq_name,
+    $feature_uniquenames
   ) {
     $inter = 0;
     $data_ln = 0;
@@ -995,7 +1036,8 @@ class tripal_expression_data_loader extends TripalImporter {
 
   /**
    *
-   * Implements a function that find the find the feature_id from a feature name.
+   * Implements a function that find the find the feature_id from a feature
+   * name.
    *
    * @param $feature
    *  The name of the feature to be found.
@@ -1003,7 +1045,11 @@ class tripal_expression_data_loader extends TripalImporter {
    * @ingroup tripal_analysis_expression
    */
 
-  protected function tripal_expression_find_feature_id($feature, $organism_id, $feature_uniquenames) {
+  protected function tripal_expression_find_feature_id(
+    $feature,
+    $organism_id,
+    $feature_uniquenames
+  ) {
 
     if ($feature_uniquenames == 'uniq') {
       $sql = "SELECT feature_id, organism_id FROM {feature} WHERE uniquename = :feature";

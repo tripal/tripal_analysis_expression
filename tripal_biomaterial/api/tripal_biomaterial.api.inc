@@ -269,13 +269,12 @@ function expression_create_biomaterial_structure(
   if ($quantificationunits) {
     //insert cvterm.
     //TODO  move to install.
-    tripal_insert_cvterm([
+    $cvterm_id = tripal_insert_cvterm([
       'id' => 'sep:00056',
       'name' => 'unit_of_measure',
       'cv_name' => 'sep',
       'definition' => 'A unit of measure is a quantity which is a standard of measurement for some dimension. For example, the Meter is a Unit O fMeasure for the dimension of length, as is the Inch. There is no intrinsic property of a UnitOfMeasure that makes it primitive or fundamental; rather, a system of units (e.g. Systeme International Unit) defines a set of orthogonal dimensions and assigns units for each. [ SUMO:unit of measure ]',
-    ]);
-    $cvterm_id = tripal_cv_get_cv(['name' => 'unit_of_measure'])->cv_id;
+    ])->cvterm_id;
 
     $values = [
       'quantification_id' => $quantification_id,
