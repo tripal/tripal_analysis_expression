@@ -20,39 +20,25 @@
  *
  * @ingroup tripal_protocol_api
  */
-function tripal_get_protocol_select_options($syncd_only = TRUE, $protocol_type) {
+function tripal_get_protocol_select_options(
+  $syncd_only = TRUE,
+  $protocol_type
+) {
   $prot_list = [];
   $prot_list[] = 'Select a protocol';
 
-  if ($syncd_only) {
-    $sql = "SELECT P.name, P.protocol_id
-      FROM public.chado_protocol CP
-        INNER JOIN {protocol} P ON CP.protocol_id = P.protocol_id
-        INNER JOIN {cvterm} CVT ON P.type_id = CVT.cvterm_id
-      WHERE CVT.name = :protocol_type
-      ORDER BY P.name";
-    $protocols = chado_query($sql, [':protocol_type' => $protocol_type]);
+  // Use this statement for getting the protocols.
+  $csql = "SELECT P.name, P.protocol_id
+      FROM {protocol} P ORDER BY name";
+  //INNER JOIN {cvterm} CVT ON P.type_id = CVT.cvterm_id
+  //    WHERE CVT.name = :protocol_type
 
-    // Iterate through the protocols and build an array of those that are synced.
-    foreach ($protocols as $protocol) {
-      $prot_list[$protocol->protocol_id] = $protocol->name;
-    }
-  }
-  else {
-    // Use this statement for getting the protocols.
-    $csql = "SELECT P.name, P.protocol_id
-      FROM {protocol} P ORDER BY name
-        INNER JOIN {cvterm} CVT ON P.type_id = CVT.cvterm_id
-      WHERE CVT.name = :protocol_type
-      ORDER BY P.name";
+  $protocols = chado_query($csql, [':protocol_type' => $protocol_type]);
 
-    $protocols = chado_query($csql, [':protocol_type' => $protocol_type]);
-
-    // Iterate through the protocols and build an array of all protocols including 
-    // those that are not synced.
-    foreach ($protocols as $protocol) {
-      $prot_list[$protocol->protocol_id] = $protocol->name;
-    }
+  // Iterate through the protocols and build an array of all protocols including
+  // those that are not synced.
+  foreach ($protocols as $protocol) {
+    $prot_list[$protocol->protocol_id] = $protocol->name;
   }
   return $prot_list;
 }
