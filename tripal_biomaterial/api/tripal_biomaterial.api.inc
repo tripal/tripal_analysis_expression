@@ -226,6 +226,9 @@ function tripal_expression_elementresult(
  *   This parameter is optional. If the parameter is not provided, a generic
  *   quantification record will be created in the quantification table.
  *
+ * @param  $quantificationunits
+ * The units associated with the quantification.  Optional.
+ *
  * @ingroup tripal_analysis_expression
  */
 
@@ -238,6 +241,7 @@ function expression_create_biomaterial_structure(
   $assay_id,
   $acquisition_id,
   $quantification_id,
+  $quantificationunits,
   $uniq_name
 ) {
   // Create the biomaterial
@@ -260,6 +264,25 @@ function expression_create_biomaterial_structure(
   // Create a generic channel. A channel_id is necessary for the assay_biomaterial table.
   $channel_id = create_generic_channel();
   $assay_biomaterial_id = create_assay_biomaterial($assay_id, $biomaterial_id, $channel_id);
+
+  //Attach the units to the quantification
+  if ($quantificationunits) {
+    //insert cvterm.
+    //TODO  move to install.
+    $cvterm_id = tripal_insert_cvterm([
+      'id' => 'sep:00056',
+      'name' => 'unit_of_measure',
+      'cv_name' => 'sep',
+      'definition' => 'A unit of measure is a quantity which is a standard of measurement for some dimension. For example, the Meter is a Unit O fMeasure for the dimension of length, as is the Inch. There is no intrinsic property of a UnitOfMeasure that makes it primitive or fundamental; rather, a system of units (e.g. Systeme International Unit) defines a set of orthogonal dimensions and assigns units for each. [ SUMO:unit of measure ]',
+    ])->cvterm_id;
+
+    $values = [
+      'quantification_id' => $quantification_id,
+      'type_id' => $cvterm_id,
+      'value' => $quantificationunits,
+    ];
+    $result = chado_insert_record('quantificationprop', $values);
+  }
 
   return $quantification_id;
 }

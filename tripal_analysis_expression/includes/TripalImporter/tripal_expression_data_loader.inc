@@ -1,6 +1,6 @@
 <?php
 
-class tripal_expression_data_loader extends TripalImporter {
+class tripal_expression_data_loader extends TripalImporter{
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -87,6 +87,7 @@ class tripal_expression_data_loader extends TripalImporter {
    */
   public function form($form, &$form_state) {
 
+
     $default_time = REQUEST_TIME;
     $year = format_date($default_time, 'custom', 'Y');
     $month = format_date($default_time, 'custom', 'n');
@@ -166,7 +167,7 @@ class tripal_expression_data_loader extends TripalImporter {
 
     $lt_message = tripal_set_message(t('If the array design does not appear in this list, ') . l(t('add a new arraydesign.'), 'node/add/chado-arraydesign') . t(' If an array design is not selected, then a generic array design will be created for the analysis.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
-    $arraydesigns = tripal_get_arraydesign_select_options(TRUE);
+    $arraydesigns = tripal_get_arraydesign_select_options(FALSE);
 
     $form['experimental_design']['arraydesign_id'] = [
       '#title' => t('Array Design'),
@@ -205,7 +206,7 @@ class tripal_expression_data_loader extends TripalImporter {
 
     $lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' An acquisition protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
-    $acquisitions = tripal_get_protocol_select_options(TRUE, 'Acquisition Protocol');
+    $acquisitions = tripal_get_protocol_select_options(FALSE, 'Acquisition Protocol');
 
     $form['experimental_design']['acquisition_details']['acquisition_protocol_id'] = [
       '#title' => t('Acquisition Protocol'),
@@ -222,6 +223,11 @@ class tripal_expression_data_loader extends TripalImporter {
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#weight' => 1,
+    ];
+    $form['experimental_design']['quantification_details']['quantificationunits'] = [
+      '#type' => 'textfield',
+      '#title' => t('Units'),
+      '#description' => t('The units associated with the loaded values (ie, FPKM, RPKM, raw counts).'),
     ];
 
     $form['experimental_design']['quantification_details']['quantificationdate'] = [
@@ -271,7 +277,7 @@ class tripal_expression_data_loader extends TripalImporter {
 
     $lt_message = tripal_set_message(t('If the quantification protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' A quantification protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
-    $quantifications = tripal_get_protocol_select_options(TRUE, 'Quantification Protocol');
+    $quantifications = tripal_get_protocol_select_options(FALSE, 'Quantification Protocol');
 
     $form['experimental_design']['quantification_details']['quantification_protocol_id'] = [
       '#title' => t('Quantification Protocol'),
@@ -366,6 +372,7 @@ class tripal_expression_data_loader extends TripalImporter {
     $acquisitiondate = $arguments['acquisitiondate'];
     $create_biosamples = $arguments['create_biosamples'];
     $quantificationdate = $arguments['quantificationdate'];
+    $quantificationunits = $arguments['quantificationunits'];
 
     //missing
     $assaydate = '';//$arguments['assaydate'];
@@ -411,7 +418,7 @@ class tripal_expression_data_loader extends TripalImporter {
     //  'value' => trim($node->feature_uniquenames),
     //]);
 
-    $this->tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples);
+    $this->tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $quantificationunits, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples);
   }
 
   /**
@@ -465,7 +472,21 @@ class tripal_expression_data_loader extends TripalImporter {
    */
 
   protected function tripal_expression_loader(
-    $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples
+    $organism_id,
+    $analysis_id,
+    $contact_id,
+    $arraydesign_id,
+    $assaydate,
+    $acquisitiondate,
+    $quantificationdate,
+    $quantificationunits,
+    $filepath,
+    $fileext,
+    $filetype,
+    $re_start,
+    $re_stop,
+    $feature_uniquenames,
+    $create_biosamples
   ) {
 
 
@@ -489,12 +510,12 @@ class tripal_expression_data_loader extends TripalImporter {
       // A matrix file.
       if ($filetype == 'mat' and is_file($filepath) and preg_match($re_ext, $filepath)) {
 
-        $this->tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames);
+        $this->tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames);
       }
 
       // The column format.
       elseif ($filetype == 'col' and is_file($filepath) and preg_match($re_ext, $filepath)) {
-        $features = $this->tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames);
+        $features = $this->tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames);
       }
       else { // Multiple files in the column format.
         $dir_handle = @opendir($filepath) or die("Unable to open $filepath");
@@ -598,7 +619,20 @@ class tripal_expression_data_loader extends TripalImporter {
    */
 
   function tripal_expression_load_mat_file(
-    $filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames
+    $filepath,
+    $fileext,
+    $arraydesign_id,
+    $organism_id,
+    $analysis_id,
+    $contact_id,
+    $assay_id,
+    $acquisition_id,
+    $quantification_id,
+    $quantificationunits,
+    $re_start,
+    $re_stop,
+    $uniq_name,
+    $feature_uniquenames
   ) {
 
     $data_ln = 0;
@@ -710,7 +744,7 @@ class tripal_expression_data_loader extends TripalImporter {
 
         if ($mat_head == 0) {
           foreach ($linepart as $sample) {
-            $quant_array[] = expression_create_biomaterial_structure($sample, $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $uniq_name);
+            $quant_array[] = expression_create_biomaterial_structure($sample, $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $uniq_name);
           }
 
           // Make sure there not duplicate biomaterial names.
@@ -840,12 +874,25 @@ class tripal_expression_data_loader extends TripalImporter {
    */
 
   function tripal_expression_load_col_file(
-    $filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames
+    $filepath,
+    $fileext,
+    $arraydesign_id,
+    $organism_id,
+    $analysis_id,
+    $contact_id,
+    $assay_id,
+    $acquisition_id,
+    $quantification_id,
+    $quantificationunits,
+    $re_start,
+    $re_stop,
+    $uniq_name,
+    $feature_uniquenames
   ) {
     $inter = 0;
     $data_ln = 0;
     preg_match('/^.+\/(.+)\.' . $fileext . '$/', $filepath, $biomaterial);
-    $quantification_id = expression_create_biomaterial_structure($biomaterial[1], $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $uniq_name);
+    $quantification_id = expression_create_biomaterial_structure($biomaterial[1], $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $uniq_name);
 
     $features = [];
 
@@ -989,7 +1036,8 @@ class tripal_expression_data_loader extends TripalImporter {
 
   /**
    *
-   * Implements a function that find the find the feature_id from a feature name.
+   * Implements a function that find the find the feature_id from a feature
+   * name.
    *
    * @param $feature
    *  The name of the feature to be found.
@@ -997,7 +1045,11 @@ class tripal_expression_data_loader extends TripalImporter {
    * @ingroup tripal_analysis_expression
    */
 
-  protected function tripal_expression_find_feature_id($feature, $organism_id, $feature_uniquenames) {
+  protected function tripal_expression_find_feature_id(
+    $feature,
+    $organism_id,
+    $feature_uniquenames
+  ) {
 
     if ($feature_uniquenames == 'uniq') {
       $sql = "SELECT feature_id, organism_id FROM {feature} WHERE uniquename = :feature";
