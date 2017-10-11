@@ -45,7 +45,7 @@ function tripal_protocol_quantity_units_form($form, &$form_state) {
    WHERE QP.type_id = :type_id OR QP.type_id IS null";
   $results = chado_query($sql, [':type_id' => $type_id])->fetchAll();
 
-  $headers = ['Quantification ID', 'Quantification Name', 'Unit label', 'Edit'];
+  $header = ['Quantification ID', 'Quantification Name', 'Unit label', 'Edit'];
   $rows = [];
 
   foreach ($results as $result) {
@@ -62,7 +62,7 @@ function tripal_protocol_quantity_units_form($form, &$form_state) {
   }
 
   $table = [
-    'header' => $headers,
+    'header' => $header,
     'rows' => $rows,
     'attributes' => [],
     'sticky' => FALSE,
@@ -71,6 +71,20 @@ function tripal_protocol_quantity_units_form($form, &$form_state) {
     'empty' => '',
   ];
   $output = theme_table($table);
+
+  //pagination settings
+  $per_page = 20;
+  // Initialize the pager
+  $current_page = pager_default_initialize(count($rows), $per_page);
+  // Split your list into page sized chunks
+  $chunks = array_chunk($rows, $per_page, TRUE);
+  // Show the appropriate items from the list
+  $output = theme('table', [
+    'header' => $header,
+    'rows' => $chunks[$current_page],
+  ]);
+  // Show the pager
+  $output .= theme('pager', ['quantity', count($rows)]);
 
   $form['Table'] = [
     '#type' => 'markup',
