@@ -164,7 +164,7 @@ function expKey(maxHeat, minHeat) {
     'text': 'min expression (' + minHeat + ') -'
   },
     {'r': 0, 'g': 127, 'b': 0, 'text': ''},
-    {'r': 0, 'g': 255, 'b': 0, 'text': ' - (' + maxHeat + ') max expression'}];
+    {'r': 0, 'g': 255, 'b': 0, 'text': ' - (' + maxHeat + ') max expression' }];
 
   /* Configure the key text. */
   var keyContainer     = d3.select('figure').append('expkeydom').append('svg');
@@ -329,6 +329,9 @@ function expSub(heatMap, maxHeat, minHeat) {
             .style('opacity', .9);
         div.html(function () {
           mrkup = '<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b>';
+          if (d.units != ''){
+            markup += '<br>Units:' +d.units;
+          }
           if (d.treatment != '') {
             mrkup += '<br><b>Treatment</b>: ' + d.treatment;
           }
@@ -402,6 +405,9 @@ function expSub(heatMap, maxHeat, minHeat) {
             .style('text-align', 'left');
         div.html(function () {
           mrkup = '<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b>';
+            if (d.units != ''){
+                mrkup += '<br><b>Units</b>: ' +d.units;
+            }
           if (d.treatment != '') {
             mrkup += '<br><b>Treatment</b>: ' + d.treatment;
           }
