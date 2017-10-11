@@ -73,15 +73,18 @@ function tripal_protocol_quantity_units_form($form, &$form_state) {
   $output = theme_table($table);
 
   //pagination settings
-  $per_page = 10;
+  $per_page = 20;
   // Initialize the pager
   $current_page = pager_default_initialize(count($rows), $per_page);
   // Split your list into page sized chunks
   $chunks = array_chunk($rows, $per_page, TRUE);
   // Show the appropriate items from the list
-  $output = theme('table', array('header' => $header, 'rows' => $chunks[$current_page]));
+  $output = theme('table', [
+    'header' => $header,
+    'rows' => $chunks[$current_page],
+  ]);
   // Show the pager
-  $output .= theme('pager', array('quantity',count($rows)));
+  $output .= theme('pager', ['quantity', count($rows)]);
 
   $form['Table'] = [
     '#type' => 'markup',
