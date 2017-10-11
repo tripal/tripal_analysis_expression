@@ -328,7 +328,10 @@ function expSub(heatMap, maxHeat, minHeat) {
             .duration(200)
             .style('opacity', .9);
         div.html(function () {
-          mrkup = '<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b> ' +d.units;
+          mrkup = '<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b>';
+          if (d.units != ''){
+            markup += '<br>Units:' +d.units;
+          }
           if (d.treatment != '') {
             mrkup += '<br><b>Treatment</b>: ' + d.treatment;
           }
@@ -402,6 +405,9 @@ function expSub(heatMap, maxHeat, minHeat) {
             .style('text-align', 'left');
         div.html(function () {
           mrkup = '<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b>';
+            if (d.units != ''){
+                mrkup += '<br><b>Units</b>: ' +d.units;
+            }
           if (d.treatment != '') {
             mrkup += '<br><b>Treatment</b>: ' + d.treatment;
           }
