@@ -7,7 +7,7 @@
  * Data:
  * Assumptions:
  */
-class data__gene_expression_data extends ChadoField {
+class data__gene_expression_data extends ChadoField{
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -142,7 +142,7 @@ class data__gene_expression_data extends ChadoField {
     $has_exp = FALSE;
     $first_sig = 1;
 
-    $sql = "SELECT ER.signal, B.name, B.biomaterial_id, B.description 
+    $sql = "SELECT ER.signal, B.name, B.biomaterial_id, B.description, Q.quantification_id
               FROM {elementresult} ER
               INNER JOIN {element} E ON E.element_id = ER.element_id
               INNER JOIN {feature} F ON F.feature_id = E.feature_id
@@ -152,7 +152,6 @@ class data__gene_expression_data extends ChadoField {
               INNER JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
               INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
               WHERE F.feature_id = :feature_id";
-
     $expressions = chado_query($sql, [":feature_id" => $feature_id]);
 
     $variables['analyses'] = $this->get_analyses($feature_id);
@@ -160,16 +159,32 @@ class data__gene_expression_data extends ChadoField {
     $json_exp = "[";
     $last_signal = NULL;
     foreach ($expressions as $exp) {
-      if ($first_sig == 1) {
-        $last_signal = $exp->signal;
-        $first_sig = 0;
-      }
-
-      if ($exp->signal != $last_signal and $exp->signal != 0) {
-        $has_exp = TRUE;
-      }
+      //if ($first_sig == 1) {
+      //  $last_signal = $exp->signal;
+      //  $first_sig = 0;
+      //}
+      //dpm($exp->signal);
+      //dpm($last_signal);
+      //dpm($has_exp);
+      //
+      //if ($exp->signal != $last_signal and $exp->signal != 0) {
+      //  $has_exp = TRUE;
+      //}
+      $has_exp = TRUE;
       $last_signal = $exp->signal;
 
+      //Get units in quantificationprop
+      $uni = chado_get_property([
+        'table' => 'quantification',
+        'id' => $exp->quantification_id,
+      ], ['type_name' => 'unit_of_measure', 'cv_name' => 'sep']);
+
+      if ($uni) {
+        $units = $uni->value;
+      }
+      else {
+        $units = '';
+      }
       $tis = chado_get_property([
         'table' => 'biomaterial',
         'id' => $exp->biomaterial_id,
@@ -195,7 +210,7 @@ class data__gene_expression_data extends ChadoField {
       }
 
       $node_present = chado_get_record_entity_by_table('biomaterial', $exp->biomaterial_id);
-      $json_exp .= '{"name": "' . $exp->name . '", "intensity": "' . $exp->signal . '", "description": "' . $exp->description . '", "tissue": "' . $tissue . '", "treatment": "' . $treatment . '", "node": "' . $node_present . '"},';
+      $json_exp .= '{"name": "' . $exp->name . '", "intensity": "' . $exp->signal . '", "units": "' . $units . '", "description": "' . $exp->description . '", "tissue": "' . $tissue . '", "treatment": "' . $treatment . '", "node": "' . $node_present . '"},';
     }
     $json_exp .= "]";
     if ($json_exp == "[]") {

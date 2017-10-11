@@ -179,6 +179,7 @@ function tripal_expression_elementresult(
       exit;
     }
   }
+
   $elementresult_id = $elementresult['elementresult_id'];
   return $elementresult_id;
 }
