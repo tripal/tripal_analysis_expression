@@ -26,6 +26,7 @@ require_once "theme/tripal_protocol.theme.inc";
 require_once "api/tripal_arraydesign.api.inc";
 require_once "api/tripal_protocol.api.inc";
 require_once "includes/tripal_protocol.fields.inc";
+require_once "includes/tripal_protocol_quantity_units_form.inc";
 
 /**
  * Implements hook_help().
@@ -129,6 +130,18 @@ function tripal_protocol_permission() {
  */
 function tripal_protocol_menu() {
   $items = [];
+
+
+  // Module help pages.
+  $items['admin/tripal/extension/tripal_protocol/quantification_units'] = [
+    'title' => 'Quantification Units',
+    'description' => 'Set or alter units associated with quantifications.',
+    'access arguments' => ['administer tripal protocol'],
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_protocol_quantity_units_form'],
+
+  ];
+
 
   // Admin configuration group.
   $items['admin/tripal/extension/tripal_protocol'] = [
