@@ -418,6 +418,11 @@ class tripal_expression_data_loader extends TripalImporter{
     //  'value' => trim($node->feature_uniquenames),
     //]);
 
+
+    tripal_set_message(t("Job Submitted!  If new Biosamples will be created in this job, remember to") . l('publish them after the job runs.',
+        'admin/content/bio_data/publish/'), 'status');
+
+
     $this->tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $quantificationunits, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples);
   }
 

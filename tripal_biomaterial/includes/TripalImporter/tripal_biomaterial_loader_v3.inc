@@ -91,7 +91,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
   public function form($form, &$form_state) {
 
 
-
     // get a list of organisms for the user to choose
     $sql = "SELECT * FROM {organism} ORDER BY genus, species";
     $results = chado_query($sql);
@@ -241,6 +240,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     $extension = explode('.', $file_path);
     $extension = $extension[count($extension) - 1];
 
+    tripal_set_message(t("Job Submitted!  After running the job, remember to") . l('publish the inserted BioSamples.',
+        'admin/content/bio_data/publish/'), 'status');
+
     if ($extension == "xml") {
       $this->load_biosample_xml($file_path, $organism_id, $analysis_id, $insert_fields);
     }
@@ -342,7 +344,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     $unique_name = $biosample->Ids->Id[1];
     $sra_accession = $biosample->Ids->Id[2];
     $description = $biosample->Description->Title;
-    $organism = $biosample->Description->Organism->OrganismName;// Right now we use the organism_id on the form instead of the organism value from the XML here.  If the user was uploading an xml file with mixed organisms, this would be problematic.
+
+    $organism = $biosample->Description->Organism->OrganismName; // Right now we use the organism_id on the form instead of the organism value from the XML here.  If the user was uploading an xml file with mixed organisms, this would be problematic.
 
     $comment = $biosample->Description->Comment->Paragraph;
     $ncbi_owner = $biosample->Owner->Name;
@@ -670,7 +673,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
               'is_relationship' => 0,
               'db_name' => 'tripal',
             ], ['update_existing' => FALSE])) {
-              //drupal_set_message("ERROR");
               print "ERROR: Could not insert biomaterial attribute name into the controlled vocabulary table.";
               exit;
             }
