@@ -161,6 +161,7 @@ class data__gene_expression_data extends ChadoField{
     $last_signal = NULL;
     $last_analysis_id = NULL;
     $json_array = [];
+    $analysis_json = "";
     foreach ($expressions as $exp) {
       //if ($first_sig == 1) {
       //  $last_signal = $exp->signal;
@@ -177,11 +178,10 @@ class data__gene_expression_data extends ChadoField{
       if ($last_analysis_id != $exp->analysis_id) { //New analysis, so new JSON group.
         //First, add the old one to the array
         if ($last_analysis_id) {
-          $json_exp .= "]";
-          $json_array[] = $json_exp;
+          $analysis_json .= "]}, ";
+          $json_array[] = $analysis_json;
         }
-        $json_exp = '"' . $exp->analysis_id .  '" : {"analysis_id": "' . $exp->analysis_id . '", "analysis_name": "' . $exp->analysis_name . '", "biosamples": [';
-        //TODO This needs to make sense where we would build an array of json elements.  Maybe instead let's build individual XMLs and then add them all to a final array.
+        $analysis_json = '"' . $exp->analysis_id . '" : {"analysis_id": "' . $exp->analysis_id . '", "analysis_name": "' . $exp->analysis_name . '", "biosamples": [';
 
       }
       else {//same analysis as previous
@@ -229,16 +229,17 @@ class data__gene_expression_data extends ChadoField{
 
       $node_present = chado_get_record_entity_by_table('biomaterial', $exp->biomaterial_id);
 
-      $json_exp .= '{"name": "' . $exp->name . '",  "intensity": "' . $exp->signal . '", "units": "' . $units . '", "description": "' . $exp->description . '", "tissue": "' . $tissue . '", "treatment": "' . $treatment . '", "node": "' . $node_present . '"},';
+      $analysis_json .= '{"name": "' . $exp->name . '",  "intensity": "' . $exp->signal . '", "units": "' . $units . '", "description": "' . $exp->description . '", "tissue": "' . $tissue . '", "treatment": "' . $treatment . '", "node": "' . $node_present . '"},';
     }
 
     //Add final json string to the array
-     $json_exp .= ']}';
+    $analysis_json .= ']}';
 
-    $json_array[] = $json_exp;
+    $json_array[] = $analysis_json;
     //turn Array into JSON expression
     $json_exp = implode($json_array);
     $json_exp = "{" . $json_exp . "}";
+    dpm($json_exp);
 
     if ($expressions->rowCount() < $min_num_biomaterials) {
       $json_exp = "";

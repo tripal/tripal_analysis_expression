@@ -4,9 +4,13 @@
  * using alphanumeric ordering.
  */
 function expNormal() {
-  heatMap = '';
-  heatMap = JSON.parse(JSON.stringify(heatMapRaw));
-  console.log(heatMap);
+  heatMapTotal = '';
+  heatMapTotal = JSON.parse(JSON.stringify(heatMapRaw));
+  selectedAnalysis = chosenAnalysis;//analysis chosen in the data__gene_expression data formatter
+    console.log(selectedAnalysis)
+
+  console.log(heatMapTotal);
+  heatMap = heatMapTotal[selectedAnalysis].biosamples;//Get samples of selected analysis
   d3.selectAll('expfeaturedom').remove();
   d3.selectAll('expkeydom').remove();
   exp();

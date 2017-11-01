@@ -10,6 +10,7 @@ if (!$variables['has_exp'] and $variables['json_exp']) { ?>
 
 else {
   if ($variables['json_exp']) {
+
     ?>
       <a name="expression-top"> </a>
       <p>
