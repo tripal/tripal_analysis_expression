@@ -6,6 +6,7 @@
 function expNormal() {
   heatMap = '';
   heatMap = JSON.parse(JSON.stringify(heatMapRaw));
+  console.log(heatMap);
   d3.selectAll('expfeaturedom').remove();
   d3.selectAll('expkeydom').remove();
   exp();
