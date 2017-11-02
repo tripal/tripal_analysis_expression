@@ -6,9 +6,9 @@
 function expNormal() {
     heatMapTotal = '';
     heatMapTotal = JSON.parse(JSON.stringify(heatMapRaw));
+    //Get samples associated with select analysis
     selectedAnalysis = d3.select('#analyses').property("value");
-    console.log(selectedAnalysis)
-    heatMap = heatMapTotal[selectedAnalysis].biosamples;//Get samples of selected analysis
+    heatMap = heatMapTotal[selectedAnalysis].biosamples;
     d3.selectAll('expfeaturedom').remove();
     d3.selectAll('expkeydom').remove();
     exp();

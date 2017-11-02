@@ -101,7 +101,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
       drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/expression.js');
       $num_of_analyses = count($variables['analyses']);
       if ($num_of_analyses >= 1) {
-        $content .= '<h3>Select an Expression Analysis to Visualize</h3>';
+        $content .= '<strong>Select an Expression Analysis</strong><br/><br/>';
         $content .= '<select id="analyses">';
 
         foreach ($variables['analyses'] as $analysis) {
@@ -135,15 +135,12 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
             var col="' . $expression_display . '"
             var colWidth=' . $biomaterial_display_width . '
             
-              Drupal.behaviors.tripal_analysis_expression = {
+              Drupal.behaviors.tripal_analysis_expression_select_listener = {
               attach: function (context, settings) {
-                                          console.log(" first thing")
-
                 var $ = jQuery;
-                   $("analyses").on("change", function () {
+                 expNormal();
+                   $("#analyses").on("change", function () {
         selectedAnalysis = this.value;
-        console.log("changing")
-        console.log(selectedAnalysis)
         expNormal();
                     })
               }
@@ -152,15 +149,13 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
             Drupal.behaviors.tripal_analysis_expression = {
               attach: function (context, settings) {
                 var $ = jQuery;
-                        console.log("other thing")
-
                 expNormal();
                 $(document).on("tripal_ds_pane_expanded", function(event) {
                     if($(event.id).text().indexOf("Hover the mouse") > -1) {
                       expNormal();
                     }
                 });
-              }
+              }       
             };
             
             
