@@ -235,11 +235,12 @@ class data__gene_expression_data extends ChadoField{
     //Add final json string to the array
     $analysis_json .= ']}';
 
+    //TODO refactor to use json_encode
+
     $json_array[] = $analysis_json;
     //turn Array into JSON expression
     $json_exp = implode($json_array);
     $json_exp = "{" . $json_exp . "}";
-    dpm($json_exp);
 
     if ($expressions->rowCount() < $min_num_biomaterials) {
       $json_exp = "";

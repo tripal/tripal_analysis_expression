@@ -12,6 +12,7 @@ else {
   if ($variables['json_exp']) {
 
     ?>
+
       <a name="expression-top"> </a>
       <p>
           Hover the mouse over a column in the graph to view expression values.
@@ -24,6 +25,7 @@ else {
           <a href='' onclick="expChart() return false">Tile/Chart</a> |
           <a href='' onclick="expNormal() return false">Reset</a>
       </p>
+
 
     <?php
     tripal_add_d3js();

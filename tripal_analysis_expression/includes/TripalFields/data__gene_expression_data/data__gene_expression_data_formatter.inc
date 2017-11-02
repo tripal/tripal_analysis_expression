@@ -102,20 +102,72 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
       $num_of_analyses = count($variables['analyses']);
       if ($num_of_analyses >= 1) {
         $content .= '<h3>Select an Expression Analysis to Visualize</h3>';
-        $rows = [];
+        $content .= '<select id="analyses">';
+
         foreach ($variables['analyses'] as $analysis) {
-          $rows[$analysis->analysis_id] = [
-            'Title' => $analysis->name,
-            'Link' => l($analysis->name, $analysis->url),
-          ];
+          $content .= '<option value=' . $analysis->analysis_id . '>' . $analysis->name . '</option>';
         }
-        //If results, render the analysis picker form and expression plot
-        $form_to_render = drupal_get_form('data__gene_expression_data_formatter::analysis_expression_picker', $rows, $variables);
-        $form = render($form_to_render);
-        $content .= $form;
 
+        $content .= '
+      </select>
+            <p>
+              Hover the mouse over a column in the graph to view expression values.
+            </p>
+            <p>
+              <a href="javascript:;" onclick="expSortDown()">Sort Descending</a> |
+              <a href="javascript:;" onclick="expSortUp()">Sort Ascending</a> |
+              <a href="javascript:;" onclick="nonZero()">Only Non-Zero Values</a> |
+              <a href="javascript:;" onclick="expChart()">Tile/Chart</a> |
+              <a href="javascript:;" onclick="expNormal()">Reset</a>
+            </p>
+            ';
+
+        $hide_biomaterial_labels = $variables['hide_biomaterial_labels'];
+        $json_exp = $variables['json_exp'];
+        $limit_label_length = $variables['limit_label_length'];
+        $expression_display = $variables['expression_display'];
+        $biomaterial_display_width = $variables['biomaterial_display_width'];
+
+        $content .= '<script type="text/javascript">
+            var heatMapRaw=' . $json_exp . '
+            var maxLength=' . $limit_label_length . '
+            var showLabels=' . $hide_biomaterial_labels . '
+            var col="' . $expression_display . '"
+            var colWidth=' . $biomaterial_display_width . '
+            
+              Drupal.behaviors.tripal_analysis_expression = {
+              attach: function (context, settings) {
+                                          console.log(" first thing")
+
+                var $ = jQuery;
+                   $("analyses").on("change", function () {
+        selectedAnalysis = this.value;
+        console.log("changing")
+        console.log(selectedAnalysis)
+        expNormal();
+                    })
+              }
+            };
+            
+            Drupal.behaviors.tripal_analysis_expression = {
+              attach: function (context, settings) {
+                var $ = jQuery;
+                        console.log("other thing")
+
+                expNormal();
+                $(document).on("tripal_ds_pane_expanded", function(event) {
+                    if($(event.id).text().indexOf("Hover the mouse") > -1) {
+                      expNormal();
+                    }
+                });
+              }
+            };
+            
+            
+          
+          </script>
+          <figure></figure>';
       }
-
     }
     else {
       $content = 'No biomaterial libraries express this feature.';
@@ -156,89 +208,4 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
   public function settingsSummary($view_mode) {
     return '';
   }
-
-
-  static public function analysis_expression_picker($form, &$form_state, $rows, $variables) {
-    $form = [];
-
-    $header = [
-      'Title' => t('Title'),
-      'Link' => t('Link'),
-    ];
-
-    $default_key = key($rows);//set default to whatever
-
-    $form['table'] = [
-      '#type' => 'tableselect',
-      '#header' => $header,
-      '#options' => $rows,
-      '#multiple' => FALSE,
-      '#default_value' => $default_key,
-      '#ajax' => [
-        'callback' => 'analysis_expression_picker_callback',
-        'wrapper' => 'js_draw_plot',
-        'method' => 'replace',
-      ],
-    ];
-
-
-    $content = '
-            <h3>Expression Heat Map</h3>
-            <p>
-              Hover the mouse over a column in the graph to view expression values.
-            </p>
-            <p>
-              <a href="javascript:;" onclick="expSortDown()">Sort Descending</a> |
-              <a href="javascript:;" onclick="expSortUp()">Sort Ascending</a> |
-              <a href="javascript:;" onclick="nonZero()">Only Non-Zero Values</a> |
-              <a href="javascript:;" onclick="expChart()">Tile/Chart</a> |
-              <a href="javascript:;" onclick="expNormal()">Reset</a>
-            </p>
-            ';
-
-    $hide_biomaterial_labels = $variables['hide_biomaterial_labels'];
-    $json_exp = $variables['json_exp'];
-    $limit_label_length = $variables['limit_label_length'];
-    $expression_display = $variables['expression_display'];
-    $biomaterial_display_width = $variables['biomaterial_display_width'];
-
-    if (isset($form_state['values']['table'])) {
-      $selected = $form_state['values']['table'];
-    }else {
-      $selected = $form['table']['#default_value'];
-      dpm($form['table']);
-    }
-
-    $content .= '<script type="text/javascript">
-            var chosenAnalysis=' . $selected . '
-            var heatMapRaw=' . $json_exp . '
-            var maxLength=' . $limit_label_length . '
-            var showLabels=' . $hide_biomaterial_labels . '
-            var col="' . $expression_display . '"
-            var colWidth=' . $biomaterial_display_width . '
-            Drupal.behaviors.tripal_analysis_expression = {
-              attach: function (context, settings) {
-                var $ = jQuery;
-                expNormal();
-                $(document).on("tripal_ds_pane_expanded", function(event) {
-                    if($(event.id).text().indexOf("Hover the mouse") > -1) {
-                      expNormal();
-                    }
-                });
-              }
-            };
-          </script>
-          <figure></figure>';
-
-    $form['js_draw_plot'] =  [
-      '#type' => 'markup',
-      '#markup' => $content,
-    ];
-
-    return ($form);
-  }
-  static public function analysis_expression_picker_callback($form, &$form_state) {
-    return($form['js_draw_plot']);
-  }
-
 }
