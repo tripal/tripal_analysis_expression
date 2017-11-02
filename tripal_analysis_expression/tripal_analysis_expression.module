@@ -338,21 +338,24 @@ function tripal_analysis_expression_block_view($delta = '') {
       break;
     case 'heatmap_features':
       $heatmap = tripal_analysis_expression_generate_heatmap_values();
-      if($heatmap === false) {
+      if ($heatmap === FALSE) {
         $block['content'] = '<p style="color: red">Please enter 2 or more features.</p>';
-      } else if (!empty($heatmap['heatmap_data'])) {
-        $block['subject'] = t('Feature Expression Heatmap');
-        $block['content'] = '<div id="vis_expression"></div>';
-        drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
-        drupal_add_js(['tripal_analysis_expression' => ['heatmap_data' => $heatmap['heatmap_data']]], ['type' => 'setting']);
-        drupal_add_js(['tripal_analysis_expression' => ['left_margin' => $heatmap['left_margin']]], ['type' => 'setting']);
-        drupal_add_js(['tripal_analysis_expression' => ['bottom_margin' => $heatmap['bottom_margin']]], ['type' => 'setting']);
-        drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap.js');
       }
       else {
-        $block['subject'] = '';
-        if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
-          $block['content'] = t('<p style="color:red; font-weight: bold; margin-top: 20px">There is no expression data available for the features you entered.</p>');
+        if (!empty($heatmap['heatmap_data'])) {
+          $block['subject'] = t('Feature Expression Heatmap');
+          $block['content'] = '<div id="vis_expression"></div>';
+          drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
+          drupal_add_js(['tripal_analysis_expression' => ['heatmap_data' => $heatmap['heatmap_data']]], ['type' => 'setting']);
+          drupal_add_js(['tripal_analysis_expression' => ['left_margin' => $heatmap['left_margin']]], ['type' => 'setting']);
+          drupal_add_js(['tripal_analysis_expression' => ['bottom_margin' => $heatmap['bottom_margin']]], ['type' => 'setting']);
+          drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap.js');
+        }
+        else {
+          $block['subject'] = '';
+          if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
+            $block['content'] = t('<p style="color:red; font-weight: bold; margin-top: 20px">There is no expression data available for the features you entered.</p>');
+          }
         }
       }
       break;

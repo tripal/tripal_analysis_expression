@@ -142,7 +142,7 @@ class data__gene_expression_data extends ChadoField{
     $has_exp = FALSE;
     $first_sig = 1;
 
-    $sql = "SELECT ER.signal, B.name, B.biomaterial_id, B.description, Q.quantification_id
+    $sql = "SELECT ER.signal, B.name, B.biomaterial_id, B.description, Q.quantification_id, AN.analysis_id, AN.name AS analysis_name
               FROM {elementresult} ER
               INNER JOIN {element} E ON E.element_id = ER.element_id
               INNER JOIN {feature} F ON F.feature_id = E.feature_id
@@ -151,13 +151,17 @@ class data__gene_expression_data extends ChadoField{
               INNER JOIN {assay} A ON A.assay_id = AQ.assay_id
               INNER JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
               INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
-              WHERE F.feature_id = :feature_id";
+              INNER JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
+              WHERE F.feature_id = :feature_id
+              ORDER BY AN.analysis_id ";
     $expressions = chado_query($sql, [":feature_id" => $feature_id]);
 
     $variables['analyses'] = $this->get_analyses($feature_id);
 
-    $json_exp = "[";
     $last_signal = NULL;
+    $last_analysis_id = NULL;
+    $json_array = [];
+    $analysis_json = "";
     foreach ($expressions as $exp) {
       //if ($first_sig == 1) {
       //  $last_signal = $exp->signal;
@@ -170,8 +174,22 @@ class data__gene_expression_data extends ChadoField{
       //if ($exp->signal != $last_signal and $exp->signal != 0) {
       //  $has_exp = TRUE;
       //}
+
+      if ($last_analysis_id != $exp->analysis_id) { //New analysis, so new JSON group.
+        //First, add the old one to the array
+        if ($last_analysis_id) {
+          $analysis_json .= "]}, ";
+          $json_array[] = $analysis_json;
+        }
+        $analysis_json = '"' . $exp->analysis_id . '" : {"analysis_id": "' . $exp->analysis_id . '", "analysis_name": "' . $exp->analysis_name . '", "biosamples": [';
+
+      }
+      else {//same analysis as previous
+      }
+
       $has_exp = TRUE;
       $last_signal = $exp->signal;
+      $last_analysis_id = $exp->analysis_id;
 
       //Get units in quantificationprop
       $uni = chado_get_property([
@@ -210,12 +228,19 @@ class data__gene_expression_data extends ChadoField{
       }
 
       $node_present = chado_get_record_entity_by_table('biomaterial', $exp->biomaterial_id);
-      $json_exp .= '{"name": "' . $exp->name . '", "intensity": "' . $exp->signal . '", "units": "' . $units . '", "description": "' . $exp->description . '", "tissue": "' . $tissue . '", "treatment": "' . $treatment . '", "node": "' . $node_present . '"},';
+
+      $analysis_json .= '{"name": "' . $exp->name . '",  "intensity": "' . $exp->signal . '", "units": "' . $units . '", "description": "' . $exp->description . '", "tissue": "' . $tissue . '", "treatment": "' . $treatment . '", "node": "' . $node_present . '"},';
     }
-    $json_exp .= "]";
-    if ($json_exp == "[]") {
-      $json_exp = "";
-    }
+
+    //Add final json string to the array
+    $analysis_json .= ']}';
+
+    //TODO refactor to use json_encode
+
+    $json_array[] = $analysis_json;
+    //turn Array into JSON expression
+    $json_exp = implode($json_array);
+    $json_exp = "{" . $json_exp . "}";
 
     if ($expressions->rowCount() < $min_num_biomaterials) {
       $json_exp = "";
