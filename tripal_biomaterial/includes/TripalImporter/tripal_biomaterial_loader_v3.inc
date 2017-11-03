@@ -425,7 +425,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
 
       // Get the cvterm name
       $attr_name = (string) $attr->attributes()->attribute_name;
-      $value = $attr->children()[0];
+      $value = (string) $attr;
 
       if (!$value) {
         print "ERROR: no value in the XML for " . $attr_name . ".  Make sure the XML is formatted properly and try again.";
