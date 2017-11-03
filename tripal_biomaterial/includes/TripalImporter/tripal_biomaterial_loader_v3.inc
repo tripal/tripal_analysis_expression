@@ -183,7 +183,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
 
       $form['cvterm_configuration'][$field] = [
         '#type' => 'fieldset',
-        '#title' => t( $field ),
+        '#title' => t($field),
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,
       ];
@@ -240,8 +240,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     $extension = explode('.', $file_path);
     $extension = $extension[count($extension) - 1];
 
-    tripal_set_message(t("Job Submitted!  After running the job, remember to") . l('publish the inserted BioSamples.',
-        'admin/content/bio_data/publish/'), 'status');
+    tripal_set_message(t("Job Submitted!  After running the job, remember to") . l('publish the inserted BioSamples.', 'admin/content/bio_data/publish/'), 'status');
 
     if ($extension == "xml") {
       $this->load_biosample_xml($file_path, $organism_id, $analysis_id, $insert_fields);
@@ -426,6 +425,11 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
 
       // Get the cvterm name
       $attr_name = (string) $attr->attributes()->attribute_name;
+      $value = $attr->children()[0];
+
+      if (!$value) {
+        print "ERROR: no value in the XML for " . $attr_name .".  Make sure the XML is formatted properly and try again.";
+      }
 
       if ($attr_name == "biomaterial_provider") {
         continue;
@@ -444,7 +448,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
           'is_relationship' => 0,
           'db_name' => 'tripal',
         ], ['update_existing' => FALSE])) {
-          //drupal_set_message("ERROR");
           print "ERROR: Could not insert biomaterial attribute name into the biomaterial_property controlled vocabulary table.";
           exit;
         }
@@ -454,7 +457,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $property = [
         'type_name' => $attr_name,
         'cv_name' => $cv_name,
-        'value' => $attr,
+        'value' => $value,
       ];
       chado_insert_property($record, $property, $options);
     }
@@ -649,7 +652,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
             $dbxref_id = $dbxref['dbxref_id'];
 
             // Insert into the biomaterial_dbxref table.
-            // Add error checking?
+            //TODO Add error checking?
             $values = [
               'biomaterial_id' => $biomaterial_id,
               'dbxref_id' => $dbxref_id,
@@ -662,9 +665,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         // Insert into the biomaterialprop table.
         foreach ($prop_headers as $name => $index) {
 
-          //Does the cvterm exist elsewhere?
 
-          if (!key_exists($insert_fields[$name])) {
+          print ("name is " . $name . " and index is    " . $index . "\n\n");
+          if (!key_exists($insert_fields[$name])) {  //If we didnt choose an association in the form, we're inserting it into biomaterial_property
+
+            //get xml attributes
+
+      print("\n\nTrying to insert term:       " . $name);
 
             if (!tripal_insert_cvterm([
               'name' => $name,

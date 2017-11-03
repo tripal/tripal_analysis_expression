@@ -182,7 +182,6 @@ class data__gene_expression_data extends ChadoField{
           $json_array[] = $analysis_json;
         }
         $analysis_json = '"' . $exp->analysis_id . '" : {"analysis_id": "' . $exp->analysis_id . '", "analysis_name": "' . $exp->analysis_name . '", "biosamples": [';
-
       }
       else {//same analysis as previous
       }
@@ -203,33 +202,25 @@ class data__gene_expression_data extends ChadoField{
       else {
         $units = '';
       }
-      $tis = chado_get_property([
+
+      //Get all properties
+
+      $properties = chado_get_property([
         'table' => 'biomaterial',
         'id' => $exp->biomaterial_id,
-      ], ['type_name' => 'tissue', 'cv_name' => 'biomaterial_property']);
+      ]);
 
-      if ($tis) {
-        $tissue = $tis->value;
-      }
-      else {
-        $tissue = '';
-      }
-
-      $treat = chado_get_property([
-        'table' => 'biomaterial',
-        'id' => $exp->biomaterial_id,
-      ], ['type_name' => 'treatment', 'cv_name' => 'biomaterial_property']);
-
-      if ($treat) {
-        $treatment = $treat->value;
-      }
-      else {
-        $treatment = '';
+      dpm($properties);
+      if (!$properties) {
+        $properties = "[]";
       }
 
       $node_present = chado_get_record_entity_by_table('biomaterial', $exp->biomaterial_id);
 
-      $analysis_json .= '{"name": "' . $exp->name . '",  "intensity": "' . $exp->signal . '", "units": "' . $units . '", "description": "' . $exp->description . '", "tissue": "' . $tissue . '", "treatment": "' . $treatment . '", "node": "' . $node_present . '"},';
+      $json_properties = json_encode($properties);
+      dpm($json_properties);
+
+      $analysis_json .= '{"name": "' . $exp->name . '",  "intensity": "' . $exp->signal . '", "units": "' . $units . '", "description": "' . $exp->description . '", "properties":  "' . $json_properties . '",  "node": "' . $node_present . '"},';
     }
 
     //Add final json string to the array
