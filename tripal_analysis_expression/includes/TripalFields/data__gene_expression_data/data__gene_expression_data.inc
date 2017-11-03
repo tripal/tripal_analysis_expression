@@ -207,7 +207,7 @@ class data__gene_expression_data extends ChadoField{
       $biosample_properties = [
         "name" => $exp->name,
         "intensity" => $exp->signal,
-        "units" => $exp->units,
+        "units" => $units,
         "description" => $exp->description,
         "properties" => $propstore,
         "node" => $node_present,
