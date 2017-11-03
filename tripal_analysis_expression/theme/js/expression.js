@@ -14,6 +14,10 @@ function expNormal() {
     exp();
 }
 
+function buildPropertySelect() {
+
+}
+
 /**
  * This function is called to change the graph type to chart.
  */
@@ -331,20 +335,20 @@ function expSub(heatMap, maxHeat, minHeat) {
                 .duration(200)
                 .style('opacity', .9);
             div.html(function () {
-                mrkup = '<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b>';
+                markup = '<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b>';
                 if (d.units != '') {
                     markup += '<br>Units:' + d.units;
                 }
-                if (d.treatment != '') {
-                    mrkup += '<br><b>Treatment</b>: ' + d.treatment;
-                }
-                if (d.tissue != '') {
-                    mrkup += '<br><b>Tissue</b>: ' + d.tissue;
-                }
+                // if (d.treatment != '') {
+                //     mrkup += '<br><b>Treatment</b>: ' + d.treatment;
+                // }
+                // if (d.tissue != '') {
+                //     mrkup += '<br><b>Tissue</b>: ' + d.tissue;
+                // }
                 if (d.description != '') {
-                    mrkup += '<br><b>Description</b>: ' + d.description;
+                    markup += '<br><b>Description</b>: ' + d.description;
                 }
-                return mrkup;
+                return markup;
             })
                 .style('left', (d3.event.pageX) + 'px')
                 .style('border-color', function () {
@@ -407,20 +411,20 @@ function expSub(heatMap, maxHeat, minHeat) {
                 .style('opacity', .9)
                 .style('text-align', 'left');
             div.html(function () {
-                mrkup = '<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b>';
+                markup = '<b>' + d.name + '</b>: <b>' + d.intensityLabel + '</b>';
                 if (d.units != '') {
-                    mrkup += '<br><b>Units</b>: ' + d.units;
+                    markup += '<br><b>Units</b>: ' + d.units;
                 }
-                if (d.treatment != '') {
-                    mrkup += '<br><b>Treatment</b>: ' + d.treatment;
-                }
-                if (d.tissue != '') {
-                    mrkup += '<br><b>Tissue</b>: ' + d.tissue;
-                }
+                // if (d.treatment != '') {
+                //     mrkup += '<br><b>Treatment</b>: ' + d.treatment;
+                // }
+                // if (d.tissue != '') {
+                //     mrkup += '<br><b>Tissue</b>: ' + d.tissue;
+                // }
                 if (d.description != '') {
-                    mrkup += '<br><b>Description</b>: ' + d.description;
+                    markup += '<br><b>Description</b>: ' + d.description;
                 }
-                return mrkup;
+                return markup;
             })
                 .style('max-width', 200 + 'px')
                 .style('left', (d3.event.pageX) + 'px')
