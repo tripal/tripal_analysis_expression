@@ -428,7 +428,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       $value = $attr->children()[0];
 
       if (!$value) {
-        print "ERROR: no value in the XML for " . $attr_name .".  Make sure the XML is formatted properly and try again.";
+        print "ERROR: no value in the XML for " . $attr_name . ".  Make sure the XML is formatted properly and try again.";
       }
 
       if ($attr_name == "biomaterial_provider") {
@@ -664,15 +664,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
 
         // Insert into the biomaterialprop table.
         foreach ($prop_headers as $name => $index) {
-
-
-          print ("name is " . $name . " and index is    " . $index . "\n\n");
           if (!key_exists($insert_fields[$name])) {  //If we didnt choose an association in the form, we're inserting it into biomaterial_property
-
             //get xml attributes
-
-      print("\n\nTrying to insert term:       " . $name);
-
             if (!tripal_insert_cvterm([
               'name' => $name,
               'definition' => '',
@@ -683,15 +676,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
               print "ERROR: Could not insert biomaterial attribute name into the controlled vocabulary table.";
               exit;
             }
-
-            /*if (chado_select_record('biomaterialprop', array('biomaterialprop_id'), array('name' => $name))) {
-              tripal_insert_cvterm(array(
-                'name' => $name,
-                'def' => '',
-                'cv_name' => 'biomaterial_property',
-                'db_name' => 'tripal',
-              ));
-            } */
 
             $record = [
               'table' => 'biomaterial',
