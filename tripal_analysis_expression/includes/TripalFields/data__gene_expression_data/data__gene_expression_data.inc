@@ -160,79 +160,63 @@ class data__gene_expression_data extends ChadoField{
 
     $last_signal = NULL;
     $last_analysis_id = NULL;
-    $json_array = [];
-    $analysis_json = "";
+    $array_to_encode = [];
     foreach ($expressions as $exp) {
-      //if ($first_sig == 1) {
-      //  $last_signal = $exp->signal;
-      //  $first_sig = 0;
-      //}
-      //dpm($exp->signal);
-      //dpm($last_signal);
-      //dpm($has_exp);
-      //
-      //if ($exp->signal != $last_signal and $exp->signal != 0) {
-      //  $has_exp = TRUE;
-      //}
-
-      if ($last_analysis_id != $exp->analysis_id) { //New analysis, so new JSON group.
-        //First, add the old one to the array
-        if ($last_analysis_id) {
-          $analysis_json .= "]}, ";
-          $json_array[] = $analysis_json;
-        }
-        $analysis_json = '"' . $exp->analysis_id . '" : {"analysis_id": "' . $exp->analysis_id . '", "analysis_name": "' . $exp->analysis_name . '", "biosamples": [';
+      //if this analysis isn't in the array yet, initialize it
+      if (!isset($array_to_encode[$exp->analysis_id])) {
+        $analysis_properties = [
+          "analysis_id" => $exp->analysis_id,
+          "analysis_name" => $exp->analysis_name,
+          "biomaterials" => [],
+        ];
+        $array_to_encode[$exp->analysis_id] = $analysis_properties;
       }
-      else {//same analysis as previous
-      }
-
       $has_exp = TRUE;
-      $last_signal = $exp->signal;
-      $last_analysis_id = $exp->analysis_id;
 
       //Get units in quantificationprop
       $uni = chado_get_property([
         'table' => 'quantification',
         'id' => $exp->quantification_id,
       ], ['type_name' => 'unit_of_measure', 'cv_name' => 'sep']);
+      $uni ? $units = $uni->value : $units = '';
 
-      if ($uni) {
-        $units = $uni->value;
-      }
-      else {
-        $units = '';
-      }
+      //Get all properties for biosample/biomaterial
+      $values = [
+        'biomaterial_id' => $exp->biomaterial_id,
+      ];
+      $biomat_object = chado_generate_var('biomaterial', $values);
+      $result = chado_expand_var($biomat_object, 'table', 'biomaterialprop');
+      $properties = $result->biomaterialprop;
+      $propstore = [];
 
-      //Get all properties
-
-      $properties = chado_get_property([
-        'table' => 'biomaterial',
-        'id' => $exp->biomaterial_id,
-      ]);
-
-      dpm($properties);
       if (!$properties) {
-        $properties = "[]";
+        $properties = [];
+      }
+      foreach ($properties as $prop) {
+        //get the prop name and value
+        // $property_cvterm_id = $prop->type_id->cvterm_id;
+        // $property_cv_id = $prop->type_id->cv_id;
+        $property_name = $prop->type_id->name;
+        $property_value = $prop->value;
+        $propstore[$property_name] = $property_value;
       }
 
       $node_present = chado_get_record_entity_by_table('biomaterial', $exp->biomaterial_id);
 
-      $json_properties = json_encode($properties);
-      dpm($json_properties);
-
-      $analysis_json .= '{"name": "' . $exp->name . '",  "intensity": "' . $exp->signal . '", "units": "' . $units . '", "description": "' . $exp->description . '", "properties":  "' . $json_properties . '",  "node": "' . $node_present . '"},';
+      //Build entry for this biosample/biomaterial, append it to the existing array, and store it in the master array
+      $biosample_properties = [
+        "name" => $exp->name,
+        "intensity" => $exp->signal,
+        "units" => $exp->units,
+        "description" => $exp->description,
+        "properties" => $propstore,
+        "node" => $node_present,
+      ];
+      $existing_samples = $array_to_encode[$exp->analysis_id]["biomaterials"];
+      array_push($existing_samples, $biosample_properties);
+      $array_to_encode[$exp->analysis_id]["biomaterials"] = $existing_samples;
     }
-
-    //Add final json string to the array
-    $analysis_json .= ']}';
-
-    //TODO refactor to use json_encode
-
-    $json_array[] = $analysis_json;
-    //turn Array into JSON expression
-    $json_exp = implode($json_array);
-    $json_exp = "{" . $json_exp . "}";
-
+    $json_exp = json_encode($array_to_encode);
     if ($expressions->rowCount() < $min_num_biomaterials) {
       $json_exp = "";
     }
@@ -243,7 +227,6 @@ class data__gene_expression_data extends ChadoField{
 
     $variables['has_exp'] = $has_exp;
     $variables['json_exp'] = $json_exp;
-
     $variables['limit_label_length'] = $limit_label_length;
     $variables['hide_expression'] = $hide_expression;
     $variables['hide_biomaterial_labels'] = $hide_biomaterial_labels;

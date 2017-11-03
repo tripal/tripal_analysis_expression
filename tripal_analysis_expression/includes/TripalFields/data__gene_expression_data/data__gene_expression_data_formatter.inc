@@ -110,6 +110,9 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
 
         $content .= '
       </select>
+      <div id="propertyDiv">
+      <strong>Select a property to sort by</strong><br/>
+      </div>
             <p>
               Hover the mouse over a column in the graph to view expression values.
             </p>
