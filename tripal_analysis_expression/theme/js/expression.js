@@ -6,17 +6,69 @@
 function expNormal() {
     heatMapTotal = '';
     heatMapTotal = JSON.parse(JSON.stringify(heatMapRaw));
-    //Get samples associated with select analysis
+    //Get samples associated with selected analysis
     selectedAnalysis = d3.select('#analyses').property("value");
-    heatMap = heatMapTotal[selectedAnalysis].biosamples;
+    heatMap = heatMapTotal[selectedAnalysis].biomaterials;
     d3.selectAll('expfeaturedom').remove();
     d3.selectAll('expkeydom').remove();
     exp();
 }
 
+/**
+ * Append the Property selector
+ */
 function buildPropertySelect() {
 
+    previousValue = jQuery("#propertyMenu").find(":selected").text()
+
+    d3.select('#propertyDiv').select("select").remove()
+
+    //build list of properties for this analysis
+    var propertyList = []
+    var selector = d3.select("#propertyDiv").append("select").attr("id", "propertyMenu")
+
+    heatMap.map(function (biomaterial) {
+        Object.keys(biomaterial.properties).map(function (property_key) {
+            propertyList[property_key] = property_key
+            selector.append("option")
+                .attr("value", function () {
+                    return property_key;
+                })
+                .text(function () {
+                    return property_key;
+                })
+        })
+    })
+
+
+    jQuery("#propertyMenu").val(previousValue)
+    jQuery("#propertyMenu").change(function () {
+        sortProperty()
+    })
+
 }
+
+/**
+ * Sort the chart by the selected property
+ */
+function sortProperty() {
+
+    // currentValue = jQuery("#propertyMenu").find(":selected").text()
+    // sortedMats = []
+    //
+    // heatMap.map(function (biomaterial) {
+    //
+    //     biomaterial.properties[currentValue] ?
+    //         sortedMats[biomaterial.properties[currentValue]] = biomaterial :
+    //         sortedMats["null"] = biomaterial
+    // })
+    // console.log(sortedMats)
+    // heatMap = sortedMats
+    d3.selectAll('expfeaturedom').remove();
+    d3.selectAll('expkeydom').remove();
+    exp();
+}
+
 
 /**
  * This function is called to change the graph type to chart.
@@ -76,10 +128,19 @@ function nonZero() {
  * line of biomaterials.
  */
 function exp() {
+
+    console.log(heatMap)
+
+    currentSorting = jQuery("#propertyMenu").find(":selected").text()
+
+
     /* Only print out heatmap if there is at least one value. */
+    //this breaks with associative arrays.
     if (heatMap.length < 1) {
         return;
     }
+
+
     var bodyWidth = d3.select('figure').node().getBoundingClientRect().width;
 
     /* Find the height to width ratio of a monospace character. */
@@ -104,12 +165,15 @@ function exp() {
     /* Create the figure key. */
     expKey(maxHeat, minHeat);
 
+    /*Build the property selector*/
+    buildPropertySelect();
+
     /* Draw the heat maps line by line. */
     while (1) {
         /* Grab the biomaterials that have not yet been drawn. */
         var num = d3.max(heatMap.slice(loc, heatMapLength), function (d, i) {
 
-            /* Make sure the lenth of the biomaterial name does not exceed
+            /* Make sure the length of the biomaterial name does not exceed
                               the maxLength set by the user. */
             if (d.name.length <= maxLength) {
                 l = d.name.length;
@@ -251,6 +315,7 @@ function expSub(heatMap, maxHeat, minHeat) {
     var bodyWidth = d3.select('figure').node().getBoundingClientRect().width;
     var bodyHeight = d3.select('figure').node().getBoundingClientRect().height;
 
+    //draw the box container
     var graphContainer = d3.select('figure').append('expfeaturedom').append('svg')
         .attr('width', bodyWidth)
         .attr('height', graphHeight);
@@ -261,6 +326,7 @@ function expSub(heatMap, maxHeat, minHeat) {
 
     var ratioChar = [{'char': 'a'}];
     var fontRatio = graphContainer.append('g')
+        .attr("name", "fontratio")
         .selectAll('text')
         .data(ratioChar)
         .enter()
@@ -306,6 +372,7 @@ function expSub(heatMap, maxHeat, minHeat) {
 ////////////////////
 
     var graphBackground = graphContainer.append('g')
+        .attr("name", "graph background")
         .selectAll('rect')
         .data(heatMap)
         .enter()
@@ -374,11 +441,9 @@ function expSub(heatMap, maxHeat, minHeat) {
         .style('fill', 'transparent');
 
 
-    //document.write("made it to this line");
-
-
 ///////////////////
     var graphGroup = graphContainer.append('g')
+        .attr("name", "graph group")
         .selectAll('rect')
         .data(heatMap)
         .enter()
@@ -452,6 +517,7 @@ function expSub(heatMap, maxHeat, minHeat) {
         });
 
     var graphGroup = graphContainer.append('g')
+        .attr("name", "g4")
         .selectAll('rect')
         .data(heatMap)
         .enter()
@@ -476,6 +542,7 @@ function expSub(heatMap, maxHeat, minHeat) {
     }
 
     var graphLables = graphContainer.append('g')
+        .attr("name", "graph labels")
         .selectAll('text')
         .data(heatMap)
         .enter()
@@ -520,6 +587,5 @@ function expSub(heatMap, maxHeat, minHeat) {
 
     graphContainer.attr('height', graphHeight + maxTitleHeight + (colWidth * 0.707106781));
 
-//	d3.select(window).on('resize', resize);
 }
 

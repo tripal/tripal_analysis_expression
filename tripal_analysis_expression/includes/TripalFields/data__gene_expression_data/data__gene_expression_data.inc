@@ -190,13 +190,12 @@ class data__gene_expression_data extends ChadoField{
       $propstore = [];
 
       if (!$properties) {
-        $properties = "[]";
+        $properties = [];
       }
-      dpm($properties);
       foreach ($properties as $prop) {
         //get the prop name and value
-       // $property_cvterm_id = $prop->type_id->cvterm_id;
-       // $property_cv_id = $prop->type_id->cv_id;
+        // $property_cvterm_id = $prop->type_id->cvterm_id;
+        // $property_cv_id = $prop->type_id->cv_id;
         $property_name = $prop->type_id->name;
         $property_value = $prop->value;
         $propstore[$property_name] = $property_value;
@@ -217,9 +216,7 @@ class data__gene_expression_data extends ChadoField{
       array_push($existing_samples, $biosample_properties);
       $array_to_encode[$exp->analysis_id]["biomaterials"] = $existing_samples;
     }
-    dpm($array_to_encode);
     $json_exp = json_encode($array_to_encode);
-    dpm($json_exp);
     if ($expressions->rowCount() < $min_num_biomaterials) {
       $json_exp = "";
     }
