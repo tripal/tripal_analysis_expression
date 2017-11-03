@@ -185,13 +185,21 @@ class data__gene_expression_data extends ChadoField{
         'biomaterial_id' => $exp->biomaterial_id,
       ];
       $biomat_object = chado_generate_var('biomaterial', $values);
-      dpm($biomat_object);
       $result = chado_expand_var($biomat_object, 'table', 'biomaterialprop');
       $properties = $result->biomaterialprop;
+      $propstore = [];
 
-      dpm($properties);
       if (!$properties) {
         $properties = "[]";
+      }
+      dpm($properties);
+      foreach ($properties as $prop) {
+        //get the prop name and value
+       // $property_cvterm_id = $prop->type_id->cvterm_id;
+       // $property_cv_id = $prop->type_id->cv_id;
+        $property_name = $prop->type_id->name;
+        $property_value = $prop->value;
+        $propstore[$property_name] = $property_value;
       }
 
       $node_present = chado_get_record_entity_by_table('biomaterial', $exp->biomaterial_id);
@@ -202,7 +210,7 @@ class data__gene_expression_data extends ChadoField{
         "intensity" => $exp->signal,
         "units" => $exp->units,
         "description" => $exp->description,
-        "properties" => $properties,
+        "properties" => $propstore,
         "node" => $node_present,
       ];
       $existing_samples = $array_to_encode[$exp->analysis_id]["biomaterials"];
