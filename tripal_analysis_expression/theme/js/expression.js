@@ -9,9 +9,10 @@ function expNormal() {
     //Get samples associated with selected analysis
     selectedAnalysis = d3.select('#analyses').property("value");
     heatMap = heatMapTotal[selectedAnalysis].biomaterials;
+    buildPropertySelect();// i just moved theis here from exprewrite
     d3.selectAll('expfeaturedom').remove();
     d3.selectAll('expkeydom').remove();
-    exp();
+    expRewrite();
 }
 
 /**
@@ -19,8 +20,8 @@ function expNormal() {
  */
 function buildPropertySelect() {
 
+    //remove the old selector and store its value
     previousValue = jQuery("#propertyMenu").find(":selected").text()
-
     d3.select('#propertyDiv').select("select").remove()
 
     //build list of properties for this analysis
@@ -40,33 +41,16 @@ function buildPropertySelect() {
         })
     })
 
-
-    jQuery("#propertyMenu").val(previousValue)
+    if (previousValue) {
+        jQuery("#propertyMenu").val(previousValue)
+    }
+    //if the selector changes, rebuild the figure
     jQuery("#propertyMenu").change(function () {
-        sortProperty()
+        d3.selectAll('expfeaturedom').remove();
+        d3.selectAll('expkeydom').remove();
+        expRewrite();
     })
 
-}
-
-/**
- * Sort the chart by the selected property
- */
-function sortProperty() {
-
-    // currentValue = jQuery("#propertyMenu").find(":selected").text()
-    // sortedMats = []
-    //
-    // heatMap.map(function (biomaterial) {
-    //
-    //     biomaterial.properties[currentValue] ?
-    //         sortedMats[biomaterial.properties[currentValue]] = biomaterial :
-    //         sortedMats["null"] = biomaterial
-    // })
-    // console.log(sortedMats)
-    // heatMap = sortedMats
-    d3.selectAll('expfeaturedom').remove();
-    d3.selectAll('expkeydom').remove();
-    exp();
 }
 
 
@@ -120,6 +104,81 @@ function nonZero() {
     d3.selectAll('expkeydom').remove();
     exp();
 }
+
+function expRewrite() {
+    console.log("rewriting")
+    currentSorting = jQuery("#propertyMenu").find(":selected").text()
+    var bodyWidth = d3.select('figure').node().getBoundingClientRect().width;
+    var hGet = d3.select('figure').append('expfeaturechar').append('text').attr('font-family', 'monospace').text('a');
+    var heightChar = d3.select('text').node().getBoundingClientRect().height;
+    var widthChar = d3.select('text').node().getBoundingClientRect().width;
+    ratio = heightChar / widthChar;
+    /* Remove the character. */
+    d3.select('expfeaturechar').remove();
+
+    maxHeat = d3.max(heatMap, function (d) {
+        return Number(d.intensity);
+    });
+    minHeat = d3.min(heatMap, function (d) {
+        return Number(d.intensity);
+    });
+    var loc = 0;
+    var heatMapLength = Object.keys(heatMap).length
+
+    /* Create the figure key. */
+    expKey(maxHeat, minHeat);
+
+    /*Build the property selector*/
+
+
+    /* Draw the heat maps line by line. */
+    while (1) {
+        /* Grab the biomaterials that have not yet been drawn. */
+        var num = d3.max(heatMap.slice(loc, heatMapLength), function (d, i) {
+
+            /* Make sure the length of the biomaterial name does not exceed
+                              the maxLength set by the user. */
+            if (d.name.length <= maxLength) {
+                l = d.name.length;
+            }
+
+            /* If the maxLength variable is set to 0, there is not limit
+                              on the biomaterial name length. */
+            else if (maxLength == 0) {
+                l = d.name.length;
+            }
+
+            /* Truncate the length of the biomaterial name to maxLength. */
+            else {
+                l = maxLength;
+            }
+
+            /* Find the max number of biomaterials that column width and biomaterial name allow. */
+            if ((((i + .5) * colWidth) + l * ratio * .707 * colWidth * .9) > bodyWidth) {
+                return 0;
+            }
+            else {
+                return i + 1;
+            }
+        });
+
+        /* Cut up the biomateial json variable to draw on each line. */
+        subHeatMap = [];
+        if (loc + num >= heatMapLength - 1) {
+            expSub(heatMap.slice(loc, loc + num + 1), maxHeat, minHeat);
+        }
+        else {
+            expSub(heatMap.slice(loc, loc + num), maxHeat, minHeat);
+        }
+
+        loc += num;
+        if (loc >= heatMapLength) {
+            break;
+        }
+    }
+
+}
+
 
 /**
  * This function will divide the biomaterials up into different lines based
