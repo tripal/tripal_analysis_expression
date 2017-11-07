@@ -43,7 +43,7 @@ function buildPropertySelect() {
 
     heatMap.map(function (biomaterial) {
         Object.keys(biomaterial.properties).map(function (property_key) {
-          //determine if this property is already in our selector
+            //determine if this property is already in our selector
             var exists = $("#propertyDiv option")
                 .filter(function (i, o) {
                     return o.value === property_key;
@@ -183,16 +183,20 @@ function nonZero() {
 function expRewrite() {
     currentSorting = jQuery("#propertyMenu").find(":selected").text()
     structuredMap = sortDataByProperty()
+
     var width = d3.select('figure').node().getBoundingClientRect().width;
+
     var height = 200;
-    var margin = {top: 5, right: 5, bottom: 5, left: 5};
+    var margin = 20;
 
 
-    var svg = d3.select('figure').append('chart').append('svg')
+    var svg = d3.select('figure')
+        .append('chart')
+        .append('svg')
         .attr('width', width)
         .attr('height', height)
         .append('g')
-        // .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
     maxHeat = d3.max(heatMap, function (d) {
         return Number(d.intensity);
     });
@@ -204,12 +208,12 @@ function expRewrite() {
     propertyValueList = buildPropertyValuesDomain()
 
     var x0 = d3.scale.ordinal()
-        .rangeRoundBands([0, width], .05)
+        .rangeRoundBands([margin, width], .05)
+
     // var x1 = d3.scale.ordinal()
     //     .rangeRoundBands([0, x0.rangeBand()], .1)
     var y = d3.scale.linear()
-        .range([height, 0])//reverse because 0 is the top
-
+        .range([height, (0 + margin)])//reverse because 0 is the top
 
     var colorRange = d3.scale.category20();
     var color = d3.scale.ordinal()
@@ -222,9 +226,10 @@ function expRewrite() {
     var yAxis = d3.svg.axis()
         .scale(y)
         .orient("left")
+        .ticks(4)
     // .tickFormat(d3.format(".2s"));
 
-    var divTooltip = d3.select("figure").append('chart').append("div").attr("class", "toolTip");
+    // var divTooltip = d3.select("figure").append('chart').append("div").attr("class", "toolTip");
 
 
     var nested = d3.nest()
@@ -239,26 +244,30 @@ function expRewrite() {
         .data(structuredMap)
         .enter()
         .append("g")
-        .attr("height", height + margin.top + margin.bottom)
-        .attr("width", width + margin.left + margin.right)
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .attr("height", height)
+        .attr("width", width)
+        .attr("transform", "translate(" + margin + "," + margin + ")")
     ;
 
     //set the domains based on the nested data
     x0.domain(nested.map(function (d) {
+        console.log(d.key)
         return d.key
     }))
+    console.log(x0("Not set"))
+
+
     y.domain([0, maxHeat])
 //append the x and y axes
-    //TODO: FIX THESE TRANSFORMATIONS
+    //TODO: FIX THE Y-scale TRANSFORMATIONS
     svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + height  + ")")
+        .attr("class", "x-axis")
+        .attr("transform", "translate(0," + (height - margin) + ")")
         .call(xAxis)
 
     svg.append("g")
-        .attr("class", "y axis")
-        .attr("transform", "translate(0," + ( margin.bottom) + ")")
+        .attr("class", "y-axis")
+        .attr("transform", "translate(" + (margin) + ",0)")
         .call(yAxis)
         .append("text")
         .attr("transform", "rotate(-90)")
@@ -270,56 +279,34 @@ function expRewrite() {
         .data(nested)
         .enter()
         .append("g")
-        .attr("transform", function (d) {
-            return "translate(0," + x0(d.key) + ")"
-        }) //position each group where it is found in x0
 
     var bars = propertyGroups.selectAll(".bar")
         .data(function (d) {
             return d.values
         })//nest() creates key:values.  for us, key is the property value, and values are the full biomat object
         .enter().append("rect")
-    bars.style("fill", function (d, i) {
-        return color(i - 2)
-    })
-        .attr("y", function(d) {
+        .style("fill", function (d, i) {
+            return color(i)
+        })
+        .attr("y", function (d) {
             return y(d.intensity)
         })
         .attr("x", function (d, i) {
-            if (i % 2 == 0) { //if this is even or odd we want to shift it along the rangeband a little bit
-                return (x0.rangeBand() / 2 ) + (i / 2 + 0.5) * 10
+            var propertyName
+
+            if (!d.properties[currentSorting]) {
+                propertyName = "Not set"
             } else {
-                return (x0.rangeBand() / 2 ) - (i / 2) * 10
+                propertyName = d.properties[currentSorting]
             }
+            return (x0(propertyName) + x0.rangeBand() / 2 + i * 10  )
 
         })
         .attr("width", 5)
         .attr("height", function (d) {
-            return height - y(d.intensity)
+            return y(0) - y(d.intensity)
         })
-
-    // var labels = propertyGroups.selectAll(".label")
-    //     .data(function (d) {
-    //         return d.values
-    //     })
-    //     .enter().append("text");
-    //
-    // labels.text(function (d) {
-    //     return (d.intensity);
-    // })
-    //     .attr("text-anchor", "start")
-    //     .attr("y", function (d) {
-    //         return y(d.intensity) + 20
-    //     })
-    //     .attr("x", function (d, i) {
-    //         if (i % 2 == 0) {
-    //             return (x0.rangeBand() / 2 - 2) + (i / 2 + 0.5) * 10
-    //         }
-    //         else {
-    //             return (x0.rangeBand() / 2 - 2) - (i / 2) * 10
-    //         }
-    //     })
-    //     .attr("class", "axis");
+        .attr("transform", "translate(0," + ( -margin) + ")")
 
 
 }
