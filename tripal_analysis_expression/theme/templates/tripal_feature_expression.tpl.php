@@ -28,7 +28,7 @@ else {
 
 
     <?php
-    tripal_add_d3js();
+    drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/expression.js');
     $hide_biomaterial_labels = $variables['hide_biomaterial_labels'];
     $json_exp = $variables['json_exp'];
     $limit_label_length = $variables['limit_label_length'];

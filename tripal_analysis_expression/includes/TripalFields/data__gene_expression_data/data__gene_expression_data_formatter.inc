@@ -91,7 +91,16 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
     $field = 'data__gene_expression_data';
     $variables = $entity->{$field}['und'][0];
     $content = '';
-    tripal_add_d3js(); // call d3 formatter for later
+    //tripal_add_d3js(); // tripal uses d3 3.0, lets use d3 4.1
+    // drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/d3.min.js');
+
+    ?>
+      <script src="https://d3js.org/d3.v4.js"></script>
+      <script src="https://d3js.org/d3-scale.v1.min.js"></script>
+      <script src="https://d3js.org/d3-collection.v1.min.js"></script>
+
+
+    <?php
 
     if (!$variables['has_exp'] && $variables['json_exp']) {
       $content = 'No biosample libraries express this feature.';
