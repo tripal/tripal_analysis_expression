@@ -137,11 +137,10 @@ function sortDataByProperty() {
  */
 //TODO:  I  THINK WE USE THIS TO SET DOMAIN BUT DOUBLE CHECK
 
-function buildPropertyValuesDomain(color) {
-    if (color) {
-        currentSortingProperty = jQuery("#propertyColorMenu").find(":selected").text()
-
-    }
+function buildPropertyValuesDomain() {
+    // if (color) {
+    //     currentSortingProperty = jQuery("#propertyColorMenu").find(":selected").text()
+    // }
     currentSortingProperty = jQuery("#propertySortMenu").find(":selected").text()
     list = []
     heatMap.map(function (biomaterial) {
@@ -158,7 +157,6 @@ function buildPropertyValuesDomain(color) {
             return $.inArray(v, arr) === i;
         });
     }
-
     return list.unique()
 }
 
@@ -247,10 +245,10 @@ function expRewrite() {
 
 //append the x and y axes
     //   TODO: FIX THE Y-scale TRANSFORMATIONS
-    svg.append("g")
-        .attr("class", "x-axis")
-        .attr("transform", "translate(0," + (height - margin) + ")")
-        .call(xAxis)
+    // svg.append("g")
+    //     .attr("class", "x-axis")
+    //     .attr("transform", "translate(0," + (height - margin) + ")")
+    //     .call(xAxis)
     //     .selectAll("text")
     //     .style("font-size","12px")
     //     .style("font-weight","normal")
@@ -266,11 +264,42 @@ function expRewrite() {
         .data(nested)
         .enter()
         .append("g")
-        .call(d3.behavior.drag()
+
+
+        propertyGroups.append("text")
+            .attr("class", "label")
+            .attr("x", function(d){
+                    return (x0(d.key) + x0.rangeBand() / 2)
+            } )
+            .attr("y", height - margin/3)
+            .attr("transform", "translate(0, 0)")
+        .style("font-size", "12px")
+        .style("fonx-weight", "normal")
+            .text(function(d){
+                return d.key
+            } )
+            .style("text-anchor", "middle")
+
+            // .attr("x", function (d, i) {
+            //     var propertyName
+            //
+            //     if (!d.properties[currentSorting]) {
+            //         propertyName = "Not set"
+            //     } else {
+            //         propertyName = d.properties[currentSorting]
+            //     }
+            //     return (x0(propertyName) + x0.rangeBand() / 2 + i * 10  )
+            // })
+            // .attr("width", 5)
+            // .attr("height", function (d) {
+            //     return y(0) - y(d.intensity)
+            // })
+            // .attr("transform", "translate(0," + ( -margin) + ")")
+
+        propertyGroups.call(d3.behavior.drag()
             .origin(function (d) {  //define the start drag as the middle of the group
                 return {
-                    x: x0(d.key)
-                    //( x0(d.key) + x0.rangeBand() / 2)
+                    x: x0(d.key) - margin
                 };
             })
             .on("dragstart", function (d) {
@@ -280,32 +309,39 @@ function expRewrite() {
                 sel.moveToFront();
             })
             .on("drag", function (d) {//track current drag location
-                dragging[d.key] = Math.min(width, Math.max(0, d3.event.x));
+                //dragging[d.key] = Math.min(-200, Math.max(0, d3.event.x));
+                dragging[d.key] =  d3.event.x;
+
                 nested.sort(function (a, b) {
+                    //compare function:  if less than 0, a comes first
+                    //compare function if returns 0, leave unchanged
+                    // greater than 0, b comes first
                     return position(a) - position(b);
                 })
-                console.log(dragging)
                 x0.domain(nested.map(function (d) {//reset the x0 domain
-                    console.log(d)
                     return d.key
                 }))
                 propertyGroups.attr("transform", function (d) {
-                    console.log(d)
                     return "translate(" + position(d) + ", 0)";
                 })
+
             })
             .on("dragend", function (d) {
                 delete dragging[d.key];
-                transition(d3.select(this)).attr("transform", "translate(" + x0(d.key) + ", 0)");
+                transition(d3.select(this)).attr("transform", "translate(" + (x0(d.key)- margin ) + ", 0)");
+
+                propertyGroups.selectAll()
+                    .attr("x", function(d){
+                        return (x0(d.key) + x0.rangeBand() / 2)
+                    } )
             })
         )
 
-
+//TODO:  FIX THIS!  Right now it uses the property values domain to just get the other selector's domain
 //define color scale based on selected
     currentColor = jQuery("#propertyColorMenu").find(":selected").text()
-
     if (currentColor) {
-        var colorDomain = buildPropertyValuesDomain(currentColor)
+        var colorDomain = buildPropertyValuesDomain()
         var color = d3.scale.ordinal()
             .domain(colorDomain)
             .range(["#ca0020","#f4a582","#d5d5d5","#92c5de","#0571b0"]);
@@ -356,8 +392,7 @@ function expRewrite() {
 
     function position(property) {
         var v = dragging[property.key];
-        console.log("v")
-        console.log()
+        //v will be null if we arent dragging it: in that case, get its position
         return v == null ? x0(property.key) : v;
     }
 
