@@ -354,7 +354,7 @@ function expRewrite() {
     function position(property) {
         var v = dragging[property.key];
         //v will be null if we arent dragging it: in that case, get its position
-        return v == null ? translationXOffset(d, x0) : v;
+        return v == null ? translationXOffset(property, x0) : v;
     }
 
     function transition(g) {
