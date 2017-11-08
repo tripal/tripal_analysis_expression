@@ -217,7 +217,6 @@ function expRewrite() {
         .orient("left")
         .ticks(2)
 
-    // var divTooltip = d3.select("figure").append('chart').append("div").attr("class", "toolTip");
     var nested = d3.nest()
         .key(function (d) {
             if (!d.properties[currentSorting]) {
@@ -360,6 +359,31 @@ function expRewrite() {
     function transition(g) {
         return g.transition().duration(500);
     }
+
+    //Add the tool tip
+
+    var divTooltip = d3.select('chart').append("div")
+        .attr("class", "toolTip")
+        .attr('width', width - 2* margin)
+
+    bars.on("mouseover", function(d) {
+        console.log(d)
+        divTooltip.transition()
+            .duration(200)
+            .style("opacity", .95);
+        divTooltip.html(
+            "<strong>Biosample: "+ d.name + "</strong><br/>" +
+            "<strong>Expression: </strong>" +d.intensity + " " + d.units + "<br/>" +
+            "<strong>Description: </strong><br/>" + d.description + "<br/>"
+            //TODO : add property table
+           )
+
+    })
+        .on("mouseout", function(d) {
+            divTooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        });
 
 }
 
