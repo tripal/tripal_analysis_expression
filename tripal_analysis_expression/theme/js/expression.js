@@ -34,24 +34,40 @@ function expNormal() {
  */
 function buildPropertySelect() {
 
-    //remove the old selector and store its value
-    previousValue = jQuery("#propertyMenu").find(":selected").text()
-    d3.selectAll('#propertyDiv').select("select").remove()
+    //remove the old selectors and store values
+    previousValueSort = jQuery("#propertySortMenu").find(":selected").text()
+    d3.selectAll('#propertySortDiv').selectAll("select").remove()
+    previousValueColor = jQuery("#propertyColorMenu").find(":selected").text()
+    d3.selectAll('#propertyColorDiv').selectAll("select").remove()
 
     //build list of properties for this analysis
-    var selector = d3.select("#propertyDiv").append("select").attr("id", "propertyMenu")
+    var selectorSort = d3.select("#propertySortDiv").append("select").attr("id", "propertySortMenu")
+    var selectorColor = d3.select("#propertyColorDiv").append("select").attr("id", "propertyColorMenu")
+
+    //first add "expression value" as default for color
+
+    selectorColor.append("option")
+        .attr("value", "expressionValue")
+        .text("Expression value")
 
     heatMap.map(function (biomaterial) {
         Object.keys(biomaterial.properties).map(function (property_key) {
             //determine if this property is already in our selector
-            var exists = $("#propertyDiv option")
+            var exists = $("#propertySortDiv option")
                 .filter(function (i, o) {
                     return o.value === property_key;
                 })
                 .length > 0;
 
             if (!exists) {
-                selector.append("option")
+                selectorSort.append("option")
+                    .attr("value", function () {
+                        return property_key;
+                    })
+                    .text(function () {
+                        return property_key;
+                    })
+                selectorColor.append("option")
                     .attr("value", function () {
                         return property_key;
                     })
@@ -63,39 +79,34 @@ function buildPropertySelect() {
         })
     })
 
-    if (previousValue) {
-        jQuery("#propertyMenu").val(previousValue)
+    if (previousValueSort) {
+        jQuery("#propertySortMenu").val(previousValueSort)
+    }
+    if (previousValueColor) {
+        jQuery("#propertyColorMenu").val(previousValueColor)
+    } else {
+        jQuery("#propertyColorMenu").val("expressionValue")
     }
     //if the selector changes, rebuild the figure
-    jQuery("#propertyMenu").change(function () {
+    jQuery("#propertySortMenu").change(function () {
+        d3.selectAll('chart').remove();
+        expRewrite();
+    })
+    //if the selector changes, rebuild the figure
+    jQuery("#propertyColorMenu").change(function () {
         d3.selectAll('chart').remove();
         expRewrite();
     })
 }
 
-
-/**
- * This function is called to change the graph type to chart.
- */
-function expChart() {
-    if (col == 'column') {
-        col = 'tile';
-    }
-    else if (col == 'tile') {
-        col = 'column';
-    }
-    d3.selectAll('expfeaturedom').remove();
-    d3.selectAll('expkeydom').remove();
-    exp();
-}
-
 /**
  * Build an array with lists of biomaterials sorted by value.
- * .nest() would do this but not avialable in d3.v3
  * @returns {Array}
  */
+
+//TODO:  I DONT THINK WE USE THIS?
 function sortDataByProperty() {
-    currentSortingProperty = jQuery("#propertyMenu").find(":selected").text()
+    currentSortingProperty = jQuery("#propertySortMenu").find(":selected").text()
     list = []
     heatMap.map(function (biomaterial) {
         name = biomaterial.name
@@ -124,8 +135,14 @@ function sortDataByProperty() {
  * Build an array with lists of biomaterials sorted by value
  * @returns {Array}
  */
-function buildPropertyValuesDomain() {
-    currentSortingProperty = jQuery("#propertyMenu").find(":selected").text()
+//TODO:  I  THINK WE USE THIS TO SET DOMAIN BUT DOUBLE CHECK
+
+function buildPropertyValuesDomain(color) {
+    if (color) {
+        currentSortingProperty = jQuery("#propertyColorMenu").find(":selected").text()
+
+    }
+    currentSortingProperty = jQuery("#propertySortMenu").find(":selected").text()
     list = []
     heatMap.map(function (biomaterial) {
         name = biomaterial.name
@@ -145,28 +162,6 @@ function buildPropertyValuesDomain() {
     return list.unique()
 }
 
-/**
- * This will arrange the biomaterials by value from greatest to least.
- */
-function expSortDown() {
-    heatMap.sort(function (a, b) {
-        return Number(b.intensity) - Number(a.intensity);
-    });
-    d3.selectAll('expkeydom').remove();
-    expRewrite();
-}
-
-/**
- * This will arrange the biomaterials by value from least to greatest.
- */
-function expSortUp() {
-    heatMap.sort(function (a, b) {
-        return Number(a.intensity) - Number(b.intensity);
-    });
-    d3.selectAll('expfeaturedom').remove();
-    d3.selectAll('expkeydom').remove();
-    expRewrite();
-}
 
 /**
  * This function will remove biomaterials that have a value of 0.
@@ -181,12 +176,13 @@ function nonZero() {
 }
 
 function expRewrite() {
-    currentSorting = jQuery("#propertyMenu").find(":selected").text()
+    currentSorting = jQuery("#propertySortMenu").find(":selected").text()
+
     structuredMap = sortDataByProperty()
 
     var width = d3.select('figure').node().getBoundingClientRect().width;
 
-    var height = 200;
+    var height = 300;
     var margin = 20;
 
 
@@ -208,7 +204,7 @@ function expRewrite() {
     propertyValueList = buildPropertyValuesDomain()
 
     var x0 = d3.scale.ordinal()
-        .rangeRoundBands([margin, width], .05)
+        .rangeRoundBands([margin, width])
 
     // var x1 = d3.scale.ordinal()
     //     .rangeRoundBands([0, x0.rangeBand()], .1)
@@ -226,8 +222,7 @@ function expRewrite() {
     var yAxis = d3.svg.axis()
         .scale(y)
         .orient("left")
-        .ticks(4)
-    // .tickFormat(d3.format(".2s"));
+        .ticks(2)
 
     // var divTooltip = d3.select("figure").append('chart').append("div").attr("class", "toolTip");
 
@@ -240,45 +235,82 @@ function expRewrite() {
             return d.properties[currentSorting];
         }).entries(heatMap)
 
-    var groups = svg.selectAll(null)
-        .data(structuredMap)
-        .enter()
-        .append("g")
-        .attr("height", height)
-        .attr("width", width)
-        .attr("transform", "translate(" + margin + "," + margin + ")")
-    ;
 
     //set the domains based on the nested data
     x0.domain(nested.map(function (d) {
-        console.log(d.key)
         return d.key
     }))
-    console.log(x0("Not set"))
 
 
     y.domain([0, maxHeat])
+
+
 //append the x and y axes
-    //TODO: FIX THE Y-scale TRANSFORMATIONS
+    //   TODO: FIX THE Y-scale TRANSFORMATIONS
     svg.append("g")
         .attr("class", "x-axis")
         .attr("transform", "translate(0," + (height - margin) + ")")
         .call(xAxis)
+    //     .selectAll("text")
+    //     .style("font-size","12px")
+    //     .style("font-weight","normal")
 
     svg.append("g")
         .attr("class", "y-axis")
-        .attr("transform", "translate(" + (margin) + ",0)")
+        .attr("transform", "translate(" + (2.5 * margin) + ", -" + margin + ")")
         .call(yAxis)
-        .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("dy", ".71em")
-        .style("text-anchor", "end")
-        .text("Expression units");
+
+    var dragging = {}
 
     var propertyGroups = svg.selectAll(".propertyGroups")
         .data(nested)
         .enter()
         .append("g")
+        .call(d3.behavior.drag()
+            .origin(function (d) {  //define the start drag as the middle of the group
+                return {
+                    x: x0(d.key)
+                    //( x0(d.key) + x0.rangeBand() / 2)
+                };
+            })
+            .on("dragstart", function (d) {
+                //track the position of the selected group in the dragging object
+                dragging[d.key] = x0(d.key);
+                sel = d3.select(this);
+                sel.moveToFront();
+            })
+            .on("drag", function (d) {//track current drag location
+                dragging[d.key] = Math.min(width, Math.max(0, d3.event.x));
+                nested.sort(function (a, b) {
+                    return position(a) - position(b);
+                })
+                console.log(dragging)
+                x0.domain(nested.map(function (d) {//reset the x0 domain
+                    console.log(d)
+                    return d.key
+                }))
+                propertyGroups.attr("transform", function (d) {
+                    console.log(d)
+                    return "translate(" + position(d) + ", 0)";
+                })
+            })
+            .on("dragend", function (d) {
+                delete dragging[d.key];
+                transition(d3.select(this)).attr("transform", "translate(" + x0(d.key) + ", 0)");
+            })
+        )
+
+
+//define color scale based on selected
+    currentColor = jQuery("#propertyColorMenu").find(":selected").text()
+
+    if (currentColor) {
+        var colorDomain = buildPropertyValuesDomain(currentColor)
+        var color = d3.scale.ordinal()
+            .domain(colorDomain)
+            .range(["#ca0020","#f4a582","#d5d5d5","#92c5de","#0571b0"]);
+    }
+
 
     var bars = propertyGroups.selectAll(".bar")
         .data(function (d) {
@@ -286,7 +318,14 @@ function expRewrite() {
         })//nest() creates key:values.  for us, key is the property value, and values are the full biomat object
         .enter().append("rect")
         .style("fill", function (d, i) {
-            return color(i)
+
+            if (!d.properties[currentColor]) {
+                propertyName = "Not set"
+            } else {
+                propertyName = d.properties[currentSorting]
+            }
+            return color(propertyName)
+
         })
         .attr("y", function (d) {
             return y(d.intensity)
@@ -300,7 +339,6 @@ function expRewrite() {
                 propertyName = d.properties[currentSorting]
             }
             return (x0(propertyName) + x0.rangeBand() / 2 + i * 10  )
-
         })
         .attr("width", 5)
         .attr("height", function (d) {
@@ -309,4 +347,23 @@ function expRewrite() {
         .attr("transform", "translate(0," + ( -margin) + ")")
 
 
+    //define methods for dragging
+    d3.selection.prototype.moveToFront = function () {
+        return this.each(function () {
+            this.parentNode.appendChild(this);
+        });
+    };
+
+    function position(property) {
+        var v = dragging[property.key];
+        console.log("v")
+        console.log()
+        return v == null ? x0(property.key) : v;
+    }
+
+    function transition(g) {
+        return g.transition().duration(500);
+    }
+
 }
+

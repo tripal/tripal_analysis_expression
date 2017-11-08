@@ -119,17 +119,18 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
 
         $content .= '
       </select>
-      <div id="propertyDiv">
-      <strong>Select a property to sort by</strong><br/>
+      <div id="propertySortDiv">
+      <strong>Select a property to group and sort biosamples</strong><br/>
       </div>
+      <div id="propertyColorDiv">
+      <strong>Select a property to color biosamples </strong><br/>
+      </div> 
+      
             <p>
               Hover the mouse over a column in the graph to view expression values.
             </p>
             <p>
-              <a href="javascript:;" onclick="expSortDown()">Sort Descending</a> |
-              <a href="javascript:;" onclick="expSortUp()">Sort Ascending</a> |
               <a href="javascript:;" onclick="nonZero()">Only Non-Zero Values</a> |
-              <a href="javascript:;" onclick="expChart()">Tile/Chart</a> |
               <a href="javascript:;" onclick="expNormal()">Reset</a>
             </p>
             ';
