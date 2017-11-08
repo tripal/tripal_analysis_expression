@@ -175,14 +175,12 @@ function nonZero() {
 
 function expRewrite() {
     currentSorting = jQuery("#propertySortMenu").find(":selected").text()
-
     structuredMap = sortDataByProperty()
 
     var width = d3.select('figure').node().getBoundingClientRect().width;
 
     var height = 300;
     var margin = 20;
-
 
     var svg = d3.select('figure')
         .append('chart')
@@ -198,14 +196,11 @@ function expRewrite() {
         return Number(d.intensity);
     });
 
-
     propertyValueList = buildPropertyValuesDomain()
 
     var x0 = d3.scale.ordinal()
         .rangeRoundBands([margin, width])
 
-    // var x1 = d3.scale.ordinal()
-    //     .rangeRoundBands([0, x0.rangeBand()], .1)
     var y = d3.scale.linear()
         .range([height, (0 + margin)])//reverse because 0 is the top
 
@@ -223,8 +218,6 @@ function expRewrite() {
         .ticks(2)
 
     // var divTooltip = d3.select("figure").append('chart').append("div").attr("class", "toolTip");
-
-
     var nested = d3.nest()
         .key(function (d) {
             if (!d.properties[currentSorting]) {
@@ -233,25 +226,11 @@ function expRewrite() {
             return d.properties[currentSorting];
         }).entries(heatMap)
 
-
     //set the domains based on the nested data
     x0.domain(nested.map(function (d) {
         return d.key
     }))
-
-
     y.domain([0, maxHeat])
-
-
-//append the x and y axes
-    //   TODO: FIX THE Y-scale TRANSFORMATIONS
-    // svg.append("g")
-    //     .attr("class", "x-axis")
-    //     .attr("transform", "translate(0," + (height - margin) + ")")
-    //     .call(xAxis)
-    //     .selectAll("text")
-    //     .style("font-size","12px")
-    //     .style("font-weight","normal")
 
     svg.append("g")
         .attr("class", "y-axis")
@@ -264,78 +243,57 @@ function expRewrite() {
         .data(nested)
         .enter()
         .append("g")
+        .attr("transform", function (d) {
+            return "translate(" + translationXOffset(d, x0) + ",0)"
+        })
 
-
-        propertyGroups.append("text")
-            .attr("class", "label")
-            .attr("x", function(d){
-                    return (x0(d.key) + x0.rangeBand() / 2)
-            } )
-            .attr("y", height - margin/3)
-            .attr("transform", "translate(0, 0)")
+    propertyGroups.append("text")
+        .attr("class", "label")
+        .attr("y", height - margin / 3)
         .style("font-size", "12px")
         .style("fonx-weight", "normal")
-            .text(function(d){
+        .text(function (d) {
+            return d.key
+        })
+        .style("text-anchor", "middle")
+
+
+    propertyGroups.call(d3.behavior.drag()
+        .origin(function (d) {  //define the start drag as the middle of the group
+            //this should match the transformation used when assigning the group
+            return {x: translationXOffset(d, x0)}
+        })
+        .on("dragstart", function (d) {
+            //track the position of the selected group in the dragging object
+            dragging[d.key] = translationXOffset(d, x0)
+            sel = d3.select(this);
+            sel.moveToFront();
+        })
+        .on("drag", function (d) {//track current drag location
+            dragging[d.key] = d3.event.x
+
+            nested.sort(function (a, b) {
+                return position(a) - position(b);
+            })
+            x0.domain(nested.map(function (d) {//reset the x0 domain
                 return d.key
-            } )
-            .style("text-anchor", "middle")
-
-            // .attr("x", function (d, i) {
-            //     var propertyName
-            //
-            //     if (!d.properties[currentSorting]) {
-            //         propertyName = "Not set"
-            //     } else {
-            //         propertyName = d.properties[currentSorting]
-            //     }
-            //     return (x0(propertyName) + x0.rangeBand() / 2 + i * 10  )
-            // })
-            // .attr("width", 5)
-            // .attr("height", function (d) {
-            //     return y(0) - y(d.intensity)
-            // })
-            // .attr("transform", "translate(0," + ( -margin) + ")")
-
-        propertyGroups.call(d3.behavior.drag()
-            .origin(function (d) {  //define the start drag as the middle of the group
-                return {
-                    x: x0(d.key) - margin
-                };
+            }))
+            propertyGroups.attr("transform", function (d) {
+                return "translate(" + position(d) + ", 0)";
             })
-            .on("dragstart", function (d) {
-                //track the position of the selected group in the dragging object
-                dragging[d.key] = x0(d.key);
-                sel = d3.select(this);
-                sel.moveToFront();
-            })
-            .on("drag", function (d) {//track current drag location
-                //dragging[d.key] = Math.min(-200, Math.max(0, d3.event.x));
-                dragging[d.key] =  d3.event.x;
 
-                nested.sort(function (a, b) {
-                    //compare function:  if less than 0, a comes first
-                    //compare function if returns 0, leave unchanged
-                    // greater than 0, b comes first
-                    return position(a) - position(b);
+        })
+        .on("dragend", function (d) {
+            delete dragging[d.key];
+            transition(d3.select(this)).attr("transform", function (d) {
+                return "translate(" + translationXOffset(d, x0) + ",0)"
+            })
+            propertyGroups.selectAll()
+                .attr("transform", function (d) {
+                    return "translate(" + translationXOffset(d, x0) + ",0)"
                 })
-                x0.domain(nested.map(function (d) {//reset the x0 domain
-                    return d.key
-                }))
-                propertyGroups.attr("transform", function (d) {
-                    return "translate(" + position(d) + ", 0)";
-                })
-
-            })
-            .on("dragend", function (d) {
-                delete dragging[d.key];
-                transition(d3.select(this)).attr("transform", "translate(" + (x0(d.key)- margin ) + ", 0)");
-
-                propertyGroups.selectAll()
-                    .attr("x", function(d){
-                        return (x0(d.key) + x0.rangeBand() / 2)
-                    } )
-            })
-        )
+        })
+    )
 
 //TODO:  FIX THIS!  Right now it uses the property values domain to just get the other selector's domain
 //define color scale based on selected
@@ -344,7 +302,7 @@ function expRewrite() {
         var colorDomain = buildPropertyValuesDomain()
         var color = d3.scale.ordinal()
             .domain(colorDomain)
-            .range(["#ca0020","#f4a582","#d5d5d5","#92c5de","#0571b0"]);
+            .range(["#ca0020", "#f4a582", "#d5d5d5", "#92c5de", "#0571b0"]);
     }
 
 
@@ -367,14 +325,17 @@ function expRewrite() {
             return y(d.intensity)
         })
         .attr("x", function (d, i) {
-            var propertyName
+            numberBiosamples = Object.keys(d).length
 
-            if (!d.properties[currentSorting]) {
-                propertyName = "Not set"
-            } else {
-                propertyName = d.properties[currentSorting]
-            }
-            return (x0(propertyName) + x0.rangeBand() / 2 + i * 10  )
+            return 10 * i - (1 / numberBiosamples * 10)
+            // var propertyName
+            //
+            // if (!d.properties[currentSorting]) {
+            //     propertyName = "Not set"
+            // } else {
+            //     propertyName = d.properties[currentSorting]
+            // }
+            // return (x0(propertyName) + x0.rangeBand() / 2 + i * 10  )
         })
         .attr("width", 5)
         .attr("height", function (d) {
@@ -393,7 +354,7 @@ function expRewrite() {
     function position(property) {
         var v = dragging[property.key];
         //v will be null if we arent dragging it: in that case, get its position
-        return v == null ? x0(property.key) : v;
+        return v == null ? translationXOffset(d, x0) : v;
     }
 
     function transition(g) {
@@ -402,3 +363,13 @@ function expRewrite() {
 
 }
 
+/**This function determines the position of a nested group by returning the value from the scale and adding half the range band.
+ *
+ * @param d
+ * @param scale
+ * @returns {string}
+ */
+function translationXOffset(d, scale) {
+
+    return (scale(d.key) + scale.rangeBand() / 2)
+}
