@@ -215,7 +215,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    */
   public function formValidate($form, &$form_state) {
 
-
   }
 
   /**
@@ -438,13 +437,16 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       // Insert into database.  Only insert into db if an existing CVTerm wasn't chosen
       $cv_name = 'biomaterial_property';
       if (isset($insert_fields[$attr_name])) {
-        $cv_name = $insert_fields[$attr_name];
+        $specified_cv = $insert_fields[$attr_name];
       }
-      else {
+      if ($specified_cv) {
+        $cv_name = $specified_cv;
+      }
+      else { //if a cv wasnt specified, or if this term wasnt set in the fields array, need to insert into the biomaterial_property CV
         if (!tripal_insert_cvterm([
           'name' => (string) $attr_name,
           'definition' => '',
-          'cv_name' => $cv_name,
+          'cv_name' => 'biomaterial_property',
           'is_relationship' => 0,
           'db_name' => 'tripal',
         ], ['update_existing' => FALSE])) {
