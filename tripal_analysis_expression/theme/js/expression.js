@@ -47,7 +47,7 @@ function buildPropertySelect() {
     //first add "expression value" as default for color
 
     selectorColor.append("option")
-        .attr("value", "expressionValue")
+        .attr("value", "Expression value")
         .text("Expression value")
 
     heatMap.map(function (biomaterial) {
@@ -297,28 +297,37 @@ function expRewrite() {
 //TODO:  FIX THIS!  Right now it uses the property values domain to just get the other selector's domain
 //define color scale based on selected
     currentColor = jQuery("#propertyColorMenu").find(":selected").text()
+    console.log(currentColor)
     if (currentColor != "Expression value") {
         var colorDomain = buildPropertyValuesDomain()
         var color = d3.scale.ordinal()
             .domain(colorDomain)
             .range(["#ca0020", "#f4a582", "#d5d5d5", "#92c5de", "#0571b0"]);
+    }else {
+        colorDomain = [minHeat, maxHeat]
+        var color = d3.scale.linear()
+            .domain(colorDomain)
+            .range(["red", "green"]);
     }
     // Build key/legend based on Color
-
 
     var bars = propertyGroups.selectAll(".bar")
         .data(function (d) {
             return d.values
         })//nest() creates key:values.  for us, key is the property value, and values are the full biomat object
         .enter().append("rect")
-        .style("fill", function (d, i) {
-
-            if (!d.properties[currentColor]) {
-                propertyName = "Not set"
-            } else {
-                propertyName = d.properties[currentSorting]
+        .style("fill", function (d) { // fill depends on if user is doing expression based or property based
+            if (currentColor == "Expression value") {
+                return color(d.intensity)
             }
-            return color(propertyName)
+            else {
+                if (!d.properties[currentColor]) {
+                    propertyName = "Not set"
+                } else {
+                    propertyName = d.properties[currentColor]
+                }
+                return color(propertyName)
+            }
 
         })
         .attr("y", function (d) {
