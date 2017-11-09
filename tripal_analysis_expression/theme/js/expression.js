@@ -367,6 +367,8 @@ function expRewrite() {
         .style("pointer-events", "none")
         .style("opacity", 0)
     bars.on("mouseover", function (d) {
+        propTable = buildPropertyTooltipTable(d)
+
         divTooltip.transition()
             .duration(200)
             .style("opacity", .95)
@@ -374,7 +376,7 @@ function expRewrite() {
             "<strong>Biosample: " + d.name + "</strong><br/>" +
             "<strong>Expression: </strong>" + d.intensity + " " + d.units + "<br/>" +
             "<strong>Description: </strong><br/>" + d.description + "<br/>"
-            //TODO : add property table
+            + propTable
         )
             .style("left", (d3.event.pageX) - (width - margin) + "px")
             .style("top", (d3.event.pageY - (height + margin)) + "px");
@@ -432,4 +434,20 @@ function buildLegend(svg, colorScale) {
         .attr("class", "textselected")
         .style("text-anchor", "start")
         .style("font-size", 15)
+}
+
+function buildPropertyTooltipTable(d){
+    table = ""
+    if (Object.keys(d.properties).length > 0) {
+        table += "</br><table> <tr>" +
+            "    <th>Property Name</th>" +
+            "    <th>Property Value</th> " +
+            "  </tr>"
+        Object.keys(d.properties).map(function (propertyKey) {
+            propertyValue = d.properties[propertyKey]
+            table += "<tr><td>" +propertyKey +"</td><td>"+ propertyValue + "</td> </tr>"
+        })
+        table += "</table>"
+    }
+    return (table)
 }
