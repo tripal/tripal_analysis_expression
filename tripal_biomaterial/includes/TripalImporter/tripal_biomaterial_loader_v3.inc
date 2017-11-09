@@ -667,6 +667,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         // Insert into the biomaterialprop table.
         foreach ($prop_headers as $name => $index) {
           if (!key_exists($insert_fields[$name])) {  //If we didnt choose an association in the form, we're inserting it into biomaterial_property
+
             //get xml attributes
             if (!tripal_insert_cvterm([
               'name' => $name,
@@ -694,6 +695,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
             chado_insert_property($record, $property, $options);
           }
           else {
+            $cv_name = "biomaterial_property";
+            if ($insert_fields[$name]) {
+              $cv_name = $insert_fields[$name];
+            }
             // if the key exists in insert_fields array, the user chose a CV for this term, so we won't insert, but insert property with correct CV
             $record = [
               'table' => 'biomaterial',
@@ -701,7 +706,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
             ];
             $property = [
               'type_name' => $name,
-              'cv_name' => $insert_fields[$name],
+              'cv_name' => $cv_name,
               'value' => $line[$index],
             ];
             $options = [
