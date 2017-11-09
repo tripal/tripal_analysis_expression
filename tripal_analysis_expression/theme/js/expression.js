@@ -364,26 +364,36 @@ function expRewrite() {
 
     var divTooltip = d3.select('chart').append("div")
         .attr("class", "toolTip")
-        .attr('width', width - 2* margin)
-
-    bars.on("mouseover", function(d) {
+    bars.on("mouseover", function (d) {
         console.log(d)
         divTooltip.transition()
             .duration(200)
-            .style("opacity", .95);
+            .style("opacity", .95)
         divTooltip.html(
-            "<strong>Biosample: "+ d.name + "</strong><br/>" +
-            "<strong>Expression: </strong>" +d.intensity + " " + d.units + "<br/>" +
+            "<strong>Biosample: " + d.name + "</strong><br/>" +
+            "<strong>Expression: </strong>" + d.intensity + " " + d.units + "<br/>" +
             "<strong>Description: </strong><br/>" + d.description + "<br/>"
             //TODO : add property table
-           )
+        )
+            .style("left", (d3.event.pageX) + "px")
+            .style("top", (d3.event.pageY - 28) + "px")
+            .style("width", "60px")
+            .style("height", "80px")
+            .style("padding", "2px")
+            .style("font", "12px sans-serif")
+            .style("background", "lightsteelblue")
+            .style("border", "0px")
+            .style("border-radius", "2px")
+            .style("pointer-events", "none")
+
 
     })
-        .on("mouseout", function(d) {
+        .on("mouseout", function (d) {
             divTooltip.transition()
                 .duration(500)
                 .style("opacity", 0);
-        });
+        })
+
 
 }
 
