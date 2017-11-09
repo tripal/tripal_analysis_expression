@@ -215,7 +215,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    */
   public function formValidate($form, &$form_state) {
 
-
   }
 
   /**
@@ -438,13 +437,16 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       // Insert into database.  Only insert into db if an existing CVTerm wasn't chosen
       $cv_name = 'biomaterial_property';
       if (isset($insert_fields[$attr_name])) {
-        $cv_name = $insert_fields[$attr_name];
+        $specified_cv = $insert_fields[$attr_name];
       }
-      else {
+      if ($specified_cv) {
+        $cv_name = $specified_cv;
+      }
+      else { //if a cv wasnt specified, or if this term wasnt set in the fields array, need to insert into the biomaterial_property CV
         if (!tripal_insert_cvterm([
           'name' => (string) $attr_name,
           'definition' => '',
-          'cv_name' => $cv_name,
+          'cv_name' => 'biomaterial_property',
           'is_relationship' => 0,
           'db_name' => 'tripal',
         ], ['update_existing' => FALSE])) {
@@ -665,6 +667,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
         // Insert into the biomaterialprop table.
         foreach ($prop_headers as $name => $index) {
           if (!key_exists($insert_fields[$name])) {  //If we didnt choose an association in the form, we're inserting it into biomaterial_property
+
             //get xml attributes
             if (!tripal_insert_cvterm([
               'name' => $name,
@@ -692,6 +695,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
             chado_insert_property($record, $property, $options);
           }
           else {
+            $cv_name = "biomaterial_property";
+            if ($insert_fields[$name]) {
+              $cv_name = $insert_fields[$name];
+            }
             // if the key exists in insert_fields array, the user chose a CV for this term, so we won't insert, but insert property with correct CV
             $record = [
               'table' => 'biomaterial',
@@ -699,7 +706,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
             ];
             $property = [
               'type_name' => $name,
-              'cv_name' => $insert_fields[$name],
+              'cv_name' => $cv_name,
               'value' => $line[$index],
             ];
             $options = [
