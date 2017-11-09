@@ -1,22 +1,6 @@
-//lets follow this tutorial to create a simple chart
-///https://www.pshrmn.com/tutorials/d3/bar-charts/
-
-//draggability:
-//http://bl.ocks.org/AlessandraSozzi/e588d03fb7a7bb07c250
-
-//grouping:
-//https://bl.ocks.org/mbostock/3887051
-
-//This grouping uses v3 i think
-//http://bl.ocks.org/juan-cb/ac731adaeadd3e855d26
-
-
-//n https://jsfiddle.net/hb13oe4v/
-
 /**
  * This is the default function that is called when the page is loaded.
- * It is also called when the reset link is clicked. It will order biomaterials
- * using alphanumeric ordering.
+ * It is also called when the reset link is clicked.
  */
 function expNormal() {
     heatMapTotal = '';
@@ -100,38 +84,6 @@ function buildPropertySelect() {
 }
 
 /**
- * Build an array with lists of biomaterials sorted by value.
- * @returns {Array}
- */
-
-//TODO:  I DONT THINK WE USE THIS?
-function sortDataByProperty() {
-    currentSortingProperty = jQuery("#propertySortMenu").find(":selected").text()
-    list = []
-    heatMap.map(function (biomaterial) {
-        name = biomaterial.name
-        propertyValue = biomaterial.properties[currentSortingProperty]
-        if (!propertyValue) {
-            propertyValue = "Not set"
-        }
-        signal = biomaterial.intensity
-        allProperties = biomaterial.properties
-        entry = {name: name, propertyValue: propertyValue, signal: signal, allProperties: allProperties}
-        if (!list[propertyValue]) {
-            list[propertyValue] = [entry]
-        }
-        else {
-            existingList = list[propertyValue]
-            existingList.push(entry)
-            list[propertyValue] = existingList
-        }
-
-    })
-
-    return list
-}
-
-/**
  * Build an array with lists of biomaterials sorted by value
  * @returns {Array}
  */
@@ -175,7 +127,6 @@ function nonZero() {
 
 function expRewrite() {
     currentSorting = jQuery("#propertySortMenu").find(":selected").text()
-    structuredMap = sortDataByProperty()
     currentColor = jQuery("#propertyColorMenu").find(":selected").text()
 
     maxHeat = d3.max(heatMap, function (d) {
