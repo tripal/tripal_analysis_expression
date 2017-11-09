@@ -47,7 +47,7 @@ function buildPropertySelect() {
     //first add "expression value" as default for color
 
     selectorColor.append("option")
-        .attr("value", "expressionValue")
+        .attr("value", "Expression value")
         .text("Expression value")
 
     heatMap.map(function (biomaterial) {
@@ -135,13 +135,13 @@ function sortDataByProperty() {
  * Build an array with lists of biomaterials sorted by value
  * @returns {Array}
  */
-//TODO:  I  THINK WE USE THIS TO SET DOMAIN BUT DOUBLE CHECK
 
-function buildPropertyValuesDomain() {
-    // if (color) {
-    //     currentSortingProperty = jQuery("#propertyColorMenu").find(":selected").text()
-    // }
-    currentSortingProperty = jQuery("#propertySortMenu").find(":selected").text()
+function buildPropertyValuesDomain(color) {
+     if (color == "color") {
+         currentSortingProperty = jQuery("#propertyColorMenu").find(":selected").text()
+    } else {
+         currentSortingProperty = jQuery("#propertySortMenu").find(":selected").text()
+     }
     list = []
     heatMap.map(function (biomaterial) {
         name = biomaterial.name
@@ -176,6 +176,28 @@ function nonZero() {
 function expRewrite() {
     currentSorting = jQuery("#propertySortMenu").find(":selected").text()
     structuredMap = sortDataByProperty()
+    currentColor = jQuery("#propertyColorMenu").find(":selected").text()
+
+    maxHeat = d3.max(heatMap, function (d) {
+        return Number(d.intensity);
+    });
+    minHeat = d3.min(heatMap, function (d) {
+        return Number(d.intensity);
+    });
+
+//define color scale based on selected
+    if (currentColor != "Expression value") {
+        var colorDomain = buildPropertyValuesDomain("color")
+        var color = d3.scale.ordinal()
+            .domain(colorDomain)
+            .range(["#ca0020", "#f4a582", "#d5d5d5", "#92c5de", "#0571b0"])
+        //TODO: CALCULATE BASED ON NUMBER OF PROPERTIES INSTEAD
+    } else {
+        colorDomain = [minHeat, maxHeat]
+        var color = d3.scale.linear()
+            .domain(colorDomain)
+            .range(["red", "green"]);
+    }
 
     var width = d3.select('figure').node().getBoundingClientRect().width;
 
@@ -189,13 +211,6 @@ function expRewrite() {
         .attr('height', height)
         .append('g')
 
-    maxHeat = d3.max(heatMap, function (d) {
-        return Number(d.intensity);
-    });
-    minHeat = d3.min(heatMap, function (d) {
-        return Number(d.intensity);
-    });
-
     propertyValueList = buildPropertyValuesDomain()
 
     var x0 = d3.scale.ordinal()
@@ -203,10 +218,6 @@ function expRewrite() {
 
     var y = d3.scale.linear()
         .range([height, (0 + margin)])//reverse because 0 is the top
-
-    var colorRange = d3.scale.category20();
-    var color = d3.scale.ordinal()
-        .range(colorRange.range());
 
     var xAxis = d3.svg.axis()
         .scale(x0)
@@ -294,31 +305,23 @@ function expRewrite() {
         })
     )
 
-//TODO:  FIX THIS!  Right now it uses the property values domain to just get the other selector's domain
-//define color scale based on selected
-    currentColor = jQuery("#propertyColorMenu").find(":selected").text()
-    if (currentColor != "Expression value") {
-        var colorDomain = buildPropertyValuesDomain()
-        var color = d3.scale.ordinal()
-            .domain(colorDomain)
-            .range(["#ca0020", "#f4a582", "#d5d5d5", "#92c5de", "#0571b0"]);
-    }
-    // Build key/legend based on Color
-
-
     var bars = propertyGroups.selectAll(".bar")
         .data(function (d) {
             return d.values
         })//nest() creates key:values.  for us, key is the property value, and values are the full biomat object
         .enter().append("rect")
-        .style("fill", function (d, i) {
-
-            if (!d.properties[currentColor]) {
-                propertyName = "Not set"
-            } else {
-                propertyName = d.properties[currentSorting]
+        .style("fill", function (d) { // fill depends on if user is doing expression based or property based
+            if (currentColor == "Expression value") {
+                return color(d.intensity)
             }
-            return color(propertyName)
+            else {
+                if (!d.properties[currentColor]) {
+                    propertyName = "Not set"
+                } else {
+                    propertyName = d.properties[currentColor]
+                }
+                return color(propertyName)
+            }
 
         })
         .attr("y", function (d) {
@@ -387,6 +390,7 @@ function expRewrite() {
                 .style("opacity", 0);
         })
 
+    buildLegend(color, width, margin)
 
 }
 
@@ -401,42 +405,49 @@ function translationXOffset(d, scale) {
     return (scale(d.key) + scale.rangeBand() / 2)
 }
 
-function buildLegend(svg, colorScale) {
-
-    //Get currently selected color selector.  if its expression, we're going to build a different legend.
-
-    var legend3 = svg.selectAll('.legend3')
+/**Builds the legend.
+ *
+ * @param colorScale
+ * @param width
+ * @param margin
+ */
+function buildLegend(colorScale, width, margin) {
+    console.log(colorScale.domain())
+    currentColor = jQuery("#propertyColorMenu").find(":selected").text()
+    d3.select('svg').selectAll('.legend').remove()
+    var legend = d3.select('svg').selectAll('.legend')
         .data(colorScale.domain())
         .enter().append('g')
-        .attr("class", "legends3")
+        .attr("class", "legend")
         .attr("transform", function (d, i) {
             {
-                return "translate(0," + i * 20 + ")"
+                return "translate(" + (width - 10 * margin) + "," + i * 10 + " )"
+                //   return "translate("+(width - 10*margin)+", " -200 +  ")"
             }
         })
+    if (currentColor != "Expression value") {
+        legend.append('rect')
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", 20)
+            .attr("height", 10)
+            .style("fill", function (d, i) {
 
-    legend3.append('rect')
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", 10)
-        .attr("height", 10)
-        .style("fill", function (d, i) {
-            return color(i)
-        })
-
-    legend3.append('text')
-        .attr("x", 20)
-        .attr("y", 10)
-        //.attr("dy", ".35em")
-        .text(function (d, i) {
-            return d
-        })
-        .attr("class", "textselected")
-        .style("text-anchor", "start")
-        .style("font-size", 15)
+                return colorScale(d)
+            })
+        legend.append('text')
+            .attr("x", 20)
+            .attr("y", 10)
+            .text(function (d, i) {
+                return d
+            })
+            .attr("class", "textselected")
+            .style("text-anchor", "start")
+            .style("font-size", 15)
+    }
 }
 
-function buildPropertyTooltipTable(d){
+function buildPropertyTooltipTable(d) {
     table = ""
     if (Object.keys(d.properties).length > 0) {
         table += "</br><table> <tr>" +
@@ -445,7 +456,7 @@ function buildPropertyTooltipTable(d){
             "  </tr>"
         Object.keys(d.properties).map(function (propertyKey) {
             propertyValue = d.properties[propertyKey]
-            table += "<tr><td>" +propertyKey +"</td><td>"+ propertyValue + "</td> </tr>"
+            table += "<tr><td>" + propertyKey + "</td><td>" + propertyValue + "</td> </tr>"
         })
         table += "</table>"
     }
