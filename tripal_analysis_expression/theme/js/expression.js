@@ -366,6 +366,7 @@ function expRewrite() {
         .style("border-radius", "30px")
         .style("pointer-events", "none")
         .style("opacity", 0)
+        .style("z-index", 100)
     bars.on("mouseover", function (d) {
         propTable = buildPropertyTooltipTable(d)
 
