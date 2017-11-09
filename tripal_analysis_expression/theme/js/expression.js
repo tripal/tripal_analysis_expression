@@ -53,7 +53,7 @@ function buildPropertySelect() {
     heatMap.map(function (biomaterial) {
         Object.keys(biomaterial.properties).map(function (property_key) {
             //determine if this property is already in our selector
-            var exists = $("#propertySortDiv option")
+            var exists = jQuery("#propertySortDiv option")
                 .filter(function (i, o) {
                     return o.value === property_key;
                 })
@@ -153,8 +153,8 @@ function buildPropertyValuesDomain() {
     })
     Array.prototype.unique = function () {
         var arr = this;
-        return $.grep(arr, function (v, i) {
-            return $.inArray(v, arr) === i;
+        return jQuery.grep(arr, function (v, i) {
+            return jQuery.inArray(v, arr) === i;
         });
     }
     return list.unique()
@@ -217,7 +217,6 @@ function expRewrite() {
         .orient("left")
         .ticks(2)
 
-    // var divTooltip = d3.select("figure").append('chart').append("div").attr("class", "toolTip");
     var nested = d3.nest()
         .key(function (d) {
             if (!d.properties[currentSorting]) {
@@ -298,12 +297,13 @@ function expRewrite() {
 //TODO:  FIX THIS!  Right now it uses the property values domain to just get the other selector's domain
 //define color scale based on selected
     currentColor = jQuery("#propertyColorMenu").find(":selected").text()
-    if (currentColor) {
+    if (currentColor != "Expression value") {
         var colorDomain = buildPropertyValuesDomain()
         var color = d3.scale.ordinal()
             .domain(colorDomain)
             .range(["#ca0020", "#f4a582", "#d5d5d5", "#92c5de", "#0571b0"]);
     }
+    // Build key/legend based on Color
 
 
     var bars = propertyGroups.selectAll(".bar")
@@ -328,14 +328,6 @@ function expRewrite() {
             numberBiosamples = Object.keys(d).length
 
             return 10 * i - (1 / numberBiosamples * 10)
-            // var propertyName
-            //
-            // if (!d.properties[currentSorting]) {
-            //     propertyName = "Not set"
-            // } else {
-            //     propertyName = d.properties[currentSorting]
-            // }
-            // return (x0(propertyName) + x0.rangeBand() / 2 + i * 10  )
         })
         .attr("width", 5)
         .attr("height", function (d) {
@@ -361,6 +353,41 @@ function expRewrite() {
         return g.transition().duration(500);
     }
 
+    //Add the tool tip
+
+    var divTooltip = d3.select('chart').append("div")
+        .attr("class", "toolTip")
+        .style("position", "absolute")
+        .style("width", "250px")
+        .style("padding", "20px")
+        .style("font", "12px sans-serif")
+        .style("background", "lightsteelblue")
+        .style("border", "0px")
+        .style("border-radius", "30px")
+        .style("pointer-events", "none")
+        .style("opacity", 0)
+    bars.on("mouseover", function (d) {
+        propTable = buildPropertyTooltipTable(d)
+
+        divTooltip.transition()
+            .duration(200)
+            .style("opacity", .95)
+        divTooltip.html(
+            "<strong>Biosample: " + d.name + "</strong><br/>" +
+            "<strong>Expression: </strong>" + d.intensity + " " + d.units + "<br/>" +
+            "<strong>Description: </strong><br/>" + d.description + "<br/>"
+            + propTable
+        )
+            .style("left", (d3.event.pageX) - (width - margin) + "px")
+            .style("top", (d3.event.pageY - (height + margin)) + "px");
+    })
+        .on("mouseout", function (d) {
+            divTooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        })
+
+
 }
 
 /**This function determines the position of a nested group by returning the value from the scale and adding half the range band.
@@ -372,4 +399,55 @@ function expRewrite() {
 function translationXOffset(d, scale) {
 
     return (scale(d.key) + scale.rangeBand() / 2)
+}
+
+function buildLegend(svg, colorScale) {
+
+    //Get currently selected color selector.  if its expression, we're going to build a different legend.
+
+    var legend3 = svg.selectAll('.legend3')
+        .data(colorScale.domain())
+        .enter().append('g')
+        .attr("class", "legends3")
+        .attr("transform", function (d, i) {
+            {
+                return "translate(0," + i * 20 + ")"
+            }
+        })
+
+    legend3.append('rect')
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", 10)
+        .attr("height", 10)
+        .style("fill", function (d, i) {
+            return color(i)
+        })
+
+    legend3.append('text')
+        .attr("x", 20)
+        .attr("y", 10)
+        //.attr("dy", ".35em")
+        .text(function (d, i) {
+            return d
+        })
+        .attr("class", "textselected")
+        .style("text-anchor", "start")
+        .style("font-size", 15)
+}
+
+function buildPropertyTooltipTable(d){
+    table = ""
+    if (Object.keys(d.properties).length > 0) {
+        table += "</br><table> <tr>" +
+            "    <th>Property Name</th>" +
+            "    <th>Property Value</th> " +
+            "  </tr>"
+        Object.keys(d.properties).map(function (propertyKey) {
+            propertyValue = d.properties[propertyKey]
+            table += "<tr><td>" +propertyKey +"</td><td>"+ propertyValue + "</td> </tr>"
+        })
+        table += "</table>"
+    }
+    return (table)
 }
