@@ -253,10 +253,10 @@ function translationXOffset(d, scale) {
  */
 function buildLegend(colorScale, width, margin) {
     currentColor = jQuery("#propertyColorMenu").find(":selected").text()
-    d3.selectAll('.legend').remove()
+    d3.selectAll('legend').remove()
 
     if (currentColor != "Expression value") {
-        var legend = d3.select('svg').selectAll('.legend')
+        var legend = d3.select('svg').selectAll('legend')
             .data(colorScale.domain())
             .enter().append('g')
             .attr("class", "legend")
