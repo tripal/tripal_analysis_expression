@@ -13,118 +13,6 @@ function expNormal() {
     expRewrite();
 }
 
-/**
- * Append the Property selector
- */
-function buildPropertySelect() {
-
-    //remove the old selectors and store values
-    previousValueSort = jQuery("#propertySortMenu").find(":selected").text()
-    d3.selectAll('#propertySortDiv').selectAll("select").remove()
-    previousValueColor = jQuery("#propertyColorMenu").find(":selected").text()
-    d3.selectAll('#propertyColorDiv').selectAll("select").remove()
-
-    //build list of properties for this analysis
-    var selectorSort = d3.select("#propertySortDiv").append("select").attr("id", "propertySortMenu")
-    var selectorColor = d3.select("#propertyColorDiv").append("select").attr("id", "propertyColorMenu")
-
-    //first add "expression value" as default for color
-
-    selectorColor.append("option")
-        .attr("value", "Expression value")
-        .text("Expression value")
-
-    heatMap.map(function (biomaterial) {
-        Object.keys(biomaterial.properties).map(function (property_key) {
-            //determine if this property is already in our selector
-            var exists = jQuery("#propertySortDiv option")
-                .filter(function (i, o) {
-                    return o.value === property_key;
-                })
-                .length > 0;
-
-            if (!exists) {
-                selectorSort.append("option")
-                    .attr("value", function () {
-                        return property_key;
-                    })
-                    .text(function () {
-                        return property_key;
-                    })
-                selectorColor.append("option")
-                    .attr("value", function () {
-                        return property_key;
-                    })
-                    .text(function () {
-                        return property_key;
-                    })
-            }
-
-        })
-    })
-
-    if (previousValueSort) {
-        jQuery("#propertySortMenu").val(previousValueSort)
-    }
-    if (previousValueColor) {
-        jQuery("#propertyColorMenu").val(previousValueColor)
-    } else {
-        jQuery("#propertyColorMenu").val("expressionValue")
-    }
-    //if the selector changes, rebuild the figure
-    jQuery("#propertySortMenu").change(function () {
-        d3.selectAll('chart').remove();
-        expRewrite();
-    })
-    //if the selector changes, rebuild the figure
-    jQuery("#propertyColorMenu").change(function () {
-        d3.selectAll('chart').remove();
-        expRewrite();
-    })
-}
-
-/**
- * Build an array with lists of biomaterials sorted by value
- * @returns {Array}
- */
-
-function buildPropertyValuesDomain(color) {
-     if (color == "color") {
-         currentSortingProperty = jQuery("#propertyColorMenu").find(":selected").text()
-    } else {
-         currentSortingProperty = jQuery("#propertySortMenu").find(":selected").text()
-     }
-    list = []
-    heatMap.map(function (biomaterial) {
-        name = biomaterial.name
-        propertyValue = biomaterial.properties[currentSortingProperty]
-        if (!propertyValue) {
-            propertyValue = "Not set"
-        }
-        list.push(propertyValue)
-    })
-    Array.prototype.unique = function () {
-        var arr = this;
-        return jQuery.grep(arr, function (v, i) {
-            return jQuery.inArray(v, arr) === i;
-        });
-    }
-    return list.unique()
-}
-
-
-/**
- * This function will remove biomaterials that have a value of 0.
- */
-function nonZero() {
-    heatMap = heatMap.filter(function (d) {
-        return d.intensity > 0;
-    });
-    d3.selectAll('expfeaturedom').remove();
-    d3.selectAll('expkeydom').remove();
-    expRewrite();
-}
-
 function expRewrite() {
     currentSorting = jQuery("#propertySortMenu").find(":selected").text()
     currentColor = jQuery("#propertyColorMenu").find(":selected").text()
@@ -144,10 +32,10 @@ function expRewrite() {
             .range(["#ca0020", "#f4a582", "#d5d5d5", "#92c5de", "#0571b0"])
         //TODO: CALCULATE BASED ON NUMBER OF PROPERTIES INSTEAD
     } else {
-        colorDomain = [minHeat, maxHeat]
+        colorDomain = [0, maxHeat]
         var color = d3.scale.linear()
             .domain(colorDomain)
-            .range(["red", "green"]);
+            .range([d3.rgb(0, 0, 0), d3.rgb(255, 0, 0)])
     }
 
     var width = d3.select('figure').node().getBoundingClientRect().width;
@@ -170,9 +58,9 @@ function expRewrite() {
     var y = d3.scale.linear()
         .range([height, (0 + margin)])//reverse because 0 is the top
 
-    var xAxis = d3.svg.axis()
-        .scale(x0)
-        .orient("bottom");
+    // var xAxis = d3.svg.axis()
+    //     .scale(x0)
+    //     .orient("bottom");
 
     var yAxis = d3.svg.axis()
         .scale(y)
@@ -364,20 +252,20 @@ function translationXOffset(d, scale) {
  * @param margin
  */
 function buildLegend(colorScale, width, margin) {
-    console.log(colorScale.domain())
     currentColor = jQuery("#propertyColorMenu").find(":selected").text()
-    d3.select('svg').selectAll('.legend').remove()
-    var legend = d3.select('svg').selectAll('.legend')
-        .data(colorScale.domain())
-        .enter().append('g')
-        .attr("class", "legend")
-        .attr("transform", function (d, i) {
-            {
-                return "translate(" + (width - 10 * margin) + "," + i * 10 + " )"
-                //   return "translate("+(width - 10*margin)+", " -200 +  ")"
-            }
-        })
+    d3.selectAll('.legend').remove()
+
     if (currentColor != "Expression value") {
+        var legend = d3.select('svg').selectAll('.legend')
+            .data(colorScale.domain())
+            .enter().append('g')
+            .attr("class", "legend")
+            .attr("transform", function (d, i) {
+                {
+                    return "translate(" + (width - 10 * margin) + "," + i * 10 + " )"
+                    //   return "translate("+(width - 10*margin)+", " -200 +  ")"
+                }
+            })
         legend.append('rect')
             .attr("x", 0)
             .attr("y", 0)
@@ -397,8 +285,170 @@ function buildLegend(colorScale, width, margin) {
             .style("text-anchor", "start")
             .style("font-size", 15)
     }
+    else {
+        var legend = d3.select('svg').selectAll('.legend')
+            .data(colorScale.domain())
+            .enter().append('g')
+            .attr("class", "legend")
+            .attr("transform", "translate(" + (width - 10 * margin) + ", 10)")
+        //we need the min/max value and the color range.
+        var minHeatValue = colorScale.domain()[0]
+        var maxHeatValue = colorScale.domain()[1]
+        var minHeatColor = colorScale.range()[0]
+        var maxHeatColor = colorScale.range()[1]
+        legend.append('text')
+            .attr("x", 0)
+            .attr("y", 0)
+            .text("Expression value")
+        legend.append('rect')
+            .attr("x", 20)
+            .attr("y", 20)
+            .attr("width", 20)
+            .attr("height", 10)
+            .style("fill", minHeatColor)
+        legend.append('text')
+            .attr("x", 50)
+            .attr("y", 30)
+            .text(minHeatValue)
+            .attr("class", "text")
+            .style("text-anchor", "start")
+            .style("font-size", 12)
+        legend.append('rect')
+            .attr("x", 20)
+            .attr("y", 40)
+            .attr("width", 20)
+            .attr("height", 10)
+            .style("fill", maxHeatColor)
+        legend.append('text')
+            .attr("x", 50)
+            .attr("y", 50)
+            .text(maxHeatValue)
+            .attr("class", "text")
+            .style("text-anchor", "start")
+            .style("font-size", 12)
+
+    }
 }
 
+
+/**
+ * Append the Property selectors.  Sort is for what property to group by, color is for what property to color by.
+ */
+function buildPropertySelect() {
+
+    //remove the old selectors and store values
+    var previousValueSort = jQuery("#propertySortMenu").find(":selected").text()
+    d3.selectAll('#propertySortDiv').selectAll("select").remove()
+    var previousValueColor = jQuery("#propertyColorMenu").find(":selected").text()
+    d3.selectAll('#propertyColorDiv').selectAll("select").remove()
+
+    //build list of properties for this analysis
+    var selectorSort = d3.select("#propertySortDiv").append("select").attr("id", "propertySortMenu")
+    var selectorColor = d3.select("#propertyColorDiv").append("select").attr("id", "propertyColorMenu")
+
+    //first add "expression value" as default for color
+
+    selectorColor.append("option")
+        .attr("value", "Expression value")
+        .text("Expression value")
+
+    heatMap.map(function (biomaterial) {
+        Object.keys(biomaterial.properties).map(function (property_key) {
+            //determine if this property is already in our selector
+            var exists = jQuery("#propertySortDiv option")
+                .filter(function (i, o) {
+                    return o.value === property_key;
+                })
+                .length > 0;
+
+            if (!exists) { //append it to both selector lists
+                selectorSort.append("option")
+                    .attr("value", function () {
+                        return property_key;
+                    })
+                    .text(function () {
+                        return property_key;
+                    })
+                selectorColor.append("option")
+                    .attr("value", function () {
+                        return property_key;
+                    })
+                    .text(function () {
+                        return property_key;
+                    })
+            }
+
+        })
+    })
+    jQuery("#propertyColorMenu").val("Expression value")
+
+    if (previousValueSort) {
+        jQuery("#propertySortMenu").val(previousValueSort)
+    }
+    if (previousValueColor) {
+        jQuery("#propertyColorMenu").val(previousValueColor)
+    }
+    //if the selector changes, rebuild the figure
+    jQuery("#propertySortMenu").change(function () {
+        d3.selectAll('chart').remove();
+        expRewrite();
+    })
+    //if the selector changes, rebuild the figure
+    jQuery("#propertyColorMenu").change(function () {
+        d3.selectAll('chart').remove();
+        expRewrite();
+    })
+}
+
+/**
+ * Build an array with lists of biomaterials sorted by value.
+ * if the color param is passed in as "color" it will build the domain from the color property instead of the sort property.
+ * @returns {Array}
+ */
+
+function buildPropertyValuesDomain(color) {
+    if (color == "color") {
+        currentSortingProperty = jQuery("#propertyColorMenu").find(":selected").text()
+    } else {
+        currentSortingProperty = jQuery("#propertySortMenu").find(":selected").text()
+    }
+    list = []
+    heatMap.map(function (biomaterial) {
+        name = biomaterial.name
+        propertyValue = biomaterial.properties[currentSortingProperty]
+        if (!propertyValue) {
+            propertyValue = "Not set"
+        }
+        list.push(propertyValue)
+    })
+    Array.prototype.unique = function () {
+        var arr = this;
+        return jQuery.grep(arr, function (v, i) {
+            return jQuery.inArray(v, arr) === i;
+        });
+    }
+    return list.unique()
+}
+
+
+/**
+ * This function will remove biomaterials that have a value of 0.
+ */
+function nonZero() {
+    heatMap = heatMap.filter(function (d) {
+        return d.intensity > 0;
+    });
+    d3.selectAll('expfeaturedom').remove();
+    d3.selectAll('expkeydom').remove();
+    expRewrite();
+}
+
+
+/**
+ * Creates the table for the tooltip
+ * @param d
+ * @returns {string}
+ */
 function buildPropertyTooltipTable(d) {
     table = ""
     if (Object.keys(d.properties).length > 0) {
