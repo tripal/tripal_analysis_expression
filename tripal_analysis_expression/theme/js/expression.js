@@ -253,18 +253,19 @@ function translationXOffset(d, scale) {
  */
 function buildLegend(colorScale, width, margin) {
     currentColor = jQuery("#propertyColorMenu").find(":selected").text()
-    d3.select('svg').selectAll('.legend').remove()
-    var legend = d3.select('svg').selectAll('.legend')
-        .data(colorScale.domain())
-        .enter().append('g')
-        .attr("class", "legend")
-        .attr("transform", function (d, i) {
-            {
-                return "translate(" + (width - 10 * margin) + "," + i * 10 + " )"
-                //   return "translate("+(width - 10*margin)+", " -200 +  ")"
-            }
-        })
+    d3.selectAll('.legend').remove()
+
     if (currentColor != "Expression value") {
+        var legend = d3.select('svg').selectAll('.legend')
+            .data(colorScale.domain())
+            .enter().append('g')
+            .attr("class", "legend")
+            .attr("transform", function (d, i) {
+                {
+                    return "translate(" + (width - 10 * margin) + "," + i * 10 + " )"
+                    //   return "translate("+(width - 10*margin)+", " -200 +  ")"
+                }
+            })
         legend.append('rect')
             .attr("x", 0)
             .attr("y", 0)
@@ -285,6 +286,11 @@ function buildLegend(colorScale, width, margin) {
             .style("font-size", 15)
     }
     else {
+        var legend = d3.select('svg').selectAll('.legend')
+            .data(colorScale.domain())
+            .enter().append('g')
+            .attr("class", "legend")
+            .attr("transform",  "translate(" + (width - 10 * margin) + ", 10)")
         //we need the min/max value and the color range.
         var minHeatValue = colorScale.domain()[0]
         var maxHeatValue = colorScale.domain()[1]
