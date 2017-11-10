@@ -211,7 +211,6 @@ function expRewrite() {
         .style("z-index", 999999)
     bars.on("mouseover", function (d) {
         propTable = buildPropertyTooltipTable(d)
-
         divTooltip.transition()
             .duration(200)
             .style("opacity", .95)
@@ -221,7 +220,7 @@ function expRewrite() {
             "<strong>Description: </strong><br/>" + d.description + "<br/>"
             + propTable
         )
-            .style("left", (d3.event.pageX) - (width - margin) + "px")
+            .style("left", (d3.event.pageX) - (width + margin) + "px")
             .style("top", (d3.event.pageY - (height + margin)) + "px");
     })
         .on("mouseout", function (d) {

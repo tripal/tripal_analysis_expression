@@ -57,7 +57,10 @@ function tripal_analysis_expression_heatmap_settings_form($form, &$form_state) {
   return $form;
 }
 
-function tripal_analysis_expression_heatmap_settings_form_validate($form, &$form_state) {
+function tripal_analysis_expression_heatmap_settings_form_validate(
+  $form,
+  &$form_state
+) {
   $use_elasticsearch = $form_state['values']['use_elasticsearch'];
 
   if ($use_elasticsearch && !module_exists('tripal_elasticsearch')) {
@@ -73,7 +76,10 @@ function tripal_analysis_expression_heatmap_settings_form_validate($form, &$form
  * @param $form
  * @param $form_state
  */
-function tripal_analysis_expression_heatmap_settings_form_submit($form, &$form_state) {
+function tripal_analysis_expression_heatmap_settings_form_submit(
+  $form,
+  &$form_state
+) {
   $placeholder = $form_state['values']['placeholder'];
   $example = $form_state['values']['example'];
   $use_elasticsearch = $form_state['values']['use_elasticsearch'];
@@ -245,8 +251,8 @@ function tripal_analysis_expression_generate_heatmap_values() {
   $heatmap_feature_uniquename = $_GET['heatmap_feature_uniquename'];
 
   $sql = "SELECT ER.elementresult_id, ER.signal, F.feature_id, F.uniquename, 
-            Q.name AS quantification_name, Q.analysis_id, 
-            B.name, B.biomaterial_id, B.description FROM {elementresult} ER
+            Q.name AS quantification_name, Q.analysis_id, Q.quantification_id,
+            B.name, B.biomaterial_id, B.description, AN.analysis_id, AN.name AS analysis_name FROM {elementresult} ER
             INNER JOIN {element} E ON E.element_id = ER.element_id
             INNER JOIN {feature} F ON F.feature_id = E.feature_id
             INNER JOIN {quantification} Q ON Q.quantification_id = ER.quantification_id
@@ -254,6 +260,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
             INNER JOIN {assay} A ON A.assay_id = AQ.assay_id
             INNER JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
             INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
+            inner join {analysis} AN ON AN.analysis_id = Q.analysis_id
             WHERE F.uniquename IN (:feature_uniquename)";
 
   $expressions = [];
@@ -294,17 +301,42 @@ function tripal_analysis_expression_generate_heatmap_values() {
 
   // Loop through all biomaterial so that each feature have all biomaterials (treatment)
   // Assign NULL as expression intensity to all treatment.
+  // While we do this, lets get the biomaterialprops
   $expression_data = [];
   $ids = [];
+  $biomaterial_propstore = [];
+  dpm($expressions);
   foreach ($expressions as $feature_id => $features) {
-    foreach ($biomaterials as $biomaterial_id) {
-      $expression_data[$feature_id][$biomaterial_id] = NULL;
+    foreach ($biomaterials as $biomaterial_name) {
+      $expression_data[$feature_id][$biomaterial_name] = NULL;
+    }
+    foreach ($features as $biomaterial_properties) {
+      $biomaterial_id = $biomaterial_properties->biomaterial_id;
+      $biomaterial_name = $biomaterial_properties->name;
+
+      $biomat_object = chado_generate_var('biomaterial', ['biomaterial_id' => $biomaterial_id]);
+
+      $result = chado_expand_var($biomat_object, 'table', 'biomaterialprop');
+
+      $properties = $result->biomaterialprop;
+      if (!$properties) {
+        $properties = [];
+      }
+      foreach ($properties as $prop) {
+        //get the prop name and value
+        // $property_cvterm_id = $prop->type_id->cvterm_id;
+        // $property_cv_id = $prop->type_id->cv_id;
+        $property_name = $prop->type_id->name;
+        $property_value = $prop->value;
+        $biomaterial_propstore[$biomaterial_name][$property_name] = $property_value;
+      }
     }
   }
 
   // Foreach feature, loop through the biomaterials it has and get the signal value (expression data)
   foreach ($expressions as $feature_id => $features) {
     foreach ($features as $feature) {
+
       $ids[$feature_id] = $feature->feature_id;
 
       // get analysis URL
@@ -313,15 +345,21 @@ function tripal_analysis_expression_generate_heatmap_values() {
       if (!empty($analysis_id)) {
         $analysis_url = 'bio_data/' . tripal_get_chado_entity_id('analysis', $analysis_id);
       }
+      //Get units in quantificationprop
+      $uni = chado_get_property([
+        'table' => 'quantification',
+        'id' => $feature->quantification_id,
+      ], ['type_name' => 'unit_of_measure', 'cv_name' => 'sep']);
+      $uni ? $units = $uni->value : $units = '';
 
-      // get treatment
-      $treat = chado_get_property([
-        'table' => 'biomaterial',
-        'id' => $feature->biomaterial_id,
-      ], ['type_name' => 'treatment', 'cv_name' => 'biomaterial_property']);
+      $treat = null;
+
+      if (isset($biomaterial_propstore[$feature->name]["treatment"])) {
+        $treat = $biomaterial_propstore[$feature->name]["treatment"];//this allows for treatment to be in a CV instead of specifying biomaterialprop
+      }
 
       if ($treat) {
-        $treatment = $treat->value;
+        $treatment = $treat;
         // link analysis_url to treatment
         $treatment = l($treatment, $analysis_url);
       }
@@ -332,11 +370,13 @@ function tripal_analysis_expression_generate_heatmap_values() {
       $expression_data[$feature_id][$feature->name] = [
         'signal' => (float) $feature->signal,
         'description' => $feature->description,
-        'quantification_name' => $treatment,
+        'treatment' => $treatment,
         'analysis_url' => $analysis_url,
+        'biomaterial_properties' => $biomaterial_propstore[$feature->name]
       ];
     }
   }
+
 
   $x = [];
   $y = [];
@@ -359,7 +399,16 @@ function tripal_analysis_expression_generate_heatmap_values() {
     $descriptions = [];
     foreach ($values as $value) {
       $signals[] = $value['signal'];
-      $descriptions[] = 'Treatment: ' . $value['quantification_name'] . '<br>' . 'Description: ' . $value['description'];
+
+      $biomaterial_props = $value['biomaterial_properties'];
+
+      $property_html = '';
+
+      foreach ($biomaterial_props as $property_name => $property_value ) {
+        $property_html .= '<br>' .  $property_name . ":  " . $property_value;
+      }
+
+      $descriptions[] = 'Treatment: ' . $value['treatment'] . '<br>' . 'Description: ' . $value['description'] . '<br>' . $property_html;
     }
     $z[] = $signals;
     $text[] = $descriptions;
@@ -487,7 +536,7 @@ function tripal_analysis_expression_search_features_es() {
     ];
 
     $results = $es->setTableSearchParams($index, $index, $query, [0, 20])
-                  ->search();
+      ->search();
 
     $data = array_map(function ($result) {
       return [
