@@ -32,10 +32,10 @@ function expRewrite() {
             .range(["#ca0020", "#f4a582", "#d5d5d5", "#92c5de", "#0571b0"])
         //TODO: CALCULATE BASED ON NUMBER OF PROPERTIES INSTEAD
     } else {
-        colorDomain = [minHeat, maxHeat]
+        colorDomain = [0, maxHeat]
         var color = d3.scale.linear()
             .domain(colorDomain)
-            .range(["red", "green"]);
+            .range([d3.rgb(0, 0, 0), d3.rgb(255, 0, 0)])
     }
 
     var width = d3.select('figure').node().getBoundingClientRect().width;
@@ -58,9 +58,9 @@ function expRewrite() {
     var y = d3.scale.linear()
         .range([height, (0 + margin)])//reverse because 0 is the top
 
-    var xAxis = d3.svg.axis()
-        .scale(x0)
-        .orient("bottom");
+    // var xAxis = d3.svg.axis()
+    //     .scale(x0)
+    //     .orient("bottom");
 
     var yAxis = d3.svg.axis()
         .scale(y)
@@ -290,7 +290,7 @@ function buildLegend(colorScale, width, margin) {
             .data(colorScale.domain())
             .enter().append('g')
             .attr("class", "legend")
-            .attr("transform",  "translate(" + (width - 10 * margin) + ", 10)")
+            .attr("transform", "translate(" + (width - 10 * margin) + ", 10)")
         //we need the min/max value and the color range.
         var minHeatValue = colorScale.domain()[0]
         var maxHeatValue = colorScale.domain()[1]
