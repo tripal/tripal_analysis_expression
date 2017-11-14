@@ -63,7 +63,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
    * If the $use_analysis value is set above then this value indicates if the
    * analysis should be required.
    */
-  public static $require_analysis = TRUE;
+  public static $require_analysis = FALSE;
 
   /**
    * Text that should appear on the button at the bottom of the importer
