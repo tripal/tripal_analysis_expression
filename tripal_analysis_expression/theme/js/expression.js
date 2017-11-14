@@ -208,7 +208,7 @@ function expRewrite() {
         .style('border', '1px solid rgba(0,0,0,.3)')
         .style('border-radius', '5px')
         .style('pointer-events', 'none')
-        .style('visibility', 'hidden')
+        .style('display', 'none')
         .style('opacity', 0)
         .style('transition', 'opacity .25s linear')
         .style('z-index', 999999);
@@ -217,21 +217,21 @@ function expRewrite() {
         divTooltip.transition()
             .duration(200)
             .style('opacity', 1)
-            .style('visibility', 'visible');
+            .style('display', 'block');
         divTooltip.html(
             '<strong>Biosample:</strong> ' + d.name + '<br/>' +
             '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
             '<strong>Description: </strong><br/>' + d.description + '<br/>'
             + propTable)
-            .style('left', (jQuery(this).offset().left - 250) + 'px')
-            .style('top', (jQuery(this).offset().top - jQuery(this).height()) + 'px');//(d3.event.pageY))// - (height + margin)) + "px");
+            .style('left', (jQuery(this).offset().left - 260) + 'px')
+        .style('top', (jQuery(this).offset().top  - (y(d.intensity)) +  'px'))//(d3.event.pageY))// - (height + margin)) + "px");
     })
 
         .on('mouseout', function (d) {
             divTooltip.transition()
                 .duration(500)
                 .style('opacity', 0)
-                .style('visibility', 'hidden');
+                .style('display', 'none');
         });
 
     buildLegend(color, width, margin);
