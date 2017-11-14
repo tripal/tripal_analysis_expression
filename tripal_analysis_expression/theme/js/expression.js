@@ -6,7 +6,7 @@ function expNormal() {
     heatMapTotal = '';
     heatMapTotal = JSON.parse(JSON.stringify(heatMapRaw));
     //Get samples associated with selected analysis
-    selectedAnalysis = d3.select('#analyses').property("value");
+    selectedAnalysis = d3.select('#analyses').property('value');
     heatMap = heatMapTotal[selectedAnalysis].biomaterials;
     buildPropertySelect();
     d3.selectAll('chart').remove();
@@ -14,8 +14,8 @@ function expNormal() {
 }
 
 function expRewrite() {
-    currentSorting = jQuery("#propertySortMenu").find(":selected").text()
-    currentColor = jQuery("#propertyColorMenu").find(":selected").text()
+    currentSorting = jQuery('#propertySortMenu').find(':selected').text();
+    currentColor = jQuery('#propertyColorMenu').find(':selected').text();
 
     maxHeat = d3.max(heatMap, function (d) {
         return Number(d.intensity);
@@ -25,17 +25,17 @@ function expRewrite() {
     });
 
 //define color scale based on selected
-    if (currentColor != "Expression value") {
-        var colorDomain = buildPropertyValuesDomain("color")
+    if (currentColor != 'Expression value') {
+        var colorDomain = buildPropertyValuesDomain('color');
         var color = d3.scale.ordinal()
             .domain(colorDomain)
-            .range(["#ca0020", "#f4a582", "#d5d5d5", "#92c5de", "#0571b0"])
+            .range(['#ca0020', '#f4a582', '#d5d5d5', '#92c5de', '#0571b0']);
         //TODO: CALCULATE BASED ON NUMBER OF PROPERTIES INSTEAD
     } else {
-        colorDomain = [0, maxHeat]
+        colorDomain = [0, maxHeat];
         var color = d3.scale.linear()
             .domain(colorDomain)
-            .range([d3.rgb(0, 0, 0), d3.rgb(255, 0, 0)])
+            .range([d3.rgb(0, 0, 0), d3.rgb(255, 0, 0)]);
     }
 
     var width = d3.select('figure').node().getBoundingClientRect().width;
@@ -48,15 +48,15 @@ function expRewrite() {
         .append('svg')
         .attr('width', width)
         .attr('height', height)
-        .append('g')
+        .append('g');
 
-    propertyValueList = buildPropertyValuesDomain()
+    propertyValueList = buildPropertyValuesDomain();
 
     var x0 = d3.scale.ordinal()
-        .rangeRoundBands([margin, width])
+        .rangeRoundBands([margin, width]);
 
     var y = d3.scale.linear()
-        .range([height, (0 + margin)])//reverse because 0 is the top
+        .range([height, (0 + margin)]);//reverse because 0 is the top
 
     // var xAxis = d3.svg.axis()
     //     .scale(x0)
@@ -64,118 +64,118 @@ function expRewrite() {
 
     var yAxis = d3.svg.axis()
         .scale(y)
-        .orient("left")
-        .ticks(2)
+        .orient('left')
+        .ticks(2);
 
     var nested = d3.nest()
         .key(function (d) {
             if (!d.properties[currentSorting]) {
-                return "Not set"
+                return 'Not set';
             }
             return d.properties[currentSorting];
-        }).entries(heatMap)
+        }).entries(heatMap);
 
     //set the domains based on the nested data
     x0.domain(nested.map(function (d) {
-        return d.key
-    }))
-    y.domain([0, maxHeat])
+        return d.key;
+    }));
+    y.domain([0, maxHeat]);
 
-    svg.append("g")
-        .attr("class", "y-axis")
-        .attr("transform", "translate(" + (2.5 * margin) + ", -" + margin + ")")
-        .call(yAxis)
+    svg.append('g')
+        .attr('class', 'y-axis')
+        .attr('transform', 'translate(' + (2.5 * margin) + ', -' + margin + ')')
+        .call(yAxis);
 
-    var dragging = {}
+    var dragging = {};
 
-    var propertyGroups = svg.selectAll(".propertyGroups")
+    var propertyGroups = svg.selectAll('.propertyGroups')
         .data(nested)
         .enter()
-        .append("g")
-        .attr("transform", function (d) {
-            return "translate(" + translationXOffset(d, x0) + ",0)"
-        })
+        .append('g')
+        .attr('transform', function (d) {
+            return 'translate(' + translationXOffset(d, x0) + ',0)';
+        });
 
-    propertyGroups.append("text")
-        .attr("class", "label")
-        .attr("y", height - margin / 3)
-        .style("font-size", "12px")
-        .style("fonx-weight", "normal")
+    propertyGroups.append('text')
+        .attr('class', 'label')
+        .attr('y', height - margin / 3)
+        .style('font-size', '12px')
+        .style('fonx-weight', 'normal')
         .text(function (d) {
-            return d.key
+            return d.key;
         })
-        .style("text-anchor", "middle")
+        .style('text-anchor', 'middle');
 
 
     propertyGroups.call(d3.behavior.drag()
         .origin(function (d) {  //define the start drag as the middle of the group
             //this should match the transformation used when assigning the group
-            return {x: translationXOffset(d, x0)}
+            return {x: translationXOffset(d, x0)};
         })
-        .on("dragstart", function (d) {
+        .on('dragstart', function (d) {
             //track the position of the selected group in the dragging object
-            dragging[d.key] = translationXOffset(d, x0)
+            dragging[d.key] = translationXOffset(d, x0);
             sel = d3.select(this);
             sel.moveToFront();
         })
-        .on("drag", function (d) {//track current drag location
-            dragging[d.key] = d3.event.x
+        .on('drag', function (d) {//track current drag location
+            dragging[d.key] = d3.event.x;
 
             nested.sort(function (a, b) {
                 return position(a) - position(b);
-            })
+            });
             x0.domain(nested.map(function (d) {//reset the x0 domain
-                return d.key
-            }))
-            propertyGroups.attr("transform", function (d) {
-                return "translate(" + position(d) + ", 0)";
-            })
+                return d.key;
+            }));
+            propertyGroups.attr('transform', function (d) {
+                return 'translate(' + position(d) + ', 0)';
+            });
 
         })
-        .on("dragend", function (d) {
+        .on('dragend', function (d) {
             delete dragging[d.key];
-            transition(d3.select(this)).attr("transform", function (d) {
-                return "translate(" + translationXOffset(d, x0) + ",0)"
-            })
+            transition(d3.select(this)).attr('transform', function (d) {
+                return 'translate(' + translationXOffset(d, x0) + ',0)';
+            });
             propertyGroups.selectAll()
-                .attr("transform", function (d) {
-                    return "translate(" + translationXOffset(d, x0) + ",0)"
-                })
+                .attr('transform', function (d) {
+                    return 'translate(' + translationXOffset(d, x0) + ',0)';
+                });
         })
-    )
+    );
 
-    var bars = propertyGroups.selectAll(".bar")
+    var bars = propertyGroups.selectAll('.bar')
         .data(function (d) {
-            return d.values
+            return d.values;
         })//nest() creates key:values.  for us, key is the property value, and values are the full biomat object
-        .enter().append("rect")
-        .style("fill", function (d) { // fill depends on if user is doing expression based or property based
-            if (currentColor == "Expression value") {
-                return color(d.intensity)
+        .enter().append('rect')
+        .style('fill', function (d) { // fill depends on if user is doing expression based or property based
+            if (currentColor == 'Expression value') {
+                return color(d.intensity);
             }
             else {
                 if (!d.properties[currentColor]) {
-                    propertyName = "Not set"
+                    propertyName = 'Not set';
                 } else {
-                    propertyName = d.properties[currentColor]
+                    propertyName = d.properties[currentColor];
                 }
-                return color(propertyName)
+                return color(propertyName);
             }
 
         })
-        .attr("y", function (d) {
-            return y(d.intensity)
+        .attr('y', function (d) {
+            return y(d.intensity);
         })
-        .attr("x", function (d, i) {
-            numberBiosamples = Object.keys(d).length
+        .attr('x', function (d, i) {
+            numberBiosamples = Object.keys(d).length;
 
-            return 10 * i - (1 / numberBiosamples * 10)
+            return 10 * i - (1 / numberBiosamples * 10);
         })
-        .attr("width", 5)
-        .attr("height", function (d) {
-            return y(0) - y(d.intensity)
+        .attr('width', 5)
+        .attr('height', function (d) {
+            return y(0) - y(d.intensity);
         })
-        .attr("transform", "translate(0," + ( -margin) + ")")
+        .attr('transform', 'translate(0,' + ( -margin) + ')');
 
 
     //define methods for dragging
@@ -197,39 +197,44 @@ function expRewrite() {
 
     //Add the tool tip
 
-    var divTooltip = d3.select('chart').append("div")
-        .attr("class", "toolTip")
-        .style("position", "absolute")
-        .style("width", "250px")
-        .style("padding", "20px")
-        .style("font", "12px sans-serif")
-        .style("background", "lightsteelblue")
-        .style("border", "0px")
-        .style("border-radius", "30px")
-        .style("pointer-events", "none")
-        .style("opacity", 0)
-        .style("z-index", 999999)
-    bars.on("mouseover", function (d) {
-        propTable = buildPropertyTooltipTable(d)
+    var divTooltip = d3.select('body').append('div')
+        .attr('class', 'toolTip')
+        .style('position', 'absolute')
+        .style('max-width', '250px')
+        .style('padding', '10px')
+        .style('font-size', '12px')
+        .style('font-family', 'Helvetica, Roboto, sans-serif')
+        .style('background', 'rgba(255, 255, 255, .9)')
+        .style('border', '1px solid rgba(0,0,0,.3)')
+        .style('border-radius', '5px')
+        .style('pointer-events', 'none')
+        .style('display', 'none')
+        .style('opacity', 0)
+        .style('transition', 'opacity .25s linear')
+        .style('z-index', 999999);
+    bars.on('mouseover', function (d) {
+        propTable = buildPropertyTooltipTable(d);
         divTooltip.transition()
             .duration(200)
-            .style("opacity", .95)
+            .style('opacity', 1)
+            .style('display', 'block');
         divTooltip.html(
-            "<strong>Biosample: " + d.name + "</strong><br/>" +
-            "<strong>Expression: </strong>" + d.intensity + " " + d.units + "<br/>" +
-            "<strong>Description: </strong><br/>" + d.description + "<br/>"
-            + propTable
-        )
-            .style("left", (d3.event.pageX) - (width + margin) + "px")
-            .style("top", (d3.event.pageY - (height + margin)) + "px");
+            '<strong>Biosample:</strong> ' + d.name + '<br/>' +
+            '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
+            '<strong>Description: </strong><br/>' + d.description + '<br/>'
+            + propTable)
+            .style('left', (jQuery(this).offset().left - 260) + 'px')
+        .style('top', (jQuery(this).offset().top  - (y(d.intensity)) +  'px'))//(d3.event.pageY))// - (height + margin)) + "px");
     })
-        .on("mouseout", function (d) {
+
+        .on('mouseout', function (d) {
             divTooltip.transition()
                 .duration(500)
-                .style("opacity", 0);
-        })
+                .style('opacity', 0)
+                .style('display', 'none');
+        });
 
-    buildLegend(color, width, margin)
+    buildLegend(color, width, margin);
 
 }
 
@@ -241,7 +246,7 @@ function expRewrite() {
  */
 function translationXOffset(d, scale) {
 
-    return (scale(d.key) + scale.rangeBand() / 2)
+    return (scale(d.key) + scale.rangeBand() / 2);
 }
 
 /**Builds the legend.
@@ -251,80 +256,80 @@ function translationXOffset(d, scale) {
  * @param margin
  */
 function buildLegend(colorScale, width, margin) {
-    currentColor = jQuery("#propertyColorMenu").find(":selected").text()
-    d3.selectAll('legend').remove()
+    currentColor = jQuery('#propertyColorMenu').find(':selected').text();
+    d3.selectAll('legend').remove();
 
-    if (currentColor != "Expression value") {
+    if (currentColor != 'Expression value') {
         var legend = d3.select('svg').selectAll('legend')
             .data(colorScale.domain())
             .enter().append('g')
-            .attr("class", "legend")
-            .attr("transform", function (d, i) {
+            .attr('class', 'legend')
+            .attr('transform', function (d, i) {
                 {
-                    return "translate(" + (width - 10 * margin) + "," + i * 10 + " )"
+                    return 'translate(' + (width - 10 * margin) + ',' + i * 10 + ' )';
                     //   return "translate("+(width - 10*margin)+", " -200 +  ")"
                 }
-            })
+            });
         legend.append('rect')
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("width", 20)
-            .attr("height", 10)
-            .style("fill", function (d, i) {
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', 20)
+            .attr('height', 10)
+            .style('fill', function (d, i) {
 
-                return colorScale(d)
-            })
+                return colorScale(d);
+            });
         legend.append('text')
-            .attr("x", 20)
-            .attr("y", 10)
+            .attr('x', 20)
+            .attr('y', 10)
             .text(function (d, i) {
-                return d
+                return d;
             })
-            .attr("class", "textselected")
-            .style("text-anchor", "start")
-            .style("font-size", 15)
+            .attr('class', 'textselected')
+            .style('text-anchor', 'start')
+            .style('font-size', 15);
     }
     else {
         var legend = d3.select('svg').selectAll('.legend')
             .data(colorScale.domain())
             .enter().append('g')
-            .attr("class", "legend")
-            .attr("transform", "translate(" + (width - 10 * margin) + ", 10)")
+            .attr('class', 'legend')
+            .attr('transform', 'translate(' + (width - 10 * margin) + ', 10)');
         //we need the min/max value and the color range.
-        var minHeatValue = colorScale.domain()[0]
-        var maxHeatValue = colorScale.domain()[1]
-        var minHeatColor = colorScale.range()[0]
-        var maxHeatColor = colorScale.range()[1]
+        var minHeatValue = colorScale.domain()[0];
+        var maxHeatValue = colorScale.domain()[1];
+        var minHeatColor = colorScale.range()[0];
+        var maxHeatColor = colorScale.range()[1];
         legend.append('text')
-            .attr("x", 0)
-            .attr("y", 0)
-            .text("Expression value")
+            .attr('x', 0)
+            .attr('y', 0)
+            .text('Expression value');
         legend.append('rect')
-            .attr("x", 20)
-            .attr("y", 20)
-            .attr("width", 20)
-            .attr("height", 10)
-            .style("fill", minHeatColor)
+            .attr('x', 20)
+            .attr('y', 20)
+            .attr('width', 20)
+            .attr('height', 10)
+            .style('fill', minHeatColor);
         legend.append('text')
-            .attr("x", 50)
-            .attr("y", 30)
+            .attr('x', 50)
+            .attr('y', 30)
             .text(minHeatValue)
-            .attr("class", "text")
-            .style("text-anchor", "start")
-            .style("font-size", 12)
+            .attr('class', 'text')
+            .style('text-anchor', 'start')
+            .style('font-size', 12);
         legend.append('rect')
-            .attr("x", 20)
-            .attr("y", 40)
-            .attr("width", 20)
-            .attr("height", 10)
-            .style("fill", maxHeatColor)
+            .attr('x', 20)
+            .attr('y', 40)
+            .attr('width', 20)
+            .attr('height', 10)
+            .style('fill', maxHeatColor);
         legend.append('text')
-            .attr("x", 50)
-            .attr("y", 50)
+            .attr('x', 50)
+            .attr('y', 50)
             .text(maxHeatValue)
-            .attr("class", "text")
-            .style("text-anchor", "start")
-            .style("font-size", 12)
+            .attr('class', 'text')
+            .style('text-anchor', 'start')
+            .style('font-size', 12);
 
     }
 }
@@ -336,67 +341,67 @@ function buildLegend(colorScale, width, margin) {
 function buildPropertySelect() {
 
     //remove the old selectors and store values
-    var previousValueSort = jQuery("#propertySortMenu").find(":selected").text()
-    d3.selectAll('#propertySortDiv').selectAll("select").remove()
-    var previousValueColor = jQuery("#propertyColorMenu").find(":selected").text()
-    d3.selectAll('#propertyColorDiv').selectAll("select").remove()
+    var previousValueSort = jQuery('#propertySortMenu').find(':selected').text();
+    d3.selectAll('#propertySortDiv').selectAll('select').remove();
+    var previousValueColor = jQuery('#propertyColorMenu').find(':selected').text();
+    d3.selectAll('#propertyColorDiv').selectAll('select').remove();
 
     //build list of properties for this analysis
-    var selectorSort = d3.select("#propertySortDiv").append("select").attr("id", "propertySortMenu")
-    var selectorColor = d3.select("#propertyColorDiv").append("select").attr("id", "propertyColorMenu")
+    var selectorSort = d3.select('#propertySortDiv').append('select').attr('id', 'propertySortMenu');
+    var selectorColor = d3.select('#propertyColorDiv').append('select').attr('id', 'propertyColorMenu');
 
     //first add "expression value" as default for color
 
-    selectorColor.append("option")
-        .attr("value", "Expression value")
-        .text("Expression value")
+    selectorColor.append('option')
+        .attr('value', 'Expression value')
+        .text('Expression value');
 
     heatMap.map(function (biomaterial) {
         Object.keys(biomaterial.properties).map(function (property_key) {
             //determine if this property is already in our selector
-            var exists = jQuery("#propertySortDiv option")
+            var exists = jQuery('#propertySortDiv option')
                 .filter(function (i, o) {
                     return o.value === property_key;
                 })
                 .length > 0;
 
             if (!exists) { //append it to both selector lists
-                selectorSort.append("option")
-                    .attr("value", function () {
+                selectorSort.append('option')
+                    .attr('value', function () {
                         return property_key;
                     })
                     .text(function () {
                         return property_key;
-                    })
-                selectorColor.append("option")
-                    .attr("value", function () {
+                    });
+                selectorColor.append('option')
+                    .attr('value', function () {
                         return property_key;
                     })
                     .text(function () {
                         return property_key;
-                    })
+                    });
             }
 
-        })
-    })
-    jQuery("#propertyColorMenu").val("Expression value")
+        });
+    });
+    jQuery('#propertyColorMenu').val('Expression value');
 
     if (previousValueSort) {
-        jQuery("#propertySortMenu").val(previousValueSort)
+        jQuery('#propertySortMenu').val(previousValueSort);
     }
     if (previousValueColor) {
-        jQuery("#propertyColorMenu").val(previousValueColor)
+        jQuery('#propertyColorMenu').val(previousValueColor);
     }
     //if the selector changes, rebuild the figure
-    jQuery("#propertySortMenu").change(function () {
+    jQuery('#propertySortMenu').change(function () {
         d3.selectAll('chart').remove();
         expRewrite();
-    })
+    });
     //if the selector changes, rebuild the figure
-    jQuery("#propertyColorMenu").change(function () {
+    jQuery('#propertyColorMenu').change(function () {
         d3.selectAll('chart').remove();
         expRewrite();
-    })
+    });
 }
 
 /**
@@ -406,27 +411,27 @@ function buildPropertySelect() {
  */
 
 function buildPropertyValuesDomain(color) {
-    if (color == "color") {
-        currentSortingProperty = jQuery("#propertyColorMenu").find(":selected").text()
+    if (color == 'color') {
+        currentSortingProperty = jQuery('#propertyColorMenu').find(':selected').text();
     } else {
-        currentSortingProperty = jQuery("#propertySortMenu").find(":selected").text()
+        currentSortingProperty = jQuery('#propertySortMenu').find(':selected').text();
     }
-    list = []
+    list = [];
     heatMap.map(function (biomaterial) {
-        name = biomaterial.name
-        propertyValue = biomaterial.properties[currentSortingProperty]
+        name = biomaterial.name;
+        propertyValue = biomaterial.properties[currentSortingProperty];
         if (!propertyValue) {
-            propertyValue = "Not set"
+            propertyValue = 'Not set';
         }
-        list.push(propertyValue)
-    })
+        list.push(propertyValue);
+    });
     Array.prototype.unique = function () {
         var arr = this;
         return jQuery.grep(arr, function (v, i) {
             return jQuery.inArray(v, arr) === i;
         });
-    }
-    return list.unique()
+    };
+    return list.unique();
 }
 
 
@@ -449,17 +454,17 @@ function nonZero() {
  * @returns {string}
  */
 function buildPropertyTooltipTable(d) {
-    table = ""
+    table = '';
     if (Object.keys(d.properties).length > 0) {
-        table += "</br><table> <tr>" +
-            "    <th>Property Name</th>" +
-            "    <th>Property Value</th> " +
-            "  </tr>"
+        table += '</br><table class="expression-tooltip-table"> <tr>' +
+            '    <th>Property Name</th>' +
+            '    <th>Property Value</th> ' +
+            '  </tr>';
         Object.keys(d.properties).map(function (propertyKey) {
-            propertyValue = d.properties[propertyKey]
-            table += "<tr><td>" + propertyKey + "</td><td>" + propertyValue + "</td> </tr>"
-        })
-        table += "</table>"
+            propertyValue = d.properties[propertyKey];
+            table += '<tr><td>' + propertyKey + '</td><td>' + propertyValue + '</td> </tr>';
+        });
+        table += '</table>';
     }
-    return (table)
+    return (table);
 }
