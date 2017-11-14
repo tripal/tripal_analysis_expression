@@ -21,3 +21,12 @@ figure {
 text {
   font-family: monospace;
 }
+
+.expression-tooltip-table {
+  margin: 0
+}
+
+.expression-tooltip-table tr th,
+.expression-tooltip-table tr td {
+  padding: 2px
+}
