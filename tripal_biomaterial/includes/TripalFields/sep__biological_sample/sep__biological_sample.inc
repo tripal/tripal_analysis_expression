@@ -160,6 +160,10 @@ class sep__biological_sample extends ChadoField {
 
     $variables['biomaterials'] = chado_query($sql, [":analysis_id" => $analysis_id])->fetchAll();
 
+    if(empty($variables['biomaterials'])) {
+      $variables['value'] = null;
+    }
+
     $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
 
     return $entity;
@@ -185,6 +189,10 @@ class sep__biological_sample extends ChadoField {
             WHERE O.organism_id = :organism_id';
 
     $variables['biomaterials'] = chado_query($sql, [":organism_id" => $organism_id])->fetchAll();
+
+    if(empty($variables['biomaterials'])) {
+      $variables['value'] = null;
+    }
 
     $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
 
