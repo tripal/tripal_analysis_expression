@@ -180,7 +180,7 @@ class tripal_expression_data_loader extends TripalImporter{
     $form['experimental_design']['acquisition_details'] = [
       '#title' => t('Acquisition Details'),
       '#type' => 'fieldset',
-      '#description' => t('Describe the details of the acquisition process. The acquisition is the process') . (' of scanning the experimental data.'),
+      '#description' => t('This represents the quantification technique. In the case of a microarray, it is scanning, in the case of a sequencer, it is sequencing. The output of this process is a digitial image of an array for a microarray or a set of digital images or nucleotide base calls for a sequencer.'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#weight' => 1,
@@ -219,7 +219,7 @@ class tripal_expression_data_loader extends TripalImporter{
     $form['experimental_design']['quantification_details'] = [
       '#title' => t('Quantification Details'),
       '#type' => 'fieldset',
-      '#description' => t('Describe the details of the quantification process. The quantification is the process of transforming raw expression data into numeric data.'),
+      '#description' => t(' Quantification is the transformation of an image or set of sequences to numeric expression data. This typically involves statistical procedures.'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#weight' => 1,

@@ -32,10 +32,10 @@ function expRewrite() {
             .range(['#ca0020', '#f4a582', '#d5d5d5', '#92c5de', '#0571b0']);
         //TODO: CALCULATE BASED ON NUMBER OF PROPERTIES INSTEAD
     } else {
-        colorDomain = [0, maxHeat/2, maxHeat];
+        colorDomain = [0, maxHeat / 2, maxHeat];
         var color = d3.scale.linear()
             .domain(colorDomain)
-            .range(["blue", "gray" , "red"]);
+            .range(['blue', 'gray', 'red']);
     }
 
     var width = d3.select('figure').node().getBoundingClientRect().width;
@@ -224,7 +224,7 @@ function expRewrite() {
             '<strong>Description: </strong><br/>' + d.description + '<br/>'
             + propTable)
             .style('left', (jQuery(this).offset().left - 260) + 'px')
-        .style('top', (jQuery(this).offset().top  - (y(d.intensity)) +  'px'))//(d3.event.pageY))// - (height + margin)) + "px");
+            .style('top', (jQuery(this).offset().top - (y(d.intensity)) + 'px'));//(d3.event.pageY))// - (height + margin)) + "px");
     })
 
         .on('mouseout', function (d) {
@@ -260,28 +260,40 @@ function buildLegend(colorScale, width, margin) {
     d3.selectAll('legend').remove();
 
     if (currentColor != 'Expression value') {
-        var legend = d3.select('svg').selectAll('legend')
-            .data(colorScale.domain())
+
+
+        var legend = d3.select('svg')
+            .append('g')
+            .append('class', 'legend')
+            .append('text')
+            .attr('x', 0)
+            .attr('y', 0)
+            .text(currentColor);
+
+        //    var legend = d3.select('svg').selectAll('legend')
+        legend.data(colorScale.domain())
+            .selectAll('legend')
             .enter().append('g')
-            .attr('class', 'legend')
+            //.attr('class', 'legend')
             .attr('transform', function (d, i) {
                 {
                     return 'translate(' + (width - 10 * margin) + ',' + i * 10 + ' )';
                     //   return "translate("+(width - 10*margin)+", " -200 +  ")"
                 }
             });
+
+
         legend.append('rect')
-            .attr('x', 0)
-            .attr('y', 0)
+            .attr('x', 00)
+            .attr('y', 10)
             .attr('width', 20)
             .attr('height', 10)
             .style('fill', function (d, i) {
-
                 return colorScale(d);
             });
         legend.append('text')
             .attr('x', 20)
-            .attr('y', 10)
+            .attr('y', 20)
             .text(function (d, i) {
                 return d;
             })
@@ -295,59 +307,59 @@ function buildLegend(colorScale, width, margin) {
             .data(colorScale.domain())
             .enter().append('g')
             .attr('class', 'legend')
-            .attr('transform', 'translate(' + (width - 10 * margin) + ', 10)')
+            .attr('transform', 'translate(' + (width - 10 * margin) + ', 10)');
         //we need the min/max value and the color range.
-        var minHeatValue = colorScale.domain()[0]
-        var midHeatValue = colorScale.domain()[1]
-        var maxHeatValue = colorScale.domain()[2]
-        var minHeatColor = colorScale.range()[0]
-        var midHeatColor = colorScale.range()[1]
-        var maxHeatColor = colorScale.range()[2]
+        var minHeatValue = colorScale.domain()[0];
+        var midHeatValue = colorScale.domain()[1];
+        var maxHeatValue = colorScale.domain()[2];
+        var minHeatColor = colorScale.range()[0];
+        var midHeatColor = colorScale.range()[1];
+        var maxHeatColor = colorScale.range()[2];
         //TODO: Refactor all of this to map the domain values and loop through
         legend.append('text')
             .attr('x', 0)
             .attr('y', 0)
             .text('Expression value')
-            .style('font-size', 12)
+            .style('font-size', 12);
         legend.append('rect')
             .attr('x', 20)
             .attr('y', 10)
             .attr('width', 20)
             .attr('height', 10)
-            .style('fill', minHeatColor)
+            .style('fill', minHeatColor);
         legend.append('text')
             .attr('x', 50)
             .attr('y', 20)
             .text(minHeatValue)
             .attr('class', 'text')
             .style('text-anchor', 'start')
-            .style('font-size', 12)
+            .style('font-size', 12);
         legend.append('rect')
             .attr('x', 20)
             .attr('y', 20)
             .attr('width', 20)
             .attr('height', 10)
-            .style('fill', midHeatColor)
+            .style('fill', midHeatColor);
         legend.append('text')
             .attr('x', 50)
             .attr('y', 30)
             .text(midHeatValue)
             .attr('class', 'text')
             .style('text-anchor', 'start')
-            .style('font-size', 12)
+            .style('font-size', 12);
         legend.append('rect')
             .attr('x', 20)
             .attr('y', 30)
             .attr('width', 20)
             .attr('height', 10)
-            .style('fill', maxHeatColor)
+            .style('fill', maxHeatColor);
         legend.append('text')
             .attr('x', 50)
             .attr('y', 40)
             .text(maxHeatValue)
             .attr('class', 'text')
             .style('text-anchor', 'start')
-            .style('font-size', 12)
+            .style('font-size', 12);
 
     }
 }
