@@ -6,7 +6,6 @@ Please note this module is currently being updated for Tripal 3.  The [Tripal 2 
 
 New documentation for the new data loaders and module structure is under development.
 
-
 # Tripal Analysis: Expression
 
 1. [Introduction](#introduction)
@@ -23,37 +22,26 @@ New documentation for the new data loaders and module structure is under develop
 Tripal Analysis: Expression is a [Drupal](https://www.drupal.org/) module built to extend the functionality of the [Tripal](http://tripal.info/) toolset.
 The purpose of the module is to visually represent gene expression for Tripal features. This module requires the following Tripal modules:
 
-1. Tripal Core
-2. Tripal Views
-3. Tripal DB
-4. Tripal CV
-5. Tripal Analysis
-6. Tripal Feature
-7. Tripal Organism
-8. Tripal Contact
+1. Tripal
+2. Tripal Chado
+3. Tripal Protocols (Included)
+4. Tripal Biomaterials (Included)
+
 
 # Installation
 1. Click on the green "Clone or download" button on the top right corner of this page to obtain the web URL. Download this module by running ```git clone <URL> ``` on command line. 
 2. Place the cloned module folder "tripal_analysis_expression" inside your /sites/all/modules. Then enable the module by running ```drush en tripal_analysis_expression``` (for more instructions, read the [Drupal documentation page](https://www.drupal.org/node/120641)).
 
-# Module Features
+# Features
 
-### Content Types
-The is module provides four content types - Analysis: Expression, Biomaterial, Array Design, and Protocol. 
+* Provides data loaders for biosamples and expression data
+* Controlled Vocabulary tools for biosamples
+* Visualization for expression data for individual features
+* Heatmap tool to visualize multiple features
 
-1. Analysis: Expression - The analysis: expression content type it built by hooking into the Tripal 2 Analysis module. This content type was modeled after the content types provided by the [Tripal InterPro Analysis](https://www.drupal.org/project/tripal_analysis_interpro) module and the [Tripal Blast Analysis](https://www.drupal.org/project/tripal_analysis_blast) module. This content type provides an interface to describe the experiment from which expression data was gathered. This content type provides the ability to describe either microarray expression data or next generation sequencing expression data (such as data obtained from RNASeq). This content type also provides a form to load expression data associated with the analysis.
-
-2. Biomaterial - The biomaterial content type represents the Chado biomaterial table. The Chado biomaterial table is a member of the Chado MAGE module. The biomaterial content type is similar to the [BioSample](http://www.ncbi.nlm.nih.gov/books/NBK169436/) content type provided by [NCBI](http://www.ncbi.nlm.nih.gov/). See the biomaterial description at the [GMOD wiki](http://gmod.org/wiki/Chado_Mage_Module#Table:_biomaterial).
-
-3. Array Design - The array design content type represents the Chado arraydesign table. This table is only used when describing the experimental design of data collected from a microarray expression experiment. See the arraydesign description at the [GMOD wiki](http://gmod.org/wiki/Chado_Mage_Module#Table:_arraydesign).
-
-5. Protocol - The protocol content type represents the Chado protocol table. This table is used to describe the protocol, software, and hardware used in different steps of the experiment. See the protocol description at the [GMOD wiki](http://gmod.org/wiki/Chado_Tables#Table:_protocol).
-
-### Module Administrative Pages
-For each of the above content types, this module provides full administrative capabilities which includes the following, administrative list of content, sync, delete, TOC (table of contents), settings, and help pages. These pages were modeled after and created using other Tripal modules. 
 
 ### User Searches
-A simple anonymous user search (using Views) is also provided for each content type. These searches can be foud at the following urls:
+A simple anonymous user search (using Views) is also provided for each content type. These searches can be found at the following urls:
 
 site_name/chado/analysis-expression
 
@@ -64,19 +52,18 @@ site_name/chado/biomaterial
 site_name/chado/protocol
 
 ### Data Loaders
-Two loaders are provided by this module, a biomaterial loader, and an expression loader. The biomaterial loader has the ability to load data from a flat file or from an xml file downloaded from NCBI. The expression loader is included in the analysis: expression content type form.
+Two loaders are provided by this module, a biosample loader, and an expression loader. The biosample loader has the ability to load data from a flat file or from an xml file downloaded from NCBI. The expression loader can load expression data in column or matrix format.
 
 ### Expression Display
-Once expression data is loaded. A display will be shown on each feature page that has corresponding biomaterials and expression values.
+Once expression data is loaded. A display will be shown on each feature page that has corresponding biosamples and expression values.
 
-# Loading Biomaterials
-Biomaterials may be loaded from a flat file or from an BioSample xml file downloaded from NCBI. The steps for loading biomaterials are as follows (detailed instructions can be found further below):
+# Loading Biosamples
+Biosample may be loaded from a flat file or from a BioSample xml file downloaded from NCBI. The steps for loading biosamples are as follows (detailed instructions can be found further below):
 
-1. [First download or generate the flat (.csv, .tsv) or .xml file with biomaterials data you want to load](#downloading-xml-biosample-file-from-ncbi).
-2. Add the organism associated with the biomaterial if it doesn't exist yet (**Add content->Organism**). 
-3. Navigate to the Tripal site's Tripal Biomaterial Loader to submit the job with [a .xml file](#loading-ncbi-xml-biosample-file-into-tripal) or [a flat file](#loading-biomaterials-from-a-flat-file). Run the job via command line with Drush command.
-4. [Sync the biomaterial(s) on the Tripal site. Run the sync job via command line with Drush command](#syncing-biomaterials). Note that this step is not needed if biomaterial with the same "sample_name" already exists in the database. In that case, the database entries for that biomaterial should be updated.
-5. Verify that the biomaterial(s) loaded correctly by viewing it via **Find content**.
+1. [First download or generate the flat (.csv, .tsv) or .xml file with biosample data you want to load](#downloading-xml-biosample-file-from-ncbi).
+2. Add the organism associated with the biosample if it doesn't exist yet (**Add content->Organism**). 
+3. Navigate to the Tripal site's Tripal Biomaterial Loader 
+4. Publish the biosamples
 
 ### Downloading XML BioSample File From NCBI
 To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http://www.ncbi.nlm.nih.gov/biosample/). Search for and select the BioSamples you would like to download. 
@@ -87,17 +74,18 @@ Click the "Send to:" link. Then select "File" and select "Full XML (text)" as th
 
 Click [here to see an example XML BioSample file from NCBI](example_files/sm125.xml).
 
-### Loading NCBI XML BioSample File into Tripal
+### Using the Biosample loader
 To upload the file into Chado/Tripal, Navigate to:  
-**Tripal->Extensions->Expression Analysis->Tripal Biomaterial Loader**
 
-Select the organism for which you are uploading expression data. Select "NCBI biosample xml file" and then write the path in "File Path" field.
+**Tripal->loaders->chado_biosample_loader**
 
-![NCBI XML BioSample Loader](https://cloud.githubusercontent.com/assets/14822959/12991555/a4afaf70-d0dd-11e5-95b1-ebbc6da404dc.png)
+First, provide the path on the server to the biosample file, or use the file uploader. You must select an Organism to associate the biosamples with.  You may also associate the imported biosamples with an analysis, but this is not required. 
+
+Press the **Check Biosamples** button to preview your biosample properties.  To take advantage of a controlled vocabulary (CV), you must manually assign each property to a CVterm.  The uploader will list all CV terms matching each property, and provide the CV, database (DB) and accession for the match. 
+If a match does not exist for your term, use the CVterm browser to identify an appropriate CVterm in your Tripal site, and rename the property in your input file to match the term.  If no term exists in your database, you should use the EBI ontology lookup serice to identify an appropriate term and insert it manually, or, load the corresponding CV.  
 
 After clicking "Submit job", the page should reload with the job status and Drush command to run the job. Copy and paste the Drush command and run it on command line. Upon running the Drush command, any warning/error/success/status message should be displayed.
 
-Similarily, after clicking "Submit job", the page should reload with the job status and Drush command to run the job. Copy and paste the Drush command and run it on command line. Upon running the Drush command, any warning/error/success/status message should be displayed.
 
 ### Loading Biomaterials From a Flat File
 
@@ -107,32 +95,25 @@ Click here to see an example of a [CSV file](example_files/exampleCSV.csv) and a
 
 ![Flat File Loader](https://cloud.githubusercontent.com/assets/14822959/12991558/a4b26a30-d0dd-11e5-8419-07216d0cbbc8.png)
 
-### Syncing Biomaterials
+### Publishing Biosamples to the Biological Sample Content Type
 
-After loading, biomaterials must be synced to create nodes for each biomaterial content type. As an administrator or user with correct permissions, navigate to **Tripal->Extensions->Expression Analysis->Tripal Expression Analysis Content Types->Biomaterial->SYNC**. Select the biomaterials to sync and click "Sync Biomaterials".
+After loading, biosamples must be published to create entities for each biosample content type. As an administrator or user with correct permissions, navigate to **Content->Tripal Content->Publish Tripal Content**. Select the biological sample type to publish, apply any optional  filtering, and press Publish.
 
-![Syncing Biomaterials](https://cloud.githubusercontent.com/assets/14822959/12991663/243827d6-d0de-11e5-820c-4cae34974283.png)
-
-Similarily, after clicking "Sync Biomaterials", run the Drush command on command line and monitor for any warnings/error messages.
-
-### Loading a Single Biomaterial
-Biomaterials may also be loaded one at a time. As an administer or a user with permission to create content, go to: **Add content->Biomaterial**. Available biomaterial fields include the following. 
-* **Biomaterial Name (must be unique - required)**
-* **Biomaterial description** - A description of the biomaterial.
-* **Biomaterial Provider** - The person or organization responsible for collecting the biomaterial
-* **Organism** - The organism from which the biomaterial was collected. 
-* **Analysis** - The expression analysis associated with the biomaterial. Note that a biomaterial can be created before an expression analysis.
-
-There is also the ability to add properties or accession values to the biomaterial. 
+### Loading a Single Biosample
+Biosamples may also be loaded one at a time. As an administer or a user with permission to create content, go to: **Content->Tripal Content -> Add Tripal Content -> Biological Sample**. Available biosamples fields include the following. 
+* **Accession** - If the biosample is in a database stored in your Tripal site, the accession can be entered here.  
+* **Name (must be unique - required)**
+* **Description** - A description of the biosample.
+* **Contact** - The person or organization responsible for collecting the biosample.
+* **Organism** - The organism from which the biosample was collected. 
 
 # Loading Expression Data
 The steps for loading expression data are as follows (detailed instructions can be found further below):
 
 1. Obtain expression data. Click [here to read about the file formats accepted for expression data](#data-loader). 
-2. Add the organism associated with the expression data (**Add content->Organism**) if it hasn't been added. 
-3. Upload all features in the expression data to the Chado database. To bulk upload features, go to **Tripal->Chado Data Loaders->FASTA file Loader** or **Tripal->Chado Modules->Features->Import via FASTA file** and upload a fasta file (click here to see an example of [fasta file of transcriptome sequences](http://www.hardwoodgenomics.org/sites/default/files/sequences/sugarMaple022416/Acer_saccharum_022416_transcripts.fasta)). Or upload one feature at a time via **Add content->Feature** or **Tripal->Chado Modules->Features->Add feature->Feature**. Submit and run job with Drush command. Then sync the features via **Tripal->Chado Modules->Features->Sync**. Submit and run job with Drush command. Finally, verify that the features have been added correctly via **Find content**.
-4. [Create the experiment setup](#creating-the-experiment-setup). Provide file path for the expression data or directory and make sure "Submit a job to parse the expression data into Chado" is checked. Save analysis and run the job with Drush command. 
-5. [View the expression data](#viewing-data) by going to **Find content** and clicking into the features just added.  
+2. Add the organism associated with the expression data if it hasn't been added. 
+3. Upload all features in the expression data to the Chado database. To bulk upload features, go to **Tripal->Data Loaders->Chado FASTA Loader** and upload a FASTA file (click here to see an example of [fasta file of transcriptome sequences](http://www.hardwoodgenomics.org/sites/default/files/sequences/sugarMaple022416/Acer_saccharum_022416_transcripts.fasta)). Or upload one feature at a time via **content-> Tripal Content -> Add content**, and select the relevant entity type (such as mRNA).
+4. Load the epression data.  This is also the step where you can add experimental design details.
 
 ### Creating the Experiment Setup
 Before loading data, describe the experimental setup used to collect the data. As an administrator or a user with permission to create content, go to: **Add content->Analysis: Expression**. The "Analysis: Expression" content type is a sub-type of the analysis content type. It contains all fields used in the analysis content type as well as fields that allow the description of the experimental design and the data loader. 
