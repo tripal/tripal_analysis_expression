@@ -107,16 +107,18 @@ Biosamples may also be loaded one at a time. As an administer or a user with per
 * **Contact** - The person or organization responsible for collecting the biosample.
 * **Organism** - The organism from which the biosample was collected. 
 
+**There is currently no interface to add properties to your biosample.**
+
 # Loading Expression Data
 The steps for loading expression data are as follows (detailed instructions can be found further below):
 
 1. Obtain expression data. Click [here to read about the file formats accepted for expression data](#data-loader). 
 2. Add the organism associated with the expression data if it hasn't been added. 
 3. Upload all features in the expression data to the Chado database. To bulk upload features, go to **Tripal->Data Loaders->Chado FASTA Loader** and upload a FASTA file (click here to see an example of [fasta file of transcriptome sequences](http://www.hardwoodgenomics.org/sites/default/files/sequences/sugarMaple022416/Acer_saccharum_022416_transcripts.fasta)). Or upload one feature at a time via **content-> Tripal Content -> Add content**, and select the relevant entity type (such as mRNA).
-4. Load the epression data.  This is also the step where you can add experimental design details.
+4. Load the espression data.  This is also the step where you can add experimental design details.
 
-### Creating the Experiment Setup
-Before loading data, describe the experimental setup used to collect the data. As an administrator or a user with permission to create content, go to: **Add content->Analysis: Expression**. The "Analysis: Expression" content type is a sub-type of the analysis content type. It contains all fields used in the analysis content type as well as fields that allow the description of the experimental design and the data loader. 
+### Creating the Analysis
+Before loading data, describe the experimental setup used to collect the data. As an administrator or a user with permission to create content
 
 **Note that program name, program version, and source name must be unique as a whole for analysis to be inserted correctly** (click [here](http://gmod.org/wiki/Chado_Companalysis_Module) to read more about the data structure for analysis).
 
@@ -132,8 +134,21 @@ Before loading data, describe the experimental setup used to collect the data. A
 * **Time Executed (required)**
 * **Materials & Methods (Description and/or Program Settings)** 
 
-![Analysis Feilds](https://cloud.githubusercontent.com/assets/14822959/12991556/a4afb984-d0dd-11e5-8368-3018c2d80ede.png)
-There is also the ability to add analysis properties to this content type.
+
+#### Data Loader
+
+The data loader fields provide a way for the user to load expression data associated with the experiment. The loader can load data from two types of formats, matrix and column. The matrix format expects a row of data containing biomaterials names. The first column should be unique feature names. Features must already be loaded into the database. Biomaterials will be added if not present. Expression values will map to a library in the column and a feature in the row. Only one matrix file may be loaded at a time. The column format expects the first column to contain features and the second column to be expression values. 
+
+For an example column file, click [here](example_files/exampleExpressionData.rpkm). For an example matrix file, click [here](example_files/exampleMatrix.tsv).
+
+The biomaterial name will be taken as the name of the file minus the file extension. Features must already be loaded into the database. Biomaterials will be added if not present. Multiple column format files may be loaded at the same time given that the files are in the same directory and contain the same file suffix. Either format may have header or footer information. Regex can be used in the form to only record data after the header and before the footer. Any file suffix can be used. The data loader fields are the following:
+* **Source File Type** - This can be either "Column Format" or "Matrix Format".
+* **Checkbox** - Check this box to submit a job to parse the data into Chado.
+* **File Type Suffix** - The suffix of the files to load. This is used to submit multiple column format files in the same directory. A suffix is not required for a matrix file.
+* **File Path** - The  path to a single matrix or column format file. The path may also be set to a directory, in which case all column files with the "File Type Suffix" specified above will be loaded. When loading multiple files from a file suffix must be specified. 
+* **Regex for Start of Data** - If the expression file has a header, use this field to capture the line that occurs before the start of expression data. This line of text and any text preceding this line will be ignored. 
+* **Regex for End of Data** - If the expression file has a footer, use this field to capture teh line that occurs after the end of expression data. This line of text and all text following will be ignored.
+
 
 #### Experimental Design Fields
 The "Experimental Design" fields allow a complete description of the experimental design. The Chado MAGE module which is used by the Analysis: Expression module. The Chado MAGE module uses, the arraydesign, assay, quantification, and acquisition tables to describe an experiment. This is reflected in the following fields available to describe an experiment. 
@@ -165,32 +180,18 @@ The "Experimental Design" fields allow a complete description of the experimenta
 * **Protocol Type (required)** - The protocol type can acquisition, array design, assay, or quantification. The user can also create new protocol types.
 * **Publication** - A publication that describes the protocol.
 
-#### Data Loader
-
-The data loader fields provide a way for the user to load expression data associated with the experiment. The loader can load data from two types of formats, matrix and column. The matrix format expects a row of data containing biomaterials names. The first column should be unique feature names. Features must already be loaded into the database. Biomaterials will be added if not present. Expression values will map to a library in the column and a feature in the row. Only one matrix file may be loaded at a time. The column format expects the first column to contain features and the second column to be expression values. 
-
-For an example column file, click [here](example_files/exampleExpressionData.rpkm). For an example matrix file, click [here](example_files/exampleMatrix.tsv).
-
-The biomaterial name will be taken as the name of the file minus the file extension. Features must already be loaded into the database. Biomaterials will be added if not present. Multiple column format files may be loaded at the same time given that the files are in the same directory and contain the same file suffix. Either format may have header or footer information. Regex can be used in the form to only record data after the header and before the footer. Any file suffix can be used. The data loader fields are the following:
-* **Source File Type** - This can be either "Column Format" or "Matrix Format".
-* **Checkbox** - Check this box to submit a job to parse the data into Chado.
-* **File Type Suffix** - The suffix of the files to load. This is used to submit multiple column format files in the same directory. A suffix is not required for a matrix file.
-* **File Path** - The  path to a single matrix or column format file. The path may also be set to a directory, in which case all column files with the "File Type Suffix" specified above will be loaded. When loading multiple files from a file suffix must be specified. 
-* **Regex for Start of Data** - If the expression file has a header, use this field to capture the line that occurs before the start of expression data. This line of text and any text preceding this line will be ignored. 
-* **Regex for End of Data** - If the expression file has a footer, use this field to capture teh line that occurs after the end of expression data. This line of text and all text following will be ignored.
 
 ![Data Loader Fields](https://cloud.githubusercontent.com/assets/14822959/12991553/a4ade58c-d0dd-11e5-97d2-1096d78bb189.png)
 # Viewing Data
 The following panes are added to the following content types:
 
-### Feature
-* **Expression** - After biomaterials and expression data have been loaded the expression pane will appear on the corresponding feature page. The pane will 5 different links: Sort Descending, Sort Ascending, Only Non-Zero Values, Tile/Chart, Reset.
- * **Sort Descending/Sort Ascending** - Sort expression data based on expression values - descending or ascending. 
- * **Only Non-Zero Values** - Remove biomaterials that do not expression the feature.
- * **Tile/Chart** - Toggle figure between a tile heatmap view or a chart view. 
- * **Reset** - Reset the figure. Return the figure to it's original state.
 
-![Expression Tile Map](https://cloud.githubusercontent.com/assets/14822959/13010313/3da1a292-d16f-11e5-9c32-f8d6f43a0c34.png)
+
+
+
+### Feature
+
+**New expresion feature viewer screenshot**
 
 ### Organism
 * **Biomaterial Browser** - After loading biomaterials, a new pane with a list of biomaterials will appear on the corresponding organism page. Biomaterials are not required to be synced when to appear in this list.
@@ -203,13 +204,8 @@ The following panes are added to the following content types:
 * **Overview (base)** - The generic tripal overview pane.
 * **Properties** - Properties associated with the biomaterial.
 * **Cross References** - Accession terms associated with the biomaterial.
- 
-### Array Design
-* **Overview (base)** - The generic tripal overview pane.
-* **Properties** - Properties associated with the array design.
 
-### Protocol
-* **Overview (base)** - The generic tripal overview pane.
+
 
 # Searching features and displaying expression data in a heatmap
 This module creates two blocks: one for features input and the other displaying a heatmap for the input features.
@@ -221,7 +217,7 @@ Go to **Structure->blocks** and find these two blocks: ***tripal_analysis_expres
 
 After you enter some feature IDs, you click the "Display Expression Heatmap" button to generate a heatmap for the features. 
 
-![expression-heatmap](https://cloud.githubusercontent.com/assets/1262709/25756812/23fd629e-3196-11e7-873b-4742c2c41116.png)
+**New heatmap screenshot**
 
 
 # Administrative Pages
