@@ -170,7 +170,8 @@ The "Experimental Design" fields allow a complete description of the experimenta
  * **Quantification Operator** - The person or organization that ran the quantification.
  * **Quantification Protocol** - The quantification protocol used in the experiment. (See protocol description below).
 
-![Experimental Design Fields](https://cloud.githubusercontent.com/assets/14822959/12991557/a4b0228e-d0dd-11e5-93de-2f206be6d5fe.png)
+**New design screenshot**
+
 **Protocol Descripton** - The protocol content types can be created by navigating to **Add content->Protocol**. A protocol can be used to add extra detail to an experimental design. A protocol can be used to describe the assay, acquisition, and quantification steps of the experiment design. A protocol can also be used to further describe the array design content type. The fields of a protocol are:
 * **Protocol Name (must be unique - required)**
 * **Protocol Link** - A web address to a page that describes the protocol.
@@ -180,31 +181,10 @@ The "Experimental Design" fields allow a complete description of the experimenta
 * **Protocol Type (required)** - The protocol type can acquisition, array design, assay, or quantification. The user can also create new protocol types.
 * **Publication** - A publication that describes the protocol.
 
+** New data loader screenshot**
 
-![Data Loader Fields](https://cloud.githubusercontent.com/assets/14822959/12991553/a4ade58c-d0dd-11e5-97d2-1096d78bb189.png)
 # Viewing Data
 The following panes are added to the following content types:
-
-
-
-
-
-### Feature
-
-**New expresion feature viewer screenshot**
-
-### Organism
-* **Biomaterial Browser** - After loading biomaterials, a new pane with a list of biomaterials will appear on the corresponding organism page. Biomaterials are not required to be synced when to appear in this list.
-
-### Analysis: Expression
-* **Overview (base)** - The generic tripal overview pane.
-* **Protocol** - Protocols used in this analysis (acquisition protocol, assay protocol, and quantification protocol).
-
-### Biomaterial
-* **Overview (base)** - The generic tripal overview pane.
-* **Properties** - Properties associated with the biomaterial.
-* **Cross References** - Accession terms associated with the biomaterial.
-
 
 
 # Searching features and displaying expression data in a heatmap

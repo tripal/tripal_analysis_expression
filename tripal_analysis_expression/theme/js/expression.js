@@ -362,6 +362,25 @@ function buildLegend(colorScale, width, margin) {
             .style('font-size', 12);
 
     }
+
+    //Add drag behavior to legend
+    legend.call(d3.behavior.drag()
+        .origin(function (d) {
+            return {x: translationXOffset(d, x0)}
+        })
+        .on('dragstart', function (){
+
+        })
+        .on('drag', function() {
+            //Update the current position
+            //Dont let the legend leave the page!
+
+        })
+        .on('dragend'), function(){
+        }
+
+
+    )
 }
 
 
