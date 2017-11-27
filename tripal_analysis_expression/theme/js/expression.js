@@ -260,8 +260,6 @@ function buildLegend(colorScale, width, margin) {
     d3.selectAll('legend').remove();
 
     if (currentColor != 'Expression value') {
-
-
         var legend = d3.select('svg')
             .append('g')
             .append('class', 'legend')
@@ -269,20 +267,16 @@ function buildLegend(colorScale, width, margin) {
             .attr('x', 0)
             .attr('y', 0)
             .text(currentColor);
-
-        //    var legend = d3.select('svg').selectAll('legend')
         legend.data(colorScale.domain())
-            .selectAll('legend')
+            .selectAll('.legend')
             .enter().append('g')
-            //.attr('class', 'legend')
+        //.attr('class', 'legend')
             .attr('transform', function (d, i) {
                 {
                     return 'translate(' + (width - 10 * margin) + ',' + i * 10 + ' )';
                     //   return "translate("+(width - 10*margin)+", " -200 +  ")"
                 }
             });
-
-
         legend.append('rect')
             .attr('x', 00)
             .attr('y', 10)
@@ -302,10 +296,11 @@ function buildLegend(colorScale, width, margin) {
             .style('font-size', 15);
     }
     else {
-
-        var legend = d3.select('svg').selectAll('.legend')
-            .data(colorScale.domain())
-            .enter().append('g')
+        var legend = d3.select('svg')
+        //.selectAll('.legend')
+        //.data(colorScale.domain())
+        //.enter()
+            .append('g')
             .attr('class', 'legend')
             .attr('transform', 'translate(' + (width - 10 * margin) + ', 10)');
         //we need the min/max value and the color range.
@@ -362,25 +357,16 @@ function buildLegend(colorScale, width, margin) {
             .style('font-size', 12);
 
     }
-
-    //Add drag behavior to legend
-    legend.call(d3.behavior.drag()
-        .origin(function (d) {
-            return {x: translationXOffset(d, x0)}
-        })
-        .on('dragstart', function (){
-
-        })
-        .on('drag', function() {
-            //Update the current position
-            //Dont let the legend leave the page!
-
-        })
-        .on('dragend'), function(){
-        }
-
-
-    )
+    legend.call(d3.behavior.drag()    //Add drag behavior to legend
+        .on('drag', function () {
+                //Update the current position
+                //TODO:  Dont let the legend leave the page!
+                var x = d3.event.x;
+                var y = d3.event.y;
+                d3.select(this).attr('transform', 'translate(' + x + ',' + y + ')');
+            }
+        )
+    );
 }
 
 
