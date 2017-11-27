@@ -119,13 +119,6 @@ class sep__biological_sample extends ChadoField {
    *
    */
   public function load($entity) {
-
-    // ChadoFields automatically load the chado column specified in the
-    // default settings above. If that is all you need then you don't even
-    // need to implement this function. However, if you need to add any
-    // additional data to be used in the display, you should add it here.
-    parent::load($entity);
-
     if ($entity->chado_table == 'analysis') {
       return $this->load_for_analysis($entity);
     }
@@ -144,7 +137,7 @@ class sep__biological_sample extends ChadoField {
     $field = get_class();
     $entity->{$field}['und'][0]['value'] = $entity->chado_record_id;
     $variables = $entity->{$field}['und'][0];
-    $variables['show_organism'] = true;
+    $variables['show_organism'] = TRUE;
     $analysis_id = $variables['value'];
 
     $sql = 'SELECT B.biomaterial_id, B.name, O.organism_id, O.genus, O.species, O.common_name, C.contact_id, C.name AS contact_name
@@ -159,6 +152,16 @@ class sep__biological_sample extends ChadoField {
               WHERE AN.analysis_id=:analysis_id';
 
     $variables['biomaterials'] = chado_query($sql, [":analysis_id" => $analysis_id])->fetchAll();
+
+    if (empty($variables['biomaterials'])) {
+      $variables['value'] = NULL;
+    }
+    else {
+      $variables['value'] = [];
+      foreach ($variables['biomaterials'] as $biomaterial) {
+        $variables['value'][] = $biomaterial->name;
+      }
+    }
 
     $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
 
@@ -175,7 +178,7 @@ class sep__biological_sample extends ChadoField {
   protected function load_for_organism(&$entity) {
     $field = get_class();
     $variables = $entity->{$field}['und'][0];
-    $variables['show_organism'] = false;
+    $variables['show_organism'] = FALSE;
     $organism_id = $variables['value'];
 
     $sql = 'SELECT B.biomaterial_id, B.name, O.organism_id, O.genus, O.species, O.common_name, C.contact_id, C.name AS contact_name
@@ -185,6 +188,16 @@ class sep__biological_sample extends ChadoField {
             WHERE O.organism_id = :organism_id';
 
     $variables['biomaterials'] = chado_query($sql, [":organism_id" => $organism_id])->fetchAll();
+
+    if (empty($variables['biomaterials'])) {
+      $variables['value'] = NULL;
+    }
+    else {
+      $variables['value'] = [];
+      foreach ($variables['biomaterials'] as $biomaterial) {
+        $variables['value'][] = $biomaterial->name;
+      }
+    }
 
     $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
 

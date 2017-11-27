@@ -15,7 +15,7 @@ else {
 
       <a name="expression-top"> </a>
       <p>
-          Hover the mouse over a column in the graph to view expression values.
+          Hover the mouse over a column in the graph to view expression values and more details.  You can click and drag to rearrange the plotted groups or the legend.
           <br>
           <a href=''
              onclick="expSortDown() return false">Sort Descending</a> |

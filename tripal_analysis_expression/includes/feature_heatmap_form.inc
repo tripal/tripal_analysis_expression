@@ -299,17 +299,17 @@ function tripal_analysis_expression_generate_heatmap_values() {
     }
   }
 
-  // Loop through all biomaterial so that each feature have all biomaterials (treatment)
+  // Loop through all biomaterials so that each feature have all biomaterials (treatment)
   // Assign NULL as expression intensity to all treatment.
+  //TODO:  if we organize by analysis this no longer works.
   // While we do this, lets get the biomaterialprops
   $expression_data = [];
   $ids = [];
   $biomaterial_propstore = [];
-  dpm($expressions);
   foreach ($expressions as $feature_id => $features) {
-    foreach ($biomaterials as $biomaterial_name) {
-      $expression_data[$feature_id][$biomaterial_name] = NULL;
-    }
+    //foreach ($biomaterials as $biomaterial_name) {
+    //  $expression_data[$feature_id][$biomaterial_name] = NULL;
+    //}
     foreach ($features as $biomaterial_properties) {
       $biomaterial_id = $biomaterial_properties->biomaterial_id;
       $biomaterial_name = $biomaterial_properties->name;
@@ -337,6 +337,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
   foreach ($expressions as $feature_id => $features) {
     foreach ($features as $feature) {
 
+      $analysis_name = $feature->analysis_name;
       $ids[$feature_id] = $feature->feature_id;
 
       // get analysis URL
@@ -352,7 +353,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
       ], ['type_name' => 'unit_of_measure', 'cv_name' => 'sep']);
       $uni ? $units = $uni->value : $units = '';
 
-      $treat = null;
+      $treat = NULL;
 
       if (isset($biomaterial_propstore[$feature->name]["treatment"])) {
         $treat = $biomaterial_propstore[$feature->name]["treatment"];//this allows for treatment to be in a CV instead of specifying biomaterialprop
@@ -367,53 +368,78 @@ function tripal_analysis_expression_generate_heatmap_values() {
         $treatment = '';
       }
 
-      $expression_data[$feature_id][$feature->name] = [
+      $expression_data[$analysis_name][$feature_id][$feature->name] = [
         'signal' => (float) $feature->signal,
         'description' => $feature->description,
         'treatment' => $treatment,
         'analysis_url' => $analysis_url,
-        'biomaterial_properties' => $biomaterial_propstore[$feature->name]
+        'biomaterial_properties' => $biomaterial_propstore[$feature->name],
       ];
     }
   }
 
 
-  $x = [];
-  $y = [];
-  $z = [];
-  $text = [];
-  $max_id_len = 0;
-  foreach ($expression_data as $feature_id => $values) {
-    // obtain max feature id length
-    $max_id_len = max(strlen($feature_id), $max_id_len);
+  $heatmap_data_by_analysis = [];
 
-    if (isset($ids[$feature_id])) {
-      $y[] = l($feature_id, 'bio_data/' . tripal_get_chado_entity_id('feature', $ids[$feature_id]));
-    }
-    else {
-      $y[] = $feature_id;
-    }
+  foreach ($expression_data as $analysis_name => $features) {
 
-    $x = array_keys($values);
-    $signals = [];
-    $descriptions = [];
-    foreach ($values as $value) {
-      $signals[] = $value['signal'];
+    $x = [];
+    $y = [];
+    $z = [];
+    $text = [];
+    $max_id_len = 0;
 
-      $biomaterial_props = $value['biomaterial_properties'];
+    foreach ($features as $feature_id => $values) {
+      // obtain max feature id length
+      $max_id_len = max(strlen($feature_id), $max_id_len);
 
-      $property_html = '';
-
-      foreach ($biomaterial_props as $property_name => $property_value ) {
-        $property_html .= '<br>' .  $property_name . ":  " . $property_value;
+      if (isset($ids[$feature_id])) {
+        $y[] = l($feature_id, 'bio_data/' . tripal_get_chado_entity_id('feature', $ids[$feature_id]));
+      }
+      else {
+        $y[] = $feature_id;
       }
 
-      $descriptions[] = 'Treatment: ' . $value['treatment'] . '<br>' . 'Description: ' . $value['description'] . '<br>' . $property_html;
-    }
-    $z[] = $signals;
-    $text[] = $descriptions;
-  }
+      $x = array_keys($values);
+      $signals = [];
+      $descriptions = [];
+      foreach ($values as $value) {
+        $signals[] = $value['signal'];
 
+        $biomaterial_props = $value['biomaterial_properties'];
+
+        $property_html = '';
+
+        foreach ($biomaterial_props as $property_name => $property_value) {
+          $property_html .= '<br>' . $property_name . ":  " . $property_value;
+        }
+
+        $descriptions[] = 'Treatment: ' . $value['treatment'] . '<br>' . 'Description: ' . $value['description'] . '<br>' . $property_html;
+      }
+      $z[] = $signals;
+      $text[] = $descriptions;
+    }
+
+
+    // Build data for plotly function in js file.
+    $heatmap_data = [];
+
+    if (!empty($x) and !empty($y) and !empty($z)) {
+      $heatmap_data = [
+        [
+          'x' => $x,
+          'y' => $y,
+          'z' => $z,
+          'text' => $text,
+          'hoverinfo' => 'all',
+          'type' => 'heatmap',
+        ],
+      ];
+    }
+
+    $heatmap_data_by_analysis[$analysis_name] = $heatmap_data;
+
+  }
   // obtain max length of treatment names
   $max_treatment_name = 0;
   foreach ($x as $name) {
@@ -427,24 +453,9 @@ function tripal_analysis_expression_generate_heatmap_values() {
   // use the max length of treatment name times 7 to get an appropriate pixel number of bottom margin
   $bottom_margin = ($max_treatment_name * 12) / 1.5;
 
-  // Build data for plotly function in js file.
-  $heatmap_data = [];
-
-  if (!empty($x) and !empty($y) and !empty($z)) {
-    $heatmap_data = [
-      [
-        'x' => $x,
-        'y' => $y,
-        'z' => $z,
-        'text' => $text,
-        'hoverinfo' => 'all',
-        'type' => 'heatmap',
-      ],
-    ];
-  }
 
   return [
-    'heatmap_data' => $heatmap_data,
+    'heatmap_data' => $heatmap_data_by_analysis,
     'bottom_margin' => $bottom_margin,
     'left_margin' => $left_margin,
   ];

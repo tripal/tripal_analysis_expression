@@ -122,8 +122,6 @@ class data__gene_expression_data extends ChadoField{
     // default settings above. If that is all you need then you don't even
     // need to implement this function. However, if you need to add any
     // additional data to be used in the display, you should add it here.
-    parent::load($entity);
-
     $field = get_class();
     $variables = $entity->{$field}['und'][0];
     $feature_id = isset($variables['chado-feature__feature_id']) ? $variables['chado-feature__feature_id'] : NULL;
