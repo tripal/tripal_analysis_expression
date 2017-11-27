@@ -106,7 +106,6 @@ function expRewrite() {
         .style('text-anchor', 'bottom');
 
     text.attr('transform', function (d) {
-        console.log(d);
         return ' translate( 0,' + (height - margin.bottom + 10) + ' ),rotate(20)';
     });
 
@@ -358,7 +357,6 @@ function buildLegend(colorScale, width, margin) {
     d3.select('.legend').call(d3.behavior.drag()    //Add drag behavior to legend
         .on('drag', function () {
                 //Update the current position
-                //TODO:  Dont let the legend leave the page!
                 var x = d3.event.x;
                 var y = d3.event.y;
                 d3.select(this).attr('transform', 'translate(' + x + ',' + y + ')');
@@ -475,8 +473,7 @@ function nonZero() {
     heatMap = heatMap.filter(function (d) {
         return d.intensity > 0;
     });
-    d3.selectAll('expfeaturedom').remove();
-    d3.selectAll('expkeydom').remove();
+    d3.selectAll('chart').remove();
     expRewrite();
 }
 
