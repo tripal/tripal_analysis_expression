@@ -66,9 +66,7 @@
             make_heatmap(Object.keys(analyses_options)[0]);
 
             function make_heatmap(selectedAnalysis) {
-                console.log(analyses_options)
                 var heatmap_data = [analyses_options[selectedAnalysis][0]];
-                console.log(heatmap_data)
                 var left_margin = settings.tripal_analysis_expression.left_margin;
                 var bottom_margin = settings.tripal_analysis_expression.bottom_margin;
                 var layout = {
