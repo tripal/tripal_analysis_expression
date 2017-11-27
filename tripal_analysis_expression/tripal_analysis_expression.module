@@ -344,7 +344,10 @@ function tripal_analysis_expression_block_view($delta = '') {
       else {
         if (!empty($heatmap['heatmap_data'])) {
           $block['subject'] = t('Feature Expression Heatmap');
-          $block['content'] = '<div id="vis_expression"></div>';
+          $block['content'] = '
+               </br><strong>Select an analysis to display</strong>
+               <div id="select_analysis"></div>
+               <div id="vis_expression"></div>';
           drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
           drupal_add_js(['tripal_analysis_expression' => ['heatmap_data' => $heatmap['heatmap_data']]], ['type' => 'setting']);
           drupal_add_js(['tripal_analysis_expression' => ['left_margin' => $heatmap['left_margin']]], ['type' => 'setting']);
