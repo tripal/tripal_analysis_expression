@@ -2,7 +2,7 @@
 
 This is an extension module for the Tripal project. 
 
-This documentation is for [the Tripal 2 version of the Tripal Analysis Expression](https://github.com/tripal/tripal_analysis_expression/releases/tag/1.0.2). It is **no longer supported**.
+This documentation is for [the Tripal 2 version of the Tripal Analysis Expression](https://github.com/tripal/tripal_analysis_expression/releases/tag/1.0.2). It is **no longer maintained**, future releases will require for Tripal 3.
 
 # Tripal Analysis: Expression
 

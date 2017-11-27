@@ -2,7 +2,7 @@
 
 This is an extension module for the Tripal project. 
 
-Please note this module is currently being updated for Tripal 3.  The [Tripal 2 functional module is available for download](https://github.com/tripal/tripal_analysis_expression/releases/tag/1.0.2) but future releases will be for Tripal 3.
+Please note this module is currently being updated for Tripal 3.  The [Tripal 2 functional module is available for download](https://github.com/tripal/tripal_analysis_expression/releases/tag/1.0.2) as a legacy module, but future releases will be for Tripal 3.
 
 New documentation for the new data loaders and module structure is under development.
 
