@@ -260,29 +260,20 @@ function buildLegend(colorScale, width, margin) {
     d3.selectAll('legend').remove();
 
     if (currentColor != 'Expression value') {
-
-
         var legend = d3.select('svg')
             .append('g')
-            .append('class', 'legend')
-            .append('text')
-            .attr('x', 0)
-            .attr('y', 0)
-            .text(currentColor);
-
-        //    var legend = d3.select('svg').selectAll('legend')
-        legend.data(colorScale.domain())
-            .selectAll('legend')
-            .enter().append('g')
-            //.attr('class', 'legend')
+            .attr('class', 'legend')
+            .attr('transform', 'translate(' + (width - 10 * margin) + ', 10)')
+            .selectAll('.legendItem')
+            .data(colorScale.domain())
+            .enter()
+            .append('g')
+            .attr('class', 'legendItem')
             .attr('transform', function (d, i) {
                 {
-                    return 'translate(' + (width - 10 * margin) + ',' + i * 10 + ' )';
-                    //   return "translate("+(width - 10*margin)+", " -200 +  ")"
+                    return 'translate(0,' + i * 10 + ' )';
                 }
             });
-
-
         legend.append('rect')
             .attr('x', 00)
             .attr('y', 10)
@@ -299,13 +290,11 @@ function buildLegend(colorScale, width, margin) {
             })
             .attr('class', 'textselected')
             .style('text-anchor', 'start')
-            .style('font-size', 15);
+            .style('font-size', 12);
     }
     else {
-
-        var legend = d3.select('svg').selectAll('.legend')
-            .data(colorScale.domain())
-            .enter().append('g')
+        var legend = d3.select('svg')
+            .append('g')
             .attr('class', 'legend')
             .attr('transform', 'translate(' + (width - 10 * margin) + ', 10)');
         //we need the min/max value and the color range.
@@ -362,6 +351,16 @@ function buildLegend(colorScale, width, margin) {
             .style('font-size', 12);
 
     }
+    d3.select('.legend').call(d3.behavior.drag()    //Add drag behavior to legend
+        .on('drag', function () {
+                //Update the current position
+                //TODO:  Dont let the legend leave the page!
+                var x = d3.event.x;
+                var y = d3.event.y;
+                d3.select(this).attr('transform', 'translate(' + x + ',' + y + ')');
+            }
+        )
+    );
 }
 
 

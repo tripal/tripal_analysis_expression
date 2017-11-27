@@ -510,7 +510,7 @@ function chado_analysis_expression_form($node, $form_state) {
 
   $form['loader']['biomaterial_validator'] = [
     '#type' => 'submit',
-    '#value' => t('Check Biomaterials'),
+    '#value' => t('Check Biosamples'),
     '#suffix' => $lt_message,
     '#submit' => ['chado_analysis_expression_biomaterial_validator_submit'],
   ];

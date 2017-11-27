@@ -6,13 +6,7 @@ project = tripal_analysis_expression
 package = Tripal Extensions
 configure = admin/tripal/extension/tripal_analysis_expression
 
-dependencies[] = tripal_core
-dependencies[] = tripal_views
-dependencies[] = tripal_db
-dependencies[] = tripal_cv
-dependencies[] = tripal_analysis
-dependencies[] = tripal_feature
-dependencies[] = tripal_organism
-dependencies[] = tripal_contact
+dependencies[] = tripal
+dependencies[] = tripal_chado
 dependencies[] = tripal_biomaterial
 dependencies[] = tripal_protocol

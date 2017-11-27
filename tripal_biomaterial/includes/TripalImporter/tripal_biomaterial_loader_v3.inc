@@ -109,7 +109,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
 
     $form['biomaterial_cvterm_validator'] = [
       '#type' => 'button',
-      '#value' => t('Check Biomaterials'),
+      '#value' => t('Check Biosamples'),
       '#ajax' => [
         'callback' => 'cvterm_validator_callback',
         'wrapper' => 'cvterm_configuration_div',
@@ -119,7 +119,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
 
     $fields = [];
 
-    $description = t('After submitting uploading your file(s) and clicking the Check Biomaterials button, you can configure individual cvterms for your biomaterial properties here.');
+    $description = t('After submitting uploading your file(s) and clicking the Check Biosamples button, you can configure individual cvterms for your biomaterial properties here.');
 
     //TODO:  should the importer class provide a "get files" method?
     if ((isset($form_state['values']['file_local'])) || isset($form_state['values']['file_upload'])) {
