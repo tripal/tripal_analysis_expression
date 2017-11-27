@@ -381,7 +381,6 @@ function tripal_analysis_expression_generate_heatmap_values() {
 
   $heatmap_data_by_analysis = [];
 
-  //TODO enclose this loop by analysis
   foreach ($expression_data as $analysis_name => $features) {
 
     $x = [];
@@ -441,8 +440,6 @@ function tripal_analysis_expression_generate_heatmap_values() {
     $heatmap_data_by_analysis[$analysis_name] = $heatmap_data;
 
   }
-  dpm($heatmap_data_by_analysis);
-
   // obtain max length of treatment names
   $max_treatment_name = 0;
   foreach ($x as $name) {
