@@ -14,7 +14,6 @@
  */
 require_once "includes/tripal_biomaterial.chado_node.inc";
 require_once "includes/tripal_biomaterial.admin.inc";
-require_once "includes/tripal_biomaterial_config.admin.inc";
 require_once "includes/tripal_biomaterial.delete.inc";
 require_once "includes/tripal_biomaterial.chado_node.inc";
 require_once "includes/tripal_biomaterial.delete.inc";

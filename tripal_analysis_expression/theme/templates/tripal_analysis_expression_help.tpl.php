@@ -31,12 +31,6 @@
         </p>
         <ol>
             <li><p>
-                    <b>Sync Analysis: Expression</b>: If your array design has been pre-loaded into Chado then you
-                    need to sync the array design. This process is what creates the pages for viewing online. Not all
-                    array designs need to be synced, only those that you want to show on the site. Use the
-                    <a href="<?php print url('admin/tripal/extension/tripal_analysis_expression/content_types/analysis_expression/sync') ?>">Array design syncing page</a>
-                    to sync array designs. </p></li>
-            <li><p>
                     <b>Manually Add An Analysis: Expression</b>: If your Analysis: Expressin is not already
                     present in the Chado database you can create an array design using the
                     <a href="<?php print url('node/add/chado-analysis-expression') ?>">Create Array Design page</a>.

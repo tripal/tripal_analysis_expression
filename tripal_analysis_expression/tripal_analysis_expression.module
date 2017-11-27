@@ -9,10 +9,7 @@
  * @ingroup tripal_modules *** is this right?
  */
 
-require_once "includes/tripal_analysis_expression.chado_node.inc";
 require_once "includes/tripal_analysis_expression.admin.inc";
-require_once "includes/tripal_analysis_expression_config.admin.inc";
-require_once "includes/tripal_analysis_expression.delete.inc";
 require_once "includes/tripal_analysis_expression.fields.inc";
 require_once "theme/tripal_analysis_expression.theme.inc";
 require_once drupal_get_path('module', 'tripal_analysis_expression') . '/includes/feature_heatmap_form.inc';
@@ -120,21 +117,6 @@ function tripal_analysis_expression_menu() {
     'file path' => drupal_get_path('module', 'tripal_core'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 3,
-  ];
-
-  // Admin configuration - analysis_expression sync.
-  $items['admin/tripal/extension/tripal_analysis_expression/content_types/analysis_expression/sync'] = [
-    'title' => 'Sync',
-    'description' => 'Create pages on this site for analysis_expressions stored in Chado.',
-    'access arguments' => ['administer tripal analysis expression'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => [
-      'chado_node_sync_form',
-      'tripal_analysis_expression',
-      'chado_analysis_expression',
-    ],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 2,
   ];
 
   // Admin configuration - analysis_expression help.
