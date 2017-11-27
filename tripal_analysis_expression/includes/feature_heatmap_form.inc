@@ -299,7 +299,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
     }
   }
 
-  // Loop through all biomaterial so that each feature have all biomaterials (treatment)
+  // Loop through all biomaterials so that each feature have all biomaterials (treatment)
   // Assign NULL as expression intensity to all treatment.
   //TODO:  if we organize by analysis this no longer works.
   // While we do this, lets get the biomaterialprops
@@ -353,7 +353,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
       ], ['type_name' => 'unit_of_measure', 'cv_name' => 'sep']);
       $uni ? $units = $uni->value : $units = '';
 
-      $treat = null;
+      $treat = NULL;
 
       if (isset($biomaterial_propstore[$feature->name]["treatment"])) {
         $treat = $biomaterial_propstore[$feature->name]["treatment"];//this allows for treatment to be in a CV instead of specifying biomaterialprop
@@ -373,21 +373,22 @@ function tripal_analysis_expression_generate_heatmap_values() {
         'description' => $feature->description,
         'treatment' => $treatment,
         'analysis_url' => $analysis_url,
-        'biomaterial_properties' => $biomaterial_propstore[$feature->name]
+        'biomaterial_properties' => $biomaterial_propstore[$feature->name],
       ];
     }
   }
 
 
-  $x = [];
-  $y = [];
-  $z = [];
-  $text = [];
-  $max_id_len = 0;
-
   $heatmap_data_by_analysis = [];
 
+  //TODO enclose this loop by analysis
   foreach ($expression_data as $analysis_name => $features) {
+
+    $x = [];
+    $y = [];
+    $z = [];
+    $text = [];
+    $max_id_len = 0;
 
     foreach ($features as $feature_id => $values) {
       // obtain max feature id length
@@ -440,6 +441,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
     $heatmap_data_by_analysis[$analysis_name] = $heatmap_data;
 
   }
+  dpm($heatmap_data_by_analysis);
 
   // obtain max length of treatment names
   $max_treatment_name = 0;
