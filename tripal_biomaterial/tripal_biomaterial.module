@@ -165,13 +165,6 @@ function tripal_biomaterial_menu() {
     'access arguments' => ['administer tripal biomaterial'],
   ];
 
-  // Content type configuration group.
-  $items['admin/tripal/extension/tripal_biomaterial/content_types'] = [
-    'title' => 'Biomaterials Content Types',
-    'description' => 'Administer content types provided by the Tripal Expression Analysis module.',
-    'access arguments' => ['administer tripal biomaterial'],
-  ];
-
   // Module help pages.
   $items['admin/tripal/extension/tripal_biomaterial/help'] = [
     'title' => 'Biomaterials Help',
