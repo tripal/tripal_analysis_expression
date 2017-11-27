@@ -415,6 +415,7 @@ function buildPropertySelect() {
 
         });
     });
+
     jQuery('#propertyColorMenu').val('Expression value');
 
     if (previousValueSort) {

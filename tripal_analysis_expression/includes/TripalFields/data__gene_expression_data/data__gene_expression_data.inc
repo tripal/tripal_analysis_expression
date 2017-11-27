@@ -201,6 +201,9 @@ class data__gene_expression_data extends ChadoField{
 
       $node_present = chado_get_record_entity_by_table('biomaterial', $exp->biomaterial_id);
 
+      //Add a property for no sorting ie by biosample name
+      $propstore["Biosample Name"] = $exp->name;
+
       //Build entry for this biosample/biomaterial, append it to the existing array, and store it in the master array
       $biosample_properties = [
         "name" => $exp->name,
