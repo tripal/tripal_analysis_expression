@@ -75,14 +75,6 @@ function tripal_analysis_expression_menu() {
     'access arguments' => ['administer tripal analysis expression'],
   ];
 
-  // Module help pages.
-  $items['admin/tripal/extension/tripal_analysis_expression/help'] = [
-    'title' => 'Tripal Expression Analysis Help',
-    'description' => 'A description of expression module content types and loaders.',
-    'access arguments' => ['administer tripal analysis expression'],
-    'weight' => 10,
-  ];
-
   // Heatmap settings
   $items['admin/tripal/extension/tripal_analysis_expression/heatmap_settings'] = [
     'title' => 'Expression Visualization Settings',
@@ -128,18 +120,6 @@ function tripal_analysis_expression_menu() {
     'page arguments' => ['tripal_analysis_expression_help'],
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
-  ];
-
-  // Admin configuration - analysis_expression enable view.
-  $items['admin/tripal/extension/tripal_analysis_expression/content_types/analysis_expression/views/analysis_expressions/enable'] = [
-    'title' => 'Enable Analysis: Expression Administrative View',
-    'access arguments' => ['administer tripal analysis expression'],
-    'page callback' => 'tripal_enable_view',
-    'page arguments' => [
-      'tripal_analysis_expression_admin_analysis_expressions',
-      'tripal_analysis_expression',
-      'admin/tripal/extension/tripal_analysis_expression/analysis_expression',
-    ],
   ];
 
   $items['tripal/analysis-expression/heatmap/search'] = [
