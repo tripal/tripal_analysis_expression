@@ -260,10 +260,11 @@ function translationXOffset(d, scale) {
  */
 function buildLegend(colorScale, width, margin) {
     currentColor = jQuery('#propertyColorMenu').find(':selected').text();
-    d3.selectAll('legend').remove();
+    d3.select('chart').selectAll('legend').remove();
 
     if (currentColor != 'Expression value') {
-        var legend = d3.select('svg')
+        var legend = d3.select('chart')
+            .select('g')
             .append('g')
             .attr('class', 'legend')
             .attr('transform', 'translate(' + (width - 10 * margin.horizontal) + ', 10)')
@@ -296,7 +297,8 @@ function buildLegend(colorScale, width, margin) {
             .style('font-size', 12);
     }
     else {
-        var legend = d3.select('svg')
+        var legend = d3.select('chart')
+            .select('g')
             .append('g')
             .attr('class', 'legend')
             .attr('transform', 'translate(' + (width - 10 * margin.horizontal) + ', 10)');
