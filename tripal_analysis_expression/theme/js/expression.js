@@ -287,7 +287,7 @@ function buildLegend(colorScale, width, margin) {
             .attr('class', 'legendItem')
             .attr('transform', function (d, i) {
                 {
-                    return 'translate(0,' + i * 10 + ' )';
+                    return 'translate(0,' + (i * 10) + ' )';
                 }
             });
         legend.append('rect')
@@ -299,7 +299,7 @@ function buildLegend(colorScale, width, margin) {
                 return colorScale(d);
             });
         legend.append('text')
-            .attr('x', 20)
+            .attr('x', 30)
             .attr('y', 20)
             .text(function (d, i) {
                 return d;
@@ -307,6 +307,13 @@ function buildLegend(colorScale, width, margin) {
             .attr('class', 'textselected')
             .style('text-anchor', 'start')
             .style('font-size', 12);
+
+        //Now add title
+        d3.select('chart').select('.legend')
+            .append("text")
+            .text(currentColor)
+            .style('font-size', 12);
+
     }
     else {
         var legend = d3.select('chart')
@@ -314,10 +321,10 @@ function buildLegend(colorScale, width, margin) {
             .append('g')
             .attr('class', 'legend')
             .attr('transform', 'translate(' + (width - 10 * margin.horizontal) + ', 10)');
-        //we need the min/max value and the color range.
-        var minHeatValue = colorScale.domain()[0];
-        var midHeatValue = colorScale.domain()[1];
-        var maxHeatValue = colorScale.domain()[2];
+        //we need the min/max value and the color range.  Let's also round.
+        var minHeatValue = Math.round(colorScale.domain()[0]);
+        var midHeatValue = Math.round(colorScale.domain()[1]);
+        var maxHeatValue = Math.round(colorScale.domain()[2]);
         var minHeatColor = colorScale.range()[0];
         var midHeatColor = colorScale.range()[1];
         var maxHeatColor = colorScale.range()[2];
