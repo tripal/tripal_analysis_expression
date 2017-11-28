@@ -31,6 +31,8 @@ function expRewrite() {
             .domain(colorDomain)
             .range(['#ca0020', '#f4a582', '#d5d5d5', '#92c5de', '#0571b0']);
         //TODO: CALCULATE BASED ON NUMBER OF PROPERTIES INSTEAD
+
+
     } else {
         colorDomain = [0, maxHeat / 2, maxHeat];
         var color = d3.scale.linear()
@@ -238,6 +240,16 @@ function expRewrite() {
         });
 
     buildLegend(color, width, margin);
+
+    var title = 'Expression by ' + currentSorting
+
+    svg.append('text')
+        .attr("x", (width / 2 - margin.horizontal))
+        .attr("y", 0 + (margin.top / 2))
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .text(title);
+
 
 }
 
