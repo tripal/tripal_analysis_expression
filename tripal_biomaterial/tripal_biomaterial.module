@@ -14,13 +14,8 @@
  */
 require_once "includes/tripal_biomaterial.chado_node.inc";
 require_once "includes/tripal_biomaterial.admin.inc";
-require_once "includes/tripal_biomaterial.delete.inc";
-require_once "includes/tripal_biomaterial.chado_node.inc";
-require_once "includes/tripal_biomaterial.delete.inc";
-require_once "includes/tripal_biomaterial.admin.inc";
 require_once "includes/tripal_biomaterial.fields.inc";
 require_once "theme/tripal_biomaterial.theme.inc";
-
 require_once "api/tripal_biomaterial.api.inc";
 
 /**
@@ -51,55 +46,12 @@ function tripal_biomaterial_help($path, $arg) {
 /**
  * Implements hook_permission().
  *
- *  Set the permissions types used by the tripal analysis expression module.
- *  Permissions include: access, create, delete, edit, and administer.
- *  Permissions are set for the following content types provided by this module:
- *  Analysis: Expression, Arraydesign, Biomaterial, and Protocol.
+ * TODO: are the permissions relevant for Tripal 3?
  *
  * @ingroup tripal_biomaterial
  */
 function tripal_biomaterial_permission() {
   return [
-    'access chado_analysis_expression content' => [
-      'title' => t('View Analysis: Expressions'),
-      'description' => t('Allow users to view analysis: expression pages.'),
-    ],
-    'create chado_analysis_expression content' => [
-      'title' => t('Create Analysis: Expressions'),
-      'description' => t('Allow users to create new analysis: expression pages.'),
-    ],
-    'delete chado_analysis_expression content' => [
-      'title' => t('Delete Analysis: Expressions'),
-      'description' => t('Allow users to delete analysis: expression pages.'),
-    ],
-    'edit chado_analysis_expression content' => [
-      'title' => t('Edit Analysis: Expressions'),
-      'description' => t('Allow users to edit analysis: expression pages.'),
-    ],
-    'administer tripal analysis expression' => [
-      'title' => t('Administer Analysis: Expressions'),
-      'description' => t('Allow users to administer all analysis: expressions.'),
-    ],
-    'access chado_arraydesign content' => [
-      'title' => t('View Arraydesigns'),
-      'description' => t('Allow users to view arraydesign pages.'),
-    ],
-    'create chado_arraydesign content' => [
-      'title' => t('Create Arraydesigns'),
-      'description' => t('Allow users to create new arraydesign pages.'),
-    ],
-    'delete chado_arraydesign content' => [
-      'title' => t('Delete Arraydesigns'),
-      'description' => t('Allow users to delete arraydesign pages.'),
-    ],
-    'edit chado_arraydesign content' => [
-      'title' => t('Edit Arraydesigns'),
-      'description' => t('Allow users to edit arraydesign pages.'),
-    ],
-    'administer tripal arraydesign' => [
-      'title' => t('Administer Arraydesigns'),
-      'description' => t('Allow users to administer all arraydesigns.'),
-    ],
     'access chado_biomaterial content' => [
       'title' => t('View Biomaterials'),
       'description' => t('Allow users to view biomaterial pages.'),
@@ -120,37 +72,13 @@ function tripal_biomaterial_permission() {
       'title' => t('Administer Biomaterials'),
       'description' => t('Allow users to administer all biomaterials.'),
     ],
-    'access chado_protocol content' => [
-      'title' => t('View Protocols'),
-      'description' => t('Allow users to view protocol pages.'),
-    ],
-    'create chado_protocol content' => [
-      'title' => t('Create Protocols'),
-      'description' => t('Allow users to create new protocol pages.'),
-    ],
-    'delete chado_protocol content' => [
-      'title' => t('Delete Protocols'),
-      'description' => t('Allow users to delete protocol pages.'),
-    ],
-    'edit chado_protocol content' => [
-      'title' => t('Edit Protocols'),
-      'description' => t('Allow users to edit protocol pages.'),
-    ],
-    'administer tripal protocol' => [
-      'title' => t('Administer Protocols'),
-      'description' => t('Allow users to administer all protocols.'),
-    ],
   ];
 }
 
 /**
  * Implements hook_menu().
  *
- *  This function adds menus for the four content types created by the
- *  tripal analyis expression module as well a menu the configuration of
- *  expression data on feature pages. An admin list, sync, delete, TOC,
- *  settings, and help page is created for the following content types:
- *  analysis: expression, arraydesign, biomaterial, and protocol.
+ * Admin pages are no longer necessary for biomaterials/biosamples.
  *
  * @ingroup tripal_expression
  */
@@ -170,93 +98,6 @@ function tripal_biomaterial_menu() {
     'description' => 'A description of expression module content types and loaders.',
     'access arguments' => ['administer tripal Biomaterial'],
     'weight' => 10,
-  ];
-
-  // Admin configuration - biomaterial admin list.
-  $items['admin/tripal/extension/tripal_biomaterial/content_types/biomaterial'] = [
-    'title' => 'Biomaterial admin config',
-    'description' => 'A biological material (tissue, cells, serum, etc.).',
-    'access arguments' => ['administer tripal Biomaterial'],
-    'page callback' => 'tripal_biomaterial_admin_biomaterial_view',
-    'type' => MENU_NORMAL_ITEM,
-  ];
-
-  // Admin configuration - biomaterial settings.
-  $items['admin/tripal/extension/tripal_biomaterial/content_types/biomaterial/configuration'] = [
-    'title' => 'Settings',
-    'description' => 'Manage Tripal Expression: Biomaterial settings and configurations.',
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_biomaterial_admin'],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 5,
-  ];
-
-  // Admin configuration - biomaterial TOC.
-  $items['admin/tripal/extension/tripal_biomaterial/content_types/biomaterial/chado_biomaterial_toc'] = [
-    'title' => 'TOC',
-    'description' => 'Manage the table of contents for biomaterial nodes.',
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => [
-      'tripal_core_content_type_toc_form',
-      'chado_biomaterial',
-    ],
-    'file' => 'includes/tripal_core.toc.inc',
-    'file path' => drupal_get_path('module', 'tripal_core'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 3,
-  ];
-
-  // Admin configuration - biomaterial sync.
-  $items['admin/tripal/extension/tripal_biomaterial/content_types/biomaterial/sync'] = [
-    'title' => 'Sync',
-    'description' => 'Create pages on this site for biomaterials stored in Chado.',
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => [
-      'chado_node_sync_form',
-      'tripal_biomaterial',
-      'chado_biomaterial',
-    ],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 2,
-  ];
-
-  // Admin configuration - biomaterial delete.
-  $items['admin/tripal/extension/tripal_biomaterial/content_types/biomaterial/delete'] = [
-    'title' => "Delete",
-    'description' => 'Delete multiple biomaterials from Chado',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_biomaterial_delete_form'],
-    'access arguments' => ['administer tripal protoocl'],
-    'type' => MENU_LOCAL_TASK,
-    'file path' => drupal_get_path('module', 'tripal_biomaterial'),
-    'file' => 'includes/tripal_biomaterial.delete.inc',
-    'weight' => 3,
-  ];
-
-  // Admin configuration - biomaterial help.
-  $items['admin/tripal/extension/tripal_biomaterial/content_types/biomaterial/help'] = [
-    'title' => 'Help',
-    'description' => "A description of the Tripal Biomaterial content type including a short description of it's usage.",
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'theme',
-    'page arguments' => ['tripal_biomaterial_help'],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10,
-  ];
-
-  // Admin configuration -  biomaterial enable view.
-  $items['admin/tripal/extension/tripal_biomaterial/content_types/biomaterial/views/biomaterials/enable'] = [
-    'title' => 'Enable Biomaterial Administrative View',
-    'access arguments' => ['administer tripal biomaterial'],
-    'page callback' => 'tripal_enable_view',
-    'page arguments' => [
-      'tripal_biomaterial_admin_biomaterials',
-      'tripal_biomaterial',
-      'admin/tripal/extension/tripal_biomaterial/biomaterial',
-    ],
   ];
 
   return $items;
