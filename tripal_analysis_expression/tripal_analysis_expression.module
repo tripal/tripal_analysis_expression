@@ -9,7 +9,6 @@
  * @ingroup tripal_modules *** is this right?
  */
 
-require_once "includes/tripal_analysis_expression.admin.inc";
 require_once "includes/tripal_analysis_expression.fields.inc";
 require_once "theme/tripal_analysis_expression.theme.inc";
 require_once drupal_get_path('module', 'tripal_analysis_expression') . '/includes/feature_heatmap_form.inc';
@@ -75,6 +74,7 @@ function tripal_analysis_expression_menu() {
     'access arguments' => ['administer tripal analysis expression'],
   ];
 
+  //KEEP THIS
   // Heatmap settings
   $items['admin/tripal/extension/tripal_analysis_expression/heatmap_settings'] = [
     'title' => 'Expression Visualization Settings',
@@ -82,33 +82,6 @@ function tripal_analysis_expression_menu() {
     'access arguments' => ['administer tripal analysis expression'],
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_analysis_expression_heatmap_settings_form'],
-  ];
-
-  // Admin configuration - analysis_expression settings.
-  $items['admin/tripal/extension/tripal_analysis_expression/content_types/analysis_expression/configuration'] = [
-    'title' => 'Settings',
-    'description' => 'Manage Analysis: Expression settings and configurations.',
-    'access arguments' => ['administer tripal analysis expression'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_analysis_expression_admin'],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 5,
-  ];
-
-  // Admin configuration - analysis_expression TOC.
-  $items['admin/tripal/extension/tripal_analysis_expression/content_types/analysis_expression/chado_analysis_expression_toc'] = [
-    'title' => 'TOC',
-    'description' => 'Manage the table of contents for analysis_expression nodes.',
-    'access arguments' => ['administer tripal analysis expression'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => [
-      'tripal_core_content_type_toc_form',
-      'chado_analysis_expression',
-    ],
-    'file' => 'includes/tripal_core.toc.inc',
-    'file path' => drupal_get_path('module', 'tripal_core'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 3,
   ];
 
   // Admin configuration - analysis_expression help.
