@@ -103,7 +103,16 @@ function expRewrite() {
         .style('font-size', '12px')
         .style('font-weight', 'normal')
         .text(function (d) {
-            return d.key;
+
+            //TODO:  PUT SPLIT KEY INTO A TEXTSPAN AS HERE http://bl.ocks.org/enjalot/1829187
+            var label = d.key
+            // characterLimit = 30
+            // if (label.length > characterLimit){
+            //     splitString = label.match(new RegExp('.{1,' + characterLimit + '}', 'g'))
+              //  label = splitString.join("\n")
+                // label = splitString
+          //  }
+            return label;
         })
         .style('text-anchor', 'bottom');
 
