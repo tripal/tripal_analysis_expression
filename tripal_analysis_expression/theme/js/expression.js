@@ -31,6 +31,8 @@ function expRewrite() {
             .domain(colorDomain)
             .range(['#ca0020', '#f4a582', '#d5d5d5', '#92c5de', '#0571b0']);
         //TODO: CALCULATE BASED ON NUMBER OF PROPERTIES INSTEAD
+
+
     } else {
         colorDomain = [0, maxHeat / 2, maxHeat];
         var color = d3.scale.linear()
@@ -100,8 +102,17 @@ function expRewrite() {
         .attr('class', 'label')
         .style('font-size', '12px')
         .style('font-weight', 'normal')
-        .text(function (d) {
-            return d.key;
+        .html(function (d) {
+
+            //TODO:  PUT SPLIT KEY INTO A TEXTSPAN AS HERE http://bl.ocks.org/enjalot/1829187
+            var label = d.key
+           //  characterLimit = 5
+           //  if (label.length > characterLimit){
+           //      splitString = label.match(new RegExp('.{1,' + characterLimit + '}', 'g'))
+           //     label = splitString.join("<br>")
+           //     // label = splitString
+           // }
+            return label;
         })
         .style('text-anchor', 'bottom');
 
@@ -239,6 +250,16 @@ function expRewrite() {
 
     buildLegend(color, width, margin);
 
+    var title = 'Expression by ' + currentSorting
+
+    svg.append('text')
+        .attr("x", (width / 2 - margin.horizontal))
+        .attr("y", 0 + (margin.top / 2))
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .text(title);
+
+
 }
 
 /**This function determines the position of a nested group by returning the value from the scale and adding half the range band.
@@ -275,7 +296,7 @@ function buildLegend(colorScale, width, margin) {
             .attr('class', 'legendItem')
             .attr('transform', function (d, i) {
                 {
-                    return 'translate(0,' + i * 10 + ' )';
+                    return 'translate(0,' + (i * 10) + ' )';
                 }
             });
         legend.append('rect')
@@ -287,7 +308,7 @@ function buildLegend(colorScale, width, margin) {
                 return colorScale(d);
             });
         legend.append('text')
-            .attr('x', 20)
+            .attr('x', 30)
             .attr('y', 20)
             .text(function (d, i) {
                 return d;
@@ -295,6 +316,13 @@ function buildLegend(colorScale, width, margin) {
             .attr('class', 'textselected')
             .style('text-anchor', 'start')
             .style('font-size', 12);
+
+        //Now add title
+        d3.select('chart').select('.legend')
+            .append("text")
+            .text(currentColor)
+            .style('font-size', 12);
+
     }
     else {
         var legend = d3.select('chart')
@@ -302,10 +330,10 @@ function buildLegend(colorScale, width, margin) {
             .append('g')
             .attr('class', 'legend')
             .attr('transform', 'translate(' + (width - 10 * margin.horizontal) + ', 10)');
-        //we need the min/max value and the color range.
-        var minHeatValue = colorScale.domain()[0];
-        var midHeatValue = colorScale.domain()[1];
-        var maxHeatValue = colorScale.domain()[2];
+        //we need the min/max value and the color range.  Let's also round.
+        var minHeatValue = Math.round(colorScale.domain()[0]);
+        var midHeatValue = Math.round(colorScale.domain()[1]);
+        var maxHeatValue = Math.round(colorScale.domain()[2]);
         var minHeatColor = colorScale.range()[0];
         var midHeatColor = colorScale.range()[1];
         var maxHeatColor = colorScale.range()[2];
