@@ -101,7 +101,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
       drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/expression.js');
       $num_of_analyses = count($variables['analyses']);
       if ($num_of_analyses >= 1) {
-        $content .= '<strong>Select an Expression Analysis</strong><br/><br/>';
+        $content .= '<strong>Select an Expression Analysis</strong><br/>';
         $content .= '<select id="analyses">';
 
         foreach ($variables['analyses'] as $analysis) {
@@ -116,9 +116,8 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
       <div id="propertyColorDiv">
       <strong>Select a property to color biosamples </strong><br/>
       </div> 
-      
             <p>
-              Hover the mouse over a column in the graph to view expression values.
+              Hover the mouse over a column in the graph to view more information about that biosample.  You can click and drag to rearrange groups along the x-axis.  You can also click and drag to move the legend.
             </p>
             <p>
               <a href="javascript:;" onclick="nonZero()">Only Non-Zero Values</a> |
