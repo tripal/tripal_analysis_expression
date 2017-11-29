@@ -36,9 +36,6 @@ function tripal_protocol_install() {
   // Get localization function for installation.
   $t = get_t();
 
-  // Register the analysis.
-  tripal_register_analysis_child('tripal_protocol');
-
   tripal_protocol_add_cvs();
   tripal_protocol_add_cvterms();
 

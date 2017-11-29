@@ -36,8 +36,8 @@ function tripal_analysis_expression_install() {
   // Get localization function for installation.
   $t = get_t();
 
-  // Register the analysis.
-  tripal_register_analysis_child('tripal_analysis_expression');
+  //deprecated in v3
+ // tripal_register_analysis_child('tripal_analysis_expression');
 
   // These variables are used to set how expression information is displayed.
   variable_set('chado_feature_expression_hide_expression', 0);
