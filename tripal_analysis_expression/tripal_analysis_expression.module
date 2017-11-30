@@ -102,6 +102,14 @@ function tripal_analysis_expression_menu() {
     'type' => MENU_CALLBACK,
   ];
 
+
+  $items['tripal/analysis-expression/download'] = [
+    'title' => '',
+    'access arguments' => ['download content'],
+    'page callback' => 'analysis_expression_data_downloader::callback',
+    'type' => MENU_CALLBACK,
+  ];
+
   return $items;
 }
 
