@@ -149,7 +149,8 @@ function tripal_analysis_expression_update_7202() {
 }
 
 /**
- * Define materialized view to link expression data with features biosamples and analyses
+ * Define materialized view to link expression data with features biosamples
+ * and analyses
  *
  */
 function tripal_analysis_expression_update_7203() {
@@ -161,7 +162,6 @@ function tripal_analysis_expression_update_7203() {
     'description' => $comment,
     'fields' => [
       'feature_id' => [
-        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ],
@@ -171,7 +171,6 @@ function tripal_analysis_expression_update_7203() {
         'not null' => TRUE,
       ],
       'biomaterial_id' => [
-        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ],
@@ -181,7 +180,6 @@ function tripal_analysis_expression_update_7203() {
         'not null' => TRUE,
       ],
       'analysis_id' => [
-        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ],
@@ -203,17 +201,16 @@ function tripal_analysis_expression_update_7203() {
     ],
   ];
 
-  $sql = "SELECT F.feature_id AS feature_id,  ER.signal AS signal, B.name AS biomaterial_name, B.biomaterial_id AS biomaterial_id, AN.analysis_id AS analysis_id, AN.name AS analysis_name
-              FROM {elementresult} ER
-              INNER JOIN {element} E ON E.element_id = ER.element_id
-              INNER JOIN {feature} F ON F.feature_id = E.feature_id
-              INNER JOIN {quantification} Q ON Q.quantification_id = ER.quantification_id
-              INNER JOIN {acquisition} AQ ON AQ.acquisition_id = Q.acquisition_id
-              INNER JOIN {assay} A ON A.assay_id = AQ.assay_id
-              INNER JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
-              INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
-              INNER JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
-            ";
+  $sql = "    SELECT F.feature_id AS feature_id, F.uniquename AS feature_uniquename, B.biomaterial_id AS biomaterial_id,  B.name AS biomaterial_name, AN.analysis_id AS analysis_id, AN.name AS analysis_name,  ER.signal AS signal
+              FROM elementresult ER
+              INNER JOIN element E ON E.element_id = ER.element_id
+              INNER JOIN feature F ON F.feature_id = E.feature_id
+              INNER JOIN quantification Q ON Q.quantification_id = ER.quantification_id
+              INNER JOIN acquisition AQ ON AQ.acquisition_id = Q.acquisition_id
+              INNER JOIN assay A ON A.assay_id = AQ.assay_id
+              INNER JOIN assay_biomaterial AB ON AB.assay_id = A.assay_id
+              INNER JOIN biomaterial B ON B.biomaterial_id = AB.biomaterial_id
+              INNER JOIN analysis AN ON AN.analysis_id = Q.analysis_id        ";
 
   tripal_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment);
 
