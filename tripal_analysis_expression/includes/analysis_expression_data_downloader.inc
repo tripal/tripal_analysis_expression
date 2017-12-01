@@ -66,9 +66,14 @@ class analysis_expression_data_downloader {
 
   }
 
-
   function load() {
-    $this->feature_ids = explode(',', $_GET['feature_ids']);
+
+    $feature_ids = NULL;
+
+    if (isset($_GET['feature_ids'])) {
+      $this->feature_ids = explode(',', $_GET['feature_ids']);
+    }
+
     $this->analysis_id = $_GET['analysis_id'];
     $feature_ids = $this->feature_ids;
     $analysis_id = $this->analysis_id;
@@ -81,19 +86,20 @@ class analysis_expression_data_downloader {
       $sql = 'SELECT * FROM {expression_feature_all}
           WHERE  feature_id IN (:ids)
           AND analysis_id =  :analysis_id';
-    }
 
-    if (!$feature_ids) {
+      $keys = [":ids" => $feature_ids, ":analysis_id" => $analysis_id];
+
+
+    }
+    else {
       //no feature ids supplied, retrieve all for this analysis
       //query the mview for all features associated with this analyses
       $sql = 'SELECT * FROM {expression_feature_all}
                 WHERE  analysis_id = :analysis_id';
+      $keys = [":analysis_id" => $analysis_id];
     }
 
-    $expression_data = chado_query($sql, [
-      ":ids" => $feature_ids,
-      ":analysis_id" => $analysis_id,
-    ])->fetchAll();
+    $expression_data = chado_query($sql, $keys)->fetchAll();
 
     $this->expression_data = $expression_data;
   }

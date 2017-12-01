@@ -37,21 +37,14 @@
 function tripal_analysis_expression_bundle_fields_info($entity_type, $bundle) {
   $fields = [];
 
+  $field_name = 'data__gene_expression_data';
+  $field_type = 'data__gene_expression_data';
+
   // Because we are expecting data housed in Chado we can use the 'data_table'
   // property of the bundle to determine if this bundle is really the one
   // we want the field to be associated with.
   if (isset($bundle->data_table) AND ($bundle->data_table == 'feature')) {
-    // First add my term.
-    tripal_insert_cvterm([
-      'id' => 'data:2603',
-      'name' => 'gene_expression_data',
-      'cv_name' => 'EDAM',
-      'definition' => 'Visualize expression data',
-    ]);
 
-    // Then describe the field defined by that term.
-    $field_name = 'data__gene_expression_data';
-    $field_type = 'data__gene_expression_data';
     $fields[$field_name] = [
       'field_name' => $field_name,
       'type' => $field_type,
@@ -63,7 +56,21 @@ function tripal_analysis_expression_bundle_fields_info($entity_type, $bundle) {
     ];
   }
 
-  return $fields;
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'analysis')) {
+    $fields[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+
+  }
+
+
+    return $fields;
 }
 
 /**
@@ -92,11 +99,11 @@ function tripal_analysis_expression_bundle_fields_info($entity_type, $bundle) {
  */
 function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle) {
   $instances = [];
+  $field_name = 'data__gene_expression_data';
 
-  // ORGANISM.
+  // FEATURE.
   //===============
   if (isset($bundle->data_table) AND ($bundle->data_table == 'feature')) {
-    $field_name = 'data__gene_expression_data';
     $instances[$field_name] = [
       'field_name' => $field_name,
       'entity_type' => $entity_type,
@@ -108,6 +115,34 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
         'auto_attach' => TRUE,
         'chado_table' => $bundle->data_table,
         'chado_column' => 'feature_id',
+        'base_table' => $bundle->data_table,
+      ],
+      'widget' => [
+        'type' => 'data__gene_expression_data_widget',
+        'settings' => [],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'hidden',
+          'type' => 'data__gene_expression_data_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
+  }
+
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'analysis')) {
+    $instances[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Expression Data',
+      'description' => 'Access expression data',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => TRUE,
+        'chado_table' => $bundle->data_table,
+        'chado_column' => 'analysis_id',
         'base_table' => $bundle->data_table,
       ],
       'widget' => [

@@ -7,7 +7,7 @@
  * Data:
  * Assumptions:
  */
-class data__gene_expression_data extends ChadoField{
+class data__gene_expression_data extends ChadoField {
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -118,29 +118,43 @@ class data__gene_expression_data extends ChadoField{
    */
   public function load($entity) {
 
-    // ChadoFields automatically load the chado column specified in the
-    // default settings above. If that is all you need then you don't even
-    // need to implement this function. However, if you need to add any
-    // additional data to be used in the display, you should add it here.
-    $field = get_class();
-    $variables = $entity->{$field}['und'][0];
-    $feature_id = isset($variables['chado-feature__feature_id']) ? $variables['chado-feature__feature_id'] : NULL;
+    if ($entity->chado_table === "analysis") {
+      $field = get_class();
+      $analysis_id = $entity->chado_record_id;
+      $features = $this->get_analysis_info($analysis_id);
+      $variables = ["features" => $features];
+      // Save data into the entity
+      $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
 
-    if ($feature_id === NULL) {
-      return;
+      return $entity;
     }
 
-    $hide_expression = variable_get('chado_feature_expression_hide_expression');
-    $hide_biomaterial_labels = variable_get('chado_feature_expression_hide_biomaterial_labels');
-    $limit_label_length = trim(variable_get('chado_feature_expression_limit_label_length'));
-    $expression_display = variable_get('chado_feature_expression_expression_display');
-    $biomaterial_display_width = variable_get('chado_feature_expression_biomaterial_display_width');
-    $min_num_biomaterials = variable_get('chado_feature_expression_min_num_biomaterials');
 
-    $has_exp = FALSE;
-    $first_sig = 1;
+    if ($entity->chado_table === "feature") {
 
-    $sql = "SELECT ER.signal, B.name, B.biomaterial_id, B.description, Q.quantification_id, AN.analysis_id, AN.name AS analysis_name
+      // ChadoFields automatically load the chado column specified in the
+      // default settings above. If that is all you need then you don't even
+      // need to implement this function. However, if you need to add any
+      // additional data to be used in the display, you should add it here.
+      $field = get_class();
+      $variables = $entity->{$field}['und'][0];
+      $feature_id = isset($variables['chado-feature__feature_id']) ? $variables['chado-feature__feature_id'] : NULL;
+
+      if ($feature_id === NULL) {
+        return;
+      }
+
+      $hide_expression = variable_get('chado_feature_expression_hide_expression');
+      $hide_biomaterial_labels = variable_get('chado_feature_expression_hide_biomaterial_labels');
+      $limit_label_length = trim(variable_get('chado_feature_expression_limit_label_length'));
+      $expression_display = variable_get('chado_feature_expression_expression_display');
+      $biomaterial_display_width = variable_get('chado_feature_expression_biomaterial_display_width');
+      $min_num_biomaterials = variable_get('chado_feature_expression_min_num_biomaterials');
+
+      $has_exp = FALSE;
+      $first_sig = 1;
+
+      $sql = "SELECT ER.signal, B.name, B.biomaterial_id, B.description, Q.quantification_id, AN.analysis_id, AN.name AS analysis_name
               FROM {elementresult} ER
               INNER JOIN {element} E ON E.element_id = ER.element_id
               INNER JOIN {feature} F ON F.feature_id = E.feature_id
@@ -152,93 +166,94 @@ class data__gene_expression_data extends ChadoField{
               INNER JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
               WHERE F.feature_id = :feature_id
               ORDER BY AN.analysis_id ";
-    $expressions = chado_query($sql, [":feature_id" => $feature_id]);
+      $expressions = chado_query($sql, [":feature_id" => $feature_id]);
 
-    $variables['analyses'] = $this->get_analyses($feature_id);
+      $variables['analyses'] = $this->get_analyses($feature_id);
 
-    $last_signal = NULL;
-    $last_analysis_id = NULL;
-    $array_to_encode = [];
-    foreach ($expressions as $exp) {
-      //if this analysis isn't in the array yet, initialize it
-      if (!isset($array_to_encode[$exp->analysis_id])) {
-        $analysis_properties = [
-          "analysis_id" => $exp->analysis_id,
-          "analysis_name" => $exp->analysis_name,
-          "biomaterials" => [],
+      $last_signal = NULL;
+      $last_analysis_id = NULL;
+      $array_to_encode = [];
+      foreach ($expressions as $exp) {
+        //if this analysis isn't in the array yet, initialize it
+        if (!isset($array_to_encode[$exp->analysis_id])) {
+          $analysis_properties = [
+            "analysis_id" => $exp->analysis_id,
+            "analysis_name" => $exp->analysis_name,
+            "biomaterials" => [],
+          ];
+          $array_to_encode[$exp->analysis_id] = $analysis_properties;
+        }
+        $has_exp = TRUE;
+
+        //Get units in quantificationprop
+        $uni = chado_get_property([
+          'table' => 'quantification',
+          'id' => $exp->quantification_id,
+        ], ['type_name' => 'unit_of_measure', 'cv_name' => 'sep']);
+        $uni ? $units = $uni->value : $units = '';
+
+        //Get all properties for biosample/biomaterial
+        $values = [
+          'biomaterial_id' => $exp->biomaterial_id,
         ];
-        $array_to_encode[$exp->analysis_id] = $analysis_properties;
+        $biomat_object = chado_generate_var('biomaterial', $values);
+        $result = chado_expand_var($biomat_object, 'table', 'biomaterialprop');
+        $properties = $result->biomaterialprop;
+        $propstore = [];
+
+        if (!$properties) {
+          $properties = [];
+        }
+        foreach ($properties as $prop) {
+          //get the prop name and value
+          // $property_cvterm_id = $prop->type_id->cvterm_id;
+          // $property_cv_id = $prop->type_id->cv_id;
+          $property_name = $prop->type_id->name;
+          $property_value = $prop->value;
+          $propstore[$property_name] = $property_value;
+        }
+
+        $node_present = chado_get_record_entity_by_table('biomaterial', $exp->biomaterial_id);
+
+        //Add a property for no sorting ie by biosample name
+        $propstore["Biosample Name"] = $exp->name;
+
+        //Build entry for this biosample/biomaterial, append it to the existing array, and store it in the master array
+        $biosample_properties = [
+          "name" => $exp->name,
+          "intensity" => $exp->signal,
+          "units" => $units,
+          "description" => $exp->description,
+          "properties" => $propstore,
+          "node" => $node_present,
+        ];
+        $existing_samples = $array_to_encode[$exp->analysis_id]["biomaterials"];
+        array_push($existing_samples, $biosample_properties);
+        $array_to_encode[$exp->analysis_id]["biomaterials"] = $existing_samples;
       }
-      $has_exp = TRUE;
-
-      //Get units in quantificationprop
-      $uni = chado_get_property([
-        'table' => 'quantification',
-        'id' => $exp->quantification_id,
-      ], ['type_name' => 'unit_of_measure', 'cv_name' => 'sep']);
-      $uni ? $units = $uni->value : $units = '';
-
-      //Get all properties for biosample/biomaterial
-      $values = [
-        'biomaterial_id' => $exp->biomaterial_id,
-      ];
-      $biomat_object = chado_generate_var('biomaterial', $values);
-      $result = chado_expand_var($biomat_object, 'table', 'biomaterialprop');
-      $properties = $result->biomaterialprop;
-      $propstore = [];
-
-      if (!$properties) {
-        $properties = [];
-      }
-      foreach ($properties as $prop) {
-        //get the prop name and value
-        // $property_cvterm_id = $prop->type_id->cvterm_id;
-        // $property_cv_id = $prop->type_id->cv_id;
-        $property_name = $prop->type_id->name;
-        $property_value = $prop->value;
-        $propstore[$property_name] = $property_value;
+      $json_exp = json_encode($array_to_encode);
+      if ($expressions->rowCount() < $min_num_biomaterials) {
+        $json_exp = "";
       }
 
-      $node_present = chado_get_record_entity_by_table('biomaterial', $exp->biomaterial_id);
+      if ($hide_expression == 1) {
+        $json_exp = "";
+      }
 
-      //Add a property for no sorting ie by biosample name
-      $propstore["Biosample Name"] = $exp->name;
+      $variables['has_exp'] = $has_exp;
+      $variables['json_exp'] = $json_exp;
+      $variables['limit_label_length'] = $limit_label_length;
+      $variables['hide_expression'] = $hide_expression;
+      $variables['hide_biomaterial_labels'] = $hide_biomaterial_labels;
+      $variables['expression_display'] = $expression_display;
+      $variables['biomaterial_display_width'] = $biomaterial_display_width;
+      $variables['min_num_biomaterials'] = $min_num_biomaterials;
 
-      //Build entry for this biosample/biomaterial, append it to the existing array, and store it in the master array
-      $biosample_properties = [
-        "name" => $exp->name,
-        "intensity" => $exp->signal,
-        "units" => $units,
-        "description" => $exp->description,
-        "properties" => $propstore,
-        "node" => $node_present,
-      ];
-      $existing_samples = $array_to_encode[$exp->analysis_id]["biomaterials"];
-      array_push($existing_samples, $biosample_properties);
-      $array_to_encode[$exp->analysis_id]["biomaterials"] = $existing_samples;
+      // Save data into the entity
+      $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
+
+      return $entity;
     }
-    $json_exp = json_encode($array_to_encode);
-    if ($expressions->rowCount() < $min_num_biomaterials) {
-      $json_exp = "";
-    }
-
-    if ($hide_expression == 1) {
-      $json_exp = "";
-    }
-
-    $variables['has_exp'] = $has_exp;
-    $variables['json_exp'] = $json_exp;
-    $variables['limit_label_length'] = $limit_label_length;
-    $variables['hide_expression'] = $hide_expression;
-    $variables['hide_biomaterial_labels'] = $hide_biomaterial_labels;
-    $variables['expression_display'] = $expression_display;
-    $variables['biomaterial_display_width'] = $biomaterial_display_width;
-    $variables['min_num_biomaterials'] = $min_num_biomaterials;
-
-    // Save data into the entity
-    $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
-
-    return $entity;
   }
 
   /**
@@ -271,5 +286,42 @@ class data__gene_expression_data extends ChadoField{
     else {
       return NULL;
     }
+  }
+
+
+  protected function get_analysis_info($analysis_id) {
+
+    $sql = "SELECT DISTINCT(feature_id)
+      from {expression_feature_all}
+      WHERE analysis_id = :analysis_id
+    ";
+
+    $features = [];
+    $biomaterials = '';
+
+    $result = chado_query($sql, [":analysis_id" => $analysis_id]);
+    if ($result) {
+      $result = $result->fetchAll();
+
+      foreach ($result as $feature) {
+        $features[] = $feature->feature_id;
+      }
+
+
+    }
+
+    $sql = "SELECT DISTINCT(biomaterial_name)
+      from {expression_feature_all}
+      WHERE analysis_id = :analysis_id
+    ";
+    $result = chado_query($sql, [":analysis_id" => $analysis_id]);
+    if ($result) {
+      $biomaterials = $result->fetchAll();
+
+    }
+
+    $output = ["features" => $features, "biomaterials" => $biomaterials];
+    return ($output);
+
   }
 }
