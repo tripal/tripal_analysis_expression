@@ -37,7 +37,7 @@ function tripal_analysis_expression_install() {
   $t = get_t();
 
   //deprecated in v3
- // tripal_register_analysis_child('tripal_analysis_expression');
+  // tripal_register_analysis_child('tripal_analysis_expression');
 
   // These variables are used to set how expression information is displayed.
   variable_set('chado_feature_expression_hide_expression', 0);
@@ -66,7 +66,7 @@ function tripal_analysis_expression_uninstall() {
 /**
  * Add heatmap variables.
  */
-function tripal_analysis_expression_update_7201() {
+function tripal_analysis_expression_update_7200() {
   variable_set('tripal_analysis_expression_heatmap_placeholder', 'Example: orange1.1g022520m, orange1.1g022799m');
   variable_set('tripal_analysis_expression_heatmap_example', 'orange1.1g022520m, orange1.1g022799m, orange1.1g022520m, orange1.1g022799m');
 }
@@ -74,9 +74,11 @@ function tripal_analysis_expression_update_7201() {
 /**
  * Add expression feature materialized view
  */
-function tripal_analysis_expression_update_7203() {
+function tripal_analysis_expression_update_7201() {
+
   $mv_name = 'expression_feature';
-  $comment = 'Store list of features that have expression data';
+
+  $comment = 'Store list of unique features that have expression data';
   $schema = [
     'table' => $mv_name,
     'description' => $comment,
@@ -142,6 +144,74 @@ function tripal_analysis_expression_update_7203() {
 /**
  * Set default value for elasticsearch dependency.
  */
-function tripal_analysis_expression_update_7204() {
+function tripal_analysis_expression_update_7202() {
   variable_set('analysis_expression_heatmap_db', 'mview');
+}
+
+/**
+ * Define materialized view to link expression data with features biosamples
+ * and analyses
+ *
+ */
+function tripal_analysis_expression_update_7203() {
+
+  $mv_name = "expression_feature_all";
+  $comment = "Stores expression values with analysis and biosample data";
+  $schema = [
+    'table' => $mv_name,
+    'description' => $comment,
+    'fields' => [
+      'feature_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'feature_uniquename' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'biomaterial_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'biomaterial_name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'analysis_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'analysis_name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'signal' => [
+        'type' => 'float',
+        'size' => 'big',
+        'not null' => TRUE,
+      ],
+    ],
+    'indexes' => [
+      'expression_feature_all_feature_id_index' => ['feature_id'],
+      'expression_feature_all_analysis_id_index' => ['analysis_id'],
+      'expression_feature_all_biomaterial_id_index' => ['biomaterial_id'],
+    ],
+  ];
+
+  $sql = "    SELECT F.feature_id AS feature_id, F.uniquename AS feature_uniquename, B.biomaterial_id AS biomaterial_id,  B.name AS biomaterial_name, AN.analysis_id AS analysis_id, AN.name AS analysis_name,  ER.signal AS signal
+              FROM elementresult ER
+              INNER JOIN element E ON E.element_id = ER.element_id
+              INNER JOIN feature F ON F.feature_id = E.feature_id
+              INNER JOIN quantification Q ON Q.quantification_id = ER.quantification_id
+              INNER JOIN acquisition AQ ON AQ.acquisition_id = Q.acquisition_id
+              INNER JOIN assay A ON A.assay_id = AQ.assay_id
+              INNER JOIN assay_biomaterial AB ON AB.assay_id = A.assay_id
+              INNER JOIN biomaterial B ON B.biomaterial_id = AB.biomaterial_id
+              INNER JOIN analysis AN ON AN.analysis_id = Q.analysis_id        ";
+
+  tripal_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment);
+
 }

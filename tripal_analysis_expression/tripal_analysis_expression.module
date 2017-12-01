@@ -12,6 +12,7 @@
 require_once "includes/tripal_analysis_expression.fields.inc";
 require_once "theme/tripal_analysis_expression.theme.inc";
 require_once drupal_get_path('module', 'tripal_analysis_expression') . '/includes/feature_heatmap_form.inc';
+require_once drupal_get_path('module', 'tripal_analysis_expression') . '/includes/analysis_expression_data_downloader.inc';
 
 /**
  * Implements hook_help().
@@ -99,6 +100,14 @@ function tripal_analysis_expression_menu() {
     'title' => '',
     'access arguments' => ['access content'],
     'page callback' => 'tripal_analysis_expression_search_features_callback',
+    'type' => MENU_CALLBACK,
+  ];
+
+
+  $items['tripal/analysis-expression/download'] = [
+    'title' => '',
+    'access arguments' => ['download content'],
+    'page callback' => 'analysis_expression_data_downloader::callback',
     'type' => MENU_CALLBACK,
   ];
 
@@ -241,11 +250,16 @@ function tripal_analysis_expression_block_view($delta = '') {
           $block['content'] = '
                </br><strong>Select an analysis to display</strong>
                <div id="select_analysis"></div>
-               <div id="vis_expression"></div>';
+               <div id="vis_expression"></div>
+          <a id="heatmap_download">Download expression data for these features</a>';
+
           drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
           drupal_add_js(['tripal_analysis_expression' => ['heatmap_data' => $heatmap['heatmap_data']]], ['type' => 'setting']);
           drupal_add_js(['tripal_analysis_expression' => ['left_margin' => $heatmap['left_margin']]], ['type' => 'setting']);
           drupal_add_js(['tripal_analysis_expression' => ['bottom_margin' => $heatmap['bottom_margin']]], ['type' => 'setting']);
+          drupal_add_js(['tripal_analysis_expression' => ['feature_list' => $heatmap['feature_list']]], ['type' => 'setting']);
+          drupal_add_js(['tripal_analysis_expression' => ['analysis_legend' => $heatmap['analysis_legend']]], ['type' => 'setting']);
+
           drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap.js');
         }
         else {
