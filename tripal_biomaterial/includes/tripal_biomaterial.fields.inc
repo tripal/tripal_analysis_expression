@@ -90,12 +90,15 @@ function tripal_biomaterial_bundle_instances_info($entity_type, $bundle) {
   $instances = [];
   if (isset($bundle->data_table) AND ($bundle->data_table == 'organism' || $bundle->data_table == 'analysis')) {
     $field_name = 'sep__biological_sample';
+
+    $description = "List of biosamples associated with this" . $bundle->data_table;
+
     $instances[$field_name] = [
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Biomaterial Browser',
-      'description' => 'List of biomaterials related to an organism',
+      'label' => 'Biosample Browser',
+      'description' => $description,
       'required' => FALSE,
       'settings' => [
         'auto_attach' => FALSE,

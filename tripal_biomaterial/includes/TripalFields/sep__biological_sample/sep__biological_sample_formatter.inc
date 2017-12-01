@@ -83,15 +83,16 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $field = 'sep__biological_sample';
     $variables = $entity->{$field}['und'][0];
+    $base_table = $entity->chado_table;
     if (!empty($variables['biomaterials'])) {
       $elements = 1;
       $num_per_page = 10;
 
       $biomaterials = $variables['biomaterials'];
 
-      $output = '<div class="tripal_organism-data-block-desc tripal-data-block-desc">The following browser provides a list of biomaterials associated with this organism.</div>';
+      $output = '<div class="tripal_organism-data-block-desc tripal-data-block-desc">The following browser provides a list of biosamples associated with this ' . $base_table . '.</div>';
 
-      $headers = ['Biomaterial Name', 'Biomaterial Provider'];
+      $headers = ['Biosample Name', 'Biosample Provider'];
 
       if ($variables['show_organism']) {
         $headers[] = 'Organism';
