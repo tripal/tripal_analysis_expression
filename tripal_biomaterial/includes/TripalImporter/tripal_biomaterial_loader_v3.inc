@@ -1,6 +1,6 @@
 <?php
 
-class tripal_biomaterial_loader_v3 extends TripalImporter{
+class tripal_biomaterial_loader_v3 extends TripalImporter {
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -359,13 +359,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
       if ($biomaterial_provider->Last && $biomaterial_provider->First) {
         $contact_name = $biomaterial_provider->Last . ", " . $biomaterial_provider->First;
       }
-      elseif($biomaterial_provider->Last){
+      elseif ($biomaterial_provider->Last) {
         $contact_name = $biomaterial_provider->Last;
 
-      }else {
+      }
+      else {
         $contact_name = $biomaterial_provider;
       }
-        $biosourceprovider_id = $this->create_biomaterial_contact($contact_name);
+      $biosourceprovider_id = $this->create_biomaterial_contact($contact_name);
     }
     else {
       $biosourceprovider_id = '';
@@ -921,6 +922,20 @@ function test_biosample_cvterms_xml(
 
     // Parse the file.
     $xml = simplexml_load_string($xml_raw);
+
+    if (!$xml) {
+      $message = "Error reading xml.\n";
+      foreach (libxml_get_errors() as $error) {
+        $message .= $error;
+      }
+      form_set_error($message);
+    }
+
+    if (!$xml->BioSample) {
+      form_set_error("XML must contain a BioSample tag.  Check your XML file and try again.");
+    }
+
+
     $num_biosamples = count($xml->BioSample);
     $biomaterial_names = [];
 
@@ -953,7 +968,7 @@ function test_xml_data(
   $attribute_list
 ) {
 
- // dpm($biosample);
+  // dpm($biosample);
 
 
   //get xml attributes
