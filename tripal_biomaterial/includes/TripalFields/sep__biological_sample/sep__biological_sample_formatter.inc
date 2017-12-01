@@ -90,9 +90,9 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
 
       $biomaterials = $variables['biomaterials'];
 
-      $output = '<div class="tripal_organism-data-block-desc tripal-data-block-desc">The following browser provides a list of biomaterials associated with this ' . $base_table . '.</div>';
+      $output = '<div class="tripal_organism-data-block-desc tripal-data-block-desc">The following browser provides a list of biosamples associated with this ' . $base_table . '.</div>';
 
-      $headers = ['Biomaterial Name', 'Biomaterial Provider'];
+      $headers = ['Biosample Name', 'Biosample Provider'];
 
       if ($variables['show_organism']) {
         $headers[] = 'Organism';
