@@ -103,18 +103,15 @@ class analysis_expression_data_downloader {
 
     global $user;
     // Make sure the user directory exists
-    $user_dir = 'public://tripal/users/' . $user->uid;
+    $user_dir = 'public://expression_download';
     if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
       $message = 'Could not access the directory on the server for storing this file.';
       watchdog('tripal', $message, [], WATCHDOG_ERROR);
-      drupal_json_output([
-        'status' => 'failed',
-        'message' => $message,
-        'file_id' => '',
-      ]);
       return;
     }
     $this->outfile = $user_dir . 'expression_data.txt';
+    $this->outfile = drupal_tempnam($user_dir . 'expression_data_') . '.csv';
+
   }
 
 
@@ -122,7 +119,7 @@ class analysis_expression_data_downloader {
    * Retrieves the URL for the downloadable file.
    */
   public function serve() {
-file_transfer($this->outfile);
+file_transfer($this->outfile, ['Content-Type' => 'text/csv; utf-8']);
 
   }
 
@@ -149,19 +146,22 @@ file_transfer($this->outfile);
     }
 
     //prepare the header
-    $header = implode("\t", $biomaterials);
+    $header = " ,";//blank for feature name
+    $header .= implode(",", $biomaterials);
     $header .= "\n";
 
     fwrite($fh, $header);
 
     foreach ($data as $feature) {
+      $feature_name = key($feature);
+      fwrite($fh, key($feature) . ",");
       //loop through biomaterials (rows)
       foreach ($biomaterials as $biomaterial) {
         $value = "NA";
         if (isset($feature[$biomaterial])) {
           $value = $feature[$biomaterial];
         }
-        fwrite($fh, $value . "\t");
+        fwrite($fh, $value . ",");
       }
 
       fwrite($fh, "\n");//end of feature, newline

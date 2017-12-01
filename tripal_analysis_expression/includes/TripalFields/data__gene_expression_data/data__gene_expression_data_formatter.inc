@@ -7,7 +7,7 @@
  * Display:
  * Configuration:
  */
-class data__gene_expression_data_formatter extends ChadoFieldFormatter{
+class data__gene_expression_data_formatter extends ChadoFieldFormatter {
 
   // The default label for this field.
   public static $default_label = 'Expression';
@@ -92,6 +92,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
     $variables = $entity->{$field}['und'][0];
     $content = '';
     tripal_add_d3js(); // tripal uses d3 3 not 4
+    $feature_id =  $entity->chado_record_id;
 
     if (!$variables['has_exp'] && $variables['json_exp']) {
       $content = 'No biosample libraries express this feature.';
@@ -100,6 +101,8 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
       drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css/expression.css');
       drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/expression.js');
       $num_of_analyses = count($variables['analyses']);
+      $default_analysis = $variables['analyses'][0]->analysis_id; // starting analysis for download link
+
       if ($num_of_analyses >= 1) {
         $content .= '<strong>Select an Expression Analysis</strong><br/>';
         $content .= '<select id="analyses">';
@@ -130,6 +133,8 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
         $limit_label_length = $variables['limit_label_length'];
         $expression_display = $variables['expression_display'];
         $biomaterial_display_width = $variables['biomaterial_display_width'];
+        global $base_url;
+
 
         $content .= '<script type="text/javascript">
             var heatMapRaw=' . $json_exp . '
@@ -145,6 +150,10 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
                    $("#analyses").on("change", function () {
         selectedAnalysis = this.value;
         expNormal();
+        
+        //Change the link address
+            var link = "' . $base_url . '/tripal/analysis-expression/download?feature_ids=' . $feature_id . '&analysis_id=" + selectedAnalysis  
+            $("#expressionDownloadLink").attr("href", link)
                     })
               }
             };
@@ -158,13 +167,19 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
                       expNormal();
                     }
                 });
+                //Add download button iframe
+                $("<iframe />", {
+                   src: "/link-to-file",
+                    width: 1,
+                    height: 1,
+                    })
               }       
             };
-            
-            
-          
+              
           </script>
-          <figure></figure>';
+          <figure></figure>          
+          <a href="' . $base_url . '/tripal/analysis-expression/download?feature_ids=' . $feature_id . '&analysis_id=' . $default_analysis . '" id="expressionDownloadLink"> Download expression dataset for this feature</a>
+          ';
       }
     }
     else {
