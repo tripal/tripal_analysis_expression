@@ -348,12 +348,24 @@ class tripal_biomaterial_loader_v3 extends TripalImporter{
     $comment = $biosample->Description->Comment->Paragraph;
     $ncbi_owner = $biosample->Owner->Name;
 
-    $biomaterial_provider = $biosample->Attributes->Attribute[1];
+    //$biomaterial_provider = $biosample->Attributes->Attribute[1];
+
+    $biomaterial_provider = $biosample->Owner->Contacts->Contact->Name;
 
     // Create a contact if contact is not present.
 
     if ($biomaterial_provider) {
-      $biosourceprovider_id = $this->create_biomaterial_contact($biomaterial_provider);
+      $contact_name = "";
+      if ($biomaterial_provider->Last && $biomaterial_provider->First) {
+        $contact_name = $biomaterial_provider->Last . ", " . $biomaterial_provider->First;
+      }
+      elseif($biomaterial_provider->Last){
+        $contact_name = $biomaterial_provider->Last;
+
+      }else {
+        $contact_name = $biomaterial_provider;
+      }
+        $biosourceprovider_id = $this->create_biomaterial_contact($contact_name);
     }
     else {
       $biosourceprovider_id = '';
@@ -940,6 +952,9 @@ function test_xml_data(
   $analysis_id,
   $attribute_list
 ) {
+
+ // dpm($biosample);
+
 
   //get xml attributes
   $attributes = $biosample->Attributes->Attribute;

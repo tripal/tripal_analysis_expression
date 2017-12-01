@@ -10,3 +10,5 @@ dependencies[] = tripal
 dependencies[] = tripal_chado
 dependencies[] = tripal_biomaterial
 dependencies[] = tripal_protocol
+
+
