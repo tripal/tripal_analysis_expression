@@ -68,9 +68,8 @@ class analysis_expression_data_downloader {
 
 
   function load() {
-    $this->feature_ids = $_GET['feature_ids'];
+    $this->feature_ids = explode(',', $_GET['feature_ids']);
     $this->analysis_id = $_GET['analysis_id'];
-
     $feature_ids = $this->feature_ids;
     $analysis_id = $this->analysis_id;
 
@@ -80,7 +79,7 @@ class analysis_expression_data_downloader {
 
       //query the mview for all listed features.
       $sql = 'SELECT * FROM {expression_feature_all}
-          WHERE  feature_id = (:ids)
+          WHERE  feature_id IN (:ids)
           AND analysis_id =  :analysis_id';
     }
 
@@ -88,7 +87,7 @@ class analysis_expression_data_downloader {
       //no feature ids supplied, retrieve all for this analysis
       //query the mview for all features associated with this analyses
       $sql = 'SELECT * FROM {expression_feature_all}
-                WHERE  analysis_id IN (:ids)';
+                WHERE  analysis_id = :analysis_id';
     }
 
     $expression_data = chado_query($sql, [
@@ -119,7 +118,7 @@ class analysis_expression_data_downloader {
    * Retrieves the URL for the downloadable file.
    */
   public function serve() {
-file_transfer($this->outfile, ['Content-Type' => 'text/csv; utf-8']);
+    file_transfer($this->outfile, ['Content-Type' => 'text/csv; utf-8']);
 
   }
 
@@ -149,12 +148,9 @@ file_transfer($this->outfile, ['Content-Type' => 'text/csv; utf-8']);
     $header = " ,";//blank for feature name
     $header .= implode(",", $biomaterials);
     $header .= "\n";
-
     fwrite($fh, $header);
-
-    foreach ($data as $feature) {
-      $feature_name = key($feature);
-      fwrite($fh, key($feature) . ",");
+    foreach ($data as $feature_name => $feature) {
+      fwrite($fh, $feature_name . ",");
       //loop through biomaterials (rows)
       foreach ($biomaterials as $biomaterial) {
         $value = "NA";
@@ -163,24 +159,9 @@ file_transfer($this->outfile, ['Content-Type' => 'text/csv; utf-8']);
         }
         fwrite($fh, $value . ",");
       }
-
       fwrite($fh, "\n");//end of feature, newline
     }
     fclose($fh);
-
-    //    $file = new stdClass();
-    //    $file->uri = $this->outfile;
-    //    $file->filename = basename($this->outfile);
-    //    $file->filemime = file_get_mimetype($this->outfile);
-    //    $file->uid = $user->uid;
-    //    $file->status = FILE_STATUS_PERMANENT;
-    //    $file = file_save($file);
-    //    $fid = $file->fid;
-    //    $file = file_load($fid);
-    //    // We use the fid for the last argument because these files
-    //    // aren't really associated with any entity, but we need a value.
-    //    file_usage_add($file, 'tripal', 'data-collection', $fid);
-
   }
 
   /**

@@ -8,29 +8,14 @@
 
             //========= only data from one analysis is available. Add some fake data to show the change when drop down value changes =====
             var hd = settings.tripal_analysis_expression.heatmap_data;
-            // var analyses_options = {
-            //     'That one time we created biomaterials and expression': hd['That one time we created biomaterials and expression'],
-            //     'second analysis': [{
-            //         hoverinfo: 'all',
-            //         text: [
-            //             ['a', 'b', 'c'],
-            //             ['a', 'b', 'c'],
-            //             ['a', 'b', 'c'],
-            //             ['a', 'b', 'c'],
-            //         ],
-            //         x: ['label 1', 'label 2', 'label 3'],
-            //         y: ['feature 1', 'feature 2', 'feature 3', 'feature 4'],
-            //         z: [
-            //             [1, 2, 4],
-            //             [3, 1, 20],
-            //             [3, 1, 20],
-            //             [3, 10, 20],
-            //         ]
-            //     }]
-            // };
-            // //=======================================
+            var features = settings.tripal_analysis_expression.feature_list;
+            console.log(features)
+            var analysis_legend = settings.tripal_analysis_expression.analysis_legend;
+
             var analyses_options = hd;
 
+
+            console.log(analyses_options)
 
             // build drop down UI
             var select = Plotly.d3.select('#select_analysis')
@@ -43,6 +28,11 @@
                     .text(d)
             })
 
+            //get analysis and build link for download
+            var selectedAnalysis = document.querySelector('#analysis_selector').value;
+            var link = '/tripal/analysis-expression/download?feature_ids=' + features[selectedAnalysis] + '&analysis_id=' + analysis_legend[selectedAnalysis]
+            Plotly.d3.select('#heatmap_download')
+                .attr("href", link)
 
             $(function () {
                 this.setup(settings, analyses_options);
@@ -94,5 +84,8 @@
                 Plotly.Plots.resize(node);
             });
         }
+
+        //Attach the download link
+
     };
 })(jQuery);

@@ -306,6 +306,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
   $expression_data = [];
   $ids = [];
   $biomaterial_propstore = [];
+  $analysis_legend = [];
   foreach ($expressions as $feature_id => $features) {
     //foreach ($biomaterials as $biomaterial_name) {
     //  $expression_data[$feature_id][$biomaterial_name] = NULL;
@@ -346,6 +347,9 @@ function tripal_analysis_expression_generate_heatmap_values() {
       if (!empty($analysis_id)) {
         $analysis_url = 'bio_data/' . tripal_get_chado_entity_id('analysis', $analysis_id);
       }
+
+      $analysis_legend[$analysis_name] = $analysis_id;
+
       //Get units in quantificationprop
       $uni = chado_get_property([
         'table' => 'quantification',
@@ -380,6 +384,8 @@ function tripal_analysis_expression_generate_heatmap_values() {
 
 
   $heatmap_data_by_analysis = [];
+  $feature_id_list = [];
+
 
   foreach ($expression_data as $analysis_name => $features) {
 
@@ -389,11 +395,14 @@ function tripal_analysis_expression_generate_heatmap_values() {
     $text = [];
     $max_id_len = 0;
 
+
     foreach ($features as $feature_id => $values) {
+
       // obtain max feature id length
       $max_id_len = max(strlen($feature_id), $max_id_len);
 
       if (isset($ids[$feature_id])) {
+        $feature_id_list[$analysis_name][] = $ids[$feature_id];
         $y[] = l($feature_id, 'bio_data/' . tripal_get_chado_entity_id('feature', $ids[$feature_id]));
       }
       else {
@@ -458,6 +467,8 @@ function tripal_analysis_expression_generate_heatmap_values() {
     'heatmap_data' => $heatmap_data_by_analysis,
     'bottom_margin' => $bottom_margin,
     'left_margin' => $left_margin,
+    'feature_list' => $feature_id_list,
+    'analysis_legend' => $analysis_legend
   ];
 }
 
