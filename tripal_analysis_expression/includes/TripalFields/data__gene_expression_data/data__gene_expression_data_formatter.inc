@@ -91,18 +91,12 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
 
     if ($entity->chado_table === "analysis") {
 
-      //  $variables = $entity->{$field}['und'][0];
-      dpm($entity);
-      // dpm($variables);
-
       $field = 'data__gene_expression_data';
       $variables = $entity->{$field}['und'][0];
 
       $analysis_id = $entity->chado_record_id;
       $feature_ids = $variables["features"]["features"];
       $biomaterials = $variables["features"]["biomaterials"];
-
-      dpm($biomaterials);
 
       $feature_ids_string = implode(",", $feature_ids);
 
