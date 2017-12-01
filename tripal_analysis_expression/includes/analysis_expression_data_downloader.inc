@@ -28,7 +28,7 @@
 //path should be `tripal/users/ . $users->uid . /tripal_analysis_expression/`
 //
 
-abstract class analysis_expression_data_downloader {
+class analysis_expression_data_downloader {
 
   //The expression data returned by the mview
   protected $expression_data = "";
@@ -39,22 +39,40 @@ abstract class analysis_expression_data_downloader {
    */
   protected $outfile = '';
 
+  /**
+   * An array of feature IDs that will be included in the download.
+   *
+   * @var array
+   */
+  protected $feature_ids = [];
+
+  /**
+   * A single analysis must be selected to compile and download expression data.
+   *
+   * @var int
+   */
+  protected $analysis_id = 0;
+
 
   static function callback() {
-    $feature_ids = $_GET['feature_ids'];
-    $analysis_id = $_GET['analysis_id'];
-    //TODO: Get and set the user id
+
 
     $downloader = new static();
-    $downloader->load($feature_ids, $analysis_id);
+    $downloader->load();
     $downloader->create();
     $downloader->write();
+    $downloader->serve();
     //alert drupal file is done!
 
   }
 
 
-  function load($feature_ids, $analysis_id) {
+  function load() {
+    $this->feature_ids = $_GET['feature_ids'];
+    $this->analysis_id = $_GET['analysis_id'];
+
+    $feature_ids = $this->feature_ids;
+    $analysis_id = $this->analysis_id;
 
     $sql = '';
 
@@ -62,7 +80,7 @@ abstract class analysis_expression_data_downloader {
 
       //query the mview for all listed features.
       $sql = 'SELECT * FROM {expression_feature_all}
-          WHERE  feature_id IN (:ids)
+          WHERE  feature_id = (:ids)
           AND analysis_id =  :analysis_id';
     }
 
@@ -76,8 +94,8 @@ abstract class analysis_expression_data_downloader {
     $expression_data = chado_query($sql, [
       ":ids" => $feature_ids,
       ":analysis_id" => $analysis_id,
-    ]);
-    dpm($expression_data);
+    ])->fetchAll();
+
     $this->expression_data = $expression_data;
   }
 
@@ -85,7 +103,7 @@ abstract class analysis_expression_data_downloader {
 
     global $user;
     // Make sure the user directory exists
-    $user_dir = 'public://tripal/users/' . $user->id;
+    $user_dir = 'public://tripal/users/' . $user->uid;
     if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
       $message = 'Could not access the directory on the server for storing this file.';
       watchdog('tripal', $message, [], WATCHDOG_ERROR);
@@ -96,15 +114,16 @@ abstract class analysis_expression_data_downloader {
       ]);
       return;
     }
-    $this->outfile = $user_dir . '/expression_data.txt';
+    $this->outfile = $user_dir . 'expression_data.txt';
   }
 
 
   /**
    * Retrieves the URL for the downloadable file.
    */
-  public function getURL() {
-    return $this->outfile;
+  public function serve() {
+file_transfer($this->outfile);
+
   }
 
 
@@ -116,9 +135,9 @@ abstract class analysis_expression_data_downloader {
 
     //loop through data.  need to build array with structure
     foreach ($expression_data as $result) {
-      $feature = $result->feature;
-      $biomaterial = $result->biomaterial;
-      $value = $result->value;
+      $feature = $result->feature_uniquename;
+      $biomaterial = $result->biomaterial_name;
+      $value = $result->signal;
       $data[$feature][$biomaterial] = $value;
       $biomaterials[$biomaterial] = $biomaterial;
     }
@@ -132,19 +151,22 @@ abstract class analysis_expression_data_downloader {
     //prepare the header
     $header = implode("\t", $biomaterials);
     $header .= "\n";
+
     fwrite($fh, $header);
 
     foreach ($data as $feature) {
-      foreach ($feature as $biomaterial => $value) {
-        //TODO:  How do i deal with missing values?  If one feature doesnt have data for a biomaterial i want it to be NA....
-        //i think we need to loop throguh data 2x, once to get a list of biomaterials and again to populate it with na's first then add the data if it exists
+      //loop through biomaterials (rows)
+      foreach ($biomaterials as $biomaterial) {
+        $value = "NA";
+        if (isset($feature[$biomaterial])) {
+          $value = $feature[$biomaterial];
+        }
         fwrite($fh, $value . "\t");
       }
 
       fwrite($fh, "\n");//end of feature, newline
     }
     fclose($fh);
-
 
     //    $file = new stdClass();
     //    $file->uri = $this->outfile;
