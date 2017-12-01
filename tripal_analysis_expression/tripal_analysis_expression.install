@@ -33,6 +33,14 @@ function tripal_analysis_expression_requirements($phase) {
  */
 function tripal_analysis_expression_install() {
 
+  //insert term used for fields
+  tripal_insert_cvterm([
+    'id' => 'data:2603',
+    'name' => 'gene_expression_data',
+    'cv_name' => 'EDAM',
+    'definition' => 'Visualize expression data',
+  ]);
+
   // Get localization function for installation.
   $t = get_t();
 

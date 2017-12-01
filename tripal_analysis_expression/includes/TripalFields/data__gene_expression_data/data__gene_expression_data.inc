@@ -117,6 +117,7 @@ class data__gene_expression_data extends ChadoField{
    *   value of the field.
    */
   public function load($entity) {
+    dpm($entity);
 
     // ChadoFields automatically load the chado column specified in the
     // default settings above. If that is all you need then you don't even
