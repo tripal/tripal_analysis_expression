@@ -40,11 +40,7 @@ function tripal_biomaterial_install() {
   tripal_biomaterial_add_cvs();
   tripal_biomaterial_add_cvterms();
 
-  // Set default cvs.
-  tripal_set_default_cv('biomaterialprop', 'type_id', 'biomaterial_property');
-  tripal_set_default_cv('biomaterial_relationship', 'type_id', 'biomaterial_relationship');
-
-  // Make sure the arraydesign, biomaterial, and protocol chado tables are a set
+  // Make sure the  biomaterial, table is  set
   // as base tables. This allows the tables to be used as base tables in
   // Drupal Views.
   $update = db_update('tripal_views')->fields([

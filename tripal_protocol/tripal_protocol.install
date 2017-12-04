@@ -38,10 +38,6 @@ function tripal_protocol_install() {
 
   tripal_protocol_add_cvs();
   tripal_protocol_add_cvterms();
-
-  // Set default cvs.
-  tripal_set_default_cv('arraydesignprop', 'type_id', 'arraydesign_property');
-
   // Make sure the arraydesign, biomateria, and protocol chado tables are a set
   // as base tables. This allows the tables to be used as base tables in
   // Drupal Views.
@@ -51,6 +47,11 @@ function tripal_protocol_install() {
   $update = db_update('tripal_views')->fields([
     'base_table' => 1,
   ])->condition('table_name', 'protocol', '=')->execute();
+
+
+  tripal_protocol_add_cvterms_entity_for_array_design();
+  tripal_protocol_add_new_cvterms_entity();
+
 }
 
 /**
@@ -345,11 +346,7 @@ function tripal_protocol_uninstall() {
 
 }
 
-/**
- * Create protocol bundle.
- */
-function tripal_protocol_update_7201() {
-  // Insert semweb cvterms for protocol table
+function tripal_protocol_add_new_cvterms_entity() {
   tripal_insert_cvterm([
     'id' => 'sep:00101',
     'name' => 'protocol',
@@ -415,11 +412,7 @@ function tripal_protocol_update_7201() {
   }
 }
 
-/**
- * Create array design bundle.
- */
-function tripal_protocol_update_7202() {
-  // Insert semweb cv terms for chado.arraydesign table
+function tripal_protocol_add_cvterms_entity_for_array_design() {
 
   // arraydesign.name
   $term = tripal_insert_cvterm([
@@ -572,4 +565,21 @@ function tripal_protocol_update_7202() {
       throw new Exception($error['!message']);
     }
   }
+}
+
+/**
+ * Create protocol bundle.
+ */
+function tripal_protocol_update_7201() {
+  // Insert semweb cvterms for protocol table
+  tripal_protocol_add_new_cvterms_entity();
+}
+
+/**
+ * Create array design bundle.
+ */
+function tripal_protocol_update_7202() {
+  // Insert semweb cv terms for chado.arraydesign table
+
+  tripal_protocol_add_cvterms_entity_for_array_design();
 }
