@@ -44,16 +44,23 @@ function tripal_analysis_expression_install() {
   // Get localization function for installation.
   $t = get_t();
 
-  //deprecated in v3
-  // tripal_register_analysis_child('tripal_analysis_expression');
-
   // These variables are used to set how expression information is displayed.
+  //TODO Many (all? Of these are no longer used, check to remove)
   variable_set('chado_feature_expression_hide_expression', 0);
   variable_set('chado_feature_expression_hide_biomaterial_labels', 0);
   variable_set('chado_feature_expression_limit_label_length', 0);
   variable_set('chado_feature_expression_min_num_biomaterials', 0);
   variable_set('chado_feature_expression_expression_display', 'column');
   variable_set('chado_feature_expression_biomaterial_display_width', 15);
+
+  variable_set('tripal_analysis_expression_heatmap_placeholder', 'Example: orange1.1g022520m, orange1.1g022799m');
+  variable_set('tripal_analysis_expression_heatmap_example', 'orange1.1g022520m, orange1.1g022799m, orange1.1g022520m, orange1.1g022799m');
+  variable_set('analysis_expression_heatmap_db', 'mview');
+
+
+  tripal_analysis_expression_add_mview_1();
+  tripal_analysis_expression_add_mview_2();
+
 }
 
 /**
@@ -62,27 +69,10 @@ function tripal_analysis_expression_install() {
  * @ingroup tripal_analysis_expression
  */
 function tripal_analysis_expression_uninstall() {
-  /*
-    // Get localization function for installation.
-    $t = get_t();
 
-    // Unregister the analysis.
-    tripal_unregister_analysis_child('tripal_analysis_expression');
-  */
 }
 
-/**
- * Add heatmap variables.
- */
-function tripal_analysis_expression_update_7200() {
-  variable_set('tripal_analysis_expression_heatmap_placeholder', 'Example: orange1.1g022520m, orange1.1g022799m');
-  variable_set('tripal_analysis_expression_heatmap_example', 'orange1.1g022520m, orange1.1g022799m, orange1.1g022520m, orange1.1g022799m');
-}
-
-/**
- * Add expression feature materialized view
- */
-function tripal_analysis_expression_update_7201() {
+function tripal_analysis_expression_add_mview_1() {
 
   $mv_name = 'expression_feature';
 
@@ -148,20 +138,7 @@ function tripal_analysis_expression_update_7201() {
 
   tripal_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment);
 }
-
-/**
- * Set default value for elasticsearch dependency.
- */
-function tripal_analysis_expression_update_7202() {
-  variable_set('analysis_expression_heatmap_db', 'mview');
-}
-
-/**
- * Define materialized view to link expression data with features biosamples
- * and analyses
- *
- */
-function tripal_analysis_expression_update_7203() {
+function tripal_analysis_expression_add_mview_2() {
 
   $mv_name = "expression_feature_all";
   $comment = "Stores expression values with analysis and biosample data";
@@ -221,5 +198,40 @@ function tripal_analysis_expression_update_7203() {
               INNER JOIN analysis AN ON AN.analysis_id = Q.analysis_id        ";
 
   tripal_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment);
+
+}
+
+/**
+ * Add heatmap variables.
+ */
+function tripal_analysis_expression_update_7200() {
+  variable_set('tripal_analysis_expression_heatmap_placeholder', 'Example: orange1.1g022520m, orange1.1g022799m');
+  variable_set('tripal_analysis_expression_heatmap_example', 'orange1.1g022520m, orange1.1g022799m, orange1.1g022520m, orange1.1g022799m');
+}
+
+
+
+/**
+ * Add expression feature materialized view
+ */
+function tripal_analysis_expression_update_7201() {
+tripal_analysis_expression_add_mview_1();
+}
+
+/**
+ * Set default value for elasticsearch dependency.
+ */
+function tripal_analysis_expression_update_7202() {
+  variable_set('analysis_expression_heatmap_db', 'mview');
+}
+
+/**
+ * Define materialized view to link expression data with features biosamples
+ * and analyses
+ *
+ */
+function tripal_analysis_expression_update_7203() {
+
+  tripal_analysis_expression_add_mview_2();
 
 }
