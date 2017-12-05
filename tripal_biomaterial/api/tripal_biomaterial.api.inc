@@ -246,7 +246,7 @@ function expression_create_biomaterial_structure(
   $uniq_name
 ) {
   // Create the biomaterial
-  $biomaterial_id = create_biomaterial($biomaterial, $analysis_id, $organism_id, $contact_id, $dbxref_id, '');
+  $biomaterial_id = tripal_chado_create_biomaterial($biomaterial, $analysis_id, $organism_id, $contact_id, $dbxref_id, '');
 
   $uniq_name = $biomaterial . $uniq_name;
 

@@ -2,7 +2,7 @@
 
 This is an extension module for the Tripal project. 
 
-Please note this module is currently being updated for Tripal 3.  The [Tripal 2 functional module is available for download](https://github.com/tripal/tripal_analysis_expression/releases/tag/1.0.2) but future releases will be for Tripal 3.
+Please note this module requires **Tripal 3** or greater.  The [Tripal 2 functional module is available for download](https://github.com/tripal/tripal_analysis_expression/releases/tag/1.0.2) but is no longer supported.
 
 New documentation for the new data loaders and module structure is under development.
 
@@ -14,7 +14,7 @@ New documentation for the new data loaders and module structure is under develop
 4. [Loading Biomaterials](#loading-biomaterials)
 5. [Loading Expression Data](#loading-expression-data)
 6. [Viewing Data](#viewing-data)
-7. [Searching features and displaying expression data in a heatmap](#Searching features and displaying expression data in a heatmap)
+7. [Searching features and displaying expression data in a heatmap](#Searching-features-and-displaying-expression-data-in-a-heatmap)
 8. [Administrative Pages](#administrative-pages)
 9. [Example Files](#example-files)
 
@@ -39,23 +39,14 @@ The purpose of the module is to visually represent gene expression for Tripal fe
 * Visualization for expression data for individual features
 * Heatmap tool to visualize multiple features
 
-
-### User Searches
-A simple anonymous user search (using Views) is also provided for each content type. These searches can be found at the following urls:
-
-site_name/chado/analysis-expression
-
-site_name/chado/arraydesign
-
-site_name/chado/biomaterial
-
-site_name/chado/protocol
-
 ### Data Loaders
 Two loaders are provided by this module, a biosample loader, and an expression loader. The biosample loader has the ability to load data from a flat file or from an xml file downloaded from NCBI. The expression loader can load expression data in column or matrix format.
 
 ### Expression Display
-Once expression data is loaded. A display will be shown on each feature page that has corresponding biosamples and expression values.
+Once expression data is loaded, a display field will be shown on each feature page that has corresponding biosamples and expression values.
+
+### Heatmap
+This module provides a search and results block to search for and select features to display in a heatmap.
 
 # Loading Biosamples
 Biosample may be loaded from a flat file or from a BioSample xml file downloaded from NCBI. The steps for loading biosamples are as follows (detailed instructions can be found further below):
@@ -75,7 +66,7 @@ Click the "Send to:" link. Then select "File" and select "Full XML (text)" as th
 Click [here to see an example XML BioSample file from NCBI](example_files/sm125.xml).
 
 ### Using the Biosample loader
-To upload the file into Chado/Tripal, Navigate to:  
+To upload the file into Chado/Tripal, navigate to:  
 
 **Tripal->loaders->chado_biosample_loader**
 
@@ -85,7 +76,6 @@ Press the **Check Biosamples** button to preview your biosample properties.  To 
 If a match does not exist for your term, use the CVterm browser to identify an appropriate CVterm in your Tripal site, and rename the property in your input file to match the term.  If no term exists in your database, you should use the EBI ontology lookup serice to identify an appropriate term and insert it manually, or, load the corresponding CV.  
 
 After clicking "Submit job", the page should reload with the job status and Drush command to run the job. Copy and paste the Drush command and run it on command line. Upon running the Drush command, any warning/error/success/status message should be displayed.
-
 
 ### Loading Biomaterials From a Flat File
 
@@ -97,7 +87,7 @@ Click here to see an example of a [CSV file](example_files/exampleCSV.csv) and a
 
 ### Publishing Biosamples to the Biological Sample Content Type
 
-After loading, biosamples must be published to create entities for each biosample content type. As an administrator or user with correct permissions, navigate to **Content->Tripal Content->Publish Tripal Content**. Select the biological sample type to publish, apply any optional  filtering, and press Publish.
+After loading, biosamples must be published to create entities for each biosample content type. As an administrator or user with correct permissions, navigate to **Content->Tripal Content->Publish Tripal Content**. Select the biological sample type to publish, apply any optional filtering, and press Publish.
 
 ### Loading a Single Biosample
 Biosamples may also be loaded one at a time. As an administer or a user with permission to create content, go to: **Content->Tripal Content -> Add Tripal Content -> Biological Sample**. Available biosamples fields include the following. 
