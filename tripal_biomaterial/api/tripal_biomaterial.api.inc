@@ -647,7 +647,7 @@ function create_generic_assay(
  * @ingroup tripal_analysis_expression
  */
 
-function create_biomaterial(
+ function tripal_biomaterial_create_biomaterial(
   $biomaterial,
   $analysis_id,
   $organism_id,
@@ -779,4 +779,60 @@ function create_generic_acquisition(
     $acquisition_id = $acquisition['acquisition_id'];
   }
   return $acquisition_id;
+}
+
+/**
+ * @param $contact_name
+ *Creates a new biomaterial contact
+ *
+ * @return mixed
+ */
+ function tripal_biomaterial_create_biomaterial_contact($contact_name) {
+  $contact_id = chado_query('select contact_id from {contact} where name = :name limit 1', [':name' => $contact_name])->fetchField();
+  if (!$contact_id) {
+    $values = [
+      'name' => $contact_name,
+    ];
+    $contact = chado_insert_record('contact', $values);
+    if ($contact == FALSE) {
+      print "ERROR: Unable to write to contact table\n";
+      exit;
+    }
+    $contact_id = $contact['contact_id'];
+  }
+  return $contact_id;
+}
+
+ function tripal_biomaterial_create_ncbi_db($url_name, $db_name, $db_description) {
+
+  $url = "http://www.ncbi.nlm.nih.gov/";
+  $urlprefix = "http://www.ncbi.nlm.nih.gov/" . $url_name . "/";
+
+  $values = [
+    'name' => $db_name,
+    'description' => $db_description,
+    'urlprefix' => $urlprefix,
+    'url' => $url,
+  ];
+
+  $db_id = chado_query('select db_id from {db} where name = :name limit 1', [':name' => $db_name])->fetchField();
+
+  if (!$db_id) {
+    $db = chado_insert_record('db', $values);
+    if ($db == FALSE) {
+      print "ERROR: Unable to write to db table\n";
+      exit;
+    }
+    $db_id = $db['db_id'];
+  }
+
+  if ($db_id) {
+    $db = chado_update_record('db', ['name' => 'db'], $values, ['return_record' => TRUE]);
+    if ($db == FALSE) {
+      print "ERROR: Unable to update db_table\n";
+      exit;
+    }
+  }
+
+  return $db_id;
 }

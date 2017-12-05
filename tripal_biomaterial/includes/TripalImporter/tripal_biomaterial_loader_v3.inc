@@ -366,16 +366,16 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       else {
         $contact_name = $biomaterial_provider;
       }
-      $biosourceprovider_id = $this->create_biomaterial_contact($contact_name);
+      $biosourceprovider_id = tripal_biomaterial_create_biomaterial_contact($contact_name);
     }
     else {
       $biosourceprovider_id = '';
     }
     // Verify there is an NCBI biosample database.
-    $ncbi_biosample_id = $this->create_ncbi_db('biosample', 'NCBI BioSample', '');
+    $ncbi_biosample_id = tripal_biomaterial_create_ncbi_db('biosample', 'NCBI BioSample', '');
 
     // Verify there is an NCBI sra database.
-    $ncbi_sra_id = $this->create_ncbi_db('sra', 'NCBI SRA', '');
+    $ncbi_sra_id = tripal_biomaterial_create_ncbi_db('sra', 'NCBI SRA', '');
 
     // Create entry in the dbxref table.
     $dbxref_biosample = tripal_insert_dbxref([
@@ -399,7 +399,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     $biomaterial_description = $comment ? (string) $comment : (string) $description;
 
-    $biomaterial_id = $this->create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $biomaterial_description);
+    $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $biomaterial_description);
 
     // Add to biomaterialprop table.
     $this->add_xml_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id, $insert_fields);
@@ -624,11 +624,11 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
             $description = $line[$index];
           }
           if ($name == 'biomaterial_provider' and $line[$index] != "") {
-            $biosourceprovider_id = $this->create_biomaterial_contact($line[$index]);
+            $biosourceprovider_id = tripal_biomaterial_create_biomaterial_contact($line[$index]);
           }
           if ($name == 'biosample_accession') {
             // In case there is no biosample database
-            $ncbi_biosample_id = $this->create_ncbi_db('biosample', 'NCBI BioSample', '');
+            $ncbi_biosample_id = tripal_biomaterial_create_ncbi_db('biosample', 'NCBI BioSample', '');
             $values = [
               'accession' => $line[$index],
               'db_id' => $ncbi_biosample_id,
@@ -639,17 +639,17 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         }
 
         // Create the biomaterial based on the values given.
-        $biomaterial_id = $this->create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $description);
+        $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $description);
 
         // Insert database accessions.
         foreach ($acc_headers as $name => $index) {
           // Get the db_id.
           if ($name == 'sra_accession') {
-            $db_id = $this->create_ncbi_db('sra', 'NCBI SRA', '');
+            $db_id = tripal_biomaterial_create_ncbi_db('sra', 'NCBI SRA', '');
           }
           else {
             if ($name == 'bioproject_accession') {
-              $db_id = $this->create_ncbi_db('bioproject', 'NCBI BioProject', '');
+              $db_id = tripal_biomaterial_create_ncbi_db('bioproject', 'NCBI BioProject', '');
             }
           }
           // First check to see if there is a dbxref record in the database corresponding to the accession number from the file.
@@ -750,143 +750,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     return;
   }
 
-  private function create_biomaterial_contact($contact_name) {
-    $contact_id = chado_query('select contact_id from {contact} where name = :name limit 1', [':name' => $contact_name])->fetchField();
-    if (!$contact_id) {
-      $values = [
-        'name' => $contact_name,
-      ];
-      $contact = chado_insert_record('contact', $values);
-      if ($contact == FALSE) {
-        print "ERROR: Unable to write to contact table\n";
-        exit;
-      }
-      $contact_id = $contact['contact_id'];
-    }
-    return $contact_id;
-  }
 
-  private function create_ncbi_db($url_name, $db_name, $db_description) {
 
-    $url = "http://www.ncbi.nlm.nih.gov/";
-    $urlprefix = "http://www.ncbi.nlm.nih.gov/" . $url_name . "/";
-
-    $values = [
-      'name' => $db_name,
-      'description' => $db_description,
-      'urlprefix' => $urlprefix,
-      'url' => $url,
-    ];
-
-    $db_id = chado_query('select db_id from {db} where name = :name limit 1', [':name' => $db_name])->fetchField();
-
-    if (!$db_id) {
-      $db = chado_insert_record('db', $values);
-      if ($db == FALSE) {
-        print "ERROR: Unable to write to db table\n";
-        exit;
-      }
-      $db_id = $db['db_id'];
-    }
-
-    if ($db_id) {
-      $db = chado_update_record('db', ['name' => 'db'], $values, ['return_record' => TRUE]);
-      if ($db == FALSE) {
-        print "ERROR: Unable to update db_table\n";
-        exit;
-      }
-    }
-
-    return $db_id;
-  }
-
-  /**
-   * @param $biomaterial
-   * @param $analysis_id
-   * @param $organism_id
-   * @param $biosourceprovider_id
-   * @param $dbxref_id
-   * @param $biomaterial_description
-   *
-   * @return mixed
-   */
-  private function create_biomaterial(
-    $biomaterial,
-    $analysis_id,
-    $organism_id,
-    $biosourceprovider_id,
-    $dbxref_id,
-    $biomaterial_description
-  ) {
-    $biomaterial_result = chado_query('select biomaterial_id, taxon_id, description from {biomaterial} where name = :name limit 1', [':name' => $biomaterial])->fetchObject();
-
-    // if sample_name already exists in chado db, print warning message
-    if ($biomaterial_result->taxon_id) {
-      print("WARNING: Biomaterial with sample_name of '$biomaterial' alreay exists in the database. Overwriting database entries for $biomaterial...\n");
-    }
-
-    if ($biomaterial_result->taxon_id and $biomaterial_result->taxon_id != $organism_id) {
-      $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
-      $analysis_org = chado_query($sql, [":organism_id" => $organism_id])->fetchObject();
-      $biomaterial_org = chado_query($sql, [":organism_id" => $biomaterial_result->taxon_id])->fetchObject();
-      print "ERROR: Mismatch between the organism selected in the loader " . "and the organism of a biomaterial in the Chado database.\n" . "  Organism selected by loader: " . $analysis_org->genus . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n" . "  Biomaterial organism: " . $biomaterial_org->genus . " " . $biomaterial_org->species . " (" . $biomaterial_org->common_name . ")\n" . "  On biomaterial: " . $biomaterial . "\n" . "Please ensure that the organism selected by the loader " . "and the organism for each biomaterial in the file to be loaded " . "are the same. If these organisms should not be the same, " . "delete the offending biomaterial in Chado or change the name of " . "the biomaterial to another unique name.\n";
-      exit;
-    }
-
-    $biomaterial_id = $biomaterial_result->biomaterial_id;
-
-    if ($analysis_id) {
-      $analysis_name = chado_select_record('analysis', ['name'], ['analysis_id' => $analysis_id]);
-    }
-
-    if ($biomaterial_description == '' and $biomaterial_result->description != '') {
-      $biomaterial_description = '';
-    }
-
-    elseif ($biomaterial_description == '' && $analysis_id) {
-      $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_name[0]->name;
-    }
-
-    $values = [
-      'name' => $biomaterial,
-      //'description' => $biomaterial_description,
-      //'biosourceprovider_id' => $biosourceprovider_id,
-      'taxon_id' => $organism_id,
-      //  'dbxref_id' => $dbxref_id,
-    ];
-
-    if ($dbxref_id) {
-      $values['dbxref_id'] = $dbxref_id;
-    }
-
-    if ($biomaterial_description) {
-      $values['description'] = $biomaterial_description;
-    }
-
-    if ($biosourceprovider_id) {
-      $values['biosourceprovider_id'] = $biosourceprovider_id;
-    }
-
-    if (!$biomaterial_id) {
-      $biomaterial = chado_insert_record('biomaterial', $values);
-      if ($biomaterial == FALSE) {
-        print "ERROR: Unable to write to biomaterial table\n";
-        exit;
-      }
-    }
-
-    if ($biomaterial_id) {
-      print("Updating record for biomaterial id = $biomaterial_id\n");
-      $biomaterial = chado_update_record('biomaterial', ['name' => $biomaterial], $values, ['return_record' => TRUE]);
-      if ($biomaterial == FALSE) {
-        print "ERROR: Unable to update biomaterial_table\n";
-        exit;
-      }
-    }
-    $biomaterial_id = $biomaterial['biomaterial_id'];
-
-    return $biomaterial_id;
-  }
+  //end of class
 }
 
 /**
