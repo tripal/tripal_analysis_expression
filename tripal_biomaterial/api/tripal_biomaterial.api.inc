@@ -647,7 +647,7 @@ function create_generic_assay(
  * @ingroup tripal_analysis_expression
  */
 
-function create_biomaterial(
+ function tripal_biomaterial_create_biomaterial(
   $biomaterial,
   $analysis_id,
   $organism_id,

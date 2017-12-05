@@ -399,7 +399,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     $biomaterial_description = $comment ? (string) $comment : (string) $description;
 
-    $biomaterial_id = $this->create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $biomaterial_description);
+    $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $biomaterial_description);
 
     // Add to biomaterialprop table.
     $this->add_xml_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id, $insert_fields);
@@ -639,7 +639,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         }
 
         // Create the biomaterial based on the values given.
-        $biomaterial_id = $this->create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $description);
+        $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $description);
 
         // Insert database accessions.
         foreach ($acc_headers as $name => $index) {
