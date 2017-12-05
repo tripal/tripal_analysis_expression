@@ -102,7 +102,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
 
       $url = "/tripal/analysis-expression/download?analysis_id=" . $analysis_id;
 
-      $content = '<p> This analysis contains expression data for ' .count($feature_ids) . ' features  across ' . count($biomaterials) . ' biosamples.</p>
+      $content = '<p> This analysis contains expression data for ' . count($feature_ids) . ' features  across ' . count($biomaterials) . ' biosamples.</p>
 <p><a href="' . $url . '">Download all expression data associated with this analysis.</a></p>';
 
       $element[] = [
@@ -175,13 +175,13 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
                 var $ = jQuery;
                  expNormal();
                    $("#analyses").on("change", function () {
-        selectedAnalysis = this.value;
-        expNormal();
+                      selectedAnalysis = this.value;
+                      expNormal();
         
-        //Change the link address
-            var link = "' . $base_url . '/tripal/analysis-expression/download?feature_ids=' . $feature_id . '&analysis_id=" + selectedAnalysis  
-            $("#expressionDownloadLink").attr("href", link)
-                    })
+                      //Change the link address
+                      var link = "' . $base_url . '/tripal/analysis-expression/download?feature_ids=' . $feature_id . '&analysis_id=" + selectedAnalysis  
+                       $("#expressionDownloadLink").attr("href", link)
+                   })
               }
             };
             
@@ -194,12 +194,17 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
                       expNormal();
                     }
                 });
-                //Add download button iframe
-                $("<iframe />", {
-                   src: "/link-to-file",
-                    width: 1,
-                    height: 1,
-                    })
+                $("#expressionDownloadLink").click(function(e) {
+                    e.preventDefault()
+                    var src = $(this).attr("href")
+                     var iframe = $("<iframe />", {
+                        src: src,
+                        width: 1,
+                        height: 1
+                     })
+                     $("body").append(iframe);
+                     $(this).parent().first().append($("<span />").html("Generating file. Download will start automatically..."))
+                })
               }       
             };
               

@@ -115,8 +115,7 @@ class analysis_expression_data_downloader {
       return;
     }
     $this->outfile = $user_dir . 'expression_data.txt';
-    $this->outfile = drupal_tempnam($user_dir . 'expression_data_') . '.csv';
-
+    $this->outfile = drupal_tempnam($user_dir, 'expression_data_') . '.csv';
   }
 
 
@@ -125,7 +124,6 @@ class analysis_expression_data_downloader {
    */
   public function serve() {
     file_transfer($this->outfile, ['Content-Type' => 'text/csv; utf-8']);
-
   }
 
 
