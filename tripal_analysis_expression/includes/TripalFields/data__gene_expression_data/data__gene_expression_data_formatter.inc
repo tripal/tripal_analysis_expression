@@ -103,13 +103,19 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
       $url = "/tripal/analysis-expression/download?analysis_id=" . $analysis_id;
 
       $content = '<p> This analysis contains expression data for ' . count($feature_ids) . ' features  across ' . count($biomaterials) . ' biosamples.</p>
-<p><a href="' . $url . '">Download all expression data associated with this analysis.</a></p>';
+                  <p><a href="' . $url . '" id="expressionDownloadLink">Download all expression data associated with this analysis.</a></p>';
 
+      $content .= '<script>
+                    (function($){
+                        $(function() {
+                            '.$this->getDownloadLinkJS().'
+                        })
+                    })(jQuery)
+                   </script>';
       $element[] = [
         '#type' => 'markup',
         '#markup' => $content,
       ];
-
     }
 
 
@@ -194,23 +200,14 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
                       expNormal();
                     }
                 });
-                $("#expressionDownloadLink").click(function(e) {
-                    e.preventDefault()
-                    var src = $(this).attr("href")
-                     var iframe = $("<iframe />", {
-                        src: src,
-                        width: 1,
-                        height: 1
-                     })
-                     $("body").append(iframe);
-                     $(this).parent().first().append($("<span />").html("Generating file. Download will start automatically..."))
-                })
+                
+                ' . $this->getDownloadLinkJS() . '
               }       
             };
               
           </script>
           <figure></figure>          
-          <a href="' . $base_url . '/tripal/analysis-expression/download?feature_ids=' . $feature_id . '&analysis_id=' . $default_analysis . '" id="expressionDownloadLink"> Download expression dataset for this feature</a>
+          <a href="' . $base_url . '/tripal/analysis-expression/download?feature_ids=' . $feature_id . '&analysis_id=' . $default_analysis . '" id="expressionDownloadLink">Download expression dataset for this feature</a>
           ';
         }
       }
@@ -223,6 +220,30 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
         '#markup' => $content,
       ];
     }
+  }
+
+  /**
+   * Duplicate the js functionality for the download link.
+   *
+   * @return string
+   */
+  protected function getDownloadLinkJS() {
+    return '
+    var message = $("<span />")
+    var link = $("#expressionDownloadLink")
+    link.after(message)
+    link.click(function(e) {
+        e.preventDefault()
+        var src = $(this).attr("href")
+         var iframe = $("<iframe />", {
+            src: src,
+            width: 1,
+            height: 1
+         })
+         $("body").append(iframe);
+         message.html("Generating file. Download will start automatically...")
+    })
+    ';
   }
 
   /**
