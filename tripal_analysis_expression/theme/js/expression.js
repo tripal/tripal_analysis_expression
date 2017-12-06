@@ -109,6 +109,7 @@ function expRewrite() {
         .attr('class', 'label')
         .style('font-size', '12px')
         .style('font-weight', 'normal')
+        .style('padding', '5px')
         .html(function (d) {
             //TODO:  PUT SPLIT KEY INTO A TEXTSPAN AS HERE http://bl.ocks.org/enjalot/1829187
             var label = d.key;
