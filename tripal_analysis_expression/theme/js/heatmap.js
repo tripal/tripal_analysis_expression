@@ -9,30 +9,30 @@
             //========= only data from one analysis is available. Add some fake data to show the change when drop down value changes =====
             var hd = settings.tripal_analysis_expression.heatmap_data;
             var features = settings.tripal_analysis_expression.feature_list;
-            console.log(features)
+            console.log(features);
             var analysis_legend = settings.tripal_analysis_expression.analysis_legend;
 
             var analyses_options = hd;
 
 
-            console.log(analyses_options)
+            console.log(analyses_options);
 
             // build drop down UI
             var select = Plotly.d3.select('#select_analysis')
-                .append("select")
-                .attr("id", "analysis_selector")
+                .append('select')
+                .attr('id', 'analysis_selector');
 
             Object.keys(analyses_options).map(function (d) {
-                select.append("option")
-                    .attr("Value", d)
-                    .text(d)
-            })
+                select.append('option')
+                    .attr('Value', d)
+                    .text(d);
+            });
 
             //get analysis and build link for download
             var selectedAnalysis = document.querySelector('#analysis_selector').value;
-            var link = '/tripal/analysis-expression/download?feature_ids=' + features[selectedAnalysis] + '&analysis_id=' + analysis_legend[selectedAnalysis]
+            var link = '/tripal/analysis-expression/download?feature_ids=' + features[selectedAnalysis] + '&analysis_id=' + analysis_legend[selectedAnalysis];
             Plotly.d3.select('#heatmap_download')
-                .attr("href", link)
+                .attr('href', link);
 
             $(function () {
                 this.setup(settings, analyses_options);
@@ -51,7 +51,6 @@
                 width: '100%'
             }).node();
 
-
             // by default, the fist analysis from the dropdown is used to plot.
             make_heatmap(Object.keys(analyses_options)[0]);
 
@@ -60,7 +59,7 @@
                 var left_margin = settings.tripal_analysis_expression.left_margin;
                 var bottom_margin = settings.tripal_analysis_expression.bottom_margin;
                 var layout = {
-                    title: selectedAnalysis + " Expression",
+                    title: selectedAnalysis + ' Expression',
                     margin: {
                         l: left_margin,
                         b: bottom_margin
@@ -76,9 +75,23 @@
                 }
 
                 analysisSelector.addEventListener('change', update_heatmap, false);
-
             }
 
+
+            var download_link = $('#heatmap_download');
+            var download_message = $('<span />');
+            download_link.after(download_message);
+            download_link.click(function (e) {
+                e.preventDefault();
+                var src = $(this).attr('href');
+                download_message.html(' Creating file. Download will start automatically ...');
+                var iframe = $('<iframe />', {
+                    src: src,
+                    width: 1,
+                    height: 1
+                });
+                $('body').append(iframe);
+            });
 
             $(window).on('resize', function () {
                 Plotly.Plots.resize(node);
