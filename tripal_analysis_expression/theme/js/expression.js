@@ -110,15 +110,18 @@ function expRewrite() {
         .style('font-size', '12px')
         .style('font-weight', 'normal')
         .style('padding', '5px')
+        .attr('x', 0)
+        .attr('y', 0)
         .html(function (d) {
             //TODO:  PUT SPLIT KEY INTO A TEXTSPAN AS HERE http://bl.ocks.org/enjalot/1829187
             var label = d.key;
-            //  characterLimit = 5
-            //  if (label.length > characterLimit){
-            //      splitString = label.match(new RegExp('.{1,' + characterLimit + '}', 'g'))
-            //     label = splitString.join("<br>")
-            //     // label = splitString
-            // }
+            characterLimit = 20;
+            if (label.length > characterLimit) {
+                splitString = label.match(new RegExp('.{1,' + characterLimit + '}', 'g'));
+                label = splitString.map(function (item) {
+                    return '<tspan x="0" dy="10">' + item + '</tspan>';
+                }).join(' ');
+            }
             return label;
         })
         .style('text-anchor', 'bottom');
@@ -305,7 +308,7 @@ function buildLegend(colorScale, width, margin) {
                 {
                     return 'translate(0,' + (i * 10) + ' )';
                 }
-            })
+            });
         legend.append('rect')
             .attr('x', 00)
             .attr('y', 10)
