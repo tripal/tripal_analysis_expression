@@ -71,11 +71,11 @@ class obi__manufacturer extends ChadoField {
     // attached asynchronously.
     'auto_attach' => FALSE,
     // The table in Chado that the instance maps to.
-    'chado_table' => 'organism',
+    'chado_table' => 'contact',
     // The column of the table in Chado where the value of the field comes from.
-    'chado_column' => 'organism_id',
+    'chado_column' => 'manufacturer_id',
     // The base table.
-    'base_table' => 'organism',
+    'base_table' => 'arraydesign',
   );
 
   // A boolean specifying that users should not be allowed to create

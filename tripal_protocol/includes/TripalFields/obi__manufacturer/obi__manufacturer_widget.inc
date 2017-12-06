@@ -21,7 +21,7 @@ class obi__manufacturer_widget extends ChadoFieldWidget {
    * This function corresponds to the hook_field_widget_form()
    * function of the Drupal Field API.
    *
-   * This form is diplayed when the user creates a new entity or edits an
+   * This form is displayed when the user creates a new entity or edits an
    * existing entity.  If the field is attached to the entity then the form
    * provided by this function will be displayed.
    *
@@ -92,8 +92,8 @@ $contacts = [];
     foreach ($results as $contact) {
       $contacts[$contact->contact_id] = $contact->name;
     }
-//should this be manufacturer_id instead?
-    $widget['manufacturer_id'] = array(
+    //$widget['manufacturer_id'] = array(
+    $widget['value'] = [
       '#type' => 'select',
       '#title' => $element['#title'],
       '#description' => $description,
@@ -103,7 +103,8 @@ $contacts = [];
       '#required' => $element['#required'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
-    );
+      ];
+
 
 }
 
@@ -117,7 +118,6 @@ $contacts = [];
    * fields must be used to set the 'value' field.
    */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
-    dpm($form_state);
   }
 
   /**
@@ -151,6 +151,8 @@ $contacts = [];
    * @param $delta
    */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+    dpm($form_state);
+    dpm($entity);
   }
 
 }
