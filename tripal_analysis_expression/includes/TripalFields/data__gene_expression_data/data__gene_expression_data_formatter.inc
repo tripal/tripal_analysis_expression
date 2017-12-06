@@ -196,9 +196,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
                 var $ = jQuery;
                 expNormal();
                 $(document).on("tripal_ds_pane_expanded", function(event) {
-                    if($(event.id).text().indexOf("Hover the mouse") > -1) {
                       expNormal();
-                    }
                 });
                 
                 ' . $this->getDownloadLinkJS() . '
