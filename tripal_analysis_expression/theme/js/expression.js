@@ -305,7 +305,7 @@ function buildLegend(colorScale, width, margin) {
                 {
                     return 'translate(0,' + (i * 10) + ' )';
                 }
-            });
+            })
         legend.append('rect')
             .attr('x', 00)
             .attr('y', 10)
