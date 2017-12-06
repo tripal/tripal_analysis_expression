@@ -107,7 +107,7 @@ function expRewrite() {
 
     var text = propertyGroups.append('text')
         .attr('class', 'label')
-        .style('font-size', '10px')
+        .style('font-size', '12px')
         .style('font-weight', 'normal')
         .html(function (d) {
             //TODO:  PUT SPLIT KEY INTO A TEXTSPAN AS HERE http://bl.ocks.org/enjalot/1829187
@@ -123,7 +123,7 @@ function expRewrite() {
         .style('text-anchor', 'bottom');
 
     text.attr('transform', function (d) {
-        return ' translate( 0,' + (height - margin.bottom + 10) + ' ),rotate(20)';
+        return ' translate( 0,' + (height - margin.bottom + 10) + ' ),rotate(45)';
     });
 
 
