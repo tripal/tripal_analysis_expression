@@ -2,6 +2,12 @@
  * This is the default function that is called when the page is loaded.
  * It is also called when the reset link is clicked.
  */
+(function ($) {
+    $(window).on('resize', function () {
+        expNormal();
+    });
+})(jQuery);
+
 function expNormal() {
     heatMapTotal = '';
     heatMapTotal = JSON.parse(JSON.stringify(heatMapRaw));
@@ -24,7 +30,7 @@ function expRewrite() {
         return Number(d.intensity);
     });
 
-//define color scale based on selected
+    //define color scale based on selected
     if (currentColor != 'Expression value') {
         var colorDomain = buildPropertyValuesDomain('color');
         var color = d3.scale.ordinal()
@@ -51,6 +57,7 @@ function expRewrite() {
         .append('svg')
         .attr('width', width)
         .attr('height', height)
+        .style('overflow-x', 'auto')
         .append('g');
 
     propertyValueList = buildPropertyValuesDomain();
@@ -59,7 +66,7 @@ function expRewrite() {
         .rangeRoundBands([margin.horizontal, width]);
 
     var y = d3.scale.linear()
-        .range([height, (margin.top + margin.bottom )]);//reverse because 0 is the top.
+        .range([height, (margin.top + margin.bottom)]);//reverse because 0 is the top.
 
     var yAxis = d3.svg.axis()
         .scale(y)
@@ -82,7 +89,7 @@ function expRewrite() {
 
     svg.append('g')
         .attr('class', 'y-axis')
-        .attr('transform', 'translate(' + (2.5 * margin.horizontal) + ', -' + (margin.bottom ) + ')')
+        .attr('transform', 'translate(' + (2.5 * margin.horizontal) + ', -' + (margin.bottom) + ')')
         .style('font-size', '12px')
         .style('font-weight', 'normal')
         .call(yAxis)
@@ -103,15 +110,14 @@ function expRewrite() {
         .style('font-size', '12px')
         .style('font-weight', 'normal')
         .html(function (d) {
-
             //TODO:  PUT SPLIT KEY INTO A TEXTSPAN AS HERE http://bl.ocks.org/enjalot/1829187
-            var label = d.key
-           //  characterLimit = 5
-           //  if (label.length > characterLimit){
-           //      splitString = label.match(new RegExp('.{1,' + characterLimit + '}', 'g'))
-           //     label = splitString.join("<br>")
-           //     // label = splitString
-           // }
+            var label = d.key;
+            //  characterLimit = 5
+            //  if (label.length > characterLimit){
+            //      splitString = label.match(new RegExp('.{1,' + characterLimit + '}', 'g'))
+            //     label = splitString.join("<br>")
+            //     // label = splitString
+            // }
             return label;
         })
         .style('text-anchor', 'bottom');
@@ -185,11 +191,11 @@ function expRewrite() {
 
             return 10 * i - (1 / numberBiosamples * 10);
         })
-        .attr('width', 5)
+        .attr('width', 9)
         .attr('height', function (d) {
             return y(0) - y(d.intensity);
         })
-        .attr('transform', 'translate(0,' + ( -margin.bottom) + ')');
+        .attr('transform', 'translate(0,' + (-margin.bottom) + ')');
 
 
     //define methods for dragging
@@ -250,13 +256,13 @@ function expRewrite() {
 
     buildLegend(color, width, margin);
 
-    var title = 'Expression by ' + currentSorting
+    var title = 'Expression by ' + currentSorting;
 
     svg.append('text')
-        .attr("x", (width / 2 - margin.horizontal))
-        .attr("y", 0 + (margin.top / 2))
-        .attr("text-anchor", "middle")
-        .style("font-size", "16px")
+        .attr('x', (width / 2 - margin.horizontal))
+        .attr('y', 0 + (margin.top / 2))
+        .attr('text-anchor', 'middle')
+        .style('font-size', '16px')
         .text(title);
 
 
@@ -319,7 +325,7 @@ function buildLegend(colorScale, width, margin) {
 
         //Now add title
         d3.select('chart').select('.legend')
-            .append("text")
+            .append('text')
             .text(currentColor)
             .style('font-size', 12);
 
