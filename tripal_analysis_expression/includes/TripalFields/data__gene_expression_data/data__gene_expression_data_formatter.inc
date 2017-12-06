@@ -241,7 +241,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
             height: 1
          })
          $("body").append(iframe);
-         message.html("Generating file. Download will start automatically...")
+         message.html(" Generating file. Download will start automatically...")
     })
     ';
   }
