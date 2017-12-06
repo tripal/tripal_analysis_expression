@@ -17,9 +17,12 @@ function tripal_protocol_bundle_fields_info_alter(&$fields, $bundle, $term) {
     $fields['schema__name']['type'] = 'text';
   }
 
-  //if (isset($bundle->data_table) AND ($bundle->data_table == 'arraydesign')) {
-  //  $fields['local__manufacturer_id']['type'] = 'chado_linker__contact';
-  //}
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'arraydesign')) {
+    $fields['local__manufacturer_id']['type'] = 'chado_linker__contact';
+    $fields['local__manufacturer_id']['widget']['settings']['chado_table'] = 'contact';
+
+
+  }
 }
 
 /**
@@ -60,10 +63,13 @@ function tripal_protocol_bundle_instances_info_alter(&$instances, $bundle, $term
   // Not gonna change manufacturer id to contacts type until the contacts field
   // widget is capable of recognizing the correct column name (manufacturer_id
   // rather than contact_id).
-  //if (isset($bundle->data_table) AND ($bundle->data_table == 'arraydesign')) {
-  //  $instances['local__manufacturer_id']['label'] = 'Manufacturer';
-  //  $instances['local__manufacturer_id']['widget']['type'] = 'chado_linker__contact_widget';
-  //}
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'arraydesign')) {
+
+    $instances['local__manufacturer_id']['label'] = 'Manufacturer';
+    $instances['local__manufacturer_id']['widget']['type'] = 'chado_linker__contact_widget';
+    $instances['local__manufacturer_id']['widget']['settings']['chado_table'] = 'contact';
+    $instances['local__manufacturer_id']['settings']['chado_table'] = 'contact';
+  }
 }
 
 /**
@@ -125,6 +131,29 @@ function tripal_protocol_bundle_fields_info($entity_type, $bundle) {
     ];
   }
 
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'arraydesign')) {
+    // First add my term.
+    tripal_insert_cvterm(array(
+      'id' => 'OBI:0000835',
+      'name' => 'manufacturer',
+      'cv_name' => 'OBI',
+      'definition' => 'A person or organization that has a manufacturer role',
+    ));
+
+    // Then describe the field defined by that term.
+    $field_name = 'obi__manufacturer';
+    $field_type = 'obi__manufacturer';
+    $fields[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
+
   return $fields;
 }
 
@@ -183,6 +212,37 @@ function tripal_protocol_bundle_instances_info($entity_type, $bundle) {
         ],
       ],
     ];
+  }
+
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'arraydesign')) {
+    $field_name = 'obi__manufacturer';
+    $field_type = 'obi__manufacturer';
+    $instances[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'manufacturer',
+      'description' => 'Manufacturer of an entity ie an array',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => $bundle->data_table,
+        'chado_column' => 'manufacturer_id',
+        'base_table' => $bundle->data_table,
+      ),
+      'widget' => array(
+        'type' => 'obi__manufacturer_widget',
+        'settings' => array(),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'obi__manufacturer_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+
   }
 
   return $instances;
