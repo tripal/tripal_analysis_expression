@@ -113,7 +113,7 @@ function expRewrite() {
         .attr('x', 0)
         .attr('y', 0)
         .html(function (d) {
-            //TODO:  PUT SPLIT KEY INTO A TEXTSPAN AS HERE http://bl.ocks.org/enjalot/1829187
+            //DONE: PUT SPLIT KEY INTO A TEXTSPAN AS HERE http://bl.ocks.org/enjalot/1829187
             var label = d.key;
             characterLimit = 20;
             if (label.length > characterLimit) {
