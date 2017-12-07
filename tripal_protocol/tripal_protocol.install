@@ -530,13 +530,15 @@ function tripal_protocol_add_cvterms_entity_for_array_design() {
   ]);
   tripal_associate_chado_semweb_term('arraydesign', 'substratetype_id', $term);
 
-  // arraydesign.protocol_id
-  $term = tripal_insert_cvterm([
-    'id' => 'local:protocol_id',
-    'name' => 'protocol_id',
-    'cv_name' => 'local',
-  ]);
-  tripal_associate_chado_semweb_term('arraydesign', 'protocol_id', $term);
+//  // arraydesign.protocol_id
+  //Superseded by new tripal chado field
+
+//  $term = tripal_insert_cvterm([
+//    'id' => 'local:protocol_id',
+//    'name' => 'protocol_id',
+//    'cv_name' => 'local',
+//  ]);
+//  tripal_associate_chado_semweb_term('arraydesign', 'protocol_id', $term);
 
   // Create the 'Array Design' entity type. This uses the EFO:0000269 term.
   tripal_insert_cvterm([
