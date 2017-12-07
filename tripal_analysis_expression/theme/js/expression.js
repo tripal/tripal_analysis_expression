@@ -35,9 +35,9 @@ function expRewrite() {
         var colorDomain = buildPropertyValuesDomain('color');
         var color = d3.scale.ordinal()
             .domain(colorDomain)
-            .range(['#ca0020', '#f4a582', '#d5d5d5', '#92c5de', '#0571b0']);
-        //TODO: CALCULATE BASED ON NUMBER OF PROPERTIES INSTEAD
-
+            .range(["#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", "#FDBF6F",
+                "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "#B15928"
+    ]);
 
     } else {
         colorDomain = [0, maxHeat / 2, maxHeat];
