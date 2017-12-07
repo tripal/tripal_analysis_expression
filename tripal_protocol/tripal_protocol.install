@@ -49,8 +49,8 @@ function tripal_protocol_install() {
   ])->condition('table_name', 'protocol', '=')->execute();
 
 
-  tripal_protocol_add_cvterms_entity_for_array_design();
   tripal_protocol_add_new_cvterms_entity();
+  tripal_protocol_add_cvterms_entity_for_array_design();
 
 }
 
@@ -413,7 +413,6 @@ function tripal_protocol_add_new_cvterms_entity() {
 }
 
 function tripal_protocol_add_cvterms_entity_for_array_design() {
-
   // arraydesign.name
   $term = tripal_insert_cvterm([
     'id' => 'schema:name',
@@ -565,7 +564,9 @@ function tripal_protocol_add_cvterms_entity_for_array_design() {
       throw new Exception($error['!message']);
     }
   }
+
 }
+
 
 /**
  * Create protocol bundle.
