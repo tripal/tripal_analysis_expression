@@ -46,7 +46,15 @@ function expRewrite() {
             .range(['blue', 'gray', 'red']);
     }
 
-    var width = d3.select('figure').node().getBoundingClientRect().width;
+
+    var maxScreenSamples =  20
+
+   var  width = d3.select('figure').node().getBoundingClientRect().width
+
+    if (heatMap.length > maxScreenSamples){
+        width = heatMap.length * 20
+    }
+
 
     var height = 500;
     // var margin = 20;
@@ -59,6 +67,13 @@ function expRewrite() {
         .attr('height', height)
         .style('overflow-x', 'auto')
         .append('g');
+
+
+
+    if (heatMap.length > maxScreenSamples){
+        //Set the container to scrolling
+        d3.select('chart').attr('overflow', 'scroll')
+    }
 
     propertyValueList = buildPropertyValuesDomain();
 
