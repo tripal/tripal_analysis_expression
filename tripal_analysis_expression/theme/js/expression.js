@@ -47,16 +47,12 @@ function expRewrite() {
     }
 
 
-  //  var minWidth = d3.select('figure').node().getBoundingClientRect().width;
-    var minWidth = 500
+    var minWidth = d3.select('figure').node().getBoundingClientRect().width;
 
     var width = 100 + (heatMap.length * 20);
     var calculatedWidth = Math.max(minWidth, width)
 
-    console.log(Math.max(minWidth, width))
-
     var height = 500;
-    // var margin = 20;
     var margin = {top: 50, bottom: 100, horizontal: 20};
 
     d3.select('figure')
