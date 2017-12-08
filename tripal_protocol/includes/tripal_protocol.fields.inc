@@ -152,6 +152,49 @@ function tripal_protocol_bundle_fields_info($entity_type, $bundle) {
         'type' => 'field_chado_storage',
       ),
     );
+
+    //microarray type
+    tripal_insert_cvterm(array(
+      'id' => 'OBI:0000052',
+      'name' => 'microarray platform',
+      'cv_name' => 'OBI',
+      'definition' => 'A microarray platform is a platform that contains the instruments, software and reagents needed to perform a microarray protocol',
+    ));
+
+    // Then describe the field defined by that term.
+    $field_name = 'obi__microarray_platform';
+    $field_type = 'obi__microarray_platform';
+    $fields[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+
+    //Substrate
+    tripal_insert_cvterm(array(
+      'id' => 'EFO:0005061',
+      'name' => 'substrate',
+      'cv_name' => 'EFO',
+      'definition' => 'A substrate is the surface on which material, such as an organism, is grown or attached.',
+    ));
+
+    // Then describe the field defined by that term.
+    $field_name = 'efo__substrate';
+    $field_type = 'efo__substrate';
+    $fields[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+
   }
 
   return $fields;
@@ -242,6 +285,67 @@ function tripal_protocol_bundle_instances_info($entity_type, $bundle) {
         ),
       ),
     );
+
+    // microarray design.
+
+      $field_name = 'obi__microarray_platform';
+      $field_type = 'obi__microarray_platform';
+      $instances[$field_name] =  array(
+        'field_name' => $field_name,
+        'entity_type' => $entity_type,
+        'bundle' => $bundle->name,
+        'label' => 'Microarray platform',
+        'description' => 'A microarray platform is a platform that contains the instruments, software and reagents needed to perform a microarray protocol',
+        'required' => FALSE,
+        'settings' => array(
+          'auto_attach' => FALSE,
+          'chado_table' => $bundle->data_table,
+          'chado_column' => 'platformtype_id',
+          'base_table' => $bundle->data_table,
+        ),
+        'widget' => array(
+          'type' => 'obi__microarray_platform_widget',
+          'settings' => array(),
+        ),
+        'display' => array(
+          'default' => array(
+            'label' => 'hidden',
+            'type' => 'obi__microarray_platform_formatter',
+            'settings' => array(),
+          ),
+        ),
+      );
+
+      //substrate
+    $field_name = 'efo__substrate';
+    $field_type = 'efo__substrate';
+    $instances[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Microarray substrate',
+      'description' => 'The material used for the substrate of a microarray (ie glass, nylon)',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => $bundle->data_table,
+        'chado_column' => 'substratetype_id',
+        'base_table' => $bundle->data_table,
+      ),
+      'widget' => array(
+        'type' => 'efo__substrate_widget',
+        'settings' => array(),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'efo__substrate_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+
+
 
   }
 
