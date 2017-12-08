@@ -35,9 +35,9 @@ function expRewrite() {
         var colorDomain = buildPropertyValuesDomain('color');
         var color = d3.scale.ordinal()
             .domain(colorDomain)
-            .range(["#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", "#FDBF6F",
-                "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "#B15928"
-    ]);
+            .range(['#A6CEE3', '#1F78B4', '#B2DF8A', '#33A02C', '#FB9A99', '#E31A1C', '#FDBF6F',
+                '#FF7F00', '#CAB2D6', '#6A3D9A', '#FFFF99', '#B15928'
+            ]);
 
     } else {
         colorDomain = [0, maxHeat / 2, maxHeat];
@@ -47,242 +47,238 @@ function expRewrite() {
     }
 
 
-    var maxScreenSamples =  20
+  //  var minWidth = d3.select('figure').node().getBoundingClientRect().width;
+    var minWidth = 500
 
-   var  width = d3.select('figure').node().getBoundingClientRect().width
+    var width = 100 + (heatMap.length * 20);
+    var calculatedWidth = Math.max(minWidth, width)
 
-    if (heatMap.length > maxScreenSamples){
-        width = heatMap.length * 20
-    }
-
+    console.log(Math.max(minWidth, width))
 
     var height = 500;
     // var margin = 20;
     var margin = {top: 50, bottom: 100, horizontal: 20};
 
-    var svg = d3.select('figure')
-        .append('chart')
-        .append('svg')
-        .attr('width', width)
-        .attr('height', height)
-        .style('overflow-x', 'auto')
-        .append('g');
+    d3.select('figure')
+        .style('overflow', 'auto')
+        .style('max-width', '100%');
+
+var svg = d3.select('figure')
+    .append('chart')
+    .append('svg')
+    .attr('width', calculatedWidth)
+    .attr('height', height)
+    .append('g');
 
 
+propertyValueList = buildPropertyValuesDomain();
 
-    if (heatMap.length > maxScreenSamples){
-        //Set the container to scrolling
-        d3.select('chart').attr('overflow', 'scroll')
-    }
+var x0 = d3.scale.ordinal()
+    .rangeRoundBands([margin.horizontal, calculatedWidth]);
 
-    propertyValueList = buildPropertyValuesDomain();
+var y = d3.scale.linear()
+    .range([height, (margin.top + margin.bottom)]);//reverse because 0 is the top.
 
-    var x0 = d3.scale.ordinal()
-        .rangeRoundBands([margin.horizontal, width]);
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient('left')
+    .ticks(2);
 
-    var y = d3.scale.linear()
-        .range([height, (margin.top + margin.bottom)]);//reverse because 0 is the top.
+var nested = d3.nest()
+    .key(function (d) {
+        if (!d.properties[currentSorting]) {
+            return 'Not set';
+        }
+        return d.properties[currentSorting];
+    }).entries(heatMap);
 
-    var yAxis = d3.svg.axis()
-        .scale(y)
-        .orient('left')
-        .ticks(2);
+//set the domains based on the nested data
+x0.domain(nested.map(function (d) {
+    return d.key;
+}));
+y.domain([0, maxHeat]);
 
-    var nested = d3.nest()
-        .key(function (d) {
-            if (!d.properties[currentSorting]) {
-                return 'Not set';
-            }
-            return d.properties[currentSorting];
-        }).entries(heatMap);
+svg.append('g')
+    .attr('class', 'y-axis')
+    .attr('transform', 'translate(' + (2.5 * margin.horizontal) + ', -' + (margin.bottom) + ')')
+    .style('font-size', '12px')
+    .style('font-weight', 'normal')
+    .call(yAxis)
+    .select('.domain');
 
-    //set the domains based on the nested data
-    x0.domain(nested.map(function (d) {
-        return d.key;
-    }));
-    y.domain([0, maxHeat]);
+var dragging = {};
 
-    svg.append('g')
-        .attr('class', 'y-axis')
-        .attr('transform', 'translate(' + (2.5 * margin.horizontal) + ', -' + (margin.bottom) + ')')
-        .style('font-size', '12px')
-        .style('font-weight', 'normal')
-        .call(yAxis)
-        .select('.domain');
-
-    var dragging = {};
-
-    var propertyGroups = svg.selectAll('.propertyGroups')
-        .data(nested)
-        .enter()
-        .append('g')
-        .attr('transform', function (d) {
-            return 'translate(' + translationXOffset(d, x0) + ',0)';
-        });
-
-    var text = propertyGroups.append('text')
-        .attr('class', 'label')
-        .style('font-size', '12px')
-        .style('font-weight', 'normal')
-        .style('padding', '5px')
-        .attr('x', 0)
-        .attr('y', 0)
-        .html(function (d) {
-            //DONE: PUT SPLIT KEY INTO A TEXTSPAN AS HERE http://bl.ocks.org/enjalot/1829187
-            var label = d.key;
-            characterLimit = 20;
-            if (label.length > characterLimit) {
-                splitString = label.match(new RegExp('.{1,' + characterLimit + '}', 'g'));
-                label = splitString.map(function (item) {
-                    return '<tspan x="0" dy="10">' + item + '</tspan>';
-                }).join(' ');
-            }
-            return label;
-        })
-        .style('text-anchor', 'bottom');
-
-    text.attr('transform', function (d) {
-        return ' translate( 0,' + (height - margin.bottom + 10) + ' ),rotate(45)';
+var propertyGroups = svg.selectAll('.propertyGroups')
+    .data(nested)
+    .enter()
+    .append('g')
+    .attr('transform', function (d) {
+        return 'translate(' + translationXOffset(d, x0) + ',0)';
     });
 
+var text = propertyGroups.append('text')
+    .attr('class', 'label')
+    .style('font-size', '12px')
+    .style('font-weight', 'normal')
+    .style('padding', '5px')
+    .attr('x', 0)
+    .attr('y', 0)
+    .html(function (d) {
+        //DONE: PUT SPLIT KEY INTO A TEXTSPAN AS HERE http://bl.ocks.org/enjalot/1829187
+        var label = d.key;
+        characterLimit = 20;
+        if (label.length > characterLimit) {
+            splitString = label.match(new RegExp('.{1,' + characterLimit + '}', 'g'));
+            label = splitString.map(function (item) {
+                return '<tspan x="0" dy="10">' + item + '</tspan>';
+            }).join(' ');
+        }
+        return label;
+    })
+    .style('text-anchor', 'bottom');
 
-    propertyGroups.call(d3.behavior.drag()
-        .origin(function (d) {  //define the start drag as the middle of the group
-            //this should match the transformation used when assigning the group
-            return {x: translationXOffset(d, x0)};
-        })
-        .on('dragstart', function (d) {
-            //track the position of the selected group in the dragging object
-            dragging[d.key] = translationXOffset(d, x0);
-            sel = d3.select(this);
-            sel.moveToFront();
-        })
-        .on('drag', function (d) {//track current drag location
-            dragging[d.key] = d3.event.x;
+text.attr('transform', function (d) {
+    return ' translate( 0,' + (height - margin.bottom + 10) + ' ),rotate(45)';
+});
 
-            nested.sort(function (a, b) {
-                return position(a) - position(b);
-            });
-            x0.domain(nested.map(function (d) {//reset the x0 domain
-                return d.key;
-            }));
-            propertyGroups.attr('transform', function (d) {
-                return 'translate(' + position(d) + ', 0)';
-            });
 
-        })
-        .on('dragend', function (d) {
-            delete dragging[d.key];
-            transition(d3.select(this)).attr('transform', function (d) {
+propertyGroups.call(d3.behavior.drag()
+    .origin(function (d) {  //define the start drag as the middle of the group
+        //this should match the transformation used when assigning the group
+        return {x: translationXOffset(d, x0)};
+    })
+    .on('dragstart', function (d) {
+        //track the position of the selected group in the dragging object
+        dragging[d.key] = translationXOffset(d, x0);
+        sel = d3.select(this);
+        sel.moveToFront();
+    })
+    .on('drag', function (d) {//track current drag location
+        dragging[d.key] = d3.event.x;
+
+        nested.sort(function (a, b) {
+            return position(a) - position(b);
+        });
+        x0.domain(nested.map(function (d) {//reset the x0 domain
+            return d.key;
+        }));
+        propertyGroups.attr('transform', function (d) {
+            return 'translate(' + position(d) + ', 0)';
+        });
+
+    })
+    .on('dragend', function (d) {
+        delete dragging[d.key];
+        transition(d3.select(this)).attr('transform', function (d) {
+            return 'translate(' + translationXOffset(d, x0) + ',0)';
+        });
+        propertyGroups.selectAll()
+            .attr('transform', function (d) {
                 return 'translate(' + translationXOffset(d, x0) + ',0)';
             });
-            propertyGroups.selectAll()
-                .attr('transform', function (d) {
-                    return 'translate(' + translationXOffset(d, x0) + ',0)';
-                });
-        })
-    );
-
-    var bars = propertyGroups.selectAll('.bar')
-        .data(function (d) {
-            return d.values;
-        })//nest() creates key:values.  for us, key is the property value, and values are the full biomat object
-        .enter().append('rect')
-        .style('fill', function (d) { // fill depends on if user is doing expression based or property based
-            if (currentColor == 'Expression value') {
-                return color(d.intensity);
-            }
-            else {
-                if (!d.properties[currentColor]) {
-                    propertyName = 'Not set';
-                } else {
-                    propertyName = d.properties[currentColor];
-                }
-                return color(propertyName);
-            }
-
-        })
-        .attr('y', function (d) {
-            return y(d.intensity);
-        })
-        .attr('x', function (d, i) {
-            numberBiosamples = Object.keys(d).length;
-
-            return 10 * i - (1 / numberBiosamples * 10);
-        })
-        .attr('width', 9)
-        .attr('height', function (d) {
-            return y(0) - y(d.intensity);
-        })
-        .attr('transform', 'translate(0,' + (-margin.bottom) + ')');
-
-
-    //define methods for dragging
-    d3.selection.prototype.moveToFront = function () {
-        return this.each(function () {
-            this.parentNode.appendChild(this);
-        });
-    };
-
-    function position(property) {
-        var v = dragging[property.key];
-        //v will be null if we arent dragging it: in that case, get its position
-        return v == null ? translationXOffset(property, x0) : v;
-    }
-
-    function transition(g) {
-        return g.transition().duration(500);
-    }
-
-    //Add the tool tip
-
-    var divTooltip = d3.select('body').append('div')
-        .attr('class', 'toolTip')
-        .style('position', 'absolute')
-        .style('max-width', '250px')
-        .style('padding', '10px')
-        .style('font-size', '12px')
-        .style('font-family', 'Helvetica, Roboto, sans-serif')
-        .style('background', 'rgba(255, 255, 255, .9)')
-        .style('border', '1px solid rgba(0,0,0,.3)')
-        .style('border-radius', '5px')
-        .style('pointer-events', 'none')
-        .style('display', 'none')
-        .style('opacity', 0)
-        .style('transition', 'opacity .25s linear')
-        .style('z-index', 999999);
-    bars.on('mouseover', function (d) {
-        propTable = buildPropertyTooltipTable(d);
-        divTooltip.transition()
-            .duration(200)
-            .style('opacity', 1)
-            .style('display', 'block');
-        divTooltip.html(
-            '<strong>Biosample:</strong> ' + d.name + '<br/>' +
-            '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
-            '<strong>Description: </strong><br/>' + d.description + '<br/>'
-            + propTable)
-            .style('left', (jQuery(this).offset().left - 260) + 'px')
-            .style('top', (jQuery(this).offset().top - (y(d.intensity)) + 'px'));//(d3.event.pageY))// - (height + margin)) + "px");
     })
+);
 
-        .on('mouseout', function (d) {
-            divTooltip.transition()
-                .duration(500)
-                .style('opacity', 0)
-                .style('display', 'none');
-        });
+var bars = propertyGroups.selectAll('.bar')
+    .data(function (d) {
+        return d.values;
+    })//nest() creates key:values.  for us, key is the property value, and values are the full biomat object
+    .enter().append('rect')
+    .style('fill', function (d) { // fill depends on if user is doing expression based or property based
+        if (currentColor == 'Expression value') {
+            return color(d.intensity);
+        }
+        else {
+            if (!d.properties[currentColor]) {
+                propertyName = 'Not set';
+            } else {
+                propertyName = d.properties[currentColor];
+            }
+            return color(propertyName);
+        }
 
-    buildLegend(color, width, margin);
+    })
+    .attr('y', function (d) {
+        return y(d.intensity);
+    })
+    .attr('x', function (d, i) {
+        numberBiosamples = Object.keys(d).length;
 
-    var title = 'Expression by ' + currentSorting;
+        return 10 * i - (1 / numberBiosamples * 10);
+    })
+    .attr('width', 9)
+    .attr('height', function (d) {
+        return y(0) - y(d.intensity);
+    })
+    .attr('transform', 'translate(0,' + (-margin.bottom) + ')');
 
-    svg.append('text')
-        .attr('x', (width / 2 - margin.horizontal))
-        .attr('y', 0 + (margin.top / 2))
-        .attr('text-anchor', 'middle')
-        .style('font-size', '16px')
-        .text(title);
+
+//define methods for dragging
+d3.selection.prototype.moveToFront = function () {
+    return this.each(function () {
+        this.parentNode.appendChild(this);
+    });
+};
+
+function position(property) {
+    var v = dragging[property.key];
+    //v will be null if we arent dragging it: in that case, get its position
+    return v == null ? translationXOffset(property, x0) : v;
+}
+
+function transition(g) {
+    return g.transition().duration(500);
+}
+
+//Add the tool tip
+
+var divTooltip = d3.select('body').append('div')
+    .attr('class', 'toolTip')
+    .style('position', 'absolute')
+    .style('max-width', '250px')
+    .style('padding', '10px')
+    .style('font-size', '12px')
+    .style('font-family', 'Helvetica, Roboto, sans-serif')
+    .style('background', 'rgba(255, 255, 255, .9)')
+    .style('border', '1px solid rgba(0,0,0,.3)')
+    .style('border-radius', '5px')
+    .style('pointer-events', 'none')
+    .style('display', 'none')
+    .style('opacity', 0)
+    .style('transition', 'opacity .25s linear')
+    .style('z-index', 999999);
+bars.on('mouseover', function (d) {
+    propTable = buildPropertyTooltipTable(d);
+    divTooltip.transition()
+        .duration(200)
+        .style('opacity', 1)
+        .style('display', 'block');
+    divTooltip.html(
+        '<strong>Biosample:</strong> ' + d.name + '<br/>' +
+        '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
+        '<strong>Description: </strong><br/>' + d.description + '<br/>'
+        + propTable)
+        .style('left', (jQuery(this).offset().left - 260) + 'px')
+        .style('top', (jQuery(this).offset().top - (y(d.intensity)) + 'px'));//(d3.event.pageY))// - (height + margin)) + "px");
+})
+
+    .on('mouseout', function (d) {
+        divTooltip.transition()
+            .duration(500)
+            .style('opacity', 0)
+            .style('display', 'none');
+    });
+
+buildLegend(color, calculatedWidth, margin);
+
+var title = 'Expression by ' + currentSorting;
+
+svg.append('text')
+    .attr('x', (calculatedWidth / 2 - margin.horizontal))
+    .attr('y', 0 + (margin.top / 2))
+    .attr('text-anchor', 'middle')
+    .style('font-size', '16px')
+    .text(title);
 
 
 }
