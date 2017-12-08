@@ -9,14 +9,17 @@
 })(jQuery);
 
 function expNormal() {
-    heatMapTotal = '';
-    heatMapTotal = JSON.parse(JSON.stringify(heatMapRaw));
-    //Get samples associated with selected analysis
-    selectedAnalysis = d3.select('#analyses').property('value');
-    heatMap = heatMapTotal[selectedAnalysis].biomaterials;
-    buildPropertySelect();
-    d3.selectAll('chart').remove();
-    expRewrite();
+    jQuery('.tripal_pane').on('tripal_ds_pane_expanded', function () {
+        heatMapTotal = '';
+        heatMapTotal = JSON.parse(JSON.stringify(heatMapRaw));
+        //Get samples associated with selected analysis
+        selectedAnalysis = d3.select('#analyses').property('value');
+        heatMap = heatMapTotal[selectedAnalysis].biomaterials;
+        buildPropertySelect();
+        d3.selectAll('chart').remove();
+        expRewrite();
+
+    });
 }
 
 function expRewrite() {
