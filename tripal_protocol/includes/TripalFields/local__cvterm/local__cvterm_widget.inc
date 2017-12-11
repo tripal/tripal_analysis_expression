@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @class
  * Purpose:
@@ -7,13 +8,10 @@
  * Data:
  * Assumptions:
  */
-class obi__manufacturer_widget extends ChadoFieldWidget {
+class local__cvterm_widget extends ChadoFieldWidget {
 
   // The default label for this field.
-  public static $default_label = 'manufacturer';
-
-  // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('obi__manufacturer');
+  public static $default_label = 'CV term';
 
   /**
    * Provides the form for editing of this field.
@@ -21,7 +19,7 @@ class obi__manufacturer_widget extends ChadoFieldWidget {
    * This function corresponds to the hook_field_widget_form()
    * function of the Drupal Field API.
    *
-   * This form is displayed when the user creates a new entity or edits an
+   * This form is diplayed when the user creates a new entity or edits an
    * existing entity.  If the field is attached to the entity then the form
    * provided by this function will be displayed.
    *
@@ -72,41 +70,43 @@ class obi__manufacturer_widget extends ChadoFieldWidget {
    */
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
-    $settings = $this->field['settings'];
+
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
+    $description = "Select a CVterm";
 
-    $widget['value'] = array(
-      '#type' => 'value',
-      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
-
-$contacts = [];
-    $description = "The manufacturer of this array.  If the desired manufacturer is not available, create a new Contact.";
-    //options are all Contacts
-    $sql = "SELECT * FROM {contact}";
-    $results = chado_query($sql);
-    foreach ($results as $contact) {
-      $contacts[$contact->contact_id] = $contact->name;
+    if (isset($element['description'])) {
+      $description = $element['description'];
     }
-    //$widget['manufacturer_id'] = array(
-    $widget['value'] = [
-      '#type' => 'select',
+
+    $widget['term_name'] = [
+      '#type' => 'textfield',
       '#title' => $element['#title'],
       '#description' => $description,
-      '#options' => $contacts,
-      '#default_value' => "test",
-      '#empty_option' => '- Select a Contact -',
+      '#default_value' => "",
       '#required' => $element['#required'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-      '#delta' => $delta,
-      ];
+      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
+    ];
 
+    //TODO: Create callback and allow CV lookup and validation
 
-}
+    //    $widget['select_button'] = [
+    //      '#type' => 'button',
+    //      '#value' => t('Lookup Term'),
+    //      '#name' => 'select_cvterm',
+    //      '#ajax' => [
+    //        'callback' => "tripal_chado_semweb_form_ajax_callback",
+    //        'wrapper' => "tripal-chado-semweb-edit-form",
+    //        'effect' => 'fade',
+    //        'method' => 'replace',
+    //      ],
+    //    ];
+
+  }
 
   /**
    * Performs validation of the widgetForm.
@@ -118,6 +118,22 @@ $contacts = [];
    * fields must be used to set the 'value' field.
    */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
+    $field_name = $this->field['field_name'];
+    $term_name = $form_state['values'][$field_name]['und'][0]['term_name'];
+
+    if ($term_name) {
+      $columns = ['cvterm_id'];
+      $values = ['name' => $term_name];
+      $terms = chado_select_record('cvterm', $columns, $values);
+
+      if (count($terms) == 0) {
+        tripal_set_message("Warning: no CVterms found for " . $term_name . " for field " . $field_name, 'Tripal_ERROR');
+        return;
+      }
+      $term_id = $terms[0]->cvterm_id;
+
+      $form_state['values'][$field_name]['und'][0]['value'] = $term_id;
+    }
   }
 
   /**
@@ -151,7 +167,8 @@ $contacts = [];
    * @param $delta
    */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-  
+
   }
+
 
 }
