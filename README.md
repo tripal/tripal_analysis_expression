@@ -24,8 +24,8 @@ The purpose of the module is to visually represent gene expression for Tripal fe
 
 1. Tripal
 2. Tripal Chado
-3. Tripal Protocols (Included)
-4. Tripal Biomaterials (Included)
+3. Tripal Protocol (Included)
+4. Tripal Biomaterial (Included)
 
 
 # Installation
@@ -49,10 +49,10 @@ Once expression data is loaded, a display field will be shown on each feature pa
 This module provides a search and results block to search for and select features to display in a heatmap.
 
 # Loading Biosamples
-Biosample may be loaded from a flat file or from a BioSample xml file downloaded from NCBI. The steps for loading biosamples are as follows (detailed instructions can be found further below):
+Biosamples may be loaded from a flat file or from a BioSample xml file downloaded from NCBI. The steps for loading biosamples are as follows (detailed instructions can be found further below):
 
 1. [First download or generate the flat (.csv, .tsv) or .xml file with biosample data you want to load](#downloading-xml-biosample-file-from-ncbi).
-2. Add the organism associated with the biosample if it doesn't exist yet (**Add content->Organism**). 
+2. Add the organism associated with the biosample if it doesn't exist yet (**Add Tripal content->Organism**).  You may also create an analysis to associate the biosamples with if you choose. 
 3. Navigate to the Tripal site's Tripal Biomaterial Loader 
 4. Publish the biosamples
 
@@ -90,14 +90,20 @@ Click here to see an example of a [CSV file](example_files/exampleCSV.csv) and a
 After loading, biosamples must be published to create entities for each biosample content type. As an administrator or user with correct permissions, navigate to **Content->Tripal Content->Publish Tripal Content**. Select the biological sample type to publish, apply any optional filtering, and press Publish.
 
 ### Loading a Single Biosample
-Biosamples may also be loaded one at a time. As an administer or a user with permission to create content, go to: **Content->Tripal Content -> Add Tripal Content -> Biological Sample**. Available biosamples fields include the following. 
+Biosamples may also be loaded one at a time. As an administer or a user with permission to create Tripal content, go to: **Content->Tripal Content -> Add Tripal Content -> Biological Sample**. Available biosamples fields include the following. 
 * **Accession** - If the biosample is in a database stored in your Tripal site, the accession can be entered here.  
 * **Name (must be unique - required)**
 * **Description** - A description of the biosample.
 * **Contact** - The person or organization responsible for collecting the biosample.
 * **Organism** - The organism from which the biosample was collected. 
-
-**There is currently no interface to add properties to your biosample.**
+* **Properties** - The properties describing this biosample, such as "age" or "geographic location".  Each property type utilizes a CVterm.
+ 
+ ## Biosample properties
+  
+  Properties inserted into the database using the biosample bulk loader will be made available as new fields.  They can be found by going to admin->structure->Tripal Content Types -> Biological Sample and pressing the + Check for New Fields button in the upper left hand of the screen.
+  
+  If you would like to create new properties, you may do so in the structure menu.  Using the **Add New Field** row, enter the label and select **Chado Property** for the field type.  After pressing Save, you **must assign a CVterm** to this property in the Controlled Vocabulary Term section.  If an appropriate CVterm does not exist, you must insert it before you can create the field. To do so, navigate to `tripal/loaders/chado_cvterms` and press the *Add Term** button.
+  
 
 # Loading Expression Data
 The steps for loading expression data are as follows (detailed instructions can be found further below):
