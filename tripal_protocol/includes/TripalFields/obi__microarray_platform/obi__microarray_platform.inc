@@ -124,7 +124,6 @@ class obi__microarray_platform extends ChadoField {
     // need to implement this function. However, if you need to add any
     // additional data to be used in the display, you should add it here.
     parent::load($entity);
-    dpm($entity);
 
     $cvterm_id = $entity->obi__microarray_platform['und'][0]['chado-arraydesign__platformtype_id'];
     $cvterm = chado_generate_var('cvterm', ['cvterm_id' => $cvterm_id]);

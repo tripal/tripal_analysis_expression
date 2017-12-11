@@ -62,8 +62,11 @@ function tripal_protocol_install() {
 function tripal_protocol_add_cvs() {
   // CVs for the array design content type.
   tripal_insert_cv('arraydesign_property', 'Contains property terms for arraydesigns.');
-  tripal_insert_cv('arraydesign_platformtype', 'Contains microarray platform types.');
-  tripal_insert_cv('arraydesign_substratetype', 'Contains microarray substrate types.');
+
+// Let's not do this.
+
+//  tripal_insert_cv('arraydesign_platformtype', 'Contains microarray platform types.');
+//  tripal_insert_cv('arraydesign_substratetype', 'Contains microarray substrate types.');
 
   // CVs for the protocol content type.
   tripal_insert_cv('protocol_type', 'Contains protocol type.');
@@ -516,17 +519,17 @@ function tripal_protocol_add_cvterms_entity_for_array_design() {
 
   // arraydesign.platformtype_id
   $term = tripal_insert_cvterm([
-    'id' => 'local:platformtype_id',
-    'name' => 'platformtype_id',
-    'cv_name' => 'local',
+    'id' => 'OBI:microarray_platform',
+    'name' => 'microarray_platform',
+    'cv_name' => 'OBI',
   ]);
   tripal_associate_chado_semweb_term('arraydesign', 'platformtype_id', $term);
 
   // arraydesign.substratetype_id
   $term = tripal_insert_cvterm([
-    'id' => 'local:substratetype_id',
-    'name' => 'substratetype_id',
-    'cv_name' => 'local',
+    'id' => 'EFO:substrate',
+    'name' => 'substrate',
+    'cv_name' => 'EFO',
   ]);
   tripal_associate_chado_semweb_term('arraydesign', 'substratetype_id', $term);
 

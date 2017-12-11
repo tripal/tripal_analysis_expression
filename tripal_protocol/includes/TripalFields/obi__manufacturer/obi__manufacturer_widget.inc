@@ -151,8 +151,7 @@ $contacts = [];
    * @param $delta
    */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-    dpm($form_state);
-    dpm($entity);
+  
   }
 
 }
