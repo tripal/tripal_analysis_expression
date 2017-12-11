@@ -124,5 +124,7 @@ class efo__substrate extends ChadoField {
     // need to implement this function. However, if you need to add any
     // additional data to be used in the display, you should add it here.
     parent::load($entity);
+
+    dpm($entity);
   }
 }

@@ -83,7 +83,6 @@ class obi__manufacturer_formatter extends ChadoFieldFormatter {
 
     // Get the settings
     $settings = $display['settings'];
-    dpm($items);
   }
 
   /**

@@ -83,10 +83,8 @@ class efo__substrate_formatter extends ChadoFieldFormatter {
 
     // Get the settings
     $settings = $display['settings'];
-
     dpm($items);
-    dpm($entity_type);
-    dpm($entity);
+
   }
 
   /**
