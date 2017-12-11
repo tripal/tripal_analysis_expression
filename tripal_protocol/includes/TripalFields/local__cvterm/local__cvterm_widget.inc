@@ -71,17 +71,16 @@ class local__cvterm_widget extends ChadoFieldWidget {
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
-    dpm($element);
+    $description = "Select a CVterm";
 
-
-    $column = "something_column";
-
-    $table = "something_table";
-
-
-    $description = $element['description'];
-
+    if (isset($element['description'])) {
+      $description = $element['description'];
+    }
 
     $widget['term_name'] = [
       '#type' => 'textfield',
@@ -93,62 +92,18 @@ class local__cvterm_widget extends ChadoFieldWidget {
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
     ];
 
+//    $widget['select_button'] = [
+//      '#type' => 'button',
+//      '#value' => t('Lookup Term'),
+//      '#name' => 'select_cvterm',
+//      '#ajax' => [
+//        'callback' => "tripal_chado_semweb_form_ajax_callback",
+//        'wrapper' => "tripal-chado-semweb-edit-form",
+//        'effect' => 'fade',
+//        'method' => 'replace',
+//      ],
+//    ];
 
-    $widget['value'] = [
-      '#type' => 'value',
-      '#title' => $element['#title'],
-      '#description' => $description,
-      '#default_value' => "test",
-      '#empty_option' => '- Select a Contact -',
-      '#required' => $element['#required'],
-      '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-      '#delta' => $delta,
-      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
-    ];
-
-    $term_name = array_key_exists('values', $form_state) ? $form_state['values']['term_name'] : '';
-
-    if ($term_name) {
-      $widget['terms_list'] = [
-        '#type' => 'fieldset',
-        '#title' => t('Matching Terms'),
-        '#description' => t('Please select the term the best matches the
-          content type you want to create. If the same term exists in
-          multiple vocabularies you will see more than one option below.'),
-      ];
-      $match = [
-        'name' => $term_name,
-      ];
-      $terms = chado_generate_var('cvterm', $match, ['return_array' => TRUE]);
-      $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
-      $num_terms = 0;
-      foreach ($terms as $term) {
-        // Save the user a click by setting the default value as 1 if there's
-        // only one matching term.
-        $default = FALSE;
-        $attrs = [];
-        if ($num_terms == 0 and count($terms) == 1) {
-          $default = TRUE;
-          $attrs = ['checked' => 'checked'];
-        }
-        $widget['terms_list']['term-' . $term->cvterm_id] = [
-          '#type' => 'checkbox',
-          '#title' => $term->name,
-          '#default_value' => $default,
-          '#attributes' => $attrs,
-          '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
-            '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
-            '<br><b>Definition:</b>  ' . $term->definition,
-        ];
-        $num_terms++;
-      }
-      if ($num_terms == 0) {
-        $widget['terms_list']['none'] = [
-          '#type' => 'item',
-          '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>',
-        ];
-      }
-    }
   }
 
   /**
@@ -161,9 +116,22 @@ class local__cvterm_widget extends ChadoFieldWidget {
    * fields must be used to set the 'value' field.
    */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
+    $field_name = $this->field['field_name'];
+    $term_name = $form_state['values'][$field_name]['und'][0]['term_name'];
 
-    dpm($form_state);
+    if ($term_name) {
+      $columns = ['cvterm_id'];
+      $values = ['name' => $term_name];
+      $terms = chado_select_record('cvterm', $columns, $values);
 
+      if (count($terms) == 0) {
+        tripal_set_message("Warning: no CVterms found for " . $term_name .  " for field " . $field_name, 'Tripal_ERROR');
+        return;
+      }
+      $term_id = $terms[0]->cvterm_id;
+
+      $form_state['values'][$field_name]['und'][0]['value'] = $term_id;
+    }
   }
 
   /**
@@ -197,6 +165,8 @@ class local__cvterm_widget extends ChadoFieldWidget {
    * @param $delta
    */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+
   }
+
 
 }
