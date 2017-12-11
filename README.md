@@ -103,7 +103,7 @@ Biosamples may also be loaded one at a time. As an administer or a user with per
   Properties inserted into the database using the biosample bulk loader will be made available as new fields.  They can be found by going to admin->structure->Tripal Content Types -> Biological Sample and pressing the + Check for New Fields button in the upper left hand of the screen.
   
   If you would like to create new properties, you may do so in the structure menu.  Using the **Add New Field** row, enter the label and select **Chado Property** for the field type.  After pressing Save, you **must assign a CVterm** to this property in the Controlled Vocabulary Term section.  If an appropriate CVterm does not exist, you must insert it before you can create the field. To do so, navigate to `tripal/loaders/chado_cvterms` and press the *Add Term** button.
-  
+    
 
 # Loading Expression Data
 The steps for loading expression data are as follows (detailed instructions can be found further below):
@@ -114,32 +114,34 @@ The steps for loading expression data are as follows (detailed instructions can 
 4. Load the espression data.  This is also the step where you can add experimental design details.
 
 ### Creating the Analysis
-Before loading data, describe the experimental setup used to collect the data. As an administrator or a user with permission to create content
+Before loading data, describe the experimental setup used to collect the data. As an administrator or a user with permission to create content, navigate to content -> tripal content -> Analysis.
 
 **Note that program name, program version, and source name must be unique as a whole for analysis to be inserted correctly** (click [here](http://gmod.org/wiki/Chado_Companalysis_Module) to read more about the data structure for analysis).
 
 #### Analysis Fields:
 
 * **Analysis Name (required)**
+* **Analysis Description**
 * **Program, Pipeline Name or Method Name (required, part of unique constraint)**
 * **Program, Pipeline or Method version (required, part of unique constraint)**
 * **Algorithm**
-* **Source Name (required, part of unique constraint)**
+* **Data Source Name (required, part of unique constraint)**
 * **Source Version**
 * **Source URI**
 * **Time Executed (required)**
-* **Materials & Methods (Description and/or Program Settings)** 
 
+#### Expression Data Loader
 
-#### Data Loader
-
-The data loader fields provide a way for the user to load expression data associated with the experiment. The loader can load data from two types of formats, matrix and column. The matrix format expects a row of data containing biomaterials names. The first column should be unique feature names. Features must already be loaded into the database. Biomaterials will be added if not present. Expression values will map to a library in the column and a feature in the row. Only one matrix file may be loaded at a time. The column format expects the first column to contain features and the second column to be expression values. 
+The Chado Expression Data Loader provide a way for the user to load expression data associated with the experiment. The loader can load data from two types of formats, matrix and column. The matrix format expects a row of data containing biosample names. The first column should be unique feature names. Features must already be loaded into the database. Biosamples will be added if not present. Expression values will map to a biosample library in the column and a feature in the row. Only one matrix file may be loaded at a time. The column format expects the first column to contain features and the second column to be expression values. 
 
 For an example column file, click [here](example_files/exampleExpressionData.rpkm). For an example matrix file, click [here](example_files/exampleMatrix.tsv).
 
-The biomaterial name will be taken as the name of the file minus the file extension. Features must already be loaded into the database. Biomaterials will be added if not present. Multiple column format files may be loaded at the same time given that the files are in the same directory and contain the same file suffix. Either format may have header or footer information. Regex can be used in the form to only record data after the header and before the footer. Any file suffix can be used. The data loader fields are the following:
+The biosample name will be taken as the name of the file minus the file extension. Features must already be loaded into the database. Biosamples will be added if not present. Multiple column format files may be loaded at the same time given that the files are in the same directory and contain the same file suffix. Either format may have header or footer information. Regex can be used in the form to only record data after the header and before the footer.  The data loader fields are the following:
+
+* **Analysis** - The analysis to associate the expression data with.
+* **Organism** - The organism.
 * **Source File Type** - This can be either "Column Format" or "Matrix Format".
-* **Checkbox** - Check this box to submit a job to parse the data into Chado.
+* **Name Match Type** - Will the data be associated with feature names or unique names?
 * **File Type Suffix** - The suffix of the files to load. This is used to submit multiple column format files in the same directory. A suffix is not required for a matrix file.
 * **File Path** - The  path to a single matrix or column format file. The path may also be set to a directory, in which case all column files with the "File Type Suffix" specified above will be loaded. When loading multiple files from a file suffix must be specified. 
 * **Regex for Start of Data** - If the expression file has a header, use this field to capture the line that occurs before the start of expression data. This line of text and any text preceding this line will be ignored. 
