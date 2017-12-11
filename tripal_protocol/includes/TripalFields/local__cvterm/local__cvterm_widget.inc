@@ -92,17 +92,19 @@ class local__cvterm_widget extends ChadoFieldWidget {
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
     ];
 
-//    $widget['select_button'] = [
-//      '#type' => 'button',
-//      '#value' => t('Lookup Term'),
-//      '#name' => 'select_cvterm',
-//      '#ajax' => [
-//        'callback' => "tripal_chado_semweb_form_ajax_callback",
-//        'wrapper' => "tripal-chado-semweb-edit-form",
-//        'effect' => 'fade',
-//        'method' => 'replace',
-//      ],
-//    ];
+    //TODO: Create callback and allow CV lookup and validation
+
+    //    $widget['select_button'] = [
+    //      '#type' => 'button',
+    //      '#value' => t('Lookup Term'),
+    //      '#name' => 'select_cvterm',
+    //      '#ajax' => [
+    //        'callback' => "tripal_chado_semweb_form_ajax_callback",
+    //        'wrapper' => "tripal-chado-semweb-edit-form",
+    //        'effect' => 'fade',
+    //        'method' => 'replace',
+    //      ],
+    //    ];
 
   }
 
@@ -125,7 +127,7 @@ class local__cvterm_widget extends ChadoFieldWidget {
       $terms = chado_select_record('cvterm', $columns, $values);
 
       if (count($terms) == 0) {
-        tripal_set_message("Warning: no CVterms found for " . $term_name .  " for field " . $field_name, 'Tripal_ERROR');
+        tripal_set_message("Warning: no CVterms found for " . $term_name . " for field " . $field_name, 'Tripal_ERROR');
         return;
       }
       $term_id = $terms[0]->cvterm_id;

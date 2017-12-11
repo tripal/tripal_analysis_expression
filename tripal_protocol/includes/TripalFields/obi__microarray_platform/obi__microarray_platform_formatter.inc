@@ -83,6 +83,16 @@ class obi__microarray_platform_formatter extends ChadoFieldFormatter {
 
     // Get the settings
     $settings = $display['settings'];
+
+    foreach ($items as $delta => $item) {
+      $content = key_exists('value', $item) ? $item['value'] : '';
+      $element[$delta] = array(
+        // We create a render array to produce the desired markup,
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
+    }
+
   }
 
   /**

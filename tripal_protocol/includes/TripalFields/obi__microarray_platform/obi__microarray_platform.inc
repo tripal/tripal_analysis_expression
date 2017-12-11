@@ -71,9 +71,9 @@ class obi__microarray_platform extends ChadoField {
     // attached asynchronously.
     'auto_attach' => FALSE,
     // The table in Chado that the instance maps to.
-    'chado_table' => 'cvterm',
+    'chado_table' => 'arraydesign',
     // The column of the table in Chado where the value of the field comes from.
-    'chado_column' => 'cvterm_id',
+    'chado_column' => 'platformtype_id',
     // The base table.
     'base_table' => 'arraydesign',
   );
@@ -124,5 +124,12 @@ class obi__microarray_platform extends ChadoField {
     // need to implement this function. However, if you need to add any
     // additional data to be used in the display, you should add it here.
     parent::load($entity);
+    dpm($entity);
+
+    $cvterm_id = $entity->obi__microarray_platform['und'][0]['chado-arraydesign__platformtype_id'];
+    $cvterm = chado_generate_var('cvterm', ['cvterm_id' => $cvterm_id]);
+    $cvterm_name = $cvterm->name;
+    $entity->obi__microarray_platform['und'][0]['value'] = $cvterm_name;
+
   }
 }

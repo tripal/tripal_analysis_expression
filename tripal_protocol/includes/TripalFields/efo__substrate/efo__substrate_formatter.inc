@@ -81,9 +81,14 @@ class efo__substrate_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-    // Get the settings
-    $settings = $display['settings'];
-    dpm($items);
+    foreach ($items as $delta => $item) {
+      $content = key_exists('value', $item) ? $item['value'] : '';
+      $element[$delta] = array(
+        // We create a render array to produce the desired markup,
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
+    }
 
   }
 

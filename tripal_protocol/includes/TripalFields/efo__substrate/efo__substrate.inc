@@ -71,9 +71,9 @@ class efo__substrate extends ChadoField {
     // attached asynchronously.
     'auto_attach' => FALSE,
     // The table in Chado that the instance maps to.
-    'chado_table' => 'cvterm',
+    'chado_table' => 'arraydesign',
     // The column of the table in Chado where the value of the field comes from.
-    'chado_column' => 'cvterm_id',
+    'chado_column' => 'substratetype_id',
     // The base table.
     'base_table' => 'arraydesign',
   );
@@ -124,7 +124,11 @@ class efo__substrate extends ChadoField {
     // need to implement this function. However, if you need to add any
     // additional data to be used in the display, you should add it here.
     parent::load($entity);
+    $cvterm_id = $entity->efo__substrate['und'][0]['chado-arraydesign__substratetype_id'];
 
-    dpm($entity);
+    $cvterm = chado_generate_var('cvterm', ['cvterm_id' => $cvterm_id]);
+    $cvterm_name = $cvterm->name;
+    $entity->efo__substrate['und'][0]['value'] = $cvterm_name;
+
   }
 }
