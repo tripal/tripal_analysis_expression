@@ -269,7 +269,7 @@ function tripal_protocol_bundle_instances_info($entity_type, $bundle) {
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => TRUE,
-        'chado_table' => $bundle->data_table,
+        'chado_table' => 'contact',
         'chado_column' => 'manufacturer_id',
         'base_table' => $bundle->data_table,
       ),
@@ -328,7 +328,7 @@ function tripal_protocol_bundle_instances_info($entity_type, $bundle) {
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
-        'chado_table' => $bundle->data_table,
+        'chado_table' =>  $bundle->data_table,
         'chado_column' => 'substratetype_id',
         'base_table' => $bundle->data_table,
       ),
