@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @class
  * Purpose:
@@ -70,109 +71,84 @@ class local__cvterm_widget extends ChadoFieldWidget {
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
+
+    dpm($element);
+
+
     $column = "something_column";
 
     $table = "something_table";
 
 
+    $description = $element['description'];
+
+
+    $widget['term_name'] = [
+      '#type' => 'textfield',
+      '#title' => $element['#title'],
+      '#description' => $description,
+      '#default_value' => "",
+      '#required' => $element['#required'],
+      '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
+    ];
+
+
+    $widget['value'] = [
+      '#type' => 'value',
+      '#title' => $element['#title'],
+      '#description' => $description,
+      '#default_value' => "test",
+      '#empty_option' => '- Select a Contact -',
+      '#required' => $element['#required'],
+      '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+      '#delta' => $delta,
+      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
+    ];
+
     $term_name = array_key_exists('values', $form_state) ? $form_state['values']['term_name'] : '';
 
-    $form['chado_table'] = array(
-      '#markup' => 'Term used for the <strong>' . t($column) . '</strong> column of the chado <strong>' . t($table) . '</strong> table:',
-    );
-    $form['table_name'] = array(
-      '#type' => 'value',
-      '#value' => $table
-    );
-    $form['column'] = array(
-      '#type' => 'value',
-      '#value' => $column
-    );
-    // If no term has been selected yet then provide the auto complete field.
-    $form['term_name'] = array(
-      '#title'       => t('Term'),
-      '#type'        => 'textfield',
-      '#description' => t("The content type must be the name of a term in
-        a controlled vocabulary and the controlled vocabulary should
-        already be loaded into Tripal.  exactlFor example, to create a content
-        type for storing 'genes', use the 'gene' term from the
-        Sequence Ontology (SO)."),
-      '#required'    => TRUE,
-      '#default_value' => $term_name,
-      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
-    );
-    $form['select_button'] = array(
-      '#type' => 'button',
-      '#value' => t('Lookup Term'),
-      '#name' => 'select_cvterm',
-      '#ajax' => array(
-        'callback' => "tripal_chado_semweb_form_ajax_callback",
-        'wrapper' => "tripal-chado-semweb-edit-form",
-        'effect' => 'fade',
-        'method' => 'replace'
-      ),
-    );
     if ($term_name) {
-      $form['terms_list'] = array(
+      $widget['terms_list'] = [
         '#type' => 'fieldset',
         '#title' => t('Matching Terms'),
         '#description' => t('Please select the term the best matches the
           content type you want to create. If the same term exists in
-          multiple vocabularies you will see more than one option below.')
-      );
-      $match = array(
+          multiple vocabularies you will see more than one option below.'),
+      ];
+      $match = [
         'name' => $term_name,
-      );
-      $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
+      ];
+      $terms = chado_generate_var('cvterm', $match, ['return_array' => TRUE]);
       $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
       $num_terms = 0;
       foreach ($terms as $term) {
         // Save the user a click by setting the default value as 1 if there's
         // only one matching term.
         $default = FALSE;
-        $attrs = array();
+        $attrs = [];
         if ($num_terms == 0 and count($terms) == 1) {
           $default = TRUE;
-          $attrs = array('checked' => 'checked');
+          $attrs = ['checked' => 'checked'];
         }
-        $form['terms_list']['term-' . $term->cvterm_id] = array(
+        $widget['terms_list']['term-' . $term->cvterm_id] = [
           '#type' => 'checkbox',
-          '#title' =>  $term->name,
+          '#title' => $term->name,
           '#default_value' => $default,
           '#attributes' => $attrs,
           '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
             '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
             '<br><b>Definition:</b>  ' . $term->definition,
-        );
+        ];
         $num_terms++;
       }
       if ($num_terms == 0) {
-        $form['terms_list']['none'] = array(
+        $widget['terms_list']['none'] = [
           '#type' => 'item',
-          '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>'
-        );
+          '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>',
+        ];
       }
-      // Add in the button for the cases of no terms or too many.
-      $form['submit_button'] = array(
-        '#type' => 'submit',
-        '#value' => t('Use this term'),
-        '#name' => 'use_cvterm'
-      );
     }
-
-    $form['cancel_button'] = array(
-      '#type' => 'button',
-      '#value' => t('Cancel'),
-      '#name' => 'cancel_button',
-      '#limit_validation_errors' => array()
-    );
-
-    $form['#prefix'] = '<div id = "tripal-chado-semweb-edit-form">';
-    $form['#suffix'] = '</div>';
-
-    return $form;
-
-
   }
 
   /**
@@ -185,6 +161,9 @@ class local__cvterm_widget extends ChadoFieldWidget {
    * fields must be used to set the 'value' field.
    */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
+
+    dpm($form_state);
+
   }
 
   /**

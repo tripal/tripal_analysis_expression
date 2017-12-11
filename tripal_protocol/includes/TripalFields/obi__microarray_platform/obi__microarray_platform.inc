@@ -23,7 +23,7 @@ class obi__microarray_platform extends ChadoField {
   public static $default_description = 'A microarray platform is a platform that contains the instruments, software and reagents needed to perform a microarray protocol';
 
   // The default widget for this field.
-  public static $default_widget = 'obi__microarray_platform_widget';
+  public static $default_widget = 'local__cvterm_widget';
 
   // The default formatter for this field.
   public static $default_formatter = 'obi__microarray_platform_formatter';

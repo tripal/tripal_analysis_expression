@@ -23,7 +23,7 @@ class efo__substrate extends ChadoField {
   public static $default_description = 'A substrate is the surface on which material, such as an organism, is grown or attached.';
 
   // The default widget for this field.
-  public static $default_widget = 'efo__substrate_widget';
+  public static $default_widget = 'local__cvterm_widget';
 
   // The default formatter for this field.
   public static $default_formatter = 'efo__substrate_formatter';
