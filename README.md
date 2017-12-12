@@ -136,60 +136,69 @@ The Chado Expression Data Loader provide a way for the user to load expression d
 
 For an example column file, click [here](example_files/exampleExpressionData.rpkm). For an example matrix file, click [here](example_files/exampleMatrix.tsv).
 
-The biosample name will be taken as the name of the file minus the file extension. Features must already be loaded into the database. Biosamples will be added if not present. Multiple column format files may be loaded at the same time given that the files are in the same directory and contain the same file suffix. Either format may have header or footer information. Regex can be used in the form to only record data after the header and before the footer.  The data loader fields are the following:
+The biosample name will be taken as the name of the file minus the file extension. Features must already be loaded into the database. Biosamples will be added if not present. Multiple column format files may be loaded at the same time by uploading multiple files or, if providing a server path, if all files are in the same folder with the same file extensions. Either format may have header or footer information. Regex can be used in the form to only record data after the header and before the footer.  The data loader fields are the following:
+
+* File Upload - You may upload a file using the loader, or provide a path on the server.  The path may also be set to a directory, in which case all column files with the "File Type Suffix" specified above will be loaded. When loading multiple files, a file suffix (extension) must be specified. 
 
 * **Analysis** - The analysis to associate the expression data with.
-* **Organism** - The organism.
+* **Organism (required)** - The organism.
 * **Source File Type** - This can be either "Column Format" or "Matrix Format".
 * **Name Match Type** - Will the data be associated with feature names or unique names?
 * **File Type Suffix** - The suffix of the files to load. This is used to submit multiple column format files in the same directory. A suffix is not required for a matrix file.
-* **File Path** - The  path to a single matrix or column format file. The path may also be set to a directory, in which case all column files with the "File Type Suffix" specified above will be loaded. When loading multiple files from a file suffix must be specified. 
 * **Regex for Start of Data** - If the expression file has a header, use this field to capture the line that occurs before the start of expression data. This line of text and any text preceding this line will be ignored. 
 * **Regex for End of Data** - If the expression file has a footer, use this field to capture teh line that occurs after the end of expression data. This line of text and all text following will be ignored.
 
-
 #### Experimental Design Fields
-The "Experimental Design" fields allow a complete description of the experimental design. The Chado MAGE module which is used by the Analysis: Expression module. The Chado MAGE module uses, the arraydesign, assay, quantification, and acquisition tables to describe an experiment. This is reflected in the following fields available to describe an experiment. 
-* **Organism (required)**
-* **Biomaterial Provider** - The person or organization responsible for collecting the biomaterial.
-* **Array Design** - This is only applicable for microarray expression data. This may be left blank for next generation sequencing expression data. 
-* **Assay Details** - A description of the physical instance of the array used in the experiment
- * **Date Assay Run** - The date the assay was run. 
- * **Assay Description** - A short description of the assay.
- * **Assay Operator**  - The person or organization that ran the assay.
- * **Assay Protocol** - The assay protocol used in the experiment. (See protocol description below).
-* **Acquisition Details** - The scanning of the experiment.
- * **Data Acquisition Run** - The date the acquisition was run. 
+The "Experimental Design" fields allow a complete description of the experimental design by implementing the [Chado MAGE design schema](http://gmod.org/wiki/Chado_Mage_Module).  The Chado MAGE module uses the arraydesign, assay, quantification, and acquisition tables to describe an experiment. This is reflected in the following fields available to describe an experiment.
+ 
+* **Biomaterial Provider** - The person or organization responsible for collecting the biosample.
+* **Array Design** - This is only applicable for microarray expression data. This may be left blank for experiments that do not utilize an array (ie next generation sequencing). 
+
+#### Acquisition Details
+This represents the quantification technique. In the case of a microarray, it is scanning, in the case of a sequencer, it is sequencing. The output of this process is a digitial image of an array for a microarray or a set of digital images or nucleotide base calls for a sequencer.
+
  * **Acquisition URI** - A web address to a page that describes the acquisition process.
+ * **Date Acquisition Run** - The date the acquisition was run. 
  * **Acquisition Protocol** - The acquisition protocol used in the experiment. (See protocol description below).
-* **Quantification Details** - A description of the method used to transform raw expression data into numeric data. 
+
+#### Quantification Details
+
+* **Units** - The units associated with the loaded values, such as FPKM.  You may also update the units of your experiments using the **Quantification Units** admin page.
  * **Date Quantification Run** - The date the quantification was run. 
  * **Quantification URI** - A web address to a page that describes the quantification process.
  * **Quantification Operator** - The person or organization that ran the quantification.
  * **Quantification Protocol** - The quantification protocol used in the experiment. (See protocol description below).
 
 ![Experimental Design Fields](https://cloud.githubusercontent.com/assets/14822959/12991557/a4b0228e-d0dd-11e5-93de-2f206be6d5fe.png)
-**Protocol Descripton** - The protocol content types can be created by navigating to **Add content->Protocol**. A protocol can be used to add extra detail to an experimental design. A protocol can be used to describe the assay, acquisition, and quantification steps of the experiment design. A protocol can also be used to further describe the array design content type. The fields of a protocol are:
+![Data Loader Fields](https://cloud.githubusercontent.com/assets/14822959/12991553/a4ade58c-d0dd-11e5-97d2-1096d78bb189.png)
+
+
+# Protocols
+
+Acquisition, Quantification, Array Design, and Assays all utilize protocols to describe them.  Think of protocols as the **experimental design**, and Acquisitions, Quantifications, Array Designs, and Assays as the experiment following that experimental design.
+
+**Protocol Descripton** - The protocol content types can be created by navigating to **Add Tripal Content->Protocol**. A protocol can be used to add extra detail to an experimental design. A protocol can be used to describe the assay, acquisition, and quantification steps of the experiment design. A protocol can also be used to further describe the array design content type. The fields of a protocol are:
 * **Protocol Name (must be unique - required)**
-* **Protocol Link** - A web address to a page that describes the protocol.
+* **Protocol Link (Required)** - A web address to a page that describes the protocol.
 * **Protocol Description** - A description of the protocol.
 * **Hardware Description** - A description of the wardware used in the protocol.
 * **Software Description** - A description of the software used in the protocol.
-* **Protocol Type (required)** - The protocol type can acquisition, array design, assay, or quantification. The user can also create new protocol types.
+* **Protocol Type (required)** - The protocol type can acquisition, array design, assay, or quantification. The user can also create new protocol types by inserting new CVterms into the protocol type CV.
 * **Publication** - A publication that describes the protocol.
 
 
-![Data Loader Fields](https://cloud.githubusercontent.com/assets/14822959/12991553/a4ade58c-d0dd-11e5-97d2-1096d78bb189.png)
 # Viewing Data
 The following panes are added to the following content types:
 
 
+# Quantification Units Administrative page
 
+The units associated with your expression data are stored in Chado associated with the **quantification**.  Units can be stored even if you did not specify a quantification (a generic quantification was used in this  case).  
 
+You can use the quantification units administrative page to add or edit units on your quantification by Navigating to Tripal -> Extensions -> Protocol -> Quantification Units.  All quantifications appear in the table at the bottom of the admin page. Click 'Edit' to change the units for an individual quantification. 
 
 ### Feature
 
-**New expresion feature viewer screenshot**
 
 ### Organism
 * **Biomaterial Browser** - After loading biomaterials, a new pane with a list of biomaterials will appear on the corresponding organism page. Biomaterials are not required to be synced when to appear in this list.

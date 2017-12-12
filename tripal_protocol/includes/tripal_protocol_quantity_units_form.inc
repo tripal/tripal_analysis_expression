@@ -145,7 +145,7 @@ function tripal_protocol_quantity_units_edit_form(
 
   $form['unit_label'] = [
     '#type' => 'textfield',
-    '#title' => t('Assign units for this'),
+    '#title' => t('Assign quantification units'),
     '#description' => t('Enter a new unit label to associate with this quantification.  Labels should be plural (ie RPKM, counts).'),
     '#default_value' => $unit_label,
   ];
