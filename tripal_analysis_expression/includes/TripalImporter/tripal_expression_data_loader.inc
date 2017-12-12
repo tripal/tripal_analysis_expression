@@ -154,7 +154,7 @@ class tripal_expression_data_loader extends TripalImporter{
       '#value' => $contacts,
     ];
 
-    $lt_message = tripal_set_message(t('If the biomaterial provider is not present in the dropdown list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t(' A biomaterial provider is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+    $lt_message = tripal_set_message(t('If the biomaterial provider is not present in the dropdown list, ') . l(t('add a new contact.'), 'bio_data/add') . t(' A biomaterial provider is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
     $form['experimental_design']['biosourceprovider_id'] = [
       '#title' => t('Biomaterial Provider'),
@@ -165,7 +165,7 @@ class tripal_expression_data_loader extends TripalImporter{
       '#suffix' => $lt_message,
     ];
 
-    $lt_message = tripal_set_message(t('If the array design does not appear in this list, ') . l(t('add a new arraydesign.'), 'node/add/chado-arraydesign') . t(' If an array design is not selected, then a generic array design will be created for the analysis.'), TRIPAL_INFO, ['return_html' => TRUE]);
+    $lt_message = tripal_set_message(t('If the array design does not appear in this list, ') . l(t('add a new arraydesign.'), 'bio_data/add') . t(' If an array design is not selected, then a generic array design will be created for the analysis.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
     $arraydesigns = tripal_get_arraydesign_select_options(FALSE);
 
@@ -204,7 +204,7 @@ class tripal_expression_data_loader extends TripalImporter{
       '#description' => t('URI location that describes the acquisition.'),
     ];
 
-    $lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' An acquisition protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+    $lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'bio_data/add') . t(' An acquisition protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
     $acquisitions = tripal_get_protocol_select_options(FALSE, 'Acquisition Protocol');
 
@@ -248,7 +248,7 @@ class tripal_expression_data_loader extends TripalImporter{
       '#description' => t('URI location that describes the quantification.'),
     ];
 
-    $lt_message = tripal_set_message(t('If the quantification operator is not present in the dropdown list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t('A quantication operator is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+    $lt_message = tripal_set_message(t('If the quantification operator is not present in the dropdown list, ') . l(t('add a new contact.'), 'bio_data/add') . t('A quantication operator is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
     //     Obtain the list of contacts from the chado contact table.
     $sql = 'SELECT
@@ -270,12 +270,12 @@ class tripal_expression_data_loader extends TripalImporter{
       '#title' => t('Quantification Operator'),
       '#type' => 'select',
       '#empty_value' => '',
-      '#description' => t('The quantification operator. If the operator does not appear in this list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t(' An operator is not required.'),
+      '#description' => t('The quantification operator. If the operator does not appear in this list, ') . l(t('add a new contact.'), 'bio_data/add') . t(' An operator is not required.'),
       '#options' => $form['choose_contact']['#value'],
       '#suffix' => $lt_message,
     ];
 
-    $lt_message = tripal_set_message(t('If the quantification protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' A quantification protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+    $lt_message = tripal_set_message(t('If the quantification protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'bio_data/add') . t(' A quantification protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
     $quantifications = tripal_get_protocol_select_options(FALSE, 'Quantification Protocol');
 
