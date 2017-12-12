@@ -93,6 +93,10 @@ First, provide the path on the server to the biosample file, or use the file upl
 Press the **Check Biosamples** button to preview your biosample properties.  To take advantage of a controlled vocabulary (CV), you must manually assign each property to a CVterm.  The uploader will list all CV terms matching each property, and provide the CV, database (DB) and accession for the match. 
 If a match does not exist for your term, use the CVterm browser to identify an appropriate CVterm in your Tripal site, and rename the property in your input file to match the term.  If no term exists in your database, you should use the EBI ontology lookup serice to identify an appropriate term and insert it manually, or, load the corresponding CV.  
 
+> ![The Biosample property configuration tool](example_files/doc_images/biosample_prop_checker.png)
+> Pressing the 'Check Biosamples' button allows you to assign CVterms to every biosample property in your upload.  If there isn't a suitable CVterm, you should rename it in your upload file to match a CVterm in the database and/or insert new CVterms.
+
+
 After clicking "Submit job", the page should reload with the job status and Drush command to run the job. Copy and paste the Drush command and run it on command line. Upon running the Drush command, any warning/error/success/status message should be displayed.
 
 ### Loading Biosamples From a Flat File
@@ -101,7 +105,8 @@ Altenatively biosamples may be loaded from a flat file (CSV or TSV). The flat fi
 
 Click here to see an example of a [CSV file](example_files/exampleCSV.csv) and a [TSV file](example_files/exampleTSV.tsv).
 
-![Flat File Loader](https://cloud.githubusercontent.com/assets/14822959/12991558/a4b26a30-d0dd-11e5-8419-07216d0cbbc8.png)
+>![Biosample File Loader](example_files/doc_images/biosample_flat_loader.png)
+> The Biosample loader can accept a server path, or, you can use the Tripal file uploader to directly upload files to the server.
 
 ### Publishing Biosamples to the Biological Sample Content Type
 
@@ -259,7 +264,7 @@ The Heatmap settings administrative page allows you to configure the heatmap sea
 
 ### Quantification Units Administrative page
 
-The units associated with your expression data are stored in Chado associated with the **quantification**.  Units can be stored even if you did not specify a quantification (a generic quantification was used in this  case).  
+The units associated with your expression data are stored in Chado associated with the **quantification**.  Units can be stored even if you did not specify a quantification (a generic quantification was used in this case).  
 
 You can use the quantification units administrative page to add or edit units on your quantification by Navigating to Tripal -> Extensions -> Protocol -> Quantification Units.  All quantification instances appear in the table at the bottom of the admin page. Click 'Edit' to change the units for an individual quantification. 
 
