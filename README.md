@@ -10,11 +10,11 @@ New documentation for the new data loaders and module structure is under develop
 
 1. [Introduction](#introduction)
 2. [Installation](#installation)
-3. [Module Features](#Features)
+3. [Module Features](#features)
 4. [Loading Biosamples](#loading-biosamples)
 5. [Loading Expression Data](#loading-expression-data)
-6. [Protocols](#Protocols)
-7. [Viewing Data](#Viewing-and-Downloading-Data)
+6. [Protocols](#protocols)
+7. [Viewing Data](#viewing-and-downloading-data)
 9. [Administrative Pages](#administrative-pages)
 10. [Example Files](#example-files)
 
@@ -120,9 +120,17 @@ Biosamples may also be loaded one at a time. As an administer or a user with per
   
   Properties inserted into the database using the biosample bulk loader will be made available as new fields.  They can be found by going to admin->structure->Tripal Content Types -> Biological Sample and pressing the + Check for New Fields button in the upper left hand of the screen.
   
+  
+>  ![Existing biosample properties will be added as fields](example_files/doc_images/add_property_fields.png)
+> Checking for new fields in the Structure-> Tripal Content Type admin area allows you to add existing properties to a Tripal content type.  This allows you to manually enter values during content creation, as well as configure the display. 
+
+
+
   If you would like to create new properties, you may do so in the structure menu.  Using the **Add New Field** row, enter the label and select **Chado Property** for the field type.  After pressing Save, you **must assign a CVterm** to this property in the Controlled Vocabulary Term section.  If an appropriate CVterm does not exist, you must insert it before you can create the field. To do so, navigate to `tripal/loaders/chado_cvterms` and press the *Add Term** button.
     
-
+>![Creating manual Chado property fields](example_files/doc_images/create_new_chado_property_field.png)
+> If a desired property field does not exist, you can create it manually in the Structure-> Tripal Content Type admin area by setting the field type to 'Chado Property'
+    
 # Loading Expression Data
 The steps for loading expression data are as follows (detailed instructions can be found further below):
 
@@ -208,6 +216,8 @@ Acquisition, Quantification, Array Design, and Assays all utilize protocols to d
 
 Loaded expression data can be viewed and downloaded by users in three places.  **Feature pages** will gain access to the Expression field (`data__gene_expression_data`).  You can configure the appearance of this field by navigating to `Structure -> Tripal Content Type -> [Feature type (ie, mRNA)]`.  If the expression field is not listed, press the Check for New Fields button in the upper left.  Once the field is attached, navigate to the Manage Display tab, enable the field display, and place it to your liking. 
 
+
+>![Creating and expression tripal pane for the expression field](example_files/doc_images/expression_pane.png)
 >In this example, we have placed the Expression field in an a Tripal pane all of its own.
 
 ### Downloading data
@@ -216,8 +226,10 @@ Data downloads are provided for individual features, analyses, and for feature s
 
 ### Using the Feature Expression Data field
 
-The expression field allows users to view all expression data available for a feature.  Because a database might have multiple experiments involving a single feature, data is first organized by *Analysis*.  Users can select analyses using the "Select an Expression Analysis" box which lists all analyses with expression data available.  The plot can be further customized based on the biosample properties.  The "Select a property to group and sort biosamples" select box will allow users to pick a property to organize samples along the X axis.  Users may select *Sample Name* to elect not to group samples by property.  Values may be colored by their expression value (default), or by selecting a different property in the "Select a property to color biosamples 
-" box.  
+The expression field allows users to view all expression data available for a feature.  Because a database might have multiple experiments involving a single feature, data is first organized by *Analysis*.  Users can select analyses using the "Select an Expression Analysis" box which lists all analyses with expression data available.  The plot can be further customized based on the biosample properties.  The "Select a property to group and sort biosamples" select box will allow users to pick a property to organize samples along the X axis.  Users may select *Sample Name* to elect not to group samples by property.  Values may be colored by their expression value (default), or by selecting a different property in the "Select a property to color biosamples " box.  
+
+>![The feature expression data field](example_files/doc_images/Expression_grouped_and_colored.png)
+> The Feature Expression Data field allows users to plot expression data according to biosample properties.
 
 Once plotting parameters are set, users can click and drag to re-arrange both the legend and the individual groups.  The "Only Non-Zero Values" button removes samples with expression values of 0, tidying the plot.
 
