@@ -48,6 +48,24 @@ Once expression data is loaded, a display field will be shown on each feature pa
 ### Heatmap
 This module provides a search and results block to search for and select features to display in a heatmap.
 
+
+## Tripal 3 entities and fields
+
+The following bundles are defined by `Tripal Protocol`
+
+* Protocol
+* Arraydesign
+
+The following fields are defined by `Tripal Protocol`, `Tripal Biomaterial`, and `Tripal Analysis Expression`
+
+* Expression Data
+    - Analysis
+    - Feature
+
+* Biosample Browser
+    - Analysis
+
+
 # Loading Biosamples
 Biosamples may be loaded from a flat file or from a BioSample xml file downloaded from NCBI. The steps for loading biosamples are as follows (detailed instructions can be found further below):
 
@@ -186,68 +204,58 @@ Acquisition, Quantification, Array Design, and Assays all utilize protocols to d
 * **Protocol Type (required)** - The protocol type can acquisition, array design, assay, or quantification. The user can also create new protocol types by inserting new CVterms into the protocol type CV.
 * **Publication** - A publication that describes the protocol.
 
+# Viewing and Downloading Data
 
-# Viewing Data
-The following panes are added to the following content types:
+Loaded expression data can be viewed and downloaded by users in three places.  **Feature pages** will gain access to the Expression field (`data__gene_expression_data`).  You can configure the appearance of this field by navigating to `Structure -> Tripal Content Type -> [Feature type (ie, mRNA)]`.  If the expression field is not listed, press the Check for New Fields button in the upper left.  Once the field is attached, navigate to the Manage Display tab, enable the field display, and place it to your liking. 
 
+>In this example, we have placed the Expression field in an a Tripal pane all of its own.
 
-# Quantification Units Administrative page
+### Downloading data
 
-The units associated with your expression data are stored in Chado associated with the **quantification**.  Units can be stored even if you did not specify a quantification (a generic quantification was used in this  case).  
+Data downloads are provided for individual features, analyses, and for feature sets selected in the heatmap.  For data downloading to be functionaly, you must *populate the materialized views associated with this module*.  This can be done by navigating to Tripal -> Data Storage -> Chado -> Materialized Views.  Press the populate link for the **expression_feature** and *expression_feature_all** materialized views and run the submitted job.  Materialized views must be manually repopulated when you add new data.
 
-You can use the quantification units administrative page to add or edit units on your quantification by Navigating to Tripal -> Extensions -> Protocol -> Quantification Units.  All quantifications appear in the table at the bottom of the admin page. Click 'Edit' to change the units for an individual quantification. 
+### Using the Feature Expression Data field
 
-### Feature
+The expression field allows users to view all expression data available for a feature.  Because a database might have multiple experiments involving a single feature, data is first organized by *Analysis*.  Users can select analyses using the "Select an Expression Analysis" box which lists all analyses with expression data available.  The plot can be further customized based on the biosample properties.  The "Select a property to group and sort biosamples" select box will allow users to pick a property to organize samples along the X axis.  Users may select *Sample Name* to elect not to group samples by property.  Values may be colored by their expression value (default), or by selecting a different property in the "Select a property to color biosamples 
+" box.  
 
+Once plotting parameters are set, users can click and drag to re-arrange both the legend and the individual groups.  The "Only Non-Zero Values" button removes samples with expression values of 0, tidying the plot.
 
-### Organism
-* **Biomaterial Browser** - After loading biomaterials, a new pane with a list of biomaterials will appear on the corresponding organism page. Biomaterials are not required to be synced when to appear in this list.
-
-### Analysis: Expression
-* **Overview (base)** - The generic tripal overview pane.
-* **Protocol** - Protocols used in this analysis (acquisition protocol, assay protocol, and quantification protocol).
-
-### Biomaterial
-* **Overview (base)** - The generic tripal overview pane.
-* **Properties** - Properties associated with the biomaterial.
-* **Cross References** - Accession terms associated with the biomaterial.
+Data can be downloaded in matrix format by pressing the "Download expression dataset for this feature" link.
 
 
+
+### Using the Analysis Biomaterial Browser and Expression Data field
+
+As with fields attached to feature, you must add the new Analysis fields and configure their display by navigating to `Structure -> Tripal Content Type -> Analysis`.
+
+The Biomaterial browser will list biosamples and their properties.  The Expression Data field will not visualize expression data, but allow the user to download all expression data associated with this analysis in matrix form (rows: features, columns: biosamples).
 
 # Searching features and displaying expression data in a heatmap
 This module creates two blocks: one for features input and the other displaying a heatmap for the input features.
 
 ### Turn On blocks
-Go to **Structure->blocks** and find these two blocks: ***tripal_analysis_expression features form for heatmap*** and ***tripal_elasticsearch block for search form: blast_merged_transcripts***. Config these two blocks to let them display at specific region and page(s). The ***tripal_analysis_expression features form for heatmap*** will display a form that allow you to input some feature IDs.
+Go to **Structure->blocks** and find these two blocks: ***tripal_analysis_expression features form for heatmap*** and ***tripal_elasticsearch block for search form: blast_merged_transcripts***. Configure these two blocks to display at specific region and page(s).  The ***tripal_analysis_expression features form for heatmap*** will display a form that allow you to input  feature IDs.
 
 ![feature-input-form](https://cloud.githubusercontent.com/assets/1262709/25756810/22149cf4-3196-11e7-8f22-089f316297a0.png)
 
-After you enter some feature IDs, you click the "Display Expression Heatmap" button to generate a heatmap for the features. 
-
-**New heatmap screenshot**
-
+After you enter feature IDs, you click the "Display Expression Heatmap" button to generate a heatmap for the features. 
 
 # Administrative Pages
 
-### Content Type Administrative Pages
-Each Analysis: Expression content type has administrative pages. As an administrator or a user with correct permissions navigate to the following: **Tripal->Extensions->Expression Analysis->Tripal Expression Analysis Content Types**. Each content type has the following administrative pages. 
-* **Administrative Search** - Administrative search to find, create, edit, or delete content type. 
-* **Sync** - Page to sync content type from the chado database. Also provides a method to clean up orphaned nodes.
-* **Delete** - Page where content type can be deleted in bulk.
-* **TOC** - Page to change the default order and display of table of contents and panes for content type pages. 
-* **Settings** - Page to set default page titles and default page urls for content type.
-* **Help** - Description the content type.
+### Heatmap settings
 
-![Administrator Pages for Content Types](https://cloud.githubusercontent.com/assets/14822959/13010514/2d2dc7be-d170-11e5-8670-92bdded6659d.png)
+The Heatmap settings administrative page allows you to configure the heatmap search form.  Here you can configure the placeholder text that appears, as well as the example feature ID's that the user can populate with the "try an example" button.  There is also a checkbox which enables elasticsearch integration.  Elasticsearch integration requires the `tripal_elasticsearch` module and a configured elasticsearch instance.  See the Tripal Elasticsearch module for more details and instructions.
 
-### Expression Display Administrative Page
-The display of expression data on feature pages can be configured. To configure the expression figure, navigate to **Tripal->Extensions->Expression Analysis->Tripal Expression Analysis Settings**. Available options are:
+### Quantification Units Administrative page
 
-* **Hide Expression Figure** - Hide expression figures on all feature pages. With this option you can load expression data without displaying the expression figure.
-* **Hide Biomaterial Labels** - Hide the name of the biomaterial under the expression figure tile or column. Biomaterial names will still appear in tooltips.
-* **Maximum Label Length** - Set the maximum acceptable biomaterial name length. Biomaterial names that are longer than this length will be truncated.
-* **Expession Column Width** - Change the size of the width of the tile or column in the figure. Value must be 15 or greater. 
-* **Default Heatmap Display** - The default display can be either a one dimensional heatmap or a bar chart. 
+The units associated with your expression data are stored in Chado associated with the **quantification**.  Units can be stored even if you did not specify a quantification (a generic quantification was used in this  case).  
+
+You can use the quantification units administrative page to add or edit units on your quantification by Navigating to Tripal -> Extensions -> Protocol -> Quantification Units.  All quantification instances appear in the table at the bottom of the admin page. Click 'Edit' to change the units for an individual quantification. 
+
+You can also assign quantification units to **all unitless quantifications** using the Assign Units box.
+
+
 
 # Example Files
 
