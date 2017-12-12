@@ -10,13 +10,13 @@ New documentation for the new data loaders and module structure is under develop
 
 1. [Introduction](#introduction)
 2. [Installation](#installation)
-3. [Module Features](#module-features)
-4. [Loading Biomaterials](#loading-biomaterials)
+3. [Module Features](#Features)
+4. [Loading Biosamples](#loading-biosamples)
 5. [Loading Expression Data](#loading-expression-data)
-6. [Viewing Data](#viewing-data)
-7. [Searching features and displaying expression data in a heatmap](#Searching-features-and-displaying-expression-data-in-a-heatmap)
-8. [Administrative Pages](#administrative-pages)
-9. [Example Files](#example-files)
+6. [Protocols](#Protocols)
+7. [Viewing Data](#Viewing-and-Downloading-Data)
+9. [Administrative Pages](#administrative-pages)
+10. [Example Files](#example-files)
 
 # Introduction 
 Tripal Analysis: Expression is a [Drupal](https://www.drupal.org/) module built to extend the functionality of the [Tripal](http://tripal.info/) toolset.
@@ -33,7 +33,6 @@ The purpose of the module is to visually represent gene expression for Tripal fe
 2. Place the cloned module folder "tripal_analysis_expression" inside your /sites/all/modules. Then enable the module by running ```drush en tripal_analysis_expression``` (for more instructions, read the [Drupal documentation page](https://www.drupal.org/node/120641)).
 
 # Features
-
 * Provides data loaders for biosamples and expression data
 * Controlled Vocabulary tools for biosamples
 * Visualization for expression data for individual features
@@ -71,8 +70,9 @@ Biosamples may be loaded from a flat file or from a BioSample xml file downloade
 
 1. [First download or generate the flat (.csv, .tsv) or .xml file with biosample data you want to load](#downloading-xml-biosample-file-from-ncbi).
 2. Add the organism associated with the biosample if it doesn't exist yet (**Add Tripal content->Organism**).  You may also create an analysis to associate the biosamples with if you choose. 
-3. Navigate to the Tripal site's Tripal Biomaterial Loader 
-4. Publish the biosamples
+3. Navigate to the Tripal site's Tripal Biosample Loader and
+4. Submit and run the import job
+5. Publish the biosamples
 
 ### Downloading XML BioSample File From NCBI
 To obtain a xml BioSample file from ncbi go the [NCBI BioSample database](http://www.ncbi.nlm.nih.gov/biosample/). Search for and select the BioSamples you would like to download. 
@@ -95,9 +95,9 @@ If a match does not exist for your term, use the CVterm browser to identify an a
 
 After clicking "Submit job", the page should reload with the job status and Drush command to run the job. Copy and paste the Drush command and run it on command line. Upon running the Drush command, any warning/error/success/status message should be displayed.
 
-### Loading Biomaterials From a Flat File
+### Loading Biosamples From a Flat File
 
-Altenatively biomaterials may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.
+Altenatively biosamples may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.
 
 Click here to see an example of a [CSV file](example_files/exampleCSV.csv) and a [TSV file](example_files/exampleTSV.tsv).
 
@@ -223,9 +223,7 @@ Once plotting parameters are set, users can click and drag to re-arrange both th
 
 Data can be downloaded in matrix format by pressing the "Download expression dataset for this feature" link.
 
-
-
-### Using the Analysis Biomaterial Browser and Expression Data field
+### Using the Analysis Biosample Browser and Expression Data field
 
 As with fields attached to feature, you must add the new Analysis fields and configure their display by navigating to `Structure -> Tripal Content Type -> Analysis`.
 
