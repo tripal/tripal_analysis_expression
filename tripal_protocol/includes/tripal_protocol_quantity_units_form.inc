@@ -136,7 +136,11 @@ function tripal_protocol_quantity_units_edit_form(
     ':quantification_id' => $quantification_id,
   ])->fetchObject();
 
-  $unit_label = $result->value;
+  $unit_label = '';
+
+  if ($result) {
+    $unit_label = $result->value;
+  }
 
   $form['quantification_id'] = [
     '#type' => 'value',
