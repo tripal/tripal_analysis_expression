@@ -78,7 +78,7 @@ function tripal_analysis_expression_menu() {
   //KEEP THIS
   // Heatmap settings
   $items['admin/tripal/extension/tripal_analysis_expression/heatmap_settings'] = [
-    'title' => 'Expression Visualization Settings',
+    'title' => 'Expression Heatmap Search Settings',
     'description' => 'Administrative pages for the Tripal Analysis Expression heatmap search form.',
     'access arguments' => ['administer tripal analysis expression'],
     'page callback' => 'drupal_get_form',

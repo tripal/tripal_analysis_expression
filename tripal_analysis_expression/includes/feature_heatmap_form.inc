@@ -24,7 +24,7 @@ function e($value) {
 function tripal_analysis_expression_heatmap_settings_form($form, &$form_state) {
   $form['help_section'] = [
     '#type' => 'markup',
-    '#markup' => '<h3>Expression Visualisation Settings</h3>',
+    '#markup' => '<h3>Expression Heatmap Search Settings</h3>',
   ];
 
   $form['placeholder'] = [
