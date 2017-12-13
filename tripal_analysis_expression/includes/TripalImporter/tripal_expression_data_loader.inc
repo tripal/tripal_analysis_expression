@@ -373,52 +373,15 @@ class tripal_expression_data_loader extends TripalImporter{
 
     $quantificationunits = $arguments['quantificationunits'];
 
-    //missing
-    $assaydate = '';//$arguments['assaydate'];
-    $contact_id = '';//$arguments['contact_id'];
-    // $acquisitiondate = $arguments['acquisitiondate'];
-    // $create_biosamples = $arguments['create_biosamples'];
-    // $quantificationdate = $arguments['quantificationdate'];
+    //we dont actually use these variables so lets not collect the data.
+    //but, we do pass it around a million ways so lets declare the variables
+    $assaydate = null;//$arguments['assaydate'];
+    $contact_id = null;//$arguments['contact_id'];
+    $acquisitiondate = null;// $acquisitiondate = $arguments['acquisitiondate'];
+    $create_biosamples = null;// $create_biosamples = $arguments['create_biosamples'];
+    $quantificationdate = null;// $quantificationdate = $arguments['quantificationdate'];
     //
-    //$record = ['table' => 'analysis', 'id' => $node->analysis_id];
-    //
-    ////insert properties
-    ////note this is a subset of properties from the original, and im also not sure that we still need it
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_filetype',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->filetype),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_submit_job',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->submit_job),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_fileext',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->fileext),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_filepath',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->filepath),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_re_start',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->re_start),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_re_end',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->re_end),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_feature_uniquenames',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->feature_uniquenames),
-    //]);
+
 
 
     tripal_set_message(t("Job Submitted!  If new Biosamples will be created in this job, remember to") . l('publish them after the job runs.',
