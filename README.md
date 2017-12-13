@@ -13,10 +13,10 @@ New documentation for the new data loaders and module structure is under develop
 3. [Module Features](#features)
 4. [Loading Biosamples](#loading-biosamples)
 5. [Loading Expression Data](#loading-expression-data)
-6. [Protocols](#protocols)
-7. [Viewing Data](#viewing-and-downloading-data)
-9. [Administrative Pages](#administrative-pages)
-10. [Example Files](#example-files)
+6. [Viewing Data](#viewing-and-downloading-data)
+7. [Administrative Pages](#administrative-pages)
+8. [Protocols](#protocols)
+9. [Example Files](#example-files)
 
 # Introduction 
 Tripal Analysis: Expression is a [Drupal](https://www.drupal.org/) module built to extend the functionality of the [Tripal](http://tripal.info/) toolset.
@@ -180,42 +180,14 @@ The biosample name will be taken as the name of the file minus the file extensio
 * **Regex for End of Data** - If the expression file has a footer, use this field to capture teh line that occurs after the end of expression data. This line of text and all text following will be ignored.
 
 #### Experimental Design Fields
-The "Experimental Design" fields allow a complete description of the experimental design by implementing the [Chado MAGE design schema](http://gmod.org/wiki/Chado_Mage_Module).  The Chado MAGE module uses the arraydesign, assay, quantification, and acquisition tables to describe an experiment. This is reflected in the following fields available to describe an experiment.
+The "Experimental Design" fields allow a complete description of the experimental design by implementing the [Chado MAGE design schema](http://gmod.org/wiki/Chado_Mage_Module).  The Chado MAGE module uses the arraydesign, assay, quantification, and acquisition tables to describe an experiment. The Tripal Analysis Expression creates generic instances of all these for you.
  
-* **Biomaterial Provider** - The person or organization responsible for collecting the biosample.
 * **Array Design** - This is only applicable for microarray expression data. This may be left blank for experiments that do not utilize an array (ie next generation sequencing). 
-
-#### Acquisition Details
-This represents the quantification technique. In the case of a microarray, it is scanning, in the case of a sequencer, it is sequencing. The output of this process is a digitial image of an array for a microarray or a set of digital images or nucleotide base calls for a sequencer.
-
- * **Acquisition URI** - A web address to a page that describes the acquisition process.
- * **Date Acquisition Run** - The date the acquisition was run. 
- * **Acquisition Protocol** - The acquisition protocol used in the experiment. (See protocol description below).
-
-#### Quantification Details
-
 * **Units** - The units associated with the loaded values, such as FPKM.  You may also update the units of your experiments using the **Quantification Units** admin page.
- * **Date Quantification Run** - The date the quantification was run. 
- * **Quantification URI** - A web address to a page that describes the quantification process.
- * **Quantification Operator** - The person or organization that ran the quantification.
- * **Quantification Protocol** - The quantification protocol used in the experiment. (See protocol description below).
 
-![Experimental Design Fields](https://cloud.githubusercontent.com/assets/14822959/12991557/a4b0228e-d0dd-11e5-93de-2f206be6d5fe.png)
-![Data Loader Fields](https://cloud.githubusercontent.com/assets/14822959/12991553/a4ade58c-d0dd-11e5-97d2-1096d78bb189.png)
-
-
-# Protocols
-
-Acquisition, Quantification, Array Design, and Assays all utilize protocols to describe them.  Think of protocols as the **experimental design**, and Acquisitions, Quantifications, Array Designs, and Assays as the experiment following that experimental design.
-
-**Protocol Descripton** - The protocol content types can be created by navigating to **Add Tripal Content->Protocol**. A protocol can be used to add extra detail to an experimental design. A protocol can be used to describe the assay, acquisition, and quantification steps of the experiment design. A protocol can also be used to further describe the array design content type. The fields of a protocol are:
-* **Protocol Name (must be unique - required)**
-* **Protocol Link (Required)** - A web address to a page that describes the protocol.
-* **Protocol Description** - A description of the protocol.
-* **Hardware Description** - A description of the wardware used in the protocol.
-* **Software Description** - A description of the software used in the protocol.
-* **Protocol Type (required)** - The protocol type can acquisition, array design, assay, or quantification. The user can also create new protocol types by inserting new CVterms into the protocol type CV.
-* **Publication** - A publication that describes the protocol.
+>![file information portion of expression loader](example_files/doc_images/expression_loader_file_info.png)
+>![experimental design portion of expression loader](example_files/doc_images/expression_loader_experimental_design.png)
+> The expression loader accepts parameters describing your file, as well as some experimental design parameters.
 
 # Viewing and Downloading Data
 
@@ -269,6 +241,24 @@ The units associated with your expression data are stored in Chado associated wi
 You can use the quantification units administrative page to add or edit units on your quantification by Navigating to Tripal -> Extensions -> Protocol -> Quantification Units.  All quantification instances appear in the table at the bottom of the admin page. Click 'Edit' to change the units for an individual quantification. 
 
 You can also assign quantification units to **all unitless quantifications** using the Assign Units box.
+
+
+
+
+# Protocols
+
+Acquisition, Quantification, Array Design, and Assays all utilize protocols to describe them.  Think of protocols as the **experimental design**, and Acquisitions, Quantifications, Array Designs, and Assays as the experiment following that experimental design.
+
+There is currently no support for inputting, or displaying, acquisitions, quantifications, or assays.  The Expression module creates generic instances of these entities.
+
+**Protocol Descripton** - The protocol content types can be created by navigating to **Add Tripal Content->Protocol**. A protocol can be used to add extra detail to an experimental design. A protocol can be used to describe the assay, acquisition, and quantification steps of the experiment design. A protocol can also be used to further describe the array design content type. The fields of a protocol are:
+* **Protocol Name (must be unique - required)**
+* **Protocol Link (Required)** - A web address to a page that describes the protocol.
+* **Protocol Description** - A description of the protocol.
+* **Hardware Description** - A description of the wardware used in the protocol.
+* **Software Description** - A description of the software used in the protocol.
+* **Protocol Type (required)** - The protocol type can acquisition, array design, assay, or quantification. The user can also create new protocol types by inserting new CVterms into the protocol type CV.
+* **Publication** - A publication that describes the protocol.
 
 
 
