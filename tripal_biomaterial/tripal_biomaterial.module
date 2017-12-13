@@ -12,8 +12,6 @@
  * the Analysis module.
  * @}
  */
-require_once "includes/tripal_biomaterial.chado_node.inc";
-require_once "includes/tripal_biomaterial.admin.inc";
 require_once "includes/tripal_biomaterial.fields.inc";
 require_once "theme/tripal_biomaterial.theme.inc";
 require_once "api/tripal_biomaterial.api.inc";
@@ -36,7 +34,7 @@ function tripal_biomaterial_help($path, $arg) {
       $ret_val .= "<br><br>" . l(t("Biomaterial Administrative Pages"), "admin/tripal/extension/tripal_biomaterial/content_types/biomaterial");
       $ret_val .= "<br>" . l(t("Biomaterial Help"), "admin/tripal/extension/tripal_biomaterial/content_types/biomaterial/help");
       $ret_val .= "<br>" . l(t("Biomaterial Loader"), "admin/tripal/loaders/chado_biosample_loader");
-      $ret_val .= "<br>". l(t("BioSample submission template"), "https://submit.ncbi.nlm.nih.gov/biosample/template/");
+      $ret_val .= "<br>" . l(t("BioSample submission template"), "https://submit.ncbi.nlm.nih.gov/biosample/template/");
       return $ret_val;
       break;
     }
@@ -46,33 +44,11 @@ function tripal_biomaterial_help($path, $arg) {
 /**
  * Implements hook_permission().
  *
- * TODO: are the permissions relevant for Tripal 3?
  *
  * @ingroup tripal_biomaterial
  */
 function tripal_biomaterial_permission() {
-  return [
-    'access chado_biomaterial content' => [
-      'title' => t('View Biomaterials'),
-      'description' => t('Allow users to view biomaterial pages.'),
-    ],
-    'create chado_biomaterial content' => [
-      'title' => t('Create Biomaterials'),
-      'description' => t('Allow users to create new biomaterial pages.'),
-    ],
-    'delete chado_biomaterial content' => [
-      'title' => t('Delete Biomaterials'),
-      'description' => t('Allow users to delete biomaterial pages.'),
-    ],
-    'edit chado_biomaterial content' => [
-      'title' => t('Edit Biomaterials'),
-      'description' => t('Allow users to edit biomaterial pages.'),
-    ],
-    'administer tripal biomaterial' => [
-      'title' => t('Administer Biomaterials'),
-      'description' => t('Allow users to administer all biomaterials.'),
-    ],
-  ];
+
 }
 
 /**
