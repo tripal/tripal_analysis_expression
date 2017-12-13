@@ -1,7 +1,7 @@
 name = Tripal Expression
 description = A module to load expression data
 core = 7.x
-version = 7.x-0.1-dev
+version = 7.x-3.0
 project = tripal_analysis_expression
 package = Tripal Extensions
 configure = admin/tripal/extension/tripal_analysis_expression

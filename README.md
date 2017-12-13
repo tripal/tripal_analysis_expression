@@ -4,8 +4,6 @@ This is an extension module for the Tripal project.
 
 Please note this module requires **Tripal 3** or greater.  The [Tripal 2 functional module is available for download](https://github.com/tripal/tripal_analysis_expression/releases/tag/1.0.2) but is no longer supported.
 
-New documentation for the new data loaders and module structure is under development.
-
 # Tripal Analysis: Expression
 
 1. [Introduction](#introduction)
