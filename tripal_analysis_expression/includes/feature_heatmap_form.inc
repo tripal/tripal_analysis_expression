@@ -334,6 +334,14 @@ function tripal_analysis_expression_generate_heatmap_values() {
     }
   }
 
+  // filter unknown features
+  $features_count = count($expressions);
+  $expressions = array_filter($expressions, function($v) {
+    return !empty($v);
+  });
+  if (count($expressions) < $features_count) {
+    drupal_set_message('Unknown features have been removed from the list.', 'warning');
+  }
   // Foreach feature, loop through the biomaterials it has and get the signal value (expression data)
   foreach ($expressions as $feature_id => $features) {
     foreach ($features as $feature) {
