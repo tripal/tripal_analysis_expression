@@ -13,15 +13,6 @@
  * @}
  */
 
-require_once "includes/tripal_protocol.chado_node.inc";
-require_once "includes/tripal_protocol.admin.inc";
-require_once "includes/tripal_protocol.delete.inc";
-require_once "includes/tripal_arraydesign.chado_node.inc";
-require_once "includes/tripal_arraydesign.delete.inc";
-require_once "includes/tripal_arraydesign.admin.inc";
-require_once "includes/tripal_protocol.chado_node.inc";
-require_once "includes/tripal_protocol.admin.inc";
-require_once "includes/tripal_protocol.delete.inc";
 require_once "theme/tripal_protocol.theme.inc";
 require_once "api/tripal_arraydesign.api.inc";
 require_once "api/tripal_protocol.api.inc";
@@ -36,30 +27,7 @@ require_once "includes/tripal_protocol_quantity_units_form.inc";
  * @ingroup tripal_protocol
  */
 function tripal_protocol_help($path, $arg) {
-  switch ($path) {
 
-    // Both of the following cases should display the below HTML.
-    case 'admin/tripal/extension/tripal_protocol/help' :
-    case 'admin/help#tripal_protocol' : {
-      $ret_val = "<br><br><b>" . t("Array Design") . "</b> - " . t("The array design content type") . " ";
-      $ret_val .= t("represents the Chado arraydesign table. This table is only used when describing") . " ";
-      $ret_val .= t("the experimental design of data collected from a microarray expression experiment.") . " ";
-      $ret_val .= t("See the arraydesign description at the");
-      $ret_val .= l(t(" GMOD wiki."), "http://gmod.org/wiki/Chado_Mage_Module#Table:_arraydesign") . "<br>";
-      $ret_val .= l(t("Array Design Administrative Pages"), "admin/tripal/extension/tripal_protocol/content_types/arraydesign");
-      $ret_val .= "<br>" . l(t("Create Array Design"), "node/add/chado-arraydesign");
-      $ret_val .= "<br>" . l(t("Array Design Help"), "admin/tripal/extension/tripal_protocol/content_types/arraydesign/help");
-      $ret_val .= "<br><br><b>" . t("Protocol") . "</b> -" . t(" The protocol content type represents") . " ";
-      $ret_val .= t("the Chado protocol table. This table is used to describe the protocol, software,") . " ";
-      $ret_val .= t("and hardware used in different steps of the experiment. See the protocol description at the") . " ";
-      $ret_val .= l(t("GMOD wiki."), "http://gmod.org/wiki/Chado_Tables#Table:_protocol") . "<br>";
-      $ret_val .= l(t("Protocol Administrative Pages"), "admin/tripal/extension/tripal_protocol/content_types/protocol");
-      $ret_val .= "<br>" . l(t("Create Protocol"), "node/add/chado-protocol") . "<br>";
-      $ret_val .= l(t("Protocol Help"), "admin/tripal/extension/tripal_protocol/content_types/protocol/help");
-      return $ret_val;
-      break;
-    }
-  }
 }
 
 /**
@@ -132,6 +100,14 @@ function tripal_protocol_menu() {
   $items = [];
 
 
+
+  // Admin configuration group.
+  $items['admin/tripal/extension/tripal_protocol'] = [
+    'title' => 'Protocol',
+    'description' => 'Administrative pages for the Tripal Protocol module.',
+    'access arguments' => ['administer tripal protocol'],
+  ];
+
   //Pages for editing units associated with a quantification
   $items['admin/tripal/extension/tripal_protocol/quantification_units'] = [
     'title' => 'Quantification Units',
@@ -148,200 +124,6 @@ function tripal_protocol_menu() {
     'page arguments' => ['tripal_protocol_quantity_units_edit_form',6],
   ];
 
-
-
-
-  // Admin configuration group.
-  $items['admin/tripal/extension/tripal_protocol'] = [
-    'title' => 'Protocol',
-    'description' => 'Administrative pages for the Tripal Protocol module.',
-    'access arguments' => ['administer tripal protocol'],
-  ];
-
-  // Content type configuration group.
-  $items['admin/tripal/extension/tripal_protocol/content_types'] = [
-    'title' => 'Protocol Content Types',
-    'description' => 'Administer content types provided by the Tripal Protocol module.',
-    'access arguments' => ['administer tripal protocol'],
-  ];
-
-  // Module help pages.
-  $items['admin/tripal/extension/tripal_protocol/help'] = [
-    'title' => 'Tripal Protocol Help',
-    'description' => 'A description of protocol content types.',
-    'access arguments' => ['administer tripal protocol'],
-    'weight' => 10,
-  ];
-
-  // Admin configuration - arraydesign admin list.
-  $items['admin/tripal/extension/tripal_protocol/content_types/arraydesign'] = [
-    'title' => 'Array Design',
-    'description' => 'The description of an array.',
-    'access arguments' => ['administer tripal arraydesign'],
-    'page callback' => 'tripal_arraydesign_admin_arraydesign_view',
-    'type' => MENU_NORMAL_ITEM,
-  ];
-
-  // Admin configuration - arraydesign settings.
-  $items['admin/tripal/extension/tripal_protocol/content_types/arraydesign/configuration'] = [
-    'title' => 'Settings',
-    'description' => 'Manage Tripal Protocol: Array Design settings and configurations.',
-    'access arguments' => ['administer tripal arraydesign'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_arraydesign_admin'],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 5,
-  ];
-  // Admin configuration - arraydesign TOC.
-  $items['admin/tripal/extension/tripal_protocol/content_types/arraydesign/chado_arraydesign_toc'] = [
-    'title' => 'TOC',
-    'description' => 'Manage the table of contents for arraydesign nodes.',
-    'access arguments' => ['administer tripal arraydesign'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => [
-      'tripal_core_content_type_toc_form',
-      'chado_arraydesign',
-    ],
-    'file' => 'includes/tripal_core.toc.inc',
-    'file path' => drupal_get_path('module', 'tripal_core'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 3,
-  ];
-
-  // Admin configuration - arraydesign sync.
-  $items['admin/tripal/extension/tripal_protocol/content_types/arraydesign/sync'] = [
-    'title' => 'Sync',
-    'description' => 'Create pages on this site for arraydesigns stored in Chado.',
-    'access arguments' => ['administer tripal arraydesign'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => [
-      'chado_node_sync_form',
-      'tripal_protocol',
-      'chado_arraydesign',
-    ],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 2,
-  ];
-
-  // Admin configuration - arraydesign delete.
-  $items['admin/tripal/extension/tripal_protocol/content_types/arraydesign/delete'] = [
-    'title' => "Delete",
-    'description' => 'Delete multiple array designs from Chado',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_arraydesign_delete_form'],
-    'access arguments' => ['administer tripal protoocl'],
-    'type' => MENU_LOCAL_TASK,
-    'file path' => drupal_get_path('module', 'tripal_protocol'),
-    'file' => 'includes/tripal_arraydesign.delete.inc',
-    'weight' => 3,
-  ];
-
-  // Admin configuration - arraydesign help.
-  $items['admin/tripal/extension/tripal_protocol/content_types/arraydesign/help'] = [
-    'title' => 'Help',
-    'description' => "A description of the Tripal Array Design content type including a short description of it's usage.",
-    'access arguments' => ['administer tripal arraydesign'],
-    'page callback' => 'theme',
-    'page arguments' => ['tripal_arraydesign_help'],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10,
-  ];
-
-  // Admin configuration - arraydesign enable view.
-  $items['admin/tripal/extension/tripal_protocol/content_types/arraydesign/views/arraydesigns/enable'] = [
-    'title' => 'Enable Arraydesign Administrative View',
-    'access arguments' => ['administer tripal arraydesign'],
-    'page callback' => 'tripal_enable_view',
-    'page arguments' => [
-      'tripal_arraydesign_admin_arraydesigns',
-      'tripal_protocol',
-      'admin/tripal/extension/tripal_protocol/arraydesign',
-    ],
-  ];
-
-  // Admin configuration - protocol admin list.
-  $items['admin/tripal/extension/tripal_protocol/content_types/protocol'] = [
-    'title' => 'Protocol',
-    'description' => 'A description of the methods, software, and hardware used in an experimental process.',
-    'access arguments' => ['administer tripal protocol'],
-    'page callback' => 'tripal_protocol_admin_protocol_view',
-    'type' => MENU_NORMAL_ITEM,
-  ];
-
-  // Admin configuration - protocol settings.
-  $items['admin/tripal/extension/tripal_protocol/content_types/protocol/configuration'] = [
-    'title' => 'Settings',
-    'description' => 'Manage Tripal Protocol: Protocol settings and configurations.',
-    'access arguments' => ['administer tripal protocol'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_protocol_admin'],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 5,
-  ];
-
-  // Admin configuration - protocol TOC.
-  $items['admin/tripal/extension/tripal_protocol/content_types/protocol/chado_protocol_toc'] = [
-    'title' => 'TOC',
-    'description' => 'Manage the table of contents for protocol nodes.',
-    'access arguments' => ['administer tripal protocol'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_core_content_type_toc_form', 'chado_protocol'],
-    'file' => 'includes/tripal_core.toc.inc',
-    'file path' => drupal_get_path('module', 'tripal_core'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 3,
-  ];
-
-  // Admin configuration - protocol sync.
-  $items['admin/tripal/extension/tripal_protocol/content_types/protocol/sync'] = [
-    'title' => 'Sync',
-    'description' => 'Create pages on this site for protocols stored in Chado.',
-    'access arguments' => ['administer tripal protocol'],
-    'page callback' => 'drupal_get_form',
-    'page arguments' => [
-      'chado_node_sync_form',
-      'tripal_protocol',
-      'chado_protocol',
-    ],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 2,
-  ];
-
-  // Admin configuration - protocol delete.
-  $items['admin/tripal/extension/tripal_protocol/content_types/protocol/delete'] = [
-    'title' => "Delete",
-    'description' => 'Delete multiple protocols from Chado',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_protocol_delete_form'],
-    'access arguments' => ['administer tripal protoocl'],
-    'type' => MENU_LOCAL_TASK,
-    'file path' => drupal_get_path('module', 'tripal_protocol'),
-    'file' => 'includes/tripal_protocol.delete.inc',
-    'weight' => 3,
-  ];
-
-  // Admin configuration - protocol help.
-  $items['admin/tripal/extension/tripal_protocol/content_types/protocol/help'] = [
-    'title' => 'Help',
-    'description' => "A description of the Tripal Protocol content type including a short description of it's usage.",
-    'access arguments' => ['administer tripal protocol'],
-    'page callback' => 'theme',
-    'page arguments' => ['tripal_protocol_help'],
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10,
-  ];
-
-  // Admin configuration - protocol enable view.
-  $items['admin/tripal/extension/tripal_protocol/content_types/protocol/views/protocols/enable'] = [
-    'title' => 'Enable Protocol Administrative View',
-    'access arguments' => ['administer tripal protocol'],
-    'page callback' => 'tripal_enable_view',
-    'page arguments' => [
-      'tripal_protocol_admin_protocols',
-      'tripal_protocol',
-      'admin/tripal/extension/tripal_protocol/protocol',
-    ],
-  ];
 
 
   return $items;

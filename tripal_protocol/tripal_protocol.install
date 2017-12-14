@@ -62,8 +62,11 @@ function tripal_protocol_install() {
 function tripal_protocol_add_cvs() {
   // CVs for the array design content type.
   tripal_insert_cv('arraydesign_property', 'Contains property terms for arraydesigns.');
-  tripal_insert_cv('arraydesign_platformtype', 'Contains microarray platform types.');
-  tripal_insert_cv('arraydesign_substratetype', 'Contains microarray substrate types.');
+
+// Let's not do this.
+
+//  tripal_insert_cv('arraydesign_platformtype', 'Contains microarray platform types.');
+//  tripal_insert_cv('arraydesign_substratetype', 'Contains microarray substrate types.');
 
   // CVs for the protocol content type.
   tripal_insert_cv('protocol_type', 'Contains protocol type.');
@@ -335,6 +338,12 @@ function tripal_protocol_add_cvterms() {
     'cv_name' => 'tripal',
     'db_name' => 'tripal',
   ]);
+  tripal_insert_cvterm([
+    'name' => 'unit_of_measure',
+    'def' => 'A unit of measure is a quantity which is a standard of measurement for some dimension. For example, the Meter is a Unit O fMeasure for the dimension of length, as is the Inch. There is no intrinsic property of a UnitOfMeasure that makes it primitive or fundamental; rather, a system of units (e.g. Systeme International Unit) defines a set of orthogonal dimensions and assigns units for each. [ SUMO:unit of measure ].',
+    'cv_name' => 'sep',
+    'db_name' => 'SEP',
+  ]);
 }
 
 /**
@@ -516,17 +525,17 @@ function tripal_protocol_add_cvterms_entity_for_array_design() {
 
   // arraydesign.platformtype_id
   $term = tripal_insert_cvterm([
-    'id' => 'local:platformtype_id',
-    'name' => 'platformtype_id',
-    'cv_name' => 'local',
+    'id' => 'OBI:microarray_platform',
+    'name' => 'microarray_platform',
+    'cv_name' => 'OBI',
   ]);
   tripal_associate_chado_semweb_term('arraydesign', 'platformtype_id', $term);
 
   // arraydesign.substratetype_id
   $term = tripal_insert_cvterm([
-    'id' => 'local:substratetype_id',
-    'name' => 'substratetype_id',
-    'cv_name' => 'local',
+    'id' => 'EFO:substrate',
+    'name' => 'substrate',
+    'cv_name' => 'EFO',
   ]);
   tripal_associate_chado_semweb_term('arraydesign', 'substratetype_id', $term);
 
@@ -583,4 +592,16 @@ function tripal_protocol_update_7202() {
   // Insert semweb cv terms for chado.arraydesign table
 
   tripal_protocol_add_cvterms_entity_for_array_design();
+}
+
+/**
+ * Add the unit of measure cvterm.
+ */
+function tripal_protocol_update_7203() {
+  tripal_insert_cvterm([
+    'name' => 'unit_of_measure',
+    'def' => 'A unit of measure is a quantity which is a standard of measurement for some dimension. For example, the Meter is a Unit O fMeasure for the dimension of length, as is the Inch. There is no intrinsic property of a UnitOfMeasure that makes it primitive or fundamental; rather, a system of units (e.g. Systeme International Unit) defines a set of orthogonal dimensions and assigns units for each. [ SUMO:unit of measure ].',
+    'cv_name' => 'sep',
+    'db_name' => 'SEP',
+  ]);
 }

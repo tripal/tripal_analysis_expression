@@ -109,23 +109,6 @@ class tripal_expression_data_loader extends TripalImporter{
       '#options' => $organisms,
     ];
 
-    // At this time the analysis module has the extra fields.
-    // These fields do not appear to do anything for the analysis module.
-    // The following three form fields prevent an error form appearing
-    // when the expression biomaterial is submitted.
-    $form['removed'] = [
-      '#type' => 'value',
-      '#default_value' => '',
-    ];
-    $form['num_new'] = [
-      '#type' => 'value',
-      '#default_value' => '',
-    ];
-    $form['analysis_type'] = [
-      '#type' => 'value',
-      '#default_value' => '',
-    ];
-
     //protocols, assays, etc go here
 
     $form['experimental_design'] = [
@@ -154,18 +137,20 @@ class tripal_expression_data_loader extends TripalImporter{
       '#value' => $contacts,
     ];
 
-    $lt_message = tripal_set_message(t('If the biomaterial provider is not present in the dropdown list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t(' A biomaterial provider is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+    //TODO: WE DONT USE THIS (BUT WE SHOULD)
 
-    $form['experimental_design']['biosourceprovider_id'] = [
-      '#title' => t('Biomaterial Provider'),
-      '#type' => 'select',
-      '#empty_value' => '',
-      '#description' => t('The contact who provided the biomaterial. If the biomaterial is already') . (' present in the database, the biomaterial provider selected here will') . (' overwrite the biomaterial provider set for the biomaterial in the database.'),
-      '#options' => $form['choose_contact']['#value'],
-      '#suffix' => $lt_message,
-    ];
+    //    $lt_message = tripal_set_message(t('If the biomaterial provider is not present in the dropdown list, ') . l(t('add a new contact.'), 'bio_data/add') . t(' A biomaterial provider is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
-    $lt_message = tripal_set_message(t('If the array design does not appear in this list, ') . l(t('add a new arraydesign.'), 'node/add/chado-arraydesign') . t(' If an array design is not selected, then a generic array design will be created for the analysis.'), TRIPAL_INFO, ['return_html' => TRUE]);
+//    $form['experimental_design']['biosourceprovider_id'] = [
+//      '#title' => t('Biomaterial Provider'),
+//      '#type' => 'select',
+//      '#empty_value' => '',
+//      '#description' => t('The contact who provided the biomaterial. If the biomaterial is already') . (' present in the database, the biomaterial provider selected here will') . (' overwrite the biomaterial provider set for the biomaterial in the database.'),
+//      '#options' => $form['choose_contact']['#value'],
+//      '#suffix' => $lt_message,
+//    ];
+
+    $lt_message = tripal_set_message(t('If the array design does not appear in this list, ') . l(t('add a new arraydesign.'), 'bio_data/add') . t(' If an array design is not selected, then a generic array design will be created for the analysis.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
     $arraydesigns = tripal_get_arraydesign_select_options(FALSE);
 
@@ -176,52 +161,60 @@ class tripal_expression_data_loader extends TripalImporter{
       '#options' => $arraydesigns,
       '#suffix' => $lt_message,
     ];
+
+    //TODO: WE DONT USE THIS (BUT WE SHOULD)
+
     //
-    $form['experimental_design']['acquisition_details'] = [
-      '#title' => t('Acquisition Details'),
-      '#type' => 'fieldset',
-      '#description' => t('This represents the quantification technique. In the case of a microarray, it is scanning, in the case of a sequencer, it is sequencing. The output of this process is a digitial image of an array for a microarray or a set of digital images or nucleotide base calls for a sequencer.'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-      '#weight' => 1,
-    ];
+//    $form['experimental_design']['acquisition_details'] = [
+//      '#title' => t('Acquisition Details'),
+//      '#type' => 'fieldset',
+//      '#description' => t('This represents the quantification technique. In the case of a microarray, it is scanning, in the case of a sequencer, it is sequencing. The output of this process is a digitial image of an array for a microarray or a set of digital images or nucleotide base calls for a sequencer.'),
+//      '#collapsible' => TRUE,
+//      '#collapsed' => FALSE,
+//      '#weight' => 1,
+//    ];
 
-    $form['experimental_design']['acquisition_details']['acquisitiondate'] = [
-      '#type' => 'date',
-      '#title' => t('Date Acquisition Run'),
-      '#description' => t('If no date is provided, then the current date will be used.'),
-      '#required' => TRUE,
-      '#default_value' => [
-        'year' => $year,
-        'month' => $month,
-        'day' => $day,
-      ],
-    ];
+//    $form['experimental_design']['acquisition_details']['acquisitiondate'] = [
+//      '#type' => 'date',
+//      '#title' => t('Date Acquisition Run'),
+//      '#description' => t('If no date is provided, then the current date will be used.'),
+//      '#required' => TRUE,
+//      '#default_value' => [
+//        'year' => $year,
+//        'month' => $month,
+//        'day' => $day,
+//      ],
+//    ];
 
-    $form['experimental_design']['acquisition_details']['acquisition_uri'] = [
-      '#type' => 'textfield',
-      '#title' => t('Acquisition URI'),
-      '#description' => t('URI location that describes the acquisition.'),
-    ];
+    //TODO: WE DONT USE THIS (BUT WE SHOULD)
 
-    $lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' An acquisition protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+    //    $form['experimental_design']['acquisition_details']['acquisition_uri'] = [
+//      '#type' => 'textfield',
+//      '#title' => t('Acquisition URI'),
+//      '#description' => t('URI location that describes the acquisition.'),
+//    ];
+
+    $lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'bio_data/add') . t(' An acquisition protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
     $acquisitions = tripal_get_protocol_select_options(FALSE, 'Acquisition Protocol');
 
-    $form['experimental_design']['acquisition_details']['acquisition_protocol_id'] = [
-      '#title' => t('Acquisition Protocol'),
-      '#type' => 'select',
-      '#description' => t('The protocol associated with this acquisition.'),
-      '#options' => $acquisitions,
-      '#suffix' => $lt_message,
-    ];
+    //TODO: WE DONT USE THIS (BUT WE SHOULD)
+
+    //
+//    $form['experimental_design']['acquisition_details']['acquisition_protocol_id'] = [
+//      '#title' => t('Acquisition Protocol'),
+//      '#type' => 'select',
+//      '#description' => t('The protocol associated with this acquisition.'),
+//      '#options' => $acquisitions,
+//      '#suffix' => $lt_message,
+//    ];
 
     $form['experimental_design']['quantification_details'] = [
       '#title' => t('Quantification Details'),
       '#type' => 'fieldset',
       '#description' => t(' Quantification is the transformation of an image or set of sequences to numeric expression data. This typically involves statistical procedures.'),
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#collapsed' => FALSE,
       '#weight' => 1,
     ];
     $form['experimental_design']['quantification_details']['quantificationunits'] = [
@@ -229,26 +222,30 @@ class tripal_expression_data_loader extends TripalImporter{
       '#title' => t('Units'),
       '#description' => t('The units associated with the loaded values (ie, FPKM, RPKM, raw counts).'),
     ];
+    //TODO: WE DONT USE THIS (BUT WE SHOULD)
 
-    $form['experimental_design']['quantification_details']['quantificationdate'] = [
-      '#type' => 'date',
-      '#title' => t('Date Quantification Run'),
-      '#description' => t('If no date is provided, then the current date will be used.'),
-      '#required' => TRUE,
-      '#default_value' => [
-        'year' => $year,
-        'month' => $month,
-        'day' => $day,
-      ],
-    ];
+//    $form['experimental_design']['quantification_details']['quantificationdate'] = [
+//      '#type' => 'date',
+//      '#title' => t('Date Quantification Run'),
+//      '#description' => t('If no date is provided, then the current date will be used.'),
+//      '#required' => TRUE,
+//      '#default_value' => [
+//        'year' => $year,
+//        'month' => $month,
+//        'day' => $day,
+//      ],
+//    ];
 
-    $form['experimental_design']['quantification_details']['quantification_uri'] = [
-      '#type' => 'textfield',
-      '#title' => t('Quantification URI'),
-      '#description' => t('URI location that describes the quantification.'),
-    ];
 
-    $lt_message = tripal_set_message(t('If the quantification operator is not present in the dropdown list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t('A quantication operator is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+    //TODO: WE DONT USE THIS (BUT WE SHOULD)
+
+    //    $form['experimental_design']['quantification_details']['quantification_uri'] = [
+//      '#type' => 'textfield',
+//      '#title' => t('Quantification URI'),
+//      '#description' => t('URI location that describes the quantification.'),
+//    ];
+//
+//    $lt_message = tripal_set_message(t('If the quantification operator is not present in the dropdown list, ') . l(t('add a new contact.'), 'bio_data/add') . t('A quantication operator is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
     //     Obtain the list of contacts from the chado contact table.
     $sql = 'SELECT
@@ -266,26 +263,30 @@ class tripal_expression_data_loader extends TripalImporter{
       '#value' => $contacts,
     ];
 
-    $form['experimental_design']['quantification_details']['quantification_operator_id'] = [
-      '#title' => t('Quantification Operator'),
-      '#type' => 'select',
-      '#empty_value' => '',
-      '#description' => t('The quantification operator. If the operator does not appear in this list, ') . l(t('add a new contact.'), 'node/add/chado-contact') . t(' An operator is not required.'),
-      '#options' => $form['choose_contact']['#value'],
-      '#suffix' => $lt_message,
-    ];
+    //TODO: WE DONT USE THIS (BUT WE SHOULD)
+    //
+//    $form['experimental_design']['quantification_details']['quantification_operator_id'] = [
+//      '#title' => t('Quantification Operator'),
+//      '#type' => 'select',
+//      '#empty_value' => '',
+//      '#description' => t('The quantification operator. If the operator does not appear in this list, ') . l(t('add a new contact.'), 'bio_data/add') . t(' An operator is not required.'),
+//      '#options' => $form['choose_contact']['#value'],
+//      '#suffix' => $lt_message,
+//    ];
 
-    $lt_message = tripal_set_message(t('If the quantification protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'node/add/chado-protocol') . t(' A quantification protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
-    $quantifications = tripal_get_protocol_select_options(FALSE, 'Quantification Protocol');
+    //TODO: WE DONT USE THIS (BUT WE SHOULD)
+//    $lt_message = tripal_set_message(t('If the quantification protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'bio_data/add') . t(' A quantification protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+//
+//    $quantifications = tripal_get_protocol_select_options(FALSE, 'Quantification Protocol');
 
-    $form['experimental_design']['quantification_details']['quantification_protocol_id'] = [
-      '#title' => t('Quantification Protocol'),
-      '#type' => 'select',
-      '#description' => t('The protocol associated with this quantification.'),
-      '#options' => $quantifications,
-      '#suffix' => $lt_message,
-    ];
+//    $form['experimental_design']['quantification_details']['quantification_protocol_id'] = [
+//      '#title' => t('Quantification Protocol'),
+//      '#type' => 'select',
+//      '#description' => t('The protocol associated with this quantification.'),
+//      '#options' => $quantifications,
+//      '#suffix' => $lt_message,
+//    ];
 
     $form['filetype'] = [
       '#type' => 'radios',
@@ -369,54 +370,18 @@ class tripal_expression_data_loader extends TripalImporter{
     $analysis_id = $arguments['analysis_id'];
     $feature_uniquenames = $arguments['feature_uniquenames'];
     $arraydesign_id = $arguments['arraydesign_id'];
-    $acquisitiondate = $arguments['acquisitiondate'];
-    $create_biosamples = $arguments['create_biosamples'];
-    $quantificationdate = $arguments['quantificationdate'];
+
     $quantificationunits = $arguments['quantificationunits'];
 
-    //missing
-    $assaydate = '';//$arguments['assaydate'];
-    $contact_id = '';//$arguments['contact_id'];
+    //we dont actually use these variables so lets not collect the data.
+    //but, we do pass it around a million ways so lets declare the variables
+    $assaydate = null;//$arguments['assaydate'];
+    $contact_id = null;//$arguments['contact_id'];
+    $acquisitiondate = null;// $acquisitiondate = $arguments['acquisitiondate'];
+    $create_biosamples = null;// $create_biosamples = $arguments['create_biosamples'];
+    $quantificationdate = null;// $quantificationdate = $arguments['quantificationdate'];
     //
-    //$record = ['table' => 'analysis', 'id' => $node->analysis_id];
-    //
-    ////insert properties
-    ////note this is a subset of properties from the original, and im also not sure that we still need it
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_filetype',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->filetype),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_submit_job',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->submit_job),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_fileext',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->fileext),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_filepath',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->filepath),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_re_start',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->re_start),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_re_end',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->re_end),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_feature_uniquenames',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->feature_uniquenames),
-    //]);
+
 
 
     tripal_set_message(t("Job Submitted!  If new Biosamples will be created in this job, remember to") . l('publish them after the job runs.',

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @class
  * Purpose:
@@ -7,16 +6,18 @@
  * Display:
  * Configuration:
  */
-class local__protocol_type_formatter extends ChadoFieldFormatter {
+class efo__substrate_formatter extends ChadoFieldFormatter {
 
   // The default label for this field.
-  public static $default_label = 'Protocol Type';
+  public static $default_label = 'substrate';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = ['local__protocol_type'];
+  public static $field_types = array('efo__substrate');
 
   // The list of default settings for this formatter.
-  public static $default_settings = [];
+  public static $default_settings = array(
+    'setting1' => 'default_value',
+  );
 
   /**
    * Provides the field's setting form.
@@ -67,21 +68,18 @@ class local__protocol_type_formatter extends ChadoFieldFormatter {
    *  into a CSV file will always be identical.  The view need not show all
    *  of the data in the 'values' array.
    *
-   * @param $element
-   * @param $entity_type
-   * @param $entity
-   * @param $langcode
-   * @param $items
-   * @param $display
+   *  @param $element
+   *  @param $entity_type
+   *  @param $entity
+   *  @param $langcode
+   *  @param $items
+   *  @param $display
    *
-   * @return
+   *  @return
    *    An element array compatible with that returned by the
    *    hook_field_formatter_view() function.
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-
-    // Get the settings
-    $settings = $display['settings'];
 
     foreach ($items as $delta => $item) {
       $content = key_exists('value', $item) ? $item['value'] : '';
@@ -91,6 +89,7 @@ class local__protocol_type_formatter extends ChadoFieldFormatter {
         '#markup' => $content,
       );
     }
+
   }
 
   /**
@@ -123,4 +122,5 @@ class local__protocol_type_formatter extends ChadoFieldFormatter {
   public function settingsSummary($view_mode) {
     return '';
   }
+
 }
