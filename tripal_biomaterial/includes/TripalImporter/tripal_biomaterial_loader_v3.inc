@@ -348,12 +348,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     $comment = $biosample->Description->Comment->Paragraph;
     $ncbi_owner = $biosample->Owner->Name;
 
-    //$biomaterial_provider = $biosample->Attributes->Attribute[1];
-
     $biomaterial_provider = $biosample->Owner->Contacts->Contact->Name;
 
     // Create a contact if contact is not present.
-
     if ($biomaterial_provider) {
       $contact_name = "";
       if ($biomaterial_provider->Last && $biomaterial_provider->First) {
@@ -386,6 +383,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     ]);
     $dbxref_biosample_id = $dbxref_biosample->dbxref_id;
 
+
+    //note:  this dbxref (ncbi biosample) previously was insert into the biomaterial table.  This is incorrect: t his column is only for INTERNAL accessions.
+
     // If sra_accession is present, create entry in the dbxref table.
     if ($sra_accession) {
       $dbxref_sra = tripal_insert_dbxref([
@@ -399,7 +399,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     $biomaterial_description = $comment ? (string) $comment : (string) $description;
 
-    $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $biomaterial_description);
+    $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $biomaterial_description);
 
     // Add to biomaterialprop table.
     $this->add_xml_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id, $insert_fields);
@@ -411,6 +411,15 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         'db_name' => 'NCBI SRA',
       ]);
     }
+    //Also add the NCBI BioSample DBXREF previously inserted into the biomaterial table
+    if ($sample_accession){
+      tripal_associate_dbxref('biomaterial', $biomaterial_id, [
+        'accession'=> $sample_accession,
+        'db_name' => 'NCBI BioSample'
+      ]);
+
+    }
+
   }
 
   /**
