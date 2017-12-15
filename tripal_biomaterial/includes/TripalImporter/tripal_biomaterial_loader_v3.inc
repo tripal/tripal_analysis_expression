@@ -635,20 +635,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           if ($name == 'biomaterial_provider' and $line[$index] != "") {
             $biosourceprovider_id = tripal_biomaterial_create_biomaterial_contact($line[$index]);
           }
-          if ($name == 'biosample_accession') {
-            // In case there is no biosample database
-            $ncbi_biosample_id = tripal_biomaterial_create_ncbi_db('biosample', 'NCBI BioSample', '');
-            $values = [
-              'accession' => $line[$index],
-              'db_id' => $ncbi_biosample_id,
-            ];
-            $dbxref = chado_insert_record('dbxref', $values);
-            $dbxref_id = $dbxref->dbxref_id;
-          }
         }
 
         // Create the biomaterial based on the values given.
-        $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $description);
+        $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $description);
 
         // Insert database accessions.
         foreach ($acc_headers as $name => $index) {
@@ -656,6 +646,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           if ($name == 'sra_accession') {
             $db_id = tripal_biomaterial_create_ncbi_db('sra', 'NCBI SRA', '');
           }
+          elseif ($name == 'biosample_accession') {
+              // In case there is no biosample database
+              $db_id = tripal_biomaterial_create_ncbi_db('biosample', 'NCBI BioSample', '');
+            }
           else {
             if ($name == 'bioproject_accession') {
               $db_id = tripal_biomaterial_create_ncbi_db('bioproject', 'NCBI BioProject', '');
