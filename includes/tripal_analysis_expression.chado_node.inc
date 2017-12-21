@@ -299,7 +299,8 @@ function chado_analysis_expression_form($node, $form_state) {
     '#title' => t('Organism'),
     '#type' => 'select',
     '#required' => TRUE,
-    '#description' => t('The organism from which the biomaterials were collected.'),
+    '#description' => t('  The organism from which the biomaterials were collected.
+    If loading data from one organism mapped onto features of another, select the organism matching the biomaterial, not the features.'),
     '#options' => $organisms,
     '#default_value' => $organism_id,
     '#suffix' => $lt_message,
@@ -816,7 +817,7 @@ function chado_analysis_expression_validate($node, $form, &$form_state) {
 
   // Check for an organism.
   if (!$node->organism_id) {
-    form_set_error('organism_id', 'Please select the organism from which the biomaterials were collected.');
+    form_set_error('organism_id', 'Please select the organism from which the biomaterials were collected.  If loading data from one organism mapped onto features of another, select the organism matching the biomaterial, not the features.');
   }
 
   // Remove white space around field values.
