@@ -219,6 +219,7 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
 
   $expressions = chado_query($sql, array(":feature_id" => $feature_id));
 
+
   $json_exp = "[";
   foreach($expressions as $exp) {
     if($first_sig == 1) {
@@ -258,17 +259,6 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
 
     $node_present = chado_get_nid_from_id('biomaterial', $exp->biomaterial_id);
 
-   /* $desc = chado_get_property(
-      array('table' => 'biomaterial', 'id' => $exp->biomaterial_id),
-      array('type_name' => 'description', 'cv_name' => 'biomaterial_property')
-    );
-
-    if($desc) {
-      $description = $desc->value;
-    }
-    else {
-      $description = '';
-    } */
 
     $json_exp .= '{"name": "' . $exp->name . '", "intensity": "' . $exp->signal . '", "description": "' . $exp->description . '", "tissue": "' . $tissue . '", "treatment": "' . $treatment . '", "node": "' . $node_present . '"},';
   }
@@ -284,6 +274,7 @@ function tripal_analysis_expression_preprocess_tripal_feature_expression(&$varia
   if($hide_expression == 1) {
     $json_exp = "";
   }
+
 
   $variables['has_exp'] = $has_exp;
   $variables['json_exp'] = $json_exp;

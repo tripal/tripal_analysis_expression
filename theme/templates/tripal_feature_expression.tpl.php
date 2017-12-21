@@ -1,5 +1,6 @@
 <?php
 
+
 $feature = $variables['node']->feature;
 
 if (!$variables['has_exp'] and $variables['json_exp']) { ?>
