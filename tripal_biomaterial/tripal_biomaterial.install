@@ -165,3 +165,38 @@ function tripal_biomaterial_uninstall() {
 
 }
 
+
+/**
+ * Correct cases where the ncbi biosample accession was inserted into biomaterial.dbxref_id instead of added as a true dbxref
+ *
+ */
+function tripal_biomaterial_update_7300(){
+
+
+  $sql = "SELECT * FROM {biomaterial}";
+  $results = chado_query($sql);
+
+  foreach($results as $result) {
+
+    if ($result->dbxref_id) {
+
+      $sql = "SELECT db.name FROM {dbxref} DBX
+        INNER JOIN {db} DB ON  DBX.db_id = db.db_id
+        WHERE DBX.dbxref_id = :dbxref_id";
+
+      $db = chado_query($sql, [":dbxref_id" => $result->dbxref_id])->fetchObject();
+      if ($db == "NCBI BioSample") {
+
+        $biomaterial_id = $result->biomaterial_id;
+        $ncbi_id = $result->dbxref_id;
+
+        tripal_associate_dbxref('biomaterial', $biomaterial_id, [
+          'accession' => $ncbi_id,
+          'db_name' => 'NCBI BioSample'
+        ]);
+
+      }
+    }
+  }
+}
+
