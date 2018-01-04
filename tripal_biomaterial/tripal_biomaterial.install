@@ -185,7 +185,7 @@ function tripal_biomaterial_update_7300(){
         dpm($db->name);
         if ($db->name == "NCBI BioSample") {
           $biomaterial_id = $result->biomaterial_id;
-          $ncbi_id = $result->dbxref_id;
+          $ncbi_id = $result->accession;
 
           tripal_associate_dbxref('biomaterial', $biomaterial_id, [
             'accession' => $ncbi_id,
