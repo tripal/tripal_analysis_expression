@@ -357,7 +357,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
       $analysis_url = '';
       $analysis_id = $feature->analysis_id;
       if (!empty($analysis_id)) {
-        $analysis_url = 'bio_data/' . tripal_get_chado_entity_id('analysis', $analysis_id);
+        $analysis_url = 'bio_data/' . chado_get_record_entity_by_table('analysis', $analysis_id);
       }
 
       $analysis_legend[$analysis_name] = $analysis_id;
@@ -415,7 +415,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
 
       if (isset($ids[$feature_id])) {
         $feature_id_list[$analysis_name][] = $ids[$feature_id];
-        $y[] = l($feature_id, 'bio_data/' . tripal_get_chado_entity_id('feature', $ids[$feature_id]));
+        $y[] = l($feature_id, 'bio_data/' . chado_get_record_entity_by_table('feature', $ids[$feature_id]));
       }
       else {
         $y[] = $feature_id;
