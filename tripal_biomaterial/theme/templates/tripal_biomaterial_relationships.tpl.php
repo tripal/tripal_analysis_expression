@@ -12,7 +12,8 @@ if (count($object_rels) > 0 or count($subject_rels) > 0) { ?>
   // The subject relationships
   foreach ($subject_rels as $rel_type => $rels) {
     foreach ($rels as $obj_type => $objects) { ?>
-        <p>The biomaterial <?php print $biomaterial->name; ?> is <?php print $rel_type ?> the following biomaterials: <?php
+        <p>The biomaterial <?php print $biomaterial->name; ?>
+        is <?php print $rel_type ?> the following biomaterials: <?php
 
       $headers = ['Biomaterial Name', 'Organism', 'Biomaterial Provider'];
 
@@ -34,12 +35,11 @@ if (count($object_rels) > 0 or count($subject_rels) > 0) { ?>
         if (property_exists($contact, 'nid')) { //*** don't know if this will work
           $contact_name = l("<i>" . $contact->name . "</i>", "node/" . $contact->nid, ['html' => TRUE]);
         }
-        $rows[] = array(
+        $rows[] = [
           ['data' => $biomaterial_name, 'width' => '30%'],
           ['data' => $object->record->object_id->name, 'width' => '30%'],
           ['data' => $organism_name, 'width' => '30%'],
-          array(
-            'data' =>
+        ];
       }
     }
   }
