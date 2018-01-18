@@ -150,15 +150,15 @@ function tripal_analysis_expression_populate_es_index() {
 
   for ($i = 0; $i < $count; $i + 500 < $count ? ($i += 500) : ($i += $count - $i - 1)) {
     $sql = 'SELECT feature_id, organism_id, feature_uniquename, organism_common_name, accession
-            FROM {expression_feature} OFFSET ' . $i . ' LIMIT 500';
-    $result = chado_query($sql);
+            FROM {expression_feature} OFFSET :offset LIMIT 500';
+    $result = chado_query($sql, [
+      ':offset' => $i,
+    ]);
     $records = $result->fetchAll();
 
     $es->bulkIndex($index, $records);
 
-    if (!($i % 100)) {
-      tripal_bulk_loader_progress_bar($i, $count, 100);
-    }
+    print number_format(($i / $count) * 100) . "%\r";
   }
 
   print "\n\nIndex populated successfully.\n";
@@ -171,7 +171,7 @@ function tripal_analysis_expression_populate_es_index() {
 function tripal_analysis_expression_insert_es_index() {
   $query = "SELECT COUNT(*) AS count FROM {tripal_elasticsearch_indices} WHERE index_name='expression_feature'";
   $result = db_query($query);
-  if ($result->fetchField('count') === 0) {
+  if ($result->fetchField() === 0) {
     //insert index record into database for all types.
     $insert = [
       ':index_name' => 'expression_feature',
@@ -480,7 +480,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
     'bottom_margin' => $bottom_margin,
     'left_margin' => $left_margin,
     'feature_list' => $feature_id_list,
-    'analysis_legend' => $analysis_legend
+    'analysis_legend' => $analysis_legend,
   ];
 }
 
