@@ -123,6 +123,11 @@ class data__gene_expression_data extends ChadoField {
       $analysis_id = $entity->chado_record_id;
       $features = $this->get_analysis_info($analysis_id);
       $variables = ["features" => $features];
+
+      if (count($features["features"]) == 0) {
+        $entity->{$field}['und'][0]["values"] = NULL;
+        return;
+      }
       // Save data into the entity
       $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
 
@@ -306,8 +311,6 @@ class data__gene_expression_data extends ChadoField {
       foreach ($result as $feature) {
         $features[] = $feature->feature_id;
       }
-
-
     }
 
     $sql = "SELECT DISTINCT(biomaterial_name)

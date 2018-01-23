@@ -98,6 +98,10 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
       $feature_ids = $variables["features"]["features"];
       $biomaterials = $variables["features"]["biomaterials"];
 
+      if (count($feature_ids == 0)) {
+        return;
+      }
+
       $feature_ids_string = implode(",", $feature_ids);
 
       $url = "/tripal/analysis-expression/download?analysis_id=" . $analysis_id;
