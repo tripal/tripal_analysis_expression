@@ -213,9 +213,11 @@ class data__gene_expression_data extends ChadoField {
           //get the prop name and value
           // $property_cvterm_id = $prop->type_id->cvterm_id;
           // $property_cv_id = $prop->type_id->cv_id;
-          $property_name = $prop->type_id->name;
-          $property_value = $prop->value;
-          $propstore[$property_name] = $property_value;
+          if ((isset($prop->value))) { //for some reason we have stuff coming back that is not properties.  this will filter them.
+            $property_name = $prop->type_id->name;
+            $property_value = $prop->value;
+            $propstore[$property_name] = $property_value;
+          }
         }
 
         $node_present = chado_get_record_entity_by_table('biomaterial', $exp->biomaterial_id);
