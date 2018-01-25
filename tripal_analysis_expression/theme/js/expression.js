@@ -164,7 +164,6 @@
     },
 
     drawPlot: function () {
-      console.log('drawPlot was called');
       var _that = this;
 
       var maxHeat = d3.max(this.heatMap, function (d) {
