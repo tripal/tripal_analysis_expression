@@ -213,8 +213,6 @@
           .attr('height', height)
           .append('g');
 
-      var x0 = d3.scale.ordinal()
-          .rangeRoundBands([margin.horizontal, calculatedWidth]);
 
       var y = d3.scale.linear()
           .range([height, (margin.top + margin.bottom)]);//reverse because 0 is
@@ -233,10 +231,55 @@
             return d.properties[this.currentSorting];
           }.bind(this)).entries(this.heatMap);
 
-      // Set the domains based on the nested data
-      x0.domain(nested.map(function (d) {
-        return d.key;
+
+
+        var groupCount = {}
+        var outputRange = []
+        var numberKeys = nested.length
+        var averageStepSize = calculatedWidth / numberKeys
+        var totalSamples = 0
+
+        nested.map(function (d) {
+
+            groupCount[d.key] = d.values.length
+            totalSamples += d.values.length
+        })
+        console.log(nested)
+
+        //if there is only one group the domain will break.  if thats the case, append an empty group
+    while (groupCount < 2){
+        var thisGroupIndex = groupCount +1
+        nested[thisGroupIndex.toString] = {"key": thisGroupIndex, "values": []}
+        groupCount++
+    }
+
+        var rangeMapper = {}
+        var lengthTracker = 0 //keep trakc of where we are on the scale
+
+        nested.map(function (d) {
+            var fraction = d.values.length /totalSamples
+          var groupSize = fraction*averageStepSize
+          var location = lengthTracker + groupSize/2 //set the location to the middle of its group
+            rangeMapper[d.key] = location
+            lengthTracker =+ groupSize
+        })
+
+
+        // var x0 = d3.scale.ordinal()
+        //     .rangeRoundBands([margin.horizontal, calculatedWidth]);
+
+
+var x0 = d3.scale.linear()
+    .rangeRound(nested.map(function(d){
+     return rangeMapper[d.key]
+    }))
+
+        // Set the domains based on the nested data
+      x0.domain(nested.map(function (d, i) {
+        return i;
       }));
+
+        console.log(x0.domain())
 
       y.domain([0, maxHeat]);
 
@@ -255,6 +298,8 @@
           .enter()
           .append('g')
           .attr('transform', function (d) {
+            console.log(d)
+              console.log(this.translationXOffset((d, x0)))
             return 'translate(' + this.translationXOffset(d, x0) + ',0)';
           }.bind(this));
 
@@ -435,7 +480,8 @@
      * @returns {string}
      */
     translationXOffset: function (d, scale) {
-      return (scale(d.key) + scale.rangeBand() / 2);
+    //  return (scale(d.key) + scale.rangeBand() / 2);
+        return(scale(d.key))
     },
 
     /**
