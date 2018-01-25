@@ -76,21 +76,13 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
    * @param $items
    * @param $display
    *
+   * @throws \Exception
    * @return void
    *    An element array compatible with that returned by the
    *    hook_field_formatter_view() function.
    */
-  public function view(
-    &$element,
-    $entity_type,
-    $entity,
-    $langcode,
-    $items,
-    $display
-  ) {
-
+  public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     if ($entity->chado_table === "analysis") {
-
       $field = 'data__gene_expression_data';
       $variables = $entity->{$field}['und'][0];
 
@@ -102,120 +94,54 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
       $feature_ids = $variables["features"]["features"];
       $biomaterials = $variables["features"]["biomaterials"];
 
-      if (count($feature_ids == 0)) {
+      if (empty($feature_ids)) {
         return;
       }
 
-      $feature_ids_string = implode(",", $feature_ids);
-
-      $url = "/tripal/analysis-expression/download?analysis_id=" . $analysis_id;
-
-      $content = '<p> This analysis contains expression data for ' . count($feature_ids) . ' features  across ' . count($biomaterials) . ' biosamples.</p>
-                  <p><a href="' . $url . '" id="expressionDownloadLink">Download all expression data associated with this analysis.</a></p>';
-
-      $content .= '<script>
-                    (function($){
-                        $(function() {
-                            '.$this->getDownloadLinkJS().'
-                        })
-                    })(jQuery)
-                   </script>';
       $element[] = [
         '#type' => 'markup',
-        '#markup' => $content,
+        '#markup' => theme('analysis_expression_plot', [
+          'analysis_id' => $analysis_id,
+          'biomaterials_count' => count($biomaterials),
+          'features_count' => count($feature_ids),
+        ]),
       ];
     }
 
 
     if ($entity->chado_table === "feature") {
-
       $field = 'data__gene_expression_data';
       $variables = $entity->{$field}['und'][0];
-      $content = '';
-      tripal_add_d3js(); // tripal uses d3 3 not 4
+      tripal_add_d3js(); // tripal uses d3 v3 not v4
       $feature_id = $entity->chado_record_id;
 
       if (!$variables['has_exp'] && $variables['json_exp']) {
         $content = 'No biosample libraries express this feature.';
       }
       elseif ($variables['json_exp']) {
-        drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css/expression.css');
-        drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/expression.js');
-        $num_of_analyses = count($variables['analyses']);
         $default_analysis = $variables['analyses'][0]->analysis_id; // starting analysis for download link
+        $hide_biomaterial_labels = $variables['hide_biomaterial_labels'];
+        $json_exp = $variables['json_exp'];
+        $limit_label_length = $variables['limit_label_length'];
+        $expression_display = $variables['expression_display'];
+        $biomaterial_display_width = $variables['biomaterial_display_width'];
 
-        if ($num_of_analyses >= 1) {
-          $content .= '<strong>Select an Expression Analysis</strong><br/>';
-          $content .= '<select id="analyses">';
+        drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css/expression.css');
+        drupal_add_js([
+          'heatMapRaw' => $json_exp,
+          'maxLength' => $limit_label_length,
+          'showLabels' => $hide_biomaterial_labels,
+          'col' => $expression_display,
+          'colWidth' => $biomaterial_display_width,
+          'selectedAnalysis' => $default_analysis,
+          'feature_id' => $feature_id,
+        ], 'setting');
+        drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/expression.js');
 
-          foreach ($variables['analyses'] as $analysis) {
-            $content .= '<option value=' . $analysis->analysis_id . '>' . $analysis->name . '</option>';
-          }
-
-          $content .= '
-      </select>
-      <div id="propertySortDiv">
-      <strong>Select a property to group and sort biosamples</strong><br/>
-      </div>
-      <div id="propertyColorDiv">
-      <strong>Select a property to color biosamples </strong><br/>
-      </div> 
-            <p>
-              Hover the mouse over a column in the graph to view more information about that biosample.  You can click and drag to rearrange groups along the x-axis.  You can also click and drag to move the legend.
-            </p>
-            <p>
-              <a href="javascript:;" onclick="nonZero()">Only Non-Zero Values</a> |
-              <a href="javascript:;" onclick="expNormal()">Reset</a>
-            </p>
-            ';
-
-          $hide_biomaterial_labels = $variables['hide_biomaterial_labels'];
-          $json_exp = $variables['json_exp'];
-          $limit_label_length = $variables['limit_label_length'];
-          $expression_display = $variables['expression_display'];
-          $biomaterial_display_width = $variables['biomaterial_display_width'];
-          global $base_url;
-
-
-          $content .= '<script type="text/javascript">
-            var heatMapRaw=' . $json_exp . '
-            var maxLength=' . $limit_label_length . '
-            var showLabels=' . $hide_biomaterial_labels . '
-            var col="' . $expression_display . '"
-            var colWidth=' . $biomaterial_display_width . '
-            
-              Drupal.behaviors.tripal_analysis_expression_select_listener = {
-              attach: function (context, settings) {
-                var $ = jQuery;
-                 expNormal();
-                   $("#analyses").on("change", function () {
-                      selectedAnalysis = this.value;
-                      expNormal();
-        
-                      //Change the link address
-                      var link = "' . $base_url . '/tripal/analysis-expression/download?feature_ids=' . $feature_id . '&analysis_id=" + selectedAnalysis  
-                       $("#expressionDownloadLink").attr("href", link)
-                   })
-              }
-            };
-            
-            Drupal.behaviors.tripal_analysis_expression = {
-              attach: function (context, settings) {
-                var $ = jQuery;
-                expNormal();
-                $(document).on("tripal_ds_pane_expanded", function(event) {
-                      expNormal();
-                });
-                
-                ' . $this->getDownloadLinkJS() . '
-              }       
-            };
-              
-          </script>
-          <figure></figure>          
-          <a href="' . $base_url . '/tripal/analysis-expression/download?feature_ids=' . $feature_id . '&analysis_id=' . $default_analysis . '" id="expressionDownloadLink">Download expression dataset for this feature</a>
-          ';
-        }
+        $content = theme('feature_expression_plot', [
+          'analyses' => $variables['analyses'],
+          'default_analysis' => $default_analysis,
+        ]);
       }
       else {
         $content = 'No biomaterial libraries express this feature.';
@@ -226,30 +152,6 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
         '#markup' => $content,
       ];
     }
-  }
-
-  /**
-   * Duplicate the js functionality for the download link.
-   *
-   * @return string
-   */
-  protected function getDownloadLinkJS() {
-    return '
-    var message = $("<span />")
-    var link = $("#expressionDownloadLink")
-    link.after(message)
-    link.click(function(e) {
-        e.preventDefault()
-        var src = $(this).attr("href")
-         var iframe = $("<iframe />", {
-            src: src,
-            width: 1,
-            height: 1
-         })
-         $("body").append(iframe);
-         message.html(" Generating file. Download will start automatically...")
-    })
-    ';
   }
 
   /**
