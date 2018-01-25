@@ -14,10 +14,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "laravel-mix": "^1.4.5"
+    "laravel-mix": "^2.0.0"
   },
   "devDependencies": {
-    "browser-sync": "^2.18.13",
+    "browser-sync": "^2.23.6",
     "browser-sync-webpack-plugin": "^1.2.0"
   }
 }
