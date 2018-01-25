@@ -385,7 +385,7 @@ class tripal_expression_data_loader extends TripalImporter{
 
 
     tripal_set_message(t("Job Submitted!  If new Biosamples will be created in this job, remember to") . l('publish them after the job runs.',
-        'admin/content/bio_data/publish/'), 'status');
+        'admin/content/bio_data/publish/'), TRIPAL_INFO);
 
 
     $this->tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $quantificationunits, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples);
@@ -645,14 +645,19 @@ class tripal_expression_data_loader extends TripalImporter{
       }
     }
 
+    if ($num_lines < 2){
+      print "Error reading file.\n Please ensure that your file is readable and try again.";
+      exit;
+    }
+
     // Make sure there not duplicate feature names.
     if (count($feature_repeats = array_diff_assoc($feature_array, array_unique($feature_array))) > 0) {
       //if (count($linepart) != count(array_unique($linepart))) {
-      print "ERROR: There are multiple instance of the following " . "feature(s) in the expression file:\n";
+      print "ERROR: There are multiple instance of the following feature(s) in the expression file:\n";
       foreach ($feature_repeats as $repeat) {
         print "  " . $repeat . "\n";
       }
-      print "Please make sure there is only one instance of each " . "feature in the expression file\n";
+      print "Please make sure there is only one instance of each feature in the expression file\n";
       exit;
     }
 
