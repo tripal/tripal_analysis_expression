@@ -199,12 +199,23 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $rows[$cv_name] = $row;
       }
 
-      $form['cvterm_configuration'][$field]['cv_table'] = [
-        '#type' => 'tableselect',
-        '#header' => $header,
-        '#options' => $rows,
-        '#multiple' => FALSE,
-      ];
+      //if no rows then the term isn't in DB.
+
+      if (!$rows) {
+        $markup = "<p>There is no cvterm in the Chado database matching the property <b>$field</b>.  You can insert a term and try again, or submit and use a generic cv.</p>";
+        $form['cvterm_configuration'][$field]['cv_table'] = [
+          '#markup' => $markup
+        ];
+      }
+      else {
+
+        $form['cvterm_configuration'][$field]['cv_table'] = [
+          '#type' => 'tableselect',
+          '#header' => $header,
+          '#options' => $rows,
+          '#multiple' => FALSE,
+        ];
+      }
     }
 
     return $form;
