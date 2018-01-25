@@ -25,13 +25,14 @@ function tripal_analysis_expression_help($path, $arg) {
   switch ($path) {
     // Both of the following cases should display the below HTML.
     case 'admin/tripal/extension/tripal_analysis_expression/help' :
-    case 'admin/help#tripal_analysis_expression' : {
-      $ret_val = '<p>' . t('The expression module allows the user to load and display expression information.  It relies on the protocols and biomaterial modules to store the data in Chado.') . '</p>';
-      $ret_val .= "<b>" . l(t("Expression Loader V3"), "loaders/Chado_Expression_Data_Loader") . "</b> - ";
-      $ret_val .= t("The Tripal expression loader.  Data is loaded in matrix or column file format.  Expession data is associated with an analysis and biomaterial, and values are linked to individual features (generally an expression level in a biomaterial)<br><br>");
-      return $ret_val;
-      break;
-    }
+    case 'admin/help#tripal_analysis_expression' :
+      {
+        $ret_val = '<p>' . t('The expression module allows the user to load and display expression information.  It relies on the protocols and biomaterial modules to store the data in Chado.') . '</p>';
+        $ret_val .= "<b>" . l(t("Expression Loader V3"), "loaders/Chado_Expression_Data_Loader") . "</b> - ";
+        $ret_val .= t("The Tripal expression loader.  Data is loaded in matrix or column file format.  Expession data is associated with an analysis and biomaterial, and values are linked to individual features (generally an expression level in a biomaterial)<br><br>");
+        return $ret_val;
+        break;
+      }
   }
 }
 
@@ -154,31 +155,48 @@ function tripal_analysis_expression_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
   $items = [
-    'node__chado_analysis_expression' => [
-      'template' => 'node--chado-generic',
-      'render element' => 'node',
-      'base hook' => 'node',
-      'path' => "$core_path/theme/templates",
-    ],
-    'tripal_analysis_expression_help' => [
-      'variables' => ['node' => NULL],
-      'template' => 'tripal_analysis_expression_help',
+    // TODO: Commenting out we don't need for now. Check that it didn't break anything then remove.
+    //    'node__chado_analysis_expression' => [
+    //      'template' => 'node--chado-generic',
+    //      'render element' => 'node',
+    //      'base hook' => 'node',
+    //      'path' => "$core_path/theme/templates",
+    //    ],
+    //    'tripal_analysis_expression_help' => [
+    //      'variables' => ['node' => NULL],
+    //      'template' => 'tripal_analysis_expression_help',
+    //      'path' => "$path/theme/templates",
+    //    ],
+    //    'tripal_analysis_expression_base' => [
+    //      'variables' => ['node' => NULL],
+    //      'template' => 'tripal_analysis_expression_base',
+    //      'path' => "$path/theme/templates",
+    //    ],
+    //    'tripal_analysis_expression_teaser' => [
+    //      'variables' => ['node' => NULL],
+    //      'template' => 'tripal_analysis_expression_teaser',
+    //      'path' => "$path/theme/templates",
+    //    ],
+    //    'tripal_feature_expression' => [
+    //      'variables' => ['node' => NULL],
+    //      'template' => 'tripal_feature_expression',
+    //      'path' => "$path/theme/templates",
+    //    ],
+    'analysis_expression_plot' => [
+      'variables' => [
+        'features_count' => 0,
+        'biomaterials_count' => 0,
+        'analysis_id' => NULL,
+      ],
+      'template' => 'tripal_analysis_expression.analysis',
       'path' => "$path/theme/templates",
     ],
-    'tripal_analysis_expression_base' => [
-      'variables' => ['node' => NULL],
-      'template' => 'tripal_analysis_expression_base',
-      'path' => "$path/theme/templates",
-    ],
-
-    'tripal_analysis_expression_teaser' => [
-      'variables' => ['node' => NULL],
-      'template' => 'tripal_analysis_expression_teaser',
-      'path' => "$path/theme/templates",
-    ],
-    'tripal_feature_expression' => [
-      'variables' => ['node' => NULL],
-      'template' => 'tripal_feature_expression',
+    'feature_expression_plot' => [
+      'variables' => [
+        'analyses' => [],
+        'default_analysis_id' => 0,
+      ],
+      'template' => 'tripal_analysis_expression.feature',
       'path' => "$path/theme/templates",
     ],
   ];
