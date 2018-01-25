@@ -383,7 +383,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     ]);
     $dbxref_biosample_id = $dbxref_biosample->dbxref_id;
 
-
+    $dbxref_id = null;
     //note:  this dbxref (ncbi biosample) previously was insert into the biomaterial table.  This is incorrect: t his column is only for INTERNAL accessions.
 
     // If sra_accession is present, create entry in the dbxref table.
@@ -399,7 +399,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     $biomaterial_description = $comment ? (string) $comment : (string) $description;
 
-    $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $biomaterial_description);
+
+    $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description);
 
     // Add to biomaterialprop table.
     $this->add_xml_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id, $insert_fields);
