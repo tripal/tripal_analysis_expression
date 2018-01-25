@@ -231,15 +231,21 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     //generate list of cvterm properties to associate with each field
     // if one wasnt selected, key wont exist and we'll insert into biomaterialprop
     $insert_fields = [];
-    foreach ($field_info as $field => $cv_table) {
-      $chosen_cv = implode(($cv_table));
-      $insert_fields[$field] = $chosen_cv;
+
+    if ($field_info) {
+      foreach ($field_info as $field => $cv_table) {
+        $chosen_cv = implode(($cv_table));
+        $insert_fields[$field] = $chosen_cv;
+      }
     }
+      else {
+        tripal_set_message("Warning: properties not configured.  Using generic cvterms for all properties.", TRIPAL_WARNING);
+      }
 
     $extension = explode('.', $file_path);
     $extension = $extension[count($extension) - 1];
 
-    tripal_set_message(t("Job Submitted!  After running the job, remember to") . l('publish the inserted BioSamples.', 'admin/content/bio_data/publish/'), 'status');
+    tripal_set_message(t("Job Submitted!  After running the job, remember to") . l('publish the inserted BioSamples.', 'admin/content/bio_data/publish/'), TRIPAL_INFO);
 
     if ($extension == "xml") {
       $this->load_biosample_xml($file_path, $organism_id, $analysis_id, $insert_fields);
