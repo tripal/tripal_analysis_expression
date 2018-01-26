@@ -231,8 +231,6 @@
             return d.properties[this.currentSorting];
           }.bind(this)).entries(this.heatMap);
 
-
-
         var groupCount = {}
         var outputRange = []
         var numberKeys = nested.length
@@ -240,12 +238,11 @@
         var totalSamples = 0
 
         nested.map(function (d) {
-
             groupCount[d.key] = d.values.length
             totalSamples += d.values.length
         })
 
-        numberOfGroups = Object.keys(groupCount).length
+        var numberOfGroups = Object.keys(groupCount).length
 
         //if there is only one group the domain will break.  if thats the case, append an empty group
     while (numberOfGroups < 2){
@@ -257,23 +254,25 @@
        var rangeMapper = {}
         var lengthTracker = 0 //keep track of where we are on the scale
 
-        nested.map(function (d) {
+        nested.map(function (d, i) {
             var fraction = d.values.length /totalSamples
           var groupSize = fraction*averageStepSize
           var location = lengthTracker + groupSize/2 //set the location to the middle of its group
             rangeMapper[d.key] = location
-            lengthTracker =+ groupSize
+            lengthTracker += groupSize
+            nested[i]["position"] = i
         })
 
-var x0 = d3.scale.linear()
-    .rangeRound(nested.map(function(d){
-     return rangeMapper[d.key]
-    }))
+    var x0 = d3.scale.linear()
+        .rangeRound(nested.map(function(d){
+        return rangeMapper[d.key]
+      }))
 
         // Set the domains based on the nested data
       x0.domain(nested.map(function (d, i) {
-        return i;
+        return d.position;
       }));
+
 
       y.domain([0, maxHeat]);
 
@@ -303,8 +302,6 @@ var x0 = d3.scale.linear()
           .attr('x', 0)
           .attr('y', 0)
           .html(function (d) {
-            // DONE: PUT SPLIT KEY INTO A TEXTSPAN AS HERE
-            // http://bl.ocks.org/enjalot/1829187
             var label = d.key;
             var characterLimit = 20;
             if (label.length > characterLimit) {
@@ -321,59 +318,44 @@ var x0 = d3.scale.linear()
         return ' translate( 0,' + (height - margin.bottom + 10) + ' ),rotate(45)';
       });
 
+
       propertyGroups.call(d3.behavior.drag()
           .origin(function (d, i) {  // define the start drag as the middle of the group
             // this should match the transformation used when assigning the
             // group
-            return {x: _that.translationXOffset(i, x0)};
+            return {x: _that.translationXOffset(d.position, x0)};
           })
           .on('dragstart', function (d, i) {
             // track the position of the selected group in the dragging object
-            dragging[d.key] = _that.translationXOffset(i, x0);
+            dragging[d.key] = _that.translationXOffset(d.position, x0);
             var sel = d3.select(this);
             sel.moveToFront();
           })
           .on('drag', function (d, i) {// track current drag location
             dragging[d.key] = d3.event.x;
 
-              //TODO: this is slow.  Instead, the array should be indexed by key for faster retrieval
             nested.sort(function (a, b) {
-                var ai
-                var bi
-                for(var i = 0; i < nested.length; i++){
-                thisPropKey = nested[i].key
-                    if (thisPropKey == a.key){
-                  ai = i
-                        break
-                    }
-                }
-                for(var i = 0; i < nested.length; i++){
-                    thisPropKey = nested[i].key
-                    if (thisPropKey == b.key){
-                        bi = i
-                        break
-                    }
-                }
-
-              return position(a, ai, x0) - position(b, bi, x0);
+              return position(a, a.position, x0) - position(b, b.position, x0);
             });
-            //nested is now re-ordered
+
 
             ///rebuild the domain
               //TODO:  This is very not - DRY, copied from initial domain set.  should be factored out.
 
-              var rangeMapper = {}
-              var lengthTracker = 0 //keep track of where we are on the scale
+               var rangeMapper = {}
+               var lengthTracker = 0 //keep track of where we are on the scale
 
-              nested.map(function (d) {
+              nested.map(function (d, i) {
                   var fraction = d.values.length /totalSamples
                   var groupSize = fraction*averageStepSize
                   var location = lengthTracker + groupSize/2 //set the location to the middle of its group
                   rangeMapper[d.key] = location
-                  lengthTracker =+ groupSize
+                  lengthTracker += groupSize
+                  nested[i]["position"] = i
               })
 
-              var x0 = d3.scale.linear()
+
+              x0 = d3.scale.linear()
                   .rangeRound(nested.map(function(d){
                       return rangeMapper[d.key]
                   }))
@@ -383,20 +365,22 @@ var x0 = d3.scale.linear()
                   return i;
               }));
 
-            propertyGroups.attr('transform', function (d, i) {
-              return 'translate(' + position(d, i, x0) + ', 0)';
+            propertyGroups.attr('transform', function (d) {
+
+              return 'translate(' + position(d, d.position, x0) + ', 0)';
             });
 
           })
-          .on('dragend', function (d) {
+          .on('dragend', function (d, i) {
             delete dragging[d.key];
-            transition(d3.select(this)).attr('transform', function (d, i) {
-              return 'translate(' + _that.translationXOffset(i, x0) + ',0)';
+            transition(d3.select(this)).attr('transform', function (d) {
+              return 'translate(' + _that.translationXOffset(d.position, x0) + ',0)';
             });
-            propertyGroups.selectAll()
-                .attr('transform', function (d, i ) {
-                  return 'translate(' + _that.translationXOffset(i, x0) + ',0)';
-                });
+
+            // propertyGroups.selectAll()
+            //     .attr('transform', function (d, i ) {
+            //       return 'translate(' + _that.translationXOffset(d.position, x0) + ',0)';
+            //     });
           })
       );
 
@@ -426,6 +410,8 @@ var x0 = d3.scale.linear()
             return y(d.intensity);
           })
           .attr('x', function (d, i) {
+              //todo:  we manually adjust the within group position here.
+              //instead, smarter to create an index of x2's that we retrieve nad use to get the position within group.
             numberBiosamples = Object.keys(d).length;
 
             return 10 * i - (1 / numberBiosamples * 10);
