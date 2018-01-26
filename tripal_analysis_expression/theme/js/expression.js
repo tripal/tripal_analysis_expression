@@ -355,8 +355,9 @@ var x0 = d3.scale.linear()
                     }
                 }
 
-              return position(a, ai) - position(b, bi);
+              return position(a, ai, x0) - position(b, bi, x0);
             });
+            //nested is now re-ordered
 
             ///rebuild the domain
               //TODO:  This is very not - DRY, copied from initial domain set.  should be factored out.
@@ -383,7 +384,7 @@ var x0 = d3.scale.linear()
               }));
 
             propertyGroups.attr('transform', function (d, i) {
-              return 'translate(' + position(d, i) + ', 0)';
+              return 'translate(' + position(d, i, x0) + ', 0)';
             });
 
           })
@@ -443,11 +444,11 @@ var x0 = d3.scale.linear()
         });
       };
 
-      function position(property, i) {
+      function position(property, i, x0) {
         var v = dragging[property.key];
         // v will be null if we arent dragging it: in that case, get its
         // position
-          
+
           //we need this properties key in the array
         return v == null ? _that.translationXOffset(i, x0) : v;
       }
