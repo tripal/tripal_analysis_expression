@@ -1,5 +1,6 @@
 (function ($) {
-  Drupal.behaviors.expression = {
+
+    Drupal.behaviors.expression = {
     attach: function (context, settings) {
       // Define variables
       this.heatMapRaw = JSON.parse(settings.heatMapRaw);
@@ -11,8 +12,16 @@
       this.currentColor = $('#propertyColorMenu').find(':selected').text();
       this.downloadMessage = $('<span />');
       this.downloadLink = $('#expressionDownloadLink');
+      //spacing variables
+        this.margin = {top: 50, bottom: 100, horizontal: 20};
+        this.barwidth = 10
+        this.scaleSize = this.barwidth * 4.5 //this is a thumbnail estimate, im not sure of a better way to do it
+        this.barSpacing = this.barwidth/2
 
-      // Activate plot
+
+
+
+        // Activate plot
       this.expNormal();
       this.attachEventListeners();
     },
@@ -194,25 +203,13 @@
       }
 
 
-      var minWidth = d3.select('figure').node().getBoundingClientRect().width;
+      var barwidth = this.barwidth
+        var margin = this.margin
+        var scaleSize = this.scaleSize //this is a thumbnail estimate, im not sure of a better way to do it
+       var barSpacing =  this.barSpacing
 
-      var width = 100 + (this.heatMap.length * 20);
-      var calculatedWidth = Math.max(minWidth, width);
-
-      var height = 500;
-      var margin = {top: 50, bottom: 100, horizontal: 20};
-
-      d3.select('figure')
-          .style('overflow', 'auto')
-          .style('max-width', '100%');
-
-      var svg = d3.select('figure')
-          .append('chart')
-          .append('svg')
-          .attr('width', calculatedWidth)
-          .attr('height', height)
-          .append('g');
-
+        /// y values
+        var height = 500;
 
       var y = d3.scale.linear()
           .range([height, (margin.top + margin.bottom)]);//reverse because 0 is
@@ -231,11 +228,12 @@
             return d.properties[this.currentSorting];
           }.bind(this)).entries(this.heatMap);
 
+
+      /// X values
+
         var groupCount = {}
-        var outputRange = []
-        var numberKeys = nested.length
-        var averageStepSize = calculatedWidth / numberKeys
         var totalSamples = 0
+        var numberKeys = nested.length
 
         nested.map(function (d) {
             groupCount[d.key] = d.values.length
@@ -244,10 +242,18 @@
 
         var numberOfGroups = Object.keys(groupCount).length
 
+
+        //figure out size of figure
+        var minWidth = d3.select('figure').node().getBoundingClientRect().width;
+
+        var width = ((totalSamples + 1) * barwidth ) + (totalSamples * this.barSpacing) + (numberOfGroups * barwidth/2) + scaleSize
+        var calculatedWidth = Math.max(minWidth, width);
+
+        var averageStepSize = calculatedWidth / numberKeys
         //if there is only one group the domain will break.  if thats the case, append an empty group
-    while (numberOfGroups < 2){
+    if (numberOfGroups === 1){ //we can't have 0 groups
         var thisGroupIndex = numberOfGroups //no need to adjust because starts at 0
-        nested[thisGroupIndex.toString()] = {"key": thisGroupIndex, "values": []}
+        nested[thisGroupIndex.toString()] = {"key": "spacing_group_for_domain", "values": []}
         numberOfGroups++
     }
 
@@ -257,7 +263,9 @@
         nested.map(function (d, i) {
             var fraction = d.values.length /totalSamples
           var groupSize = fraction*averageStepSize
-          var location = lengthTracker + groupSize/2 //set the location to the middle of its group
+       //   var location = lengthTracker + groupSize/2 //set the location to the middle of its group
+            var location = lengthTracker //set the location to the start of its group
+
             rangeMapper[d.key] = location
             lengthTracker += groupSize
             nested[i]["position"] = i
@@ -276,9 +284,22 @@
 
       y.domain([0, maxHeat]);
 
-      svg.append('g')
+//start plotting here
+        d3.select('figure')
+            .style('overflow', 'auto')
+            .style('max-width', '100%');
+
+        var svg = d3.select('figure')
+            .append('chart')
+            .append('svg')
+            .attr('width', calculatedWidth)
+            .attr('height', height)
+            .append('g');
+
+
+        svg.append('g')
           .attr('class', 'y-axis')
-          .attr('transform', 'translate(' + (2.5 * margin.horizontal) + ', -' + (margin.bottom) + ')')
+          .attr('transform', 'translate(' + ( scaleSize) + ', -' + (margin.bottom) + ')')
           .style('font-size', '12px')
           .style('font-weight', 'normal')
           .call(yAxis)
@@ -291,6 +312,9 @@
           .enter()
           .append('g')
           .attr('transform', function (d, i) {
+          if (d.key === "spacing_group_for_domain"){
+              return //skip plotting the spacing group
+          }
             return 'translate(' + this.translationXOffset(i, x0) + ',0)';
           }.bind(this));
 
@@ -302,6 +326,10 @@
           .attr('x', 0)
           .attr('y', 0)
           .html(function (d) {
+              if (d.key === "spacing_group_for_domain"){
+                  return //skip plotting the spacing group
+              }
+
             var label = d.key;
             var characterLimit = 20;
             if (label.length > characterLimit) {
@@ -315,11 +343,11 @@
           .style('text-anchor', 'bottom');
 
       text.attr('transform', function (d) {
-        return ' translate( 0,' + (height - margin.bottom + 10) + ' ),rotate(45)';
+        return ' translate( ' + ((d.values.length /2) * (barwidth ) + (barSpacing) * ((d.values.length - 1)/2) ) +',' + (height - margin.bottom + 10) + ' ),rotate(45)';
       });
 
 
-      propertyGroups.call(d3.behavior.drag()
+        propertyGroups.call(d3.behavior.drag()
           .origin(function (d, i) {  // define the start drag as the middle of the group
             // this should match the transformation used when assigning the
             // group
@@ -348,7 +376,9 @@
               nested.map(function (d, i) {
                   var fraction = d.values.length /totalSamples
                   var groupSize = fraction*averageStepSize
-                  var location = lengthTracker + groupSize/2 //set the location to the middle of its group
+               //   var location = lengthTracker + groupSize/2 //set the location to the middle of its group
+                  var location = lengthTracker //set the location to the start of its group
+
                   rangeMapper[d.key] = location
                   lengthTracker += groupSize
                   nested[i]["position"] = i
@@ -384,11 +414,12 @@
           })
       );
 
+      //plot the actual bars!!
+
       var bars = propertyGroups.selectAll('.bar')
           .data(function (d) {
             return d.values;
-          })//nest() creates key:values.  for us, key is the property value, and
-          // values are the full biomat object
+          })
           .enter().append('rect')
           .style('fill', function (d) { // fill depends on if user is doing expression based or property based
             if (this.currentColor === 'Expression value') {
@@ -410,13 +441,9 @@
             return y(d.intensity);
           })
           .attr('x', function (d, i) {
-              //todo:  we manually adjust the within group position here.
-              //instead, smarter to create an index of x2's that we retrieve nad use to get the position within group.
-            numberBiosamples = Object.keys(d).length;
-
-            return 10 * i - (1 / numberBiosamples * 10);
+              return (i *  (barwidth + barSpacing))
           })
-          .attr('width', 9)
+          .attr('width', this.barwidth)
           .attr('height', function (d) {
             return y(0) - y(d.intensity);
           })
@@ -501,8 +528,7 @@
      * @returns {string}
      */
     translationXOffset: function (i, scale) {
-    //  return (scale(d.key) + scale.rangeBand() / 2);
-        return(scale(i))
+        return(scale(i)) + this.margin.horizontal + this.scaleSize
     },
 
     /**
