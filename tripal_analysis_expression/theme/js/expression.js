@@ -244,15 +244,15 @@
             groupCount[d.key] = d.values.length
             totalSamples += d.values.length
         })
-        console.log(nested)
+
+        numberOfGroups = Object.keys(groupCount).length
 
         //if there is only one group the domain will break.  if thats the case, append an empty group
-    while (groupCount < 2){
-        var thisGroupIndex = groupCount +1
-        nested[thisGroupIndex.toString] = {"key": thisGroupIndex, "values": []}
-        groupCount++
+    while (numberOfGroups < 2){
+        var thisGroupIndex = numberOfGroups //no need to adjust because starts at 0
+        nested[thisGroupIndex.toString()] = {"key": thisGroupIndex, "values": []}
+        numberOfGroups++
     }
-
         var rangeMapper = {}
         var lengthTracker = 0 //keep trakc of where we are on the scale
 
@@ -279,8 +279,6 @@ var x0 = d3.scale.linear()
         return i;
       }));
 
-        console.log(x0.domain())
-
       y.domain([0, maxHeat]);
 
       svg.append('g')
@@ -297,10 +295,8 @@ var x0 = d3.scale.linear()
           .data(nested)
           .enter()
           .append('g')
-          .attr('transform', function (d) {
-            console.log(d)
-              console.log(this.translationXOffset((d, x0)))
-            return 'translate(' + this.translationXOffset(d, x0) + ',0)';
+          .attr('transform', function (d, i) {
+            return 'translate(' + this.translationXOffset(i, x0) + ',0)';
           }.bind(this));
 
       var text = propertyGroups.append('text')
@@ -330,14 +326,14 @@ var x0 = d3.scale.linear()
       });
 
       propertyGroups.call(d3.behavior.drag()
-          .origin(function (d) {  // define the start drag as the middle of the group
+          .origin(function (d, i) {  // define the start drag as the middle of the group
             // this should match the transformation used when assigning the
             // group
-            return {x: _that.translationXOffset(d, x0)};
+            return {x: _that.translationXOffset(i, x0)};
           })
-          .on('dragstart', function (d) {
+          .on('dragstart', function (d, i) {
             // track the position of the selected group in the dragging object
-            dragging[d.key] = _that.translationXOffset(d, x0);
+            dragging[d.key] = _that.translationXOffset(i, x0);
             var sel = d3.select(this);
             sel.moveToFront();
           })
@@ -357,12 +353,12 @@ var x0 = d3.scale.linear()
           })
           .on('dragend', function (d) {
             delete dragging[d.key];
-            transition(d3.select(this)).attr('transform', function (d) {
-              return 'translate(' + _that.translationXOffset(d, x0) + ',0)';
+            transition(d3.select(this)).attr('transform', function (d, i) {
+              return 'translate(' + _that.translationXOffset(i, x0) + ',0)';
             });
             propertyGroups.selectAll()
-                .attr('transform', function (d) {
-                  return 'translate(' + _that.translationXOffset(d, x0) + ',0)';
+                .attr('transform', function (d, i ) {
+                  return 'translate(' + _that.translationXOffset(i, x0) + ',0)';
                 });
           })
       );
@@ -479,9 +475,9 @@ var x0 = d3.scale.linear()
      * @param scale
      * @returns {string}
      */
-    translationXOffset: function (d, scale) {
+    translationXOffset: function (i, scale) {
     //  return (scale(d.key) + scale.rangeBand() / 2);
-        return(scale(d.key))
+        return(scale(i))
     },
 
     /**
