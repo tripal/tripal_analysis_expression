@@ -87,7 +87,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
       $variables = $entity->{$field}['und'][0];
 
       if (!isset($variables["features"])) {
-        return;
+        return null;
       }
 
       $analysis_id = $entity->chado_record_id;
@@ -95,7 +95,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
       $biomaterials = $variables["features"]["biomaterials"];
 
       if (empty($feature_ids)) {
-        return;
+        return null;
       }
 
       $element[] = [
@@ -116,7 +116,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
       $feature_id = $entity->chado_record_id;
 
       if (!$variables['has_exp'] && $variables['json_exp']) {
-        $content = 'No biosample libraries express this feature.';
+        return null;
       }
       elseif ($variables['json_exp']) {
         $default_analysis = $variables['analyses'][0]->analysis_id; // starting analysis for download link
@@ -144,7 +144,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
         ]);
       }
       else {
-        $content = 'No biomaterial libraries express this feature.';
+        return null;
       }
 
       $element[] = [
