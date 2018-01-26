@@ -253,8 +253,9 @@
         nested[thisGroupIndex.toString()] = {"key": thisGroupIndex, "values": []}
         numberOfGroups++
     }
-        var rangeMapper = {}
-        var lengthTracker = 0 //keep trakc of where we are on the scale
+
+       var rangeMapper = {}
+        var lengthTracker = 0 //keep track of where we are on the scale
 
         nested.map(function (d) {
             var fraction = d.values.length /totalSamples
@@ -263,11 +264,6 @@
             rangeMapper[d.key] = location
             lengthTracker =+ groupSize
         })
-
-
-        // var x0 = d3.scale.ordinal()
-        //     .rangeRoundBands([margin.horizontal, calculatedWidth]);
-
 
 var x0 = d3.scale.linear()
     .rangeRound(nested.map(function(d){
@@ -337,17 +333,57 @@ var x0 = d3.scale.linear()
             var sel = d3.select(this);
             sel.moveToFront();
           })
-          .on('drag', function (d) {// track current drag location
+          .on('drag', function (d, i) {// track current drag location
             dragging[d.key] = d3.event.x;
 
+              //TODO: this is slow.  Instead, the array should be indexed by key for faster retrieval
             nested.sort(function (a, b) {
-              return position(a) - position(b);
+                var ai
+                var bi
+                for(var i = 0; i < nested.length; i++){
+                thisPropKey = nested[i].key
+                    if (thisPropKey == a.key){
+                  ai = i
+                        break
+                    }
+                }
+                for(var i = 0; i < nested.length; i++){
+                    thisPropKey = nested[i].key
+                    if (thisPropKey == b.key){
+                        bi = i
+                        break
+                    }
+                }
+
+              return position(a, ai) - position(b, bi);
             });
-            x0.domain(nested.map(function (d) {// reset the x0 domain
-              return d.key;
-            }));
-            propertyGroups.attr('transform', function (d) {
-              return 'translate(' + position(d) + ', 0)';
+
+            ///rebuild the domain
+              //TODO:  This is very not - DRY, copied from initial domain set.  should be factored out.
+
+              var rangeMapper = {}
+              var lengthTracker = 0 //keep track of where we are on the scale
+
+              nested.map(function (d) {
+                  var fraction = d.values.length /totalSamples
+                  var groupSize = fraction*averageStepSize
+                  var location = lengthTracker + groupSize/2 //set the location to the middle of its group
+                  rangeMapper[d.key] = location
+                  lengthTracker =+ groupSize
+              })
+
+              var x0 = d3.scale.linear()
+                  .rangeRound(nested.map(function(d){
+                      return rangeMapper[d.key]
+                  }))
+
+              // Set the domains based on the nested data
+              x0.domain(nested.map(function (d, i) {
+                  return i;
+              }));
+
+            propertyGroups.attr('transform', function (d, i) {
+              return 'translate(' + position(d, i) + ', 0)';
             });
 
           })
@@ -407,11 +443,13 @@ var x0 = d3.scale.linear()
         });
       };
 
-      function position(property) {
+      function position(property, i) {
         var v = dragging[property.key];
         // v will be null if we arent dragging it: in that case, get its
         // position
-        return v == null ? _that.translationXOffset(property, x0) : v;
+          
+          //we need this properties key in the array
+        return v == null ? _that.translationXOffset(i, x0) : v;
       }
 
       function transition(g) {
