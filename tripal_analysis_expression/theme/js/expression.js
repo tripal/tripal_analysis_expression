@@ -249,8 +249,9 @@
         var width = ((totalSamples + 1) * barwidth ) + (totalSamples * this.barSpacing) + (numberOfGroups * barwidth/2) + scaleSize
         var calculatedWidth = Math.max(minWidth, width);
 
-        var averageStepSize = calculatedWidth / numberKeys
-        //if there is only one group the domain will break.  if thats the case, append an empty group
+var averageStepSize = calculatedWidth/totalSamples
+console.log(averageStepSize)    
+    //if there is only one group the domain will break.  if thats the case, append an empty group
     if (numberOfGroups === 1){ //we can't have 0 groups
         var thisGroupIndex = numberOfGroups //no need to adjust because starts at 0
         nested[thisGroupIndex.toString()] = {"key": "spacing_group_for_domain", "values": []}
@@ -261,8 +262,7 @@
         var lengthTracker = 0 //keep track of where we are on the scale
 
         nested.map(function (d, i) {
-            var fraction = d.values.length /totalSamples
-          var groupSize = fraction*averageStepSize
+          var groupSize = d.values.length *averageStepSize
        //   var location = lengthTracker + groupSize/2 //set the location to the middle of its group
             var location = lengthTracker //set the location to the start of its group
 
@@ -270,7 +270,6 @@
             lengthTracker += groupSize
             nested[i]["position"] = i
         })
-
     var x0 = d3.scale.linear()
         .rangeRound(nested.map(function(d){
         return rangeMapper[d.key]
@@ -280,7 +279,6 @@
       x0.domain(nested.map(function (d, i) {
         return d.position;
       }));
-
 
       y.domain([0, maxHeat]);
 
@@ -374,9 +372,10 @@
                var lengthTracker = 0 //keep track of where we are on the scale
 
               nested.map(function (d, i) {
-                  var fraction = d.values.length /totalSamples
-                  var groupSize = fraction*averageStepSize
-               //   var location = lengthTracker + groupSize/2 //set the location to the middle of its group
+              
+          var groupSize = d.values.length *averageStepSize
+       //   var location = lengthTracker + groupSize/2 //set the location to the middle of its group
+ //   var location = lengthTracker + groupSize/2 //set the location to the middle of its group
                   var location = lengthTracker //set the location to the start of its group
 
                   rangeMapper[d.key] = location
@@ -399,7 +398,6 @@
 
               return 'translate(' + position(d, d.position, x0) + ', 0)';
             });
-
           })
           .on('dragend', function (d, i) {
             delete dragging[d.key];
