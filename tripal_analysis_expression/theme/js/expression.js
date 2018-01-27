@@ -246,7 +246,7 @@
         //figure out size of figure
         var minWidth = d3.select('figure').node().getBoundingClientRect().width;
 
-        var width = ((totalSamples + 1) * barwidth ) + (totalSamples * this.barSpacing) + (numberOfGroups * barwidth/2) + scaleSize
+        var width = ((totalSamples + 1) * barwidth ) + (totalSamples * this.barSpacing) + (numberOfGroups * barwidth/2) + scaleSize + (margin.horizontal * 2)
         var calculatedWidth = Math.max(minWidth, width);
 
 var averageStepSize = calculatedWidth/totalSamples
@@ -316,7 +316,22 @@ console.log(averageStepSize)
             return 'translate(' + this.translationXOffset(i, x0) + ',0)';
           }.bind(this));
 
-      var text = propertyGroups.append('text')
+      //Add a bar along the bottom
+        propertyGroups.append('g')
+            .attr()
+            .append('rect')
+            .style('fill', 'black')
+            .attr('y', height - (margin.bottom  -1))
+            .attr('x', barwidth/2)
+            .attr('width', function(d) {
+               var length =  d.values.length * (barwidth + barSpacing) -  barwidth*1.5
+                return length > barwidth ? length : 1;
+
+            })
+            .attr('height', 1)
+
+
+        var text = propertyGroups.append('text')
           .attr('class', 'label')
           .style('font-size', '12px')
           .style('font-weight', 'normal')
