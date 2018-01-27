@@ -250,7 +250,6 @@
         var calculatedWidth = Math.max(minWidth, width);
 
 var averageStepSize = calculatedWidth/totalSamples
-console.log(averageStepSize)    
     //if there is only one group the domain will break.  if thats the case, append an empty group
     if (numberOfGroups === 1){ //we can't have 0 groups
         var thisGroupIndex = numberOfGroups //no need to adjust because starts at 0
