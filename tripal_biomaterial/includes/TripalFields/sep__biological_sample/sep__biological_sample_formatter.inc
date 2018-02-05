@@ -148,7 +148,7 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
       $output .= theme('pager', [
         'quantity' => 5,
         'element' => $elements,
-        'parameters' => ['block' => 'biomaterial_browser'],
+        'parameters' => ['tripal_block' => 'gp_Biomaterials'],
       ]);
     }
     else {
