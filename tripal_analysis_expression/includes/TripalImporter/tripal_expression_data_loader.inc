@@ -367,7 +367,9 @@ class tripal_expression_data_loader extends TripalImporter{
     $re_start = $arguments['re_start'];
     $re_stop = $arguments['re_stop'];
     $organism_id = $arguments['organism_id'];
-    $analysis_id = $arguments['analysis_id'];
+    if (isset($arguments['analysis_id'])) {
+      $analysis_id = $arguments['analysis_id'];
+    }
     $feature_uniquenames = $arguments['feature_uniquenames'];
     $arraydesign_id = $arguments['arraydesign_id'];
 
