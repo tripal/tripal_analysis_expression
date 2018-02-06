@@ -15,30 +15,6 @@
     </li>
 </ul>
 
-<h3>Setup Instructions:</h3>
-<p>After installation of the Tripal Expression module, the following tasks should be performed.</p>
-<ul>
-    <li><p>
-            <b>Set Permissions</b>: By default only the site administrator account has access to
-            create, edit, delete or administer array designs. Navigate to the <?php print
-          l('permissions page', 'admin/people/permissions') ?> and set the permissions under the 'Tripal Expression'
-            section as appropriate for your site. For a simple setup, allow anonymous users access to
-            view content and create a special role for creating, editing and other administrative tasks.
-        </p></li>
-
-    <li><p>
-            <b>Create an Analysis: Expression</b>: Analysis: Expression pages can be created in two ways:
-        </p>
-        <ol>
-            <li><p>
-                    <b>Manually Add An Analysis: Expression</b>: If your Analysis: Expressin is not already
-                    present in the Chado database you can create an array design using the
-                    <a href="<?php print url('node/add/chado-analysis-expression') ?>">Create Array Design page</a>.
-                    Once saved, the Analysis: Expression will be present in Chado and also "synced".
-                </p>
-        </ol>
-    </li>
-</ul>
 
 <h3>Features of this Module:</h3>
 <p>Aside from Analysis: Expression page setup (as described in the Setup section above),

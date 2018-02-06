@@ -14,36 +14,6 @@
     </li>
 </ul>
 
-<h3>Setup Instructions:</h3>
-<p>After installation of the Tripal Expression module, the following tasks should be performed.</p>
-<ul>
-    <li><p>
-            <b>Set Permissions</b>: By default only the site administrator account has access to
-            create, edit, delete or administer biomaterials. Navigate to the <?php print
-          l('permissions page', 'admin/people/permissions') ?> and set the permissions under the 'Tripal Expression'
-            section as appropriate for your site. For a simple setup, allow anonymous users access to
-            view content and create a special role for creating, editing and other administrative tasks.
-        </p></li>
-
-    <li><p>
-            <b>Create a Biomaterial</b>: Biomaterial pages can be created in several ways: *** need to add links to the bulk and/or custom loaders
-        </p>
-        <ol>
-            <li><p>
-                    <b>Sync Biomaterials</b>: If your biomaterial has been pre-loaded into Chado then you need to sync the biomaterial.
-                    This process is what creates the pages for viewing online. Not all biomaterials need to be synced, only those
-                    that you want to show on the site. Use the
-                    <a href="<?php print url('admin/tripal/extension/tripal_analysis_expression/content_types/biomaterial/sync') ?>">Biomaterial syncing page</a>
-                    to sync array designs. </p></li>
-            <li><p>
-                    <b>Manually Add A Biomaterial</b>: If your biomaterial is not already present in the Chado database
-                    you can create a biomaterial using the
-                    <a href="<?php print url('node/add/chado-biomaterial') ?>">Create Biomaterial page</a>.
-                    Once saved, the biomaterial will be present in Chado and also "synced".
-                </p>
-        </ol>
-    </li>
-</ul>
 
 <h3>Features of this Module:</h3>
 <p>Aside from biomaterial page setup (as described in the Setup section above),

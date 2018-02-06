@@ -36,24 +36,6 @@ function tripal_analysis_expression_help($path, $arg) {
   }
 }
 
-/**
- * Implements hook_permission().
- *
- *  Set the permissions types used by the tripal analysis expression module.
- *  Permissions include: access, create, delete, edit, and administer.
- *  Permissions are set for the following content types provided by this module:
- *  Analysis: Expression, Arraydesign, Biomaterial, and Protocol.
- *
- * @ingroup tripal_analysis_expression
- */
-function tripal_analysis_expression_permission() {
-  return [
-    'administer tripal analysis expression' => [
-      'title' => t('Administer Analysis: Expressions'),
-      'description' => t('Allow users to administer all analysis: expressions.'),
-    ],
-  ];
-}
 
 /**
  * Implements hook_menu().
