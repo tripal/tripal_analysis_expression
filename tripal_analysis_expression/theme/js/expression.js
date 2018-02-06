@@ -20,7 +20,6 @@
 
 
 
-
         // Activate plot
       this.expNormal();
       this.attachEventListeners();
@@ -196,6 +195,9 @@
       }
       else {
         // TODO: do we mean min and max or both max here?
+          //we mean what is written here.
+          //You can have very disjointed expression values: the minimum could be 10, and the max 10000000.
+          //This domain maps one blue to 0, HALF the max to gray, and the max to red.  If you do 0, min, max, you'll likely end up with only two colors: gray and red.  nothing will be blue.
         colorDomain = [0, maxHeat / 2, maxHeat];
         color = d3.scale.linear()
             .domain(colorDomain)
@@ -686,7 +688,17 @@ var averageStepSize = calculatedWidth/totalSamples
                 //Update the current position
                 var x = d3.event.x;
                 var y = d3.event.y;
-                d3.select(this).attr('transform', 'translate(' + x + ',' + y + ')');
+                var estimatedLegendWidth = 100
+
+              var figureXBorder = width - margin.horizontal- estimatedLegendWidth
+
+              var xadj =  Math.min(x, figureXBorder);
+               if (xadj < 0 ){
+                   xadj = 0
+               }
+
+
+              d3.select(this).attr('transform', 'translate(' + xadj + ',' + y + ')');
               }
           )
       );
