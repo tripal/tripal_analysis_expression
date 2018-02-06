@@ -14,6 +14,7 @@
       this.downloadLink = $('#expressionDownloadLink');
       //spacing variables
         this.margin = {top: 50, bottom: 100, horizontal: 20};
+        this.height = 500;
         this.barwidth = 10
         this.scaleSize = this.barwidth * 4.5 //this is a thumbnail estimate, im not sure of a better way to do it
         this.barSpacing = this.barwidth/2
@@ -211,7 +212,7 @@
        var barSpacing =  this.barSpacing
 
         /// y values
-        var height = 500;
+        var height = this.height;
 
       var y = d3.scale.linear()
           .range([height, (margin.top + margin.bottom)]);//reverse because 0 is
@@ -521,7 +522,7 @@ var averageStepSize = calculatedWidth/totalSamples
             .style('display', 'none');
       });
 
-      this.buildLegend(color, calculatedWidth, margin);
+      this.buildLegend(color, calculatedWidth, margin, height);
 
       var title = 'Expression by ' + this.currentSorting;
 
@@ -575,8 +576,9 @@ var averageStepSize = calculatedWidth/totalSamples
      * @param colorScale
      * @param width
      * @param margin
+     * @param height
      */
-    buildLegend: function (colorScale, width, margin) {
+    buildLegend: function (colorScale, width, margin, height) {
       this.currentColor = $('#propertyColorMenu').find(':selected').text();
       d3.select('chart').selectAll('legend').remove();
 
@@ -697,8 +699,13 @@ var averageStepSize = calculatedWidth/totalSamples
                    xadj = 0
                }
 
+              var yadj = Math.min(y, (height - margin.bottom))
 
-              d3.select(this).attr('transform', 'translate(' + xadj + ',' + y + ')');
+              if (yadj < 0 ){
+                   yadj = 0
+              }
+
+              d3.select(this).attr('transform', 'translate(' + xadj + ',' + yadj + ')');
               }
           )
       );
