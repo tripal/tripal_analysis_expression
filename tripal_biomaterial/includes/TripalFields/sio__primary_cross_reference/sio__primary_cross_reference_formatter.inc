@@ -83,8 +83,6 @@ class sio__primary_cross_reference_formatter extends ChadoFieldFormatter {
 
     // Get the settings
     $settings = $display['settings'];
-    dpm($items);
-    
   }
 
   /**
