@@ -142,7 +142,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $link = variable_get('website_base_url') . "admin/tripal/loaders/chado_cv/cvterm/add.";
       $description = t('This section will allow you to check the CVterms associated with your biomaterial.  Ideally, each property should get the term for type and value from a Controlled Vocabulary (CV).  Alternatively you can create ad hoc terms in the biomaterialprop CV.  If the CVterm does not exist in a suitable CV, you can insert terms <a href = "' . $link . '"> using the Tripal CVterm loader.</a>');
 
-      $terms_to_check = null;
+      $terms_to_check = NULL;
       if ($file_type == 'xml') {
         $terms_to_check = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
       }
@@ -151,6 +151,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       }
       $fields = $terms_to_check["attributes"];
     }
+
 
     $form['cvterm_configuration'] = [
       '#type' => 'fieldset',
@@ -161,17 +162,25 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       '#tree' => TRUE,
     ];
 
-    dpm($fields);
+
     foreach ($fields as $field) {
+
       $cv_array = [];
+
+
+      $field_options = array_values($field);
+      $field_options = array_unique($field_options);
+
+
       //Get terms
       $sql = "SELECT CV.name AS cv_name, DB.name AS db_name, DBX.accession AS dbx_accession FROM {cvterm} AS CVT
               INNER JOIN {CV} AS CV ON CVT.cv_id = CV.cv_id
               INNER JOIN {dbxref} as DBX ON CVT.dbxref_id = DBX.dbxref_id
               INNER JOIN {db} as DB ON DBX.db_id = DB.db_id
-              WHERE CVT.name =:field";
+              WHERE CVT.name  IN (:field)";
 
-      $existing_field_terms = chado_query($sql, [":field" => $field])->fetchAll();
+      $existing_field_terms = chado_query($sql, [":field" => $field_options])->fetchAll();
+
       foreach ($existing_field_terms as $field_term) {
         $cv_name = $field_term->cv_name;
         $db_name = $field_term->db_name;
@@ -179,14 +188,22 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $cv_array[$cv_name]["cv"] = $cv_name;
         $cv_array[$cv_name]["db"] = $db_name;
         $cv_array[$cv_name]["accession"] = $accession;
-      }
-      //   $settings["CV_options"] = $cv_array;
 
-      $form['cvterm_configuration'][$field] = [
+      }
+
+      $field_label = reset($field);
+      $description = count($field_options) . " variations: ";
+
+      foreach ($field_options as $subfield) {
+        $description .= '"' . $subfield . '"' . "  ";
+      }
+
+      $form['cvterm_configuration'][$field_label] = [
         '#type' => 'fieldset',
-        '#title' => t($field),
+        '#title' => t($field_label),
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,
+        '#description' => $description,
       ];
 
       $header = ["CV name", "DB name", "Accession"];
@@ -203,14 +220,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       //if no rows then the term isn't in DB.
 
       if (!$rows) {
-        $markup = "<p>There is no cvterm in the Chado database matching the property <b>$field</b>.  You can insert a term and try again, or submit and use a generic cv.</p>";
-        $form['cvterm_configuration'][$field]['cv_table'] = [
-          '#markup' => $markup
+        $markup = "<p>There is no cvterm in the Chado database matching the property <b>$field_label</b>.  You can insert a term and try again, or submit and use a generic cv.</p>";
+        $form['cvterm_configuration'][$field_label]['cv_table'] = [
+          '#markup' => $markup,
         ];
       }
       else {
 
-        $form['cvterm_configuration'][$field]['cv_table'] = [
+        $form['cvterm_configuration'][$field_label]['cv_table'] = [
           '#type' => 'tableselect',
           '#header' => $header,
           '#options' => $rows,
@@ -263,9 +280,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $insert_fields[$field] = $chosen_cv;
       }
     }
-      else {
-        tripal_set_message("Warning: properties not configured.  Using generic cvterms for all properties.", TRIPAL_WARNING);
-      }
+    else {
+      tripal_set_message("Warning: properties not configured.  Using generic cvterms for all properties.", TRIPAL_WARNING);
+    }
 
     $extension = explode('.', $file_path);
     $extension = $extension[count($extension) - 1];
@@ -414,7 +431,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     ]);
     $dbxref_biosample_id = $dbxref_biosample->dbxref_id;
 
-    $dbxref_id = null;
+    $dbxref_id = NULL;
     //note:  this dbxref (ncbi biosample) previously was insert into the biomaterial table.  This is incorrect: t his column is only for INTERNAL accessions.
 
     // If sra_accession is present, create entry in the dbxref table.
@@ -444,10 +461,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       ]);
     }
     //Also add the NCBI BioSample DBXREF previously inserted into the biomaterial table
-    if ($sample_accession){
+    if ($sample_accession) {
       tripal_associate_dbxref('biomaterial', $biomaterial_id, [
-        'accession'=> $sample_accession,
-        'db_name' => 'NCBI BioSample'
+        'accession' => $sample_accession,
+        'db_name' => 'NCBI BioSample',
       ]);
 
     }
@@ -679,9 +696,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
             $db_id = tripal_biomaterial_create_ncbi_db('sra', 'NCBI SRA', '');
           }
           elseif ($name == 'biosample_accession') {
-              // In case there is no biosample database
-              $db_id = tripal_biomaterial_create_ncbi_db('biosample', 'NCBI BioSample', '');
-            }
+            // In case there is no biosample database
+            $db_id = tripal_biomaterial_create_ncbi_db('biosample', 'NCBI BioSample', '');
+          }
           else {
             if ($name == 'bioproject_accession') {
               $db_id = tripal_biomaterial_create_ncbi_db('bioproject', 'NCBI BioProject', '');
@@ -786,7 +803,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
   }
 
 
-
   //end of class
 }
 
@@ -870,42 +886,53 @@ function test_xml_data(
   $attribute_list
 ) {
 
-
   //get xml attributes
+  //dont get ocnfused here-> we actually look for a node called "attributes" with child node "attribute"
   $attributes = $biosample->Attributes->Attribute;
+  foreach ($attributes as $key => $attribute_object) {
 
-  $attributes = $biosample->attributes();
+    $attribute_name_index = (string) $attribute_object->attributes()->attribute_name;
 
+    $attributes = $attribute_object->attributes(); // the list of attribute names, ie "name = tissue", "display_name = Tissue"
+    $property_value = $attribute_object->__toString();// the string value ie "leaf"
+    $this_attribute = [];
 
-  foreach($attributes as $attribute_name => $attribute_value){
-    dpm($attribute_name);
-    dpm($attribute_value);
+    foreach ($attributes as $property_sub_name => $property_sub_value) {
 
+      $value_string = (string) $property_sub_value;
+
+      //the attribute has multiple names: machine readable, human readable.  let's pass all of them to our tool so that any and all matches are found.
+
+      $this_attribute[$property_sub_name] = $value_string;
+    }
+
+    $attribute_list["attributes"][$attribute_name_index] = $this_attribute;
+    $attribute_list["values"] = $property_value;
   }
-
-  $attributes = $biosample->Attributes->Attribute;
-
-  // Iterate through each property
-  foreach ($attributes as $attr) {
-
-    // Get the cvterm name
-    $attr_name = (string) $attr->attributes()->attribute_name;
-
-
-    //get all attribute names
-    $attr_names = $attr->attributes();
-
-    //get the cvterm value
-
-    $attr_value = (string) $attr;
-
-    $attribute_list["attributes"][$attr_name] = $attr_name;
-
-
-    $attribute_list["attribute_values"];
-  }
-
-  //TODO TOGWOGGLE
+  //
+  //  $attributes = $biosample->Attributes->Attribute;
+  //
+  //  // Iterate through each property
+  //  foreach ($attributes as $attr) {
+  //
+  //    // Get the cvterm name
+  //    $attr_name = (string) $attr->attributes()->attribute_name;
+  //
+  //
+  //    //get all attribute names
+  //    $attr_names = $attr->attributes();
+  //
+  //    //get the cvterm value
+  //
+  //    $attr_value = (string) $attr;
+  //
+  //    $attribute_list["attributes"][$attr_name] = $attr_name;
+  //
+  //
+  //    $attribute_list["attribute_values"];
+  //  }
+  //
+  //  //TODO TOGWOGGLE
   return ($attribute_list);
 }
 
