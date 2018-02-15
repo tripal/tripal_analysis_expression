@@ -142,14 +142,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $link = variable_get('website_base_url') . "admin/tripal/loaders/chado_cv/cvterm/add.";
       $description = t('This section will allow you to check the CVterms associated with your biomaterial.  Ideally, each property should get the term for type and value from a Controlled Vocabulary (CV).  Alternatively you can create ad hoc terms in the biomaterialprop CV.  If the CVterm does not exist in a suitable CV, you can insert terms <a href = "' . $link . '"> using the Tripal CVterm loader.</a>');
 
-      $attributes_list = [];
+      $terms_to_check = null;
       if ($file_type == 'xml') {
-        $attributes_list = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
+        $terms_to_check = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
       }
       else {
-        $attributes_list = test_biosample_cvterms_flat($file_path);
+        $terms_to_check = test_biosample_cvterms_flat($file_path);
       }
-      $fields = $attributes_list;
+      $fields = $terms_to_check["attributes"];
     }
 
     $form['cvterm_configuration'] = [
@@ -161,6 +161,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       '#tree' => TRUE,
     ];
 
+    dpm($fields);
     foreach ($fields as $field) {
       $cv_array = [];
       //Get terms
@@ -217,6 +218,19 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         ];
       }
     }
+
+
+    $description = t('This section will allow you to check the CVterms associated with your biomaterial property <b>values</b>.  FOr example, if your property was "color", the property value might be "red".</a>');
+
+
+    $form['cvalue_configuration'] = [
+      '#type' => 'fieldset',
+      '#title' => t('CVterm Value Configuration'),
+      '#description' => $description,
+      '#prefix' => '<div id="cvterm_configuration_div">',
+      '#suffix' => '</div>',
+      '#tree' => TRUE,
+    ];
 
     return $form;
   }
@@ -831,17 +845,18 @@ function test_biosample_cvterms_xml(
       $biomaterial_names[] = $xml->BioSample[$i]->Ids->Id[1];
     }
 
-    $attribute_list = [];
+    $output = [];
 
     // Test all biomaterials
     for ($i = 0; $i < $num_biosamples; $i++) {
-      $attribute_list = test_xml_data($organism_id, $xml->BioSample[$i], $analysis_id, $attribute_list);
+      $output = test_xml_data($organism_id, $xml->BioSample[$i], $analysis_id, $output);
     }
   } catch (Exception $e) {
     print "\n";
     watchdog_exception('T_expression_load', $e);
   }
-  return $attribute_list;
+  return $output;
+
 }
 
 /**
@@ -855,18 +870,42 @@ function test_xml_data(
   $attribute_list
 ) {
 
-  // dpm($biosample);
-
 
   //get xml attributes
   $attributes = $biosample->Attributes->Attribute;
 
+  $attributes = $biosample->attributes();
+
+
+  foreach($attributes as $attribute_name => $attribute_value){
+    dpm($attribute_name);
+    dpm($attribute_value);
+
+  }
+
+  $attributes = $biosample->Attributes->Attribute;
+
   // Iterate through each property
   foreach ($attributes as $attr) {
+
     // Get the cvterm name
     $attr_name = (string) $attr->attributes()->attribute_name;
-    $attribute_list[$attr_name] = $attr_name;
+
+
+    //get all attribute names
+    $attr_names = $attr->attributes();
+
+    //get the cvterm value
+
+    $attr_value = (string) $attr;
+
+    $attribute_list["attributes"][$attr_name] = $attr_name;
+
+
+    $attribute_list["attribute_values"];
   }
+
+  //TODO TOGWOGGLE
   return ($attribute_list);
 }
 
