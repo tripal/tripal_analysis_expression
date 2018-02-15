@@ -154,12 +154,28 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     }
 
 
-    $form['cvterm_configuration'] = [
+    $form['cvterms'] = [
+      '#type' => 'fieldset',
+      '#prefix' => '<div id="cvterm_configuration_div">',
+      '#suffix' => '</div>',
+    ];
+
+    $form['cvterms']['cvterm_configuration'] = [
       '#type' => 'fieldset',
       '#title' => t('CVterm Field Configuration'),
       '#description' => $description,
-      '#prefix' => '<div id="cvterm_configuration_div">',
-      '#suffix' => '</div>',
+
+      '#tree' => TRUE,
+    ];
+
+
+    $description = t('This section will allow you to check the CVterms associated with your biomaterial property <b>values</b>.  FOr example, if your property was "color", the property value might be "red".</a>');
+
+
+    $form['cvterms']['cvalue_configuration'] = [
+      '#type' => 'fieldset',
+      '#title' => t('CVterm Value Configuration'),
+      '#description' => $description,
       '#tree' => TRUE,
     ];
 
@@ -204,7 +220,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $description .= '"' . $subfield . '"' . "  ";
       }
 
-      $form['cvterm_configuration'][$field_label] = [
+      $form['cvterms']['cvterm_configuration'][$field_label] = [
         '#type' => 'fieldset',
         '#title' => t($field_label),
         '#collapsible' => TRUE,
@@ -212,14 +228,20 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         '#description' => $description,
       ];
 
-      $header = ["CVterm name",  "CV name", "DB name", "Accession", "CVterm definition"];
+      $header = [
+        "CVterm name",
+        "CV name",
+        "DB name",
+        "Accession",
+        "CVterm definition",
+      ];
 
       $rows = [];
       foreach ($cv_array as $cv_name => $field_term) {
         $db_name = $field_term["db"];
         $accession = $field_term["accession"];
-        $cvt_name = $cv_array[$cv_name]["cvt_name"] ;
-        $cvt_def = $cv_array[$cv_name]["cvt_def"] ;
+        $cvt_name = $cv_array[$cv_name]["cvt_name"];
+        $cvt_def = $cv_array[$cv_name]["cvt_def"];
 
         $row = [$cvt_name, $cv_name, $db_name, $accession, $cvt_def];
         $rows[$cv_name] = $row;
@@ -229,13 +251,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       if (!$rows) {
         $markup = "<p>There is no cvterm in the Chado database matching the property <b>$field_label</b>.  You can insert a term and try again, or submit and use a generic cv.</p>";
-        $form['cvterm_configuration'][$field_label]['cv_table'] = [
+        $form['cvterms']['cvterm_configuration'][$field_label]['cv_table'] = [
           '#markup' => $markup,
         ];
       }
       else {
 
-        $form['cvterm_configuration'][$field_label]['cv_table'] = [
+        $form['cvterms']['cvterm_configuration'][$field_label]['cv_table'] = [
           '#type' => 'tableselect',
           '#header' => $header,
           '#options' => $rows,
@@ -245,23 +267,80 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     }
 
 
-    $description = t('This section will allow you to check the CVterms associated with your biomaterial property <b>values</b>.  FOr example, if your property was "color", the property value might be "red".</a>');
+    //now do almost the same thing for property values.  Oops.
+    //TODO refactor these since we do it 2x
+    foreach ($property_values as $property_value) {
 
+      $cv_array = [];
 
-    $form['cvalue_configuration'] = [
-      '#type' => 'fieldset',
-      '#title' => t('CVterm Value Configuration'),
-      '#description' => $description,
-      '#prefix' => '<div id="cvterm_configuration_div">',
-      '#suffix' => '</div>',
-      '#tree' => TRUE,
-    ];
+      //Get terms
+      $sql = "SELECT CV.name AS cv_name, DB.name AS db_name, DBX.accession AS dbx_accession, CVT.name AS cvt_name, CVT.definition AS cvt_def FROM {cvterm} AS CVT
+              INNER JOIN {CV} AS CV ON CVT.cv_id = CV.cv_id
+              INNER JOIN {dbxref} as DBX ON CVT.dbxref_id = DBX.dbxref_id
+              INNER JOIN {db} as DB ON DBX.db_id = DB.db_id
+              WHERE CVT.name  = :field";
 
+      $prop_result = chado_query($sql, [":field" => $property_value])->fetchAll();
 
+      foreach ($prop_result as $field_term) {
+        $cv_name = $field_term->cv_name;
+        $db_name = $field_term->db_name;
+        $accession = $field_term->dbx_accession;
+        $cvt_name = $field_term->cvt_name;
+        $cvt_def = $field_term->cvt_def;
 
-    foreach ($property_values as $property_value){
+        $cv_array[$cv_name]["cv"] = $cv_name;
+        $cv_array[$cv_name]["db"] = $db_name;
+        $cv_array[$cv_name]["accession"] = $accession;
+        $cv_array[$cv_name]["cvt_name"] = $cvt_name;
+        $cv_array[$cv_name]["cvt_name"] = $cvt_def;
 
-      dpm($property_value);
+      }
+
+      $form['cvterms']['cvalue_configuration'][$property_value] = [
+        '#type' => 'fieldset',
+        '#title' => t($property_value),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+      ];
+
+      $header = [
+        "CVterm name",
+        "CV name",
+        "DB name",
+        "Accession",
+        "CVterm definition",
+      ];
+
+      $rows = [];
+      foreach ($cv_array as $cv_name => $field_term) {
+        $db_name = $field_term["db"];
+        $accession = $field_term["accession"];
+        $cvt_name = $cv_array[$cv_name]["cvt_name"];
+        $cvt_def = $cv_array[$cv_name]["cvt_def"];
+
+        $row = [$cvt_name, $cv_name, $db_name, $accession, $cvt_def];
+        $rows[$cv_name] = $row;
+      }
+
+      //if no rows then the term isn't in DB.
+
+      if (!$rows) {
+        $markup = "<p>There is no cvterm in the Chado database matching the property <b>$property_value</b>.  You can insert a term and try again, or submit not use a cvterm for this property value.</p>";
+        $form['cvterms']['cvalue_configuration'][$property_value]['cv_table'] = [
+          '#markup' => $markup,
+        ];
+      }
+      else {
+
+        $form['cvterms']['cvalue_configuration'][$property_value]['cv_table'] = [
+          '#type' => 'tableselect',
+          '#header' => $header,
+          '#options' => $rows,
+          '#multiple' => FALSE,
+        ];
+      }
+
 
     }
 
@@ -1040,5 +1119,6 @@ function test_biosample_cvterms_flat(
  */
 
 function cvterm_validator_callback(&$form, &$form_state) {
-  return $form['class_elements']['cvterm_configuration'];
+ // return $form['class_elements']['cvterm_configuration'];
+  return $form['class_elements']['cvterms'];
 }
