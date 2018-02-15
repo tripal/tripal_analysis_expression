@@ -150,6 +150,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $terms_to_check = test_biosample_cvterms_flat($file_path);
       }
       $fields = $terms_to_check["attributes"];
+      $property_values = $terms_to_check["values"];
     }
 
 
@@ -173,7 +174,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
 
       //Get terms
-      $sql = "SELECT CV.name AS cv_name, DB.name AS db_name, DBX.accession AS dbx_accession FROM {cvterm} AS CVT
+      $sql = "SELECT CV.name AS cv_name, DB.name AS db_name, DBX.accession AS dbx_accession, CVT.name AS cvt_name, CVT.definition AS cvt_def FROM {cvterm} AS CVT
               INNER JOIN {CV} AS CV ON CVT.cv_id = CV.cv_id
               INNER JOIN {dbxref} as DBX ON CVT.dbxref_id = DBX.dbxref_id
               INNER JOIN {db} as DB ON DBX.db_id = DB.db_id
@@ -185,14 +186,19 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $cv_name = $field_term->cv_name;
         $db_name = $field_term->db_name;
         $accession = $field_term->dbx_accession;
+        $cvt_name = $field_term->cvt_name;
+        $cvt_def = $field_term->cvt_def;
+
         $cv_array[$cv_name]["cv"] = $cv_name;
         $cv_array[$cv_name]["db"] = $db_name;
         $cv_array[$cv_name]["accession"] = $accession;
+        $cv_array[$cv_name]["cvt_name"] = $cvt_name;
+        $cv_array[$cv_name]["cvt_name"] = $cvt_def;
 
       }
 
       $field_label = reset($field);
-      $description = count($field_options) . " variations: ";
+      $description = count($field_options) . " variations queried: ";
 
       foreach ($field_options as $subfield) {
         $description .= '"' . $subfield . '"' . "  ";
@@ -206,14 +212,16 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         '#description' => $description,
       ];
 
-      $header = ["CV name", "DB name", "Accession"];
+      $header = ["CVterm name",  "CV name", "DB name", "Accession", "CVterm definition"];
 
       $rows = [];
       foreach ($cv_array as $cv_name => $field_term) {
         $db_name = $field_term["db"];
         $accession = $field_term["accession"];
+        $cvt_name = $cv_array[$cv_name]["cvt_name"] ;
+        $cvt_def = $cv_array[$cv_name]["cvt_def"] ;
 
-        $row = [$cv_name, $db_name, $accession];
+        $row = [$cvt_name, $cv_name, $db_name, $accession, $cvt_def];
         $rows[$cv_name] = $row;
       }
 
@@ -248,6 +256,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       '#suffix' => '</div>',
       '#tree' => TRUE,
     ];
+
+
+
+    foreach ($property_values as $property_value){
+
+      dpm($property_value);
+
+    }
 
     return $form;
   }
@@ -907,32 +923,9 @@ function test_xml_data(
     }
 
     $attribute_list["attributes"][$attribute_name_index] = $this_attribute;
-    $attribute_list["values"] = $property_value;
+    $attribute_list["values"][] = $property_value;
   }
-  //
-  //  $attributes = $biosample->Attributes->Attribute;
-  //
-  //  // Iterate through each property
-  //  foreach ($attributes as $attr) {
-  //
-  //    // Get the cvterm name
-  //    $attr_name = (string) $attr->attributes()->attribute_name;
-  //
-  //
-  //    //get all attribute names
-  //    $attr_names = $attr->attributes();
-  //
-  //    //get the cvterm value
-  //
-  //    $attr_value = (string) $attr;
-  //
-  //    $attribute_list["attributes"][$attr_name] = $attr_name;
-  //
-  //
-  //    $attribute_list["attribute_values"];
-  //  }
-  //
-  //  //TODO TOGWOGGLE
+
   return ($attribute_list);
 }
 
