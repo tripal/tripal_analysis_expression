@@ -118,7 +118,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     ];
 
     $fields = [];
-    $property_values =[];
+    $property_values = [];
 
     $description = t('After submitting uploading your file(s) and clicking the Check Biosamples button, you can configure individual cvterms for your biomaterial properties here.');
 
@@ -191,7 +191,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
 
       //Get terms
-      $sql = "SELECT CV.name AS cv_name, DB.name AS db_name, DBX.accession AS dbx_accession, CVT.name AS cvt_name, CVT.definition AS cvt_def FROM {cvterm} AS CVT
+      $sql = "SELECT CV.name AS cv_name, DB.name AS db_name, DBX.accession AS dbx_accession, CVT.name AS cvt_name, CVT.definition AS cvt_def, CVT.cvterm_id AS cvt_id FROM {cvterm} AS CVT
               INNER JOIN {CV} AS CV ON CVT.cv_id = CV.cv_id
               INNER JOIN {dbxref} as DBX ON CVT.dbxref_id = DBX.dbxref_id
               INNER JOIN {db} as DB ON DBX.db_id = DB.db_id
@@ -205,12 +205,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $accession = $field_term->dbx_accession;
         $cvt_name = $field_term->cvt_name;
         $cvt_def = $field_term->cvt_def;
+        $cvt_id = $field_term->cvt_id;
 
         $cv_array[$cv_name]["cv"] = $cv_name;
         $cv_array[$cv_name]["db"] = $db_name;
         $cv_array[$cv_name]["accession"] = $accession;
         $cv_array[$cv_name]["cvt_name"] = $cvt_name;
-        $cv_array[$cv_name]["cvt_name"] = $cvt_def;
+        $cv_array[$cv_name]["cvt_def"] = $cvt_def;
+        $cv_array[$cv_name]["cvt_id"] = $cvt_id;
 
       }
 
@@ -243,8 +245,25 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $accession = $field_term["accession"];
         $cvt_name = $cv_array[$cv_name]["cvt_name"];
         $cvt_def = $cv_array[$cv_name]["cvt_def"];
+        $cvt_id = $cv_array[$cv_name]["cvt_id"];
+
 
         $row = [$cvt_name, $cv_name, $db_name, $accession, $cvt_def];
+
+        $info = [
+          'cvt_name' => $cvt_name,
+          'cv_name' => $cv_name,
+          'db_name' => $db_name,
+          'cvt_accession' => $accession,
+          'cvt_id' => $cvt_id,
+        ];
+
+        //stick the info in the form so we can match it up later
+        $form['cvterms']['cvterm_configuration'][$field_label][$cv_name] = [
+          '#type' => 'value',
+          '#value' => $info,
+        ];
+
         $rows[$cv_name] = $row;
       }
 
@@ -252,13 +271,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       if (!$rows) {
         $markup = "<p>There is no cvterm in the Chado database matching the property <b>$field_label</b>.  You can insert a term and try again, or submit and use a generic cv.</p>";
-        $form['cvterms']['cvterm_configuration'][$field_label]['cv_table'] = [
+        $form['cvterms']['cvterm_configuration'][$field_label] = [
           '#markup' => $markup,
         ];
       }
       else {
 
-        $form['cvterms']['cvterm_configuration'][$field_label]['cv_table'] = [
+        $form['cvterms']['cvterm_configuration'][$field_label]['choose'] = [
           '#type' => 'tableselect',
           '#header' => $header,
           '#options' => $rows,
@@ -275,7 +294,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $cv_array = [];
 
       //Get terms
-      $sql = "SELECT CV.name AS cv_name, DB.name AS db_name, DBX.accession AS dbx_accession, CVT.name AS cvt_name, CVT.definition AS cvt_def FROM {cvterm} AS CVT
+      $sql = "SELECT CV.name AS cv_name, DB.name AS db_name, DBX.accession AS dbx_accession, CVT.name AS cvt_name, CVT.definition AS cvt_def, CVT.cvterm_id AS cvt_id  FROM {cvterm} AS CVT
               INNER JOIN {CV} AS CV ON CVT.cv_id = CV.cv_id
               INNER JOIN {dbxref} as DBX ON CVT.dbxref_id = DBX.dbxref_id
               INNER JOIN {db} as DB ON DBX.db_id = DB.db_id
@@ -295,6 +314,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $cv_array[$cv_name]["accession"] = $accession;
         $cv_array[$cv_name]["cvt_name"] = $cvt_name;
         $cv_array[$cv_name]["cvt_def"] = $cvt_def;
+        $cv_array[$cv_name]["cvt_id"] = $field_term->cvt_id;
 
       }
 
@@ -319,6 +339,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $accession = $field_term["accession"];
         $cvt_name = $cv_array[$cv_name]["cvt_name"];
         $cvt_def = $cv_array[$cv_name]["cvt_def"];
+        $cvt_id = $cv_array[$cv_name]["cvt_id"];
 
         $row = [$cvt_name, $cv_name, $db_name, $accession, $cvt_def];
         $rows[$cv_name] = $row;
@@ -341,8 +362,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           '#multiple' => FALSE,
         ];
       }
-
-
     }
 
     return $form;
@@ -352,6 +371,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
+    dpm($form_state);
+
 
   }
 
@@ -371,24 +392,27 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     // if one wasnt selected, key wont exist and we'll insert into biomaterialprop
     $insert_fields = [];
     if ($field_info) {
-      foreach ($field_info as $field => $cv_table) {
-        $chosen_cv = implode(($cv_table));
-        $insert_fields[$field] = $chosen_cv;
+      foreach ($field_info as $property_label => $property) {
+        $selected_cv = $property['choose'];
+        $selected_cv_info = $property[$selected_cv];
+        if ($selected_cv) {
+          $insert_fields[$property_label] = $selected_cv_info;
+        }
       }
     }
     else {
       tripal_set_message("Warning: properties not configured.  Using generic cvterms for all properties.", TRIPAL_WARNING);
     }
 
-    $insert_cvalues = [];
-    //TODO: THIS SHOUDL GET THE CVTERM_IDNOT THE CV ID
-    if ($cvalue_info) {
-      foreach ($cvalue_info as $cvalue => $cv_table){
-        $chosen_cv = implode($cv_table);
-        $insert_cvalues[$cvalue] = $chosen_cv;
-      }
-    }
 
+    $insert_cvalues = [];
+
+    foreach ($field_info as $property_label => $property) {
+
+      $selected_cv_info = $property[$selected_cv];
+      $insert_cvalues[$property_label] = $selected_cv_info;
+
+    }
 
 
     $extension = explode('.', $file_path);
@@ -414,7 +438,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     $organism_id,
     $analysis_id,
     $insert_fields,
-  $insert_cvalues
+    $insert_cvalues
 
   ) {
 
@@ -488,7 +512,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
    * @param $biosample
    * @param $analysis_id
    * @param $insert_fields
-   * @param $insert_cvalues - the cvalues to associate with the biomaterialprop.  Use this in addition to the property text value.
+   * @param $insert_cvalues - the cvalues to associate with the
+   *   biomaterialprop.  Use this in addition to the property text value.
    */
 
   protected function add_xml_data(
@@ -586,9 +611,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
   }
 
   /**
+   * Adds the properties for a biomaterial in the XML loader.
+   *
    * @param $attributes
    * @param $biomaterial_id
+   * @param $insert_fields
+   * @param $insert_cvalues
    */
+
   protected function add_xml_biomaterial_properties(
     $attributes,
     $biomaterial_id,
@@ -623,12 +653,18 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       // Insert into database.  Only insert into db if an existing CVTerm wasn't chosen
       $cv_name = 'biomaterial_property';
       if (isset($insert_fields[$attr_name])) {
-        $specified_cv = $insert_fields[$attr_name];
+
+        $specified_prop_cv = $insert_fields[$attr_name]['cv_name'];
+        $specified_prop_db = $insert_fields[$attr_name]['db_name'];
+        $specified_prop_accession = $insert_fields[$attr_name]['cvt_accession'];
+        $specified_prop_cvterm = $insert_fields[$attr_name]['cvt_name'];
+
+
+        $cv_name = $specified_prop_cv;
+        $attr_name = $specified_prop_cvterm;//we rename the attribute here, in case we chose a cvterm whose name is different from the attribute in the XML.
 
       }
-      if ($specified_cv) {
-        $cv_name = $specified_cv;
-      }
+
       else { //if a cv wasnt specified, or if this term wasnt set in the fields array, need to insert into the biomaterial_property CV
         if (!tripal_insert_cvterm([
           'name' => (string) $attr_name,
@@ -642,32 +678,28 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         }
       }
 
-      //TODO: test for cvalue
+      $cvalue_id = NULL;
 
-      $cvalue_id = null;
 
-      if (isset($insert_cvalues[$value])){
+      if (isset($insert_cvalues[$value])) {
         $specified_cvalue_cv_id = $insert_cvalues[$value];
-        //TODO look up this term in this CV
-
-        $specified_cvalue_cvterm = chado_cvterm
-
+        $cvalue_term = tripal_get_cvterm(['cvterm_id' => $specified_cvalue_cv_id]);
+        if (!$cvalue_term) {
+          print "ERROR: Invalid target CVterm provided for " . $value;
+          exit;
+        }
       }
-
-
-      //TODO: WE ALLOWED THE CVTERM FOR THE PROPERTY TO NO LONGER MATCH THE PROPERTY NAME (IE CASES WHERE THE HUMAN READABLE NAME WAS BETTER ETC).  HOW DO WE RECONCILE THIS?
 
       // Insert the property into the biomaterialprop table.
       $property = [
         'type_name' => $attr_name,
         'cv_name' => $cv_name,
         'value' => $value,
-        'cvalue_id' => $cvalue_id
+        'cvalue_id' => $cvalue_id,
       ];
       chado_insert_property($record, $property, $options);
     }
   }
-
 
 
   /**
