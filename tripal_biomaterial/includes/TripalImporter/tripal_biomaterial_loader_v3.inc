@@ -345,7 +345,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $rows[$cv_name] = $row;
 
 
-
         $info = [
           'cvt_name' => $cvt_name,
           'cv_name' => $cv_name,
@@ -418,10 +417,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       tripal_set_message("Warning: properties not configured.  Using generic cvterms for all properties.", TRIPAL_WARNING);
     }
 
-    $insert_cvalues  = [];
+    $insert_cvalues = [];
 
-    if ($cvalue_info){
-      foreach($cvalue_info as $cvalue_label => $property){
+    if ($cvalue_info) {
+      foreach ($cvalue_info as $cvalue_label => $property) {
 
         $selected_cv = $property['choose'];
         print($selected_cv);
@@ -675,8 +674,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $specified_prop_db = $insert_fields[$attr_name]['db_name'];
         $specified_prop_accession = $insert_fields[$attr_name]['cvt_accession'];
         $specified_prop_cvterm = $insert_fields[$attr_name]['cvt_name'];
-
-
         $cv_name = $specified_prop_cv;
         $attr_name = $specified_prop_cvterm;//we rename the attribute here, in case we chose a cvterm whose name is different from the attribute in the XML.
 
@@ -718,13 +715,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
    * @param $organism_id
    * @param $analysis_id
    * @param $file_type
-   * @param $flat_file_type
    */
   protected function load_biosample_flat(
     $file_path,
     $organism_id,
     $analysis_id,
-    $insert_fields
+    $insert_fields,
+    $insert_cvalues
   ) {
     try {
       if (!is_readable($file_path)) {
@@ -946,10 +943,19 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
               'table' => 'biomaterial',
               'id' => $biomaterial_id,
             ];
+
+            $cvalue_id = NULL;
+            $cvalue_text = $line[$index];
+
+            if ($insert_cvalues[$cvalue_text]){
+              $cvalue_id = $insert_cvalues[$cvalue_text];
+            }
+
             $property = [
               'type_name' => $name,
               'cv_name' => $cv_name,
-              'value' => $line[$index],
+              'value' => $cvalue_text,
+              'cvalue_id' => $cvalue_id
             ];
             $options = [
               'update_if_present' => TRUE,
@@ -1185,8 +1191,11 @@ function test_biosample_cvterms_flat(
     if ($header == 'bioproject_accession') {
     }
     else {
-      //values
       $attribute_list[]["attributes"] = $header;
+
+      //TODO: this is where the flat file loader would support checking the cvalues as well
+      $attribute_list[]["values"] = null;
+
     }
   }
   return ($attribute_list);
