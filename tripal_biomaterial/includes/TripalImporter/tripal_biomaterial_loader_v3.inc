@@ -343,19 +343,36 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
         $row = [$cvt_name, $cv_name, $db_name, $accession, $cvt_def];
         $rows[$cv_name] = $row;
+
+
+
+        $info = [
+          'cvt_name' => $cvt_name,
+          'cv_name' => $cv_name,
+          'db_name' => $db_name,
+          'cvt_accession' => $accession,
+          'cvt_id' => $cvt_id,
+        ];
+
+        //stick the info in the form so we can match it up later
+        $form['cvterms']['cvalue_configuration'][$property_value][$cv_name] = [
+          '#type' => 'value',
+          '#value' => $info,
+        ];
+
       }
 
       //if no rows then the term isn't in DB.
 
       if (!$rows) {
         $markup = "<p>There is no cvterm in the Chado database matching the property <b>$property_value</b>.  You can insert a term and try again, or submit not use a cvterm for this property value.</p>";
-        $form['cvterms']['cvalue_configuration'][$property_value]['cv_table'] = [
+        $form['cvterms']['cvalue_configuration'][$property_value]['choose'] = [
           '#markup' => $markup,
         ];
       }
       else {
 
-        $form['cvterms']['cvalue_configuration'][$property_value]['cv_table'] = [
+        $form['cvterms']['cvalue_configuration'][$property_value]['choose'] = [
           '#type' => 'tableselect',
           '#header' => $header,
           '#options' => $rows,
@@ -371,9 +388,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
-    dpm($form_state);
-
-
   }
 
   /**
@@ -404,16 +418,19 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       tripal_set_message("Warning: properties not configured.  Using generic cvterms for all properties.", TRIPAL_WARNING);
     }
 
+    $insert_cvalues  = [];
 
-    $insert_cvalues = [];
+    if ($cvalue_info){
+      foreach($cvalue_info as $cvalue_label => $property){
 
-    foreach ($field_info as $property_label => $property) {
-
-      $selected_cv_info = $property[$selected_cv];
-      $insert_cvalues[$property_label] = $selected_cv_info;
-
+        $selected_cv = $property['choose'];
+        print($selected_cv);
+        if ($selected_cv) {
+          $selected_cv_info = $property[$selected_cv];
+          $insert_cvalues[$cvalue_label] = $selected_cv_info['cvt_id'];
+        }
+      }
     }
-
 
     $extension = explode('.', $file_path);
     $extension = $extension[count($extension) - 1];
@@ -680,14 +697,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       $cvalue_id = NULL;
 
-
       if (isset($insert_cvalues[$value])) {
-        $specified_cvalue_cv_id = $insert_cvalues[$value];
-        $cvalue_term = tripal_get_cvterm(['cvterm_id' => $specified_cvalue_cv_id]);
-        if (!$cvalue_term) {
-          print "ERROR: Invalid target CVterm provided for " . $value;
-          exit;
-        }
+        $cvalue_id = $insert_cvalues[$value];
       }
 
       // Insert the property into the biomaterialprop table.
