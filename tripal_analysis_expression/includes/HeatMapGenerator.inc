@@ -4,7 +4,7 @@ class HeatMapGenerator {
 
   /**
    * GET feature names.
-   * 
+   *
    * @var array
    */
   protected $featureNames = [];
@@ -31,8 +31,17 @@ class HeatMapGenerator {
 
     $expression = $this->getExpressionData();
 
-    foreach ($expression->biomaterials as $analysis => $biomaterials) {
+    foreach ($expression->biomaterials as $analysis => $biomaterial) {
       $this->loadBiomaterialProps($expression->biomaterials[$analysis]);
+    }
+
+    // Set URLs
+    // The number of features is usually very small so looping directly here
+    // is not a big deal
+    foreach ($expression->features as $analysis_id => $features) {
+      foreach ($features as $feature_id => $feature) {
+        $expression->features[$analysis_id][$feature_id] = l($feature, 'bio_data/'.chado_get_record_entity_by_table('feature', $feature_id));
+      }
     }
 
     return $expression;
@@ -74,16 +83,29 @@ class HeatMapGenerator {
     $biomaterials = [];
     $analyses = [];
     $features = [];
+    $max_feature_len = 0;
+    $max_biomaterial_len = 0;
 
     foreach ($expressionData as $expression) {
       $analyses[$expression->analysis_id] = $expression->analysis_name;
       $biomaterials[$expression->analysis_id][$expression->biomaterial_id] = [
         'name' => $expression->biomaterial_name,
         'contact' => $expression->contact_name ?: 'Not Set',
-        'description' => $expression->biomaterial_description,
+        'description' => wordwrap($expression->biomaterial_description, 75, '<br />'),
       ];
       $features[$expression->analysis_id][$expression->feature_id] = $expression->feature_uniquename;
       $data[$expression->analysis_id][$expression->feature_id][$expression->biomaterial_id] = $expression->signal;
+
+      // Compute the longest string
+      $biomaterial_len = strlen($expression->biomaterial_name);
+      if ($biomaterial_len > $max_biomaterial_len) {
+        $max_biomaterial_len = $biomaterial_len;
+      }
+
+      $feature_len = strlen($expression->feature_uniquename);
+      if ($feature_len > $max_feature_len) {
+        $max_feature_len = $feature_len;
+      }
     }
 
     return (object) [
@@ -91,6 +113,10 @@ class HeatMapGenerator {
       'biomaterials' => $biomaterials,
       'features' => $features,
       'data' => $data,
+      'maxLengths' => [
+        'feature' => $max_feature_len,
+        'biomaterial' => $max_biomaterial_len,
+      ],
     ];
   }
 

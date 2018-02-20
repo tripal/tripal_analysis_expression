@@ -44,13 +44,13 @@
       $('#heatmap_download').attr('href', link);
     },
 
-    constructHeatMapData: function (expression) {
+    constructHeatMapData: function () {
       if (typeof this.cache[this.selectedAnalysis] !== 'undefined') {
         return this.cache[this.selectedAnalysis];
       }
 
-      console.log(expression[this.selectedAnalysis], this.selectedAnalysis);
-
+      var expression = this.data;
+      var _that = this;
       // Extract data, features and biomaterials for the current analysis
       var data = {
         biomaterials: expression.biomaterials[this.selectedAnalysis],
@@ -67,9 +67,11 @@
       }.bind(this));
 
       var values = [];
+      var tooltip = [];
 
       Object.keys(data.features).map(function (feature_id) {
         var row = [];
+        var text = [];
         Object.keys(data.biomaterials).map(function (biomaterial_id) {
           if (typeof data.matrix[feature_id][biomaterial_id] !== 'undefined') {
             row.push(parseFloat(data.matrix[feature_id][biomaterial_id]));
@@ -77,18 +79,40 @@
           else {
             row.push(0);
           }
+
+          text.push(_that.formatTooltipEntry(data.biomaterials[biomaterial_id]));
         });
 
         values.push(row);
+        tooltip.push(text);
       });
 
       this.cache[this.selectedAnalysis] = {
         x: biomaterials,
         y: features,
-        z: values
+        z: values,
+        text: tooltip
       };
 
       return this.cache[this.selectedAnalysis];
+    },
+
+    formatTooltipEntry: function (biomaterial) {
+      var props = 'None available';
+      if (biomaterial.props) {
+        props = Object.keys(biomaterial.props).map(function (key) {
+          var prop = biomaterial.props[key];
+          return prop.name + ': ' + prop.value;
+        }).join('<br />');
+      }
+
+      return [
+        'Name: ' + biomaterial.name,
+        'Collected By:' + biomaterial.contact,
+        'Description: ' + biomaterial.description,
+        'Properties:',
+        props
+      ].join('<br />');
     },
 
     /**
@@ -98,8 +122,7 @@
       var _that = this;
       this.$select.on('change', function () {
         _that.selectedAnalysis = parseInt($(this).val());
-        console.log($(this).val(), 'value');
-        _that.draw(_that.constructHeatMapData(_that.data));
+        _that.draw(_that.constructHeatMapData());
         _that.updateDownloadLink.call(_that);
       });
 
@@ -126,15 +149,15 @@
         Plotly.Plots.resize(node);
       });
 
-      this.draw(this.constructHeatMapData(this.data));
+      this.draw(this.constructHeatMapData());
     },
 
     /**
      * Create the heat map
      */
     draw: function (data) {
-      var left_margin = 12; //this.settings.left_margin;
-      var bottom_margin = 13; //this.settings.bottom_margin;
+      var left_margin = (this.data.maxLengths.feature * 14) / 2;
+      var bottom_margin = (this.data.maxLengths.biomaterial * 14) / 2;
       var layout = {
         title: this.data.analyses[this.selectedAnalysis] + ' Expression',
         margin: {
@@ -146,9 +169,7 @@
       var chartData = data;
       chartData.type = 'heatmap';
 
-      console.log(chartData);
-
-      Plotly.newPlot('expression_heat_map_canvas', [chartData]);
+      Plotly.newPlot('expression_heat_map_canvas', [chartData], layout);
     }
   };
 })(jQuery);

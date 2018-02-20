@@ -243,11 +243,7 @@ function tripal_analysis_expression_block_view($delta = '') {
       drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap-search.js');
       break;
     case 'heatmap_features':
-      try {
         $heatmap = (new HeatMapGenerator())->generate();
-      } catch (Exception $exception) {
-
-      }
 
       if ($heatmap === FALSE) {
         $block['content'] = '<p style="color: red">Please enter 2 or more features.</p>';
