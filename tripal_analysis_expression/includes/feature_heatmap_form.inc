@@ -1,17 +1,6 @@
 <?php
 
 /**
- * Escape HTML special characters in a string.
- *
- * @param  $value
- *
- * @return string
- */
-function e($value) {
-  return htmlspecialchars($value, ENT_QUOTES, 'UTF-8', FALSE);
-}
-
-/**
  * Heatmap settings form.
  *
  * @implements HOOK_form()
@@ -178,7 +167,7 @@ function tripal_analysis_expression_insert_es_index() {
       ':table_name' => 'expression_feature',
       ':exposed' => 0,
     ];
-    db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
+    db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, TABLE_NAME, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
   }
 }
 
@@ -260,7 +249,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
             INNER JOIN {assay} A ON A.assay_id = AQ.assay_id
             INNER JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
             INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
-            inner join {analysis} AN ON AN.analysis_id = Q.analysis_id
+            INNER JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
             WHERE F.uniquename IN (:feature_uniquename)";
 
   $expressions = [];
@@ -336,7 +325,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
 
   // remove unknown features
   $features_count = count($expressions);
-  $expressions = array_filter($expressions, function($v) {
+  $expressions = array_filter($expressions, function ($v) {
     return !empty($v);
   });
   if (count($expressions) < $features_count) {
@@ -389,7 +378,7 @@ function tripal_analysis_expression_generate_heatmap_values() {
         'description' => $feature->description,
         'treatment' => $treatment,
         'analysis_url' => $analysis_url,
-        'biomaterial_properties' => $biomaterial_propstore[$feature->name],
+        'biomaterial_properties' => isset($biomaterial_propstore[$feature->name]) ? $biomaterial_propstore[$feature->name] : [],
       ];
     }
   }
@@ -431,8 +420,10 @@ function tripal_analysis_expression_generate_heatmap_values() {
 
         $property_html = '';
 
-        foreach ($biomaterial_props as $property_name => $property_value) {
-          $property_html .= '<br>' . $property_name . ":  " . $property_value;
+        if (is_array($biomaterial_props)) {
+          foreach ($biomaterial_props as $property_name => $property_value) {
+            $property_html .= '<br>' . $property_name . ":  " . $property_value;
+          }
         }
 
         $descriptions[] = 'Treatment: ' . $value['treatment'] . '<br>' . 'Description: ' . $value['description'] . '<br>' . $property_html;

@@ -9,10 +9,11 @@
  * @ingroup tripal_modules *** is this right?
  */
 
-require_once "includes/tripal_analysis_expression.fields.inc";
-require_once "theme/tripal_analysis_expression.theme.inc";
-require_once drupal_get_path('module', 'tripal_analysis_expression') . '/includes/feature_heatmap_form.inc';
-require_once drupal_get_path('module', 'tripal_analysis_expression') . '/includes/analysis_expression_data_downloader.inc';
+require_once 'includes/HeatMapGenerator.inc';
+require_once 'includes/tripal_analysis_expression.fields.inc';
+require_once 'theme/tripal_analysis_expression.theme.inc';
+require_once 'includes/feature_heatmap_form.inc';
+require_once 'includes/analysis_expression_data_downloader.inc';
 
 /**
  * Implements hook_help().
@@ -232,6 +233,8 @@ function tripal_analysis_expression_generate_feature_map_input_block() {
  * Implement hook_block_view()
  */
 function tripal_analysis_expression_block_view($delta = '') {
+  global $base_url;
+
   $block = [];
   switch ($delta) {
     case 'input_features':
@@ -240,25 +243,30 @@ function tripal_analysis_expression_block_view($delta = '') {
       drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap-search.js');
       break;
     case 'heatmap_features':
-      $heatmap = tripal_analysis_expression_generate_heatmap_values();
+      try {
+        $heatmap = (new HeatMapGenerator())->generate();
+      } catch (Exception $exception) {
+
+      }
+
       if ($heatmap === FALSE) {
         $block['content'] = '<p style="color: red">Please enter 2 or more features.</p>';
       }
       else {
-        if (!empty($heatmap['heatmap_data'])) {
+        if (!empty($heatmap->data)) {
           $block['subject'] = t('Feature Expression Heatmap');
-          $block['content'] = '
-               </br><strong>Select an analysis to display</strong>
+          $block['content'] = '<strong>Select an analysis to display</strong>
                <div id="select_analysis"></div>
-               <div id="vis_expression"></div>
+               <div id="expression_heat_map_canvas"></div>
           <a id="heatmap_download">Download expression data for these features</a>';
 
+          //          drupal_add_js(['tripal_analysis_expression' => ['left_margin' => $heatmap['left_margin']]], ['type' => 'setting']);
+          //         drupal_add_js(['tripal_analysis_expression' => ['bottom_margin' => $heatmap['bottom_margin']]], ['type' => 'setting']);
+
           drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
-          drupal_add_js(['tripal_analysis_expression' => ['heatmap_data' => $heatmap['heatmap_data']]], ['type' => 'setting']);
-          drupal_add_js(['tripal_analysis_expression' => ['left_margin' => $heatmap['left_margin']]], ['type' => 'setting']);
-          drupal_add_js(['tripal_analysis_expression' => ['bottom_margin' => $heatmap['bottom_margin']]], ['type' => 'setting']);
-          drupal_add_js(['tripal_analysis_expression' => ['feature_list' => $heatmap['feature_list']]], ['type' => 'setting']);
-          drupal_add_js(['tripal_analysis_expression' => ['analysis_legend' => $heatmap['analysis_legend']]], ['type' => 'setting']);
+          drupal_add_js(['tripal_analysis_expression' => ['data' => $heatmap]], ['type' => 'setting']);
+          drupal_add_js(['tripal_analysis_expression' => ['baseURL' => $base_url]], ['type' => 'setting']);
+          drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap.js');
 
           drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap.js');
         }
