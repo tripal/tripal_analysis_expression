@@ -142,15 +142,7 @@
 
       // Create the X axis
       var biomaterials = biomaterialKeys.map(function (biomaterial_id) {
-        var label = data.biomaterials[biomaterial_id].name;
-        var prop = data.biomaterials[biomaterial_id].props;
-        if (prop[sortBy]) {
-          label += ' <br />' + prop[sortBy].value;
-        } else {
-          label += ' <br />Not Set';
-        }
-
-        return label;
+        return data.biomaterials[biomaterial_id].name || '';
       }.bind(this));
 
       // Get the Y axis
@@ -172,7 +164,7 @@
             row.push(0);
           }
 
-          text.push(this.formatTooltipEntry(data.biomaterials[biomaterial_id]));
+          text.push(this.formatTooltipEntry(data.biomaterials[biomaterial_id], sortBy));
         }.bind(this));
 
         values.push(row);
@@ -194,12 +186,17 @@
      * @param biomaterial
      * @return {string}
      */
-    formatTooltipEntry: function (biomaterial) {
+    formatTooltipEntry: function (biomaterial, sortBy) {
       var props = 'None available';
       if (biomaterial.props) {
         props = Object.keys(biomaterial.props).map(function (key) {
           var prop = biomaterial.props[key];
-          return prop.name + ': ' + prop.value;
+          var label = prop.name;
+          if (key === sortBy) {
+            label = '<span style="font-weight: bold; color: red">' + label + '</span>';
+            console.log(label);
+          }
+          return label + ': ' + prop.value;
         }).join('<br />');
       }
 
@@ -264,6 +261,13 @@
       };
 
       Plotly.newPlot('expression_heat_map_canvas', data, layout);
+      $('#expression_heat_map_canvas').unbind('plotly_hover').on('plotly_hover', function (data) {
+        $(".hovertext text").each(function(text) {
+          text.css({
+            'color': '#000'
+          })
+        });
+      });
     },
 
     compareByType: function (a, b) {
