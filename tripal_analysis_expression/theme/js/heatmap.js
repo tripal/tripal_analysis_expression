@@ -18,8 +18,6 @@
 
       this.data = this.settings.data;
 
-      console.log(this.data);
-
       // Build drop down UI
       var $selectContainer = $('#select_analysis');
       this.$select = $('<select />');
@@ -87,7 +85,6 @@
     updatePropsDropdown: function () {
       this.$propsSelect.html('');
       var props = this.data.properties[this.selectedAnalysis];
-      console.log('PROPS: ', props)
       Object.keys(props).map(function (key) {
         var option = $('<option />', {
           value: key
@@ -106,9 +103,7 @@
      * @return {Object}
      */
     constructHeatMapData: function () {
-      console.log('Called');
       var expression = this.data;
-      var _that = this;
       var sortBy = this.selectedProp;
 
       // Extract data, features and biomaterials for the current analysis
@@ -118,21 +113,12 @@
         matrix: expression.data[this.selectedAnalysis]
       };
 
-      // Get the Y axis
-      var features = Object.keys(data.features).map(function (key) {
-        return data.features[key];
-      }.bind(this));
-
       // Sort by selected prop if available
       var biomaterialKeys = Object.keys(data.biomaterials);
       if (sortBy) {
         biomaterialKeys.sort(function (a, b) {
           var props1 = data.biomaterials[a].props[sortBy];
           var props2 = data.biomaterials[b].props[sortBy];
-
-          console.log(sortBy);
-          console.log(data.biomaterials[a], props1);
-          console.log(data.biomaterials[b], props2);
 
           // Both biomaterials have the prop
           if (props1 && props2) {
@@ -154,8 +140,22 @@
         }.bind(this));
       }
 
-      var biomaterials = biomaterialKeys.map(function (key) {
-        return data.biomaterials[key].name;
+      // Create the X axis
+      var biomaterials = biomaterialKeys.map(function (biomaterial_id) {
+        var label = data.biomaterials[biomaterial_id].name;
+        var prop = data.biomaterials[biomaterial_id].props;
+        if (prop[sortBy]) {
+          label += ' <br />' + prop[sortBy].value;
+        } else {
+          label += ' <br />Not Set';
+        }
+
+        return label;
+      }.bind(this));
+
+      // Get the Y axis
+      var features = Object.keys(data.features).map(function (key) {
+        return data.features[key];
       }.bind(this));
 
       var values = [];
@@ -172,19 +172,20 @@
             row.push(0);
           }
 
-          text.push(_that.formatTooltipEntry(data.biomaterials[biomaterial_id]));
-        });
+          text.push(this.formatTooltipEntry(data.biomaterials[biomaterial_id]));
+        }.bind(this));
 
         values.push(row);
         tooltip.push(text);
-      });
+      }.bind(this));
 
-      return {
+      return [{
         x: biomaterials,
         y: features,
         z: values,
-        text: tooltip
-      };
+        text: tooltip,
+        type: 'heatmap'
+      }];
     },
 
     /**
@@ -253,7 +254,7 @@
      */
     draw: function (data) {
       var left_margin = (this.data.maxLengths.feature * 14) / 2;
-      var bottom_margin = (this.data.maxLengths.biomaterial * 14) / 2;
+      var bottom_margin = (this.data.maxLengths.biomaterial * 16) / 2;
       var layout = {
         title: this.data.analyses[this.selectedAnalysis] + ' Expression',
         margin: {
@@ -262,10 +263,7 @@
         }
       };
 
-      var chartData = data;
-      chartData.type = 'heatmap';
-
-      Plotly.newPlot('expression_heat_map_canvas', [chartData], layout);
+      Plotly.newPlot('expression_heat_map_canvas', data, layout);
     },
 
     compareByType: function (a, b) {
