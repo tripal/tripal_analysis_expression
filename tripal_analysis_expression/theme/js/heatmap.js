@@ -261,13 +261,6 @@
       };
 
       Plotly.newPlot('expression_heat_map_canvas', data, layout);
-      $('#expression_heat_map_canvas').unbind('plotly_hover').on('plotly_hover', function (data) {
-        $(".hovertext text").each(function(text) {
-          text.css({
-            'color': '#000'
-          })
-        });
-      });
     },
 
     compareByType: function (a, b) {
