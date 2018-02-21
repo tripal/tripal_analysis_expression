@@ -229,11 +229,12 @@ function tripal_analysis_expression_generate_feature_map_input_block() {
   return $content;
 }
 
-/*
+/**
  * Implement hook_block_view()
+ *
+ * @throws \Exception
  */
 function tripal_analysis_expression_block_view($delta = '') {
-  global $base_url;
 
   $block = [];
   switch ($delta) {
@@ -243,39 +244,57 @@ function tripal_analysis_expression_block_view($delta = '') {
       drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap-search.js');
       break;
     case 'heatmap_features':
-        $heatmap = (new HeatMapGenerator())->generate();
-
-      if ($heatmap === FALSE) {
-        $block['content'] = '<p style="color: red">Please enter 2 or more features.</p>';
-      }
-      else {
-        if (!empty($heatmap->data)) {
-          $block['subject'] = t('Feature Expression Heatmap');
-          $block['content'] = '<strong>Select an analysis to display</strong>
-               <div id="select_analysis"></div>
-               <div id="expression_heat_map_canvas"></div>
-          <a id="heatmap_download">Download expression data for these features</a>';
-
-          //          drupal_add_js(['tripal_analysis_expression' => ['left_margin' => $heatmap['left_margin']]], ['type' => 'setting']);
-          //         drupal_add_js(['tripal_analysis_expression' => ['bottom_margin' => $heatmap['bottom_margin']]], ['type' => 'setting']);
-
-          drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
-          drupal_add_js(['tripal_analysis_expression' => ['data' => $heatmap]], ['type' => 'setting']);
-          drupal_add_js(['tripal_analysis_expression' => ['baseURL' => $base_url]], ['type' => 'setting']);
-          drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap.js');
-
-          drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap.js');
-        }
-        else {
-          $block['subject'] = '';
-          if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
-            $block['content'] = t('<p style="color:red; font-weight: bold; margin-top: 20px">There is no expression data available for the features you entered.</p>');
-          }
-        }
+      if (isset($_GET['heatmap_feature_uniquename'])) {
+        tripal_analysis_expression_heatmap_block($block);
       }
       break;
   }
 
   return $block;
+}
+
+/**
+ * Builds the heatmap results block.
+ * Should be called only when the `heatmap_feature_uniquename`
+ * GET parameter is present.
+ *
+ * @param $block
+ *
+ * @throws \Exception
+ */
+function tripal_analysis_expression_heatmap_block(&$block) {
+  global $base_url;
+
+  $heatmap = (new HeatMapGenerator())->generate();
+
+  if ($heatmap === FALSE) {
+    $block['content'] = '<p style="color: red">Please enter 2 or more features.</p>';
+  }
+  else {
+    if (!empty($heatmap->data)) {
+      $block['subject'] = t('Feature Expression Heatmap');
+      $block['content'] = '<strong>Select an analysis to display</strong>
+               <div id="select_analysis" style="margin-bottom: 0.5rem"></div>
+               <div id="select_props" style="margin-bottom: 0.5rem">
+                 <strong>Select a property to sort</strong><br/>
+               </div>
+               <div id="expression_heat_map_canvas"></div>
+          <a id="heatmap_download">Download expression data for these features</a>';
+
+      drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
+      drupal_add_js(['tripal_analysis_expression' => ['data' => $heatmap]], ['type' => 'setting']);
+      drupal_add_js(['tripal_analysis_expression' => ['baseURL' => $base_url]], ['type' => 'setting']);
+      drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap.js');
+    }
+    else {
+      $block['subject'] = '';
+      if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
+        $block['content'] = t('<p style="color:red; font-weight: bold; margin-top: 20px">
+                                There is no expression data available for the
+                                features you entered.
+                               </p>');
+      }
+    }
+  }
 }
 

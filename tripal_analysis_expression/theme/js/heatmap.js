@@ -3,6 +3,12 @@
   // Listening to plotly_click and then calling the appropriate restyle call
   // should do the trick.
   Drupal.behaviors.tripal_analysis_expression = {
+    /**
+     * Auto triggered by Drupal when the document is ready.
+     *
+     * @param context
+     * @param settings
+     */
     attach: function (context, settings) {
       this.settings = settings.tripal_analysis_expression;
       this.cache = {};
@@ -11,6 +17,8 @@
       }
 
       this.data = this.settings.data;
+
+      console.log(this.data);
 
       // Build drop down UI
       var $selectContainer = $('#select_analysis');
@@ -31,26 +39,78 @@
       // Set the download link
       this.updateDownloadLink();
 
+      // Add the properties sort dropdown
+      this.createPropertiesDropdown();
+
       this.setup();
     },
 
+    /**
+     * Deals with changes to the analysis dropdown
+     * to update the download link
+     */
     updateDownloadLink: function () {
       // Get analysis and build link for download
       var feature_ids = Object.keys(this.data.data[this.selectedAnalysis]).map(function (key) {
         return key;
       }).join(',');
 
-      var link = this.settings.baseURL + '/tripal/analysis-expression/download?feature_ids=' + feature_ids + '&analysis_id=' + this.selectedAnalysis;
+      var link = this.settings.baseURL;
+      link += '/tripal/analysis-expression/download?feature_ids=' + feature_ids;
+      link += '&analysis_id=' + this.selectedAnalysis;
       $('#heatmap_download').attr('href', link);
     },
 
-    constructHeatMapData: function () {
-      if (typeof this.cache[this.selectedAnalysis] !== 'undefined') {
-        return this.cache[this.selectedAnalysis];
-      }
+    /**
+     * Create the sort by property dropdown
+     * and append to the page.
+     */
+    createPropertiesDropdown: function () {
+      // Create the dropdown
+      this.$propsSelect = $('<select />');
 
+      // Add the dropdown to the page
+      $('#select_props').append(this.$propsSelect);
+
+      // Initialize the props
+      this.updatePropsDropdown();
+
+      this.$propsSelect.on('change', function (e) {
+        this.selectedProp = e.target.value;
+        this.draw(this.constructHeatMapData());
+      }.bind(this));
+    },
+
+    /**
+     * Respond to changes in analysis selector
+     */
+    updatePropsDropdown: function () {
+      this.$propsSelect.html('');
+      var props = this.data.properties[this.selectedAnalysis];
+      console.log('PROPS: ', props)
+      Object.keys(props).map(function (key) {
+        var option = $('<option />', {
+          value: key
+        }).text(props[key]);
+
+        this.$propsSelect.append(option);
+      }.bind(this));
+
+      this.selectedProp = this.$propsSelect.val() || false;
+      this.draw(this.constructHeatMapData());
+    },
+
+    /**
+     * Creates the heat map data structure
+     *
+     * @return {Object}
+     */
+    constructHeatMapData: function () {
+      console.log('Called');
       var expression = this.data;
       var _that = this;
+      var sortBy = this.selectedProp;
+
       // Extract data, features and biomaterials for the current analysis
       var data = {
         biomaterials: expression.biomaterials[this.selectedAnalysis],
@@ -58,11 +118,43 @@
         matrix: expression.data[this.selectedAnalysis]
       };
 
+      // Get the Y axis
       var features = Object.keys(data.features).map(function (key) {
         return data.features[key];
       }.bind(this));
 
-      var biomaterials = Object.keys(data.biomaterials).map(function (key) {
+      // Sort by selected prop if available
+      var biomaterialKeys = Object.keys(data.biomaterials);
+      if (sortBy) {
+        biomaterialKeys.sort(function (a, b) {
+          var props1 = data.biomaterials[a].props[sortBy];
+          var props2 = data.biomaterials[b].props[sortBy];
+
+          console.log(sortBy);
+          console.log(data.biomaterials[a], props1);
+          console.log(data.biomaterials[b], props2);
+
+          // Both biomaterials have the prop
+          if (props1 && props2) {
+            return this.compareByType(props1.value, props2.value);
+          }
+
+          // Only the first biomaterial has the prop
+          if (props1) {
+            return -1;
+          }
+
+          // Only the second biomaterial has the prop
+          if (props2) {
+            return 1;
+          }
+
+          // They both do not have the prop
+          return 0;
+        }.bind(this));
+      }
+
+      var biomaterials = biomaterialKeys.map(function (key) {
         return data.biomaterials[key].name;
       }.bind(this));
 
@@ -72,7 +164,7 @@
       Object.keys(data.features).map(function (feature_id) {
         var row = [];
         var text = [];
-        Object.keys(data.biomaterials).map(function (biomaterial_id) {
+        biomaterialKeys.map(function (biomaterial_id) {
           if (typeof data.matrix[feature_id][biomaterial_id] !== 'undefined') {
             row.push(parseFloat(data.matrix[feature_id][biomaterial_id]));
           }
@@ -87,16 +179,20 @@
         tooltip.push(text);
       });
 
-      this.cache[this.selectedAnalysis] = {
+      return {
         x: biomaterials,
         y: features,
         z: values,
         text: tooltip
       };
-
-      return this.cache[this.selectedAnalysis];
     },
 
+    /**
+     * Add information to the tooltip.
+     *
+     * @param biomaterial
+     * @return {string}
+     */
     formatTooltipEntry: function (biomaterial) {
       var props = 'None available';
       if (biomaterial.props) {
@@ -122,7 +218,7 @@
       var _that = this;
       this.$select.on('change', function () {
         _that.selectedAnalysis = parseInt($(this).val());
-        _that.draw(_that.constructHeatMapData());
+        _that.updatePropsDropdown.call(_that);
         _that.updateDownloadLink.call(_that);
       });
 
@@ -148,12 +244,12 @@
       $(window).on('resize', function () {
         Plotly.Plots.resize(node);
       });
-
-      this.draw(this.constructHeatMapData());
     },
 
     /**
-     * Create the heat map
+     * Draws the heat map using the given data.
+     *
+     * @param {Object} data
      */
     draw: function (data) {
       var left_margin = (this.data.maxLengths.feature * 14) / 2;
@@ -170,6 +266,36 @@
       chartData.type = 'heatmap';
 
       Plotly.newPlot('expression_heat_map_canvas', [chartData], layout);
+    },
+
+    compareByType: function (a, b) {
+      var v1, v2;
+
+      if (typeof a === 'string') {
+        // Ignore case
+        v1 = a.toLowerCase();
+      }
+      else {
+        v1 = a;
+      }
+
+      if (typeof b === 'string') {
+        // Ignore case
+        v2 = b.toLowerCase();
+      }
+      else {
+        v2 = b;
+      }
+
+      if (v1 < v2) {
+        return 1;
+      }
+
+      if (v1 > v2) {
+        return -1;
+      }
+
+      return 0;
     }
   };
 })(jQuery);
