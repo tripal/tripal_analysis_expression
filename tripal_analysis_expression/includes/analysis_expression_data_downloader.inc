@@ -29,13 +29,17 @@
 //
 
 class analysis_expression_data_downloader {
-
-  //The expression data returned by the mview
-  protected $expression_data = "";
-
+  /**
+   * The expression data returned by the mview
+   *
+   * @var array
+   */
+  protected $expression_data = [];
 
   /**
    * The output file URI.
+   *
+   * @var string
    */
   protected $outfile = '';
 
@@ -53,21 +57,26 @@ class analysis_expression_data_downloader {
    */
   protected $analysis_id = 0;
 
-
-  static function callback() {
-
-
+  /**
+   * The callback to execute the download.
+   *
+   * @throws \Exception
+   */
+  public static function callback() {
     $downloader = new static();
     $downloader->load();
     $downloader->create();
     $downloader->write();
     $downloader->serve();
-    //alert drupal file is done!
-
+    // alert drupal file is done!
   }
 
-  function load() {
-
+  /**
+   * Load the data.
+   *
+   * @throws \Exception
+   */
+  public function load() {
     $feature_ids = NULL;
 
     if (isset($_GET['feature_ids'])) {
@@ -78,24 +87,18 @@ class analysis_expression_data_downloader {
     $feature_ids = $this->feature_ids;
     $analysis_id = $this->analysis_id;
 
-    $sql = '';
-
     if ($feature_ids && $analysis_id) {
-
-      //query the mview for all listed features.
+      // Query the mview for all listed features.
       $sql = 'SELECT * FROM {expression_feature_all}
-          WHERE  feature_id IN (:ids)
-          AND analysis_id =  :analysis_id';
+              WHERE feature_id IN (:ids) AND analysis_id = :analysis_id';
 
       $keys = [":ids" => $feature_ids, ":analysis_id" => $analysis_id];
-
-
     }
     else {
-      //no feature ids supplied, retrieve all for this analysis
-      //query the mview for all features associated with this analyses
+      // No feature ids supplied, retrieve all for this analysis
+      // Query the mview for all features associated with this analyses
       $sql = 'SELECT * FROM {expression_feature_all}
-                WHERE  analysis_id = :analysis_id';
+              WHERE analysis_id = :analysis_id';
       $keys = [":analysis_id" => $analysis_id];
     }
 
@@ -104,9 +107,10 @@ class analysis_expression_data_downloader {
     $this->expression_data = $expression_data;
   }
 
-  function create() {
-
-    global $user;
+  /**
+   * Create the downloadable file.
+   */
+  public function create() {
     // Make sure the user directory exists
     $user_dir = 'public://expression_download';
     if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
@@ -126,15 +130,18 @@ class analysis_expression_data_downloader {
     file_transfer($this->outfile, ['Content-Type' => 'text/csv; utf-8']);
   }
 
-
-  function write() {
-    $expression_data = $this->expression_data;
+  /**
+   * Write data to file.
+   *
+   * @throws \Exception
+   */
+  public function write() {
     $out_file = $this->outfile;
     $data = [];
     $biomaterials = [];
 
-    //loop through data.  need to build array with structure
-    foreach ($expression_data as $result) {
+    // Loop through data. Need to build array with structure
+    foreach ($this->expression_data as $result) {
       $feature = $result->feature_uniquename;
       $biomaterial = $result->biomaterial_name;
       $value = $result->signal;
@@ -142,20 +149,21 @@ class analysis_expression_data_downloader {
       $biomaterials[$biomaterial] = $biomaterial;
     }
 
-
     $fh = fopen(drupal_realpath($out_file), "w");
     if (!$fh) {
       throw new Exception("Cannot open collection file: " . $out_file);
     }
 
-    //prepare the header
+    // Prepare the header
     $header = " ,";//blank for feature name
     $header .= implode(",", $biomaterials);
     $header .= "\n";
+
     fwrite($fh, $header);
+
     foreach ($data as $feature_name => $feature) {
       fwrite($fh, $feature_name . ",");
-      //loop through biomaterials (rows)
+      // Loop through biomaterials (rows)
       foreach ($biomaterials as $biomaterial) {
         $value = "NA";
         if (isset($feature[$biomaterial])) {
@@ -163,8 +171,9 @@ class analysis_expression_data_downloader {
         }
         fwrite($fh, $value . ",");
       }
-      fwrite($fh, "\n");//end of feature, newline
+      fwrite($fh, "\n"); // End of feature, newline
     }
+
     fclose($fh);
   }
 
@@ -182,6 +191,5 @@ class analysis_expression_data_downloader {
       file_usage_delete($file, 'tripal', 'data-collection');
       file_delete($file, TRUE);
     }
-
   }
 }

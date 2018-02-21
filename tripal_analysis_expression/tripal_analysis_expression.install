@@ -32,8 +32,7 @@ function tripal_analysis_expression_requirements($phase) {
  * @ingroup tripal_analysis_module
  */
 function tripal_analysis_expression_install() {
-
-  //insert term used for fields
+  // Insert term used for fields
   tripal_insert_cvterm([
     'id' => 'data:2603',
     'name' => 'gene_expression_data',
@@ -41,11 +40,8 @@ function tripal_analysis_expression_install() {
     'definition' => 'Visualize expression data',
   ]);
 
-  // Get localization function for installation.
-  $t = get_t();
-
   // These variables are used to set how expression information is displayed.
-  //TODO Many (all? Of these are no longer used, check to remove)
+  // TODO: Many (all? Of these are no longer used, check to remove)
   variable_set('chado_feature_expression_hide_expression', 0);
   variable_set('chado_feature_expression_hide_biomaterial_labels', 0);
   variable_set('chado_feature_expression_limit_label_length', 0);
@@ -53,14 +49,14 @@ function tripal_analysis_expression_install() {
   variable_set('chado_feature_expression_expression_display', 'column');
   variable_set('chado_feature_expression_biomaterial_display_width', 15);
 
+  // These are needed for the search functionality in heatmap
   variable_set('tripal_analysis_expression_heatmap_placeholder', 'Example: orange1.1g022520m, orange1.1g022799m');
   variable_set('tripal_analysis_expression_heatmap_example', 'orange1.1g022520m, orange1.1g022799m, orange1.1g022520m, orange1.1g022799m');
   variable_set('analysis_expression_heatmap_db', 'mview');
 
-
-  tripal_analysis_expression_add_mview_1();
-  tripal_analysis_expression_add_mview_2();
-
+  // Install mviews
+  tripal_analysis_expression_add_mview_expression_feature();
+  tripal_analysis_expression_add_mview_expression_feature_all();
 }
 
 /**
@@ -69,11 +65,20 @@ function tripal_analysis_expression_install() {
  * @ingroup tripal_analysis_expression
  */
 function tripal_analysis_expression_uninstall() {
+  // Delete all mviews that are associated with this module
+  $mviews = db_query('SELECT * FROM {tripal_mviews} WHERE modulename = :name', [
+    ':name' => 'tripal_analysis_expression',
+  ]);
 
+  foreach ($mviews->fetchAll() as $mview) {
+    tripal_delete_mview($mview->mview_id);
+  }
 }
 
-function tripal_analysis_expression_add_mview_1() {
-
+/**
+ * Add expression_feature mview.
+ */
+function tripal_analysis_expression_add_mview_expression_feature() {
   $mv_name = 'expression_feature';
 
   $comment = 'Store list of unique features that have expression data';
@@ -108,11 +113,11 @@ function tripal_analysis_expression_add_mview_1() {
       ],
     ],
     'indexes' => [
-      'expression_feature_feature_id_index' => ['feature_id'],
-      'expression_feature_organism_id_index' => ['organism_id'],
-      'expression_feature_feature_uniquename_index' => ['feature_uniquename'],
-      'expression_feature_organism_common_name_index' => ['organism_common_name'],
-      'expression_feature_accession_index' => ['accession'],
+      'feature_id_index' => ['feature_id'],
+      'organism_id_index' => ['organism_id'],
+      'feature_uniquename_index' => ['feature_uniquename'],
+      'organism_common_name_index' => ['organism_common_name'],
+      'accession_index' => ['accession'],
     ],
   ];
 
@@ -138,8 +143,11 @@ function tripal_analysis_expression_add_mview_1() {
 
   tripal_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment);
 }
-function tripal_analysis_expression_add_mview_2() {
 
+/**
+ * Add expression_feature_all mview
+ */
+function tripal_analysis_expression_add_mview_expression_feature_all() {
   $mv_name = "expression_feature_all";
   $comment = "Stores expression values with analysis and biosample data";
   $schema = [
@@ -180,13 +188,20 @@ function tripal_analysis_expression_add_mview_2() {
       ],
     ],
     'indexes' => [
-      'expression_feature_all_feature_id_index' => ['feature_id'],
-      'expression_feature_all_analysis_id_index' => ['analysis_id'],
-      'expression_feature_all_biomaterial_id_index' => ['biomaterial_id'],
+      'feature_id_index' => ['feature_id'],
+      'analysis_id_index' => ['analysis_id'],
+      'biomaterial_id_index' => ['biomaterial_id'],
+      'feature_uniquename_index' => ['feature_uniquename'],
     ],
   ];
 
-  $sql = "    SELECT F.feature_id AS feature_id, F.uniquename AS feature_uniquename, B.biomaterial_id AS biomaterial_id,  B.name AS biomaterial_name, AN.analysis_id AS analysis_id, AN.name AS analysis_name,  ER.signal AS signal
+  $sql = "SELECT F.feature_id AS feature_id,
+                 F.uniquename AS feature_uniquename,
+                 B.biomaterial_id AS biomaterial_id,
+                 B.name AS biomaterial_name,
+                 AN.analysis_id AS analysis_id,
+                 AN.name AS analysis_name,
+                 ER.signal AS signal
               FROM elementresult ER
               INNER JOIN element E ON E.element_id = ER.element_id
               INNER JOIN feature F ON F.feature_id = E.feature_id
@@ -195,10 +210,9 @@ function tripal_analysis_expression_add_mview_2() {
               INNER JOIN assay A ON A.assay_id = AQ.assay_id
               INNER JOIN assay_biomaterial AB ON AB.assay_id = A.assay_id
               INNER JOIN biomaterial B ON B.biomaterial_id = AB.biomaterial_id
-              INNER JOIN analysis AN ON AN.analysis_id = Q.analysis_id        ";
+              INNER JOIN analysis AN ON AN.analysis_id = Q.analysis_id";
 
   tripal_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment);
-
 }
 
 /**
@@ -209,13 +223,11 @@ function tripal_analysis_expression_update_7200() {
   variable_set('tripal_analysis_expression_heatmap_example', 'orange1.1g022520m, orange1.1g022799m, orange1.1g022520m, orange1.1g022799m');
 }
 
-
-
 /**
  * Add expression feature materialized view
  */
 function tripal_analysis_expression_update_7201() {
-tripal_analysis_expression_add_mview_1();
+  tripal_analysis_expression_add_mview_expression_feature();
 }
 
 /**
@@ -228,10 +240,7 @@ function tripal_analysis_expression_update_7202() {
 /**
  * Define materialized view to link expression data with features biosamples
  * and analyses
- *
  */
 function tripal_analysis_expression_update_7203() {
-
-  tripal_analysis_expression_add_mview_2();
-
+  tripal_analysis_expression_add_mview_expression_feature_all();
 }
