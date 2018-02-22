@@ -155,6 +155,7 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
     $output = theme('table', [
       'header' => $headers,
       'rows' => $chunks[$current_page],
+      'attributes' => ['style' => 'table-layout: fixed!important;']
     ]);
 
     $output .= theme('pager', [
