@@ -90,7 +90,6 @@
     },
 
     renderSearchResults: function (response) {
-      console.log(response);
       this.loadingHide();
 
       var html = '<p>No results found</p>';
