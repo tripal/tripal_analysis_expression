@@ -183,7 +183,8 @@
     /**
      * Add information to the tooltip.
      *
-     * @param biomaterial
+     * @param {Object} biomaterial
+     * @param {String} sortBy
      * @return {string}
      */
     formatTooltipEntry: function (biomaterial, sortBy) {
