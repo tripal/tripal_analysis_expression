@@ -234,6 +234,9 @@ class sep__biological_sample extends ChadoField {
         if ($properties) {
 
           foreach ($properties as $property) {
+	if (property_exists($property->type_id && property_exists($property->type_id->name))){
+
+
             $name = strtolower($property->type_id->name);
             if ($name == "tissue") {
               $tissue = $property->value;
@@ -243,6 +246,7 @@ class sep__biological_sample extends ChadoField {
             }
           }
         }
+      }
 
         $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial", $b_record_id);
         $value = [

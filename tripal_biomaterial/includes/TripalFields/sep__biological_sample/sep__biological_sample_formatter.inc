@@ -81,9 +81,7 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
    *    hook_field_formatter_view() function.
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-
     $base_table = $entity->chado_table;
-
     if ($items[0] == null) {
       return;
     }
@@ -102,7 +100,6 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
     $rows = [];
 
     foreach ($items as $item) {
-
 
       $b_contact = NULL;
       $tissue = NULL;
@@ -148,14 +145,14 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
 
       $rows[] = $row;
     }
-
     $current_page = pager_default_initialize(count($rows), $num_per_page, 1);
     $chunks = array_chunk($rows, $num_per_page, TRUE);
 
     $output = theme('table', [
       'header' => $headers,
       'rows' => $chunks[$current_page],
-    ]);
+      'attributes' => ['style' => 'table-layout: fixed!important;']
+ ]);
 
     $output .= theme('pager', [
       'quantity' => 5,
@@ -163,9 +160,9 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
       'parameters' => ['tripal_pane' => 'gp_Biomaterials'],
     ]);
 
-    $element[] = [
-      '#markup' => $output,
-    ];
+  $element[] = ['#markup' => $output];
+
+
   }
 
   /**
