@@ -81,79 +81,87 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
    *    hook_field_formatter_view() function.
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    $field = 'sep__biological_sample';
-    $variables = $entity->{$field}['und'][0];
+
     $base_table = $entity->chado_table;
-    if (!empty($variables['biomaterials'])) {
-      $elements = 1;
-      $num_per_page = 10;
 
-      $biomaterials = $variables['biomaterials'];
+    if ($items[0] == null) {
+      return;
+    }
 
-      $output = '<div class="tripal_organism-data-block-desc tripal-data-block-desc">The following browser provides a list of biosamples associated with this ' . $base_table . '.</div>';
+    $elements = 1;
+    $num_per_page = 10;
 
-      $headers = ['Biosample Name', 'Biosample Provider'];
+    $headers = [
+      'Name',
+      'Tissue',
+      'Treatment',
+      'Description',
+    ];
 
-      if ($variables['show_organism']) {
-        $headers[] = 'Organism';
+
+    $rows = [];
+
+    foreach ($items as $item) {
+
+
+      $b_contact = NULL;
+      $tissue = NULL;
+      $treatment = NULL;
+      $description = NULL;
+
+      $biomaterial = $item['value'];
+      $b_name = $biomaterial["name"];
+      $record = $biomaterial["record_id"];
+      $id = $biomaterial["entity_id"];
+
+      if ($id) {
+        $b_name = l($b_name, 'bio_data/' . $id);
       }
 
-      $rows = [];
+      //we dont use contact
+//      if (isset($biomaterial["contact_id"])) {
+//        $id = chado_get_record_entity_by_table('contact', $biomaterial["contact_id"]);
+//        $b_contact = $biomaterial["contact_name"];
+//
+//        if ($id) {
+//          $b_contact = l($biomaterial["contact_id"], 'bio_data/' . $id, ['attributes' => ['target' => '_blank']]);
+//        }
+//      }
 
-      foreach ($biomaterials as $biomaterial) {
-        $b_name = $biomaterial->name;
-        $b_contact = '';
-        $id = chado_get_record_entity_by_table('biomaterial', $biomaterial->biomaterial_id);
 
-        if ($id) {
-          $b_name = l($b_name, 'bio_data/' . $id);
-        }
+        $tissue = $biomaterial['tissue'];
+        $treatment = $biomaterial['treatment'];
 
-        if ($biomaterial->contact_id) {
-          $id = chado_get_record_entity_by_table('contact', $biomaterial->contact_id);
-          $b_contact = $biomaterial->contact_name;
-
-          if ($id) {
-            $b_contact = l($biomaterial->contact_name, 'bio_data/' . $id, ['attributes' => ['target' => '_blank']]);
-          }
-        }
-
-        $row = [
-          $b_name,
-          $b_contact ?: 'Unknown',
-        ];
-
-        if ($variables['show_organism']) {
-          $id = chado_get_record_entity_by_table('organism', $biomaterial->organism_id);
-          $organism_name = "{$biomaterial->common_name} ({$biomaterial->genus} {$biomaterial->species})";
-
-          if ($id) {
-            $organism_name = l($organism_name, "bio_data/{$id}", ['attributes' => ['target' => '_blank']]);
-          }
-
-          $row[] = $organism_name;
-        }
-
-        $rows[] = $row;
+      $description = $biomaterial["description"];
+      if (strlen($description) > 300) {
+        $description = substr($description, 0, 300);
+        $description .= "...";
       }
 
-      $current_page = pager_default_initialize(count($rows), $num_per_page, 1);
-      $chunks = array_chunk($rows, $num_per_page, TRUE);
+      $row = [
+        $b_name,
+       // $b_contact ?: 'Not set',
+        $tissue ?: 'Not set',
+        $treatment ?: "Not set",
+        $description,
+      ];
 
-      $output .= theme('table', [
-        'header' => $headers,
-        'rows' => $chunks[$current_page],
-      ]);
+      $rows[] = $row;
+    }
 
-      $output .= theme('pager', [
-        'quantity' => 5,
-        'element' => $elements,
-        'parameters' => ['tripal_pane' => 'gp_Biomaterials'],
-      ]);
-    }
-    else {
-      $output = '';
-    }
+    $current_page = pager_default_initialize(count($rows), $num_per_page, 1);
+    $chunks = array_chunk($rows, $num_per_page, TRUE);
+
+    $output = theme('table', [
+      'header' => $headers,
+      'rows' => $chunks[$current_page],
+    ]);
+
+    $output .= theme('pager', [
+      'quantity' => 5,
+      'element' => $elements,
+      'parameters' => ['tripal_pane' => 'gp_Biomaterials'],
+    ]);
 
     $element[] = [
       '#markup' => $output,

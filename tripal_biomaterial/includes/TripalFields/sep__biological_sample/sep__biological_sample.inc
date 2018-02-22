@@ -72,11 +72,11 @@ class sep__biological_sample extends ChadoField {
     // attached asynchronously.
     'auto_attach' => FALSE,
     // The table in Chado that the instance maps to.
-    'chado_table' => 'organism',
+    'chado_table' => 'biomaterial',
     // The column of the table in Chado where the value of the field comes from.
-    'chado_column' => 'organism_id',
+    'chado_column' => 'biomaterial_id',
     // The base table.
-    'base_table' => 'organism',
+    'base_table' => 'biomaterial',
   ];
 
   // A boolean specifying that users should not be allowed to create
@@ -135,35 +135,62 @@ class sep__biological_sample extends ChadoField {
    */
   protected function load_for_analysis(&$entity) {
     $field = get_class();
-    $entity->{$field}['und'][0]['value'] = $entity->chado_record_id;
-    $variables = $entity->{$field}['und'][0];
-    $variables['show_organism'] = TRUE;
-    $analysis_id = $variables['value'];
+    $entity->{$field}['und'][0] = NULL;//set default null
+    $analysis_id = $entity->chado_record_id;
 
-    $sql = 'SELECT B.biomaterial_id, B.name, O.organism_id, O.genus, O.species, O.common_name, C.contact_id, C.name AS contact_name
+    $sql = 'SELECT B.biomaterial_id, B.name, B.description
               FROM {biomaterial} B
               JOIN {assay_biomaterial} AB ON B.biomaterial_id = AB.biomaterial_id
               JOIN {assay} A ON A.assay_id = AB.assay_id
               JOIN {acquisition} AQ ON AQ.assay_id = A.assay_id
               JOIN {quantification} Q ON Q.acquisition_id = AQ.acquisition_id
               JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
-              JOIN {organism} O ON O.organism_id = B.taxon_id
-              LEFT JOIN {contact} C ON B.biosourceprovider_id = C.contact_id
               WHERE AN.analysis_id=:analysis_id';
 
-    $variables['biomaterials'] = chado_query($sql, [":analysis_id" => $analysis_id])->fetchAll();
+    $results = chado_query($sql, [":analysis_id" => $analysis_id])->fetchAll();
 
-    if (empty($variables['biomaterials'])) {
-      $variables['value'] = NULL;
-    }
-    else {
-      $variables['value'] = [];
-      foreach ($variables['biomaterials'] as $biomaterial) {
-        $variables['value'][] = $biomaterial->name;
+    if ($results) {
+      $i = 0;
+      foreach ($results as $biomaterial) {
+
+        $b_record_id = $biomaterial->biomaterial_id;
+
+        $values = [
+          'biomaterial_id' => $b_record_id,
+        ];
+
+        $biomat_full = chado_generate_var("biomaterial", $values);
+        $expanded = chado_expand_var($biomat_full, 'table', 'biomaterialprop');
+        $properties = $expanded->biomaterialprop;
+
+        $treatment = NULL;
+        $tissue = NULL;
+
+        foreach ($properties as $property) {
+          $name = strtolower($property->type_id->name);
+          if ($name == "tissue") {
+            $tissue = $property->value;
+          }
+          if ($name == "treatment") {
+            $treatment = $property->value;
+          }
+        }
+        $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial", $b_record_id);
+
+        $value = [
+          'name' => $biomaterial->name,
+          'record_id' => $b_record_id,
+          'entity_id' => $biomaterial_entity_id,
+          'description' => $biomaterial->description,
+          'tissue' => $tissue,
+          'treatment' => $treatment,
+        ];
+
+        $entity->{$field}['und'][$i]['value'] = $value;
+
+        $i++;
       }
     }
-
-    $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
 
     return $entity;
   }
@@ -177,29 +204,56 @@ class sep__biological_sample extends ChadoField {
    */
   protected function load_for_organism(&$entity) {
     $field = get_class();
-    $variables = $entity->{$field}['und'][0];
-    $variables['show_organism'] = FALSE;
-    $organism_id = $variables['value'];
+    $entity->{$field}['und'][0] = NULL;
+    $organism_id = $entity->chado_record_id;
 
-    $sql = 'SELECT B.biomaterial_id, B.name, O.organism_id, O.genus, O.species, O.common_name, C.contact_id, C.name AS contact_name
+    $sql = 'SELECT B.biomaterial_id, B.name, B.description
             FROM {biomaterial} B
-            JOIN {organism} O ON B.taxon_id = O.organism_id
-            LEFT JOIN {contact} C ON B.biosourceprovider_id = C.contact_id
-            WHERE O.organism_id = :organism_id';
+            WHERE B.taxon_id = :organism_id';
 
-    $variables['biomaterials'] = chado_query($sql, [":organism_id" => $organism_id])->fetchAll();
+    $results = chado_query($sql, [":organism_id" => $organism_id])->fetchAll();
 
-    if (empty($variables['biomaterials'])) {
-      $variables['value'] = NULL;
-    }
-    else {
-      $variables['value'] = [];
-      foreach ($variables['biomaterials'] as $biomaterial) {
-        $variables['value'][] = $biomaterial->name;
+    $i = 0;
+    if ($results) {
+      foreach ($results as $biomaterial) {
+        $b_record_id = $biomaterial->biomaterial_id;
+
+        $values = [
+          'biomaterial_id' => $b_record_id,
+        ];
+
+        $biomat_full = chado_generate_var("biomaterial", $values);
+        $expanded = chado_expand_var($biomat_full, 'table', 'biomaterialprop');
+        $properties = $expanded->biomaterialprop;
+
+        $treatment = NULL;
+        $tissue = NULL;
+
+        foreach ($properties as $property) {
+          $name = strtolower($property->type_id->name);
+          if ($name == "tissue") {
+            $tissue = $property->value;
+          }
+          if ($name == "treatment") {
+            $treatment = $property->value;
+          }
+        }
+
+        $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial", $b_record_id);
+        $value = [
+          'name' => $biomaterial->name,
+          'record_id' => $b_record_id,
+          'entity_id' => $biomaterial_entity_id,
+          'description' => $biomaterial->description,
+          'tissue' => $tissue,
+          'treatment' => $treatment,
+        ];
+
+        $entity->{$field}['und'][$i]['value'] = $value;
+
+        $i++;
       }
     }
-
-    $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
 
     return $entity;
   }
