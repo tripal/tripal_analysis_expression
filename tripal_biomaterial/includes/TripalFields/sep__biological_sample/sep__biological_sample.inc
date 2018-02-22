@@ -231,13 +231,16 @@ class sep__biological_sample extends ChadoField {
         $treatment = NULL;
         $tissue = NULL;
 
-        foreach ($properties as $property) {
-          $name = strtolower($property->type_id->name);
-          if ($name == "tissue") {
-            $tissue = $property->value;
-          }
-          if ($name == "treatment") {
-            $treatment = $property->value;
+        if ($properties) {
+
+          foreach ($properties as $property) {
+            $name = strtolower($property->type_id->name);
+            if ($name == "tissue") {
+              $tissue = $property->value;
+            }
+            if ($name == "treatment") {
+              $treatment = $property->value;
+            }
           }
         }
 
