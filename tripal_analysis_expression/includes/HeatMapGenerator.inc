@@ -53,6 +53,12 @@ class HeatMapGenerator {
       }
     }
 
+    foreach ($expression->biomaterials as $analysis_id => $biomaterials) {
+      foreach ($biomaterials as $biomaterial_id => $biomaterial) {
+        $expression->biomaterials[$analysis_id][$biomaterial_id]['name'] = l($biomaterial['name'], 'bio_data/' . chado_get_record_entity_by_table('biomaterial', $biomaterial_id));
+      }
+    }
+
     // Attach props array to returned object
     $expression->properties = $this->biomaterialProps;
 
