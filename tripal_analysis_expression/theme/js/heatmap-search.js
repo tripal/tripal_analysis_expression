@@ -2,18 +2,21 @@
   Drupal.behaviors.tripal_analysis_expression_heatmap_search = {
     attach: function (context, settings) {
       $(function () {
-        this.setupSearch();
+        this.setupSearch(settings);
       }.bind(this));
     },
 
-    setupSearch: function () {
-      this.term_field       = $('#heatmap-search_term');
-      this.results_block    = $('#feature-heatmap-search-results');
+    setupSearch: function (settings) {
+      this.term_field = $('#heatmap-search_term');
+      this.organism_field = $('#heatmap-search-organism');
+      this.results_block = $('#feature-heatmap-search-results');
       this.feature_textarea = $('#heatmap_feature_uniquename');
-      this.request          = null;
+      this.request = null;
+      this.base_url = settings.heatmap_search.base_url;
       this.reset();
 
       this.term_field.on('keyup', this.search.bind(this));
+      this.organism_field.on('change', this.search.bind(this));
 
       var that = this;
 
@@ -43,15 +46,18 @@
 
     search: function (event) {
       var terms = this.term_field.val();
+      var organism = this.organism_field.val().toString();
 
-      if (terms.length === 0) {
+      if (terms.length === 0 && organism.length === 0) {
         return this.reset();
       }
 
-      // Accept only alphanumeric characters and backspace
-      var input = String.fromCharCode(event.keyCode);
-      if (!/[a-zA-Z0-9-_ ]/.test(input) && event.keyCode !== 8) {
-        return;
+      if(terms.length > 0) {
+        // Accept only alphanumeric characters and backspace
+        var input = String.fromCharCode(event.keyCode);
+        if (!/[a-zA-Z0-9-_ ]/.test(input) && event.keyCode !== 8) {
+          return;
+        }
       }
 
       if (this.request !== null) {
@@ -62,31 +68,37 @@
 
       this.loadingShow();
       $.ajax({
-        url     : '/tripal/analysis-expression/heatmap/search',
-        data    : {terms: terms},
-        success : this.renderSearchResults.bind(this),
-        error   : function (a, b, c) {
+        url: this.base_url + '/tripal/analysis-expression/heatmap/search',
+        data: {
+          terms: terms,
+          organism: organism
+        },
+        success: this.renderSearchResults.bind(this),
+        error: function (a, b, c) {
           if (a.status === 0) {
             return;
           }
           this.loadingHide();
           console.log('Search failed with status code: ' + a.status, b, c);
         }.bind(this),
-        type    : 'get',
+        type: 'get',
         dataType: 'json',
-        xhr     : function () {
+        xhr: function () {
           return this.request;
         }.bind(this)
       });
     },
 
     renderSearchResults: function (response) {
+      console.log(response);
       this.loadingHide();
 
       var html = '<p>No results found</p>';
       if (response.data.length > 0) {
         html = '<p class="heatmap-dropdown-header">Select Features</p>';
+        html += '<div class="heatmap-dropdown-body">';
         html += response.data.map(this.renderRow.bind(this)).join('');
+        html += '</div>';
       }
       this.results_block.html(html);
     },

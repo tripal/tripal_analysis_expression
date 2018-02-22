@@ -2,8 +2,6 @@
 #feature-heatmap-search-results {
   box-shadow: 0 0 1px rgba(#000, .25), 0 2px 4px rgba(#000, .125);
   border-radius: 5px;
-  max-height: 400px;
-  overflow-y: auto;
 
   > p {
     padding: .5rem;
@@ -14,6 +12,11 @@
       background-color: #f9f9f9;
       border-bottom: 1px solid #f7f7f7;
     }
+  }
+
+  .heatmap-dropdown-body {
+    max-height: 400px;
+    overflow-y: auto;
   }
 
   .heatmap-results-item {

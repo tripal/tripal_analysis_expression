@@ -30,8 +30,16 @@
     width: percentage($column-width * 3);
   }
 
-  &.is-3 {
+  &.is-4 {
     width: percentage($column-width * 4);
+  }
+
+  &.is-5 {
+    width: percentage($column-width * 5);
+  }
+
+  &.is-6 {
+    width: percentage($column-width * 6);
   }
 
   @media (max-width: 800px) {

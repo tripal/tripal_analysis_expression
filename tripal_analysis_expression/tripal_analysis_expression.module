@@ -135,36 +135,7 @@ function tripal_analysis_expression_views_api() {
  * @return array
  */
 function tripal_analysis_expression_theme($existing, $type, $theme, $path) {
-  $core_path = drupal_get_path('module', 'tripal_core');
-
   $items = [
-    // TODO: Commenting out we don't need for now. Check that it didn't break anything then remove.
-    //    'node__chado_analysis_expression' => [
-    //      'template' => 'node--chado-generic',
-    //      'render element' => 'node',
-    //      'base hook' => 'node',
-    //      'path' => "$core_path/theme/templates",
-    //    ],
-    //    'tripal_analysis_expression_help' => [
-    //      'variables' => ['node' => NULL],
-    //      'template' => 'tripal_analysis_expression_help',
-    //      'path' => "$path/theme/templates",
-    //    ],
-    //    'tripal_analysis_expression_base' => [
-    //      'variables' => ['node' => NULL],
-    //      'template' => 'tripal_analysis_expression_base',
-    //      'path' => "$path/theme/templates",
-    //    ],
-    //    'tripal_analysis_expression_teaser' => [
-    //      'variables' => ['node' => NULL],
-    //      'template' => 'tripal_analysis_expression_teaser',
-    //      'path' => "$path/theme/templates",
-    //    ],
-    //    'tripal_feature_expression' => [
-    //      'variables' => ['node' => NULL],
-    //      'template' => 'tripal_feature_expression',
-    //      'path' => "$path/theme/templates",
-    //    ],
     'analysis_expression_plot' => [
       'variables' => [
         'features_count' => 0,
@@ -214,17 +185,26 @@ function tripal_analysis_expression_block_info() {
   return $blocks;
 }
 
+/**
+ * Generate input block.
+ *
+ * @return string
+ */
 function tripal_analysis_expression_generate_feature_map_input_block() {
+  global $base_url;
+
   $content = '<div class="heatmap-columns">';
+  $search_form = drupal_get_form('feature_heatmap_search_form');
+  $content .= '<div class="heatmap-column is-5">' . render($search_form) . '</div>';
   $input_textarea = drupal_get_form('feature_heatmap_form');
   $content .= '<div class="heatmap-column">' . render($input_textarea) . '</div>';
-  $search_form = drupal_get_form('feature_heatmap_search_form');
-  $content .= '<div class="heatmap-column is-3">' . render($search_form) . '</div>';
   $content .= '</div>';
 
   drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css/feature_heatmap.css');
   drupal_add_js(['visual_expression_example' => variable_get('tripal_analysis_expression_heatmap_example')], ['type' => 'setting']);
   drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/example.js');
+  drupal_add_js(['heatmap_search' => ['base_url' => $base_url]], ['type' => 'setting']);
+  drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap-search.js');
 
   return $content;
 }
@@ -241,7 +221,6 @@ function tripal_analysis_expression_block_view($delta = '') {
     case 'input_features':
       $block['subject'] = t('Feature Expression Visualization');
       $block['content'] = tripal_analysis_expression_generate_feature_map_input_block();
-      drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap-search.js');
       break;
     case 'heatmap_features':
       if (isset($_GET['heatmap_feature_uniquename'])) {
@@ -279,7 +258,9 @@ function tripal_analysis_expression_heatmap_block(&$block) {
                  <strong>Select a property to sort</strong><br/>
                </div>
                <div id="expression_heat_map_canvas"></div>
-          <a id="heatmap_download">Download expression data for these features</a>';
+               <a id="heatmap_download">
+                 Download expression data for these features
+               </a>';
 
       drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
       drupal_add_js(['tripal_analysis_expression' => ['data' => $heatmap]], ['type' => 'setting']);

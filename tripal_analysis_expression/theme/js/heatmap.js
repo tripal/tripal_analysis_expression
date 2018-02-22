@@ -194,7 +194,6 @@
           var label = prop.name;
           if (key === sortBy) {
             label = '<span style="font-weight: bold; color: red">' + label + '</span>';
-            console.log(label);
           }
           return label + ': ' + prop.value;
         }).join('<br />');
