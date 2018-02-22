@@ -123,7 +123,9 @@ class sep__biological_sample extends ChadoField {
       return $this->load_for_analysis($entity);
     }
 
-    return $this->load_for_organism($entity);
+    if ($entity->chado_table == 'organism') {
+      return $this->load_for_organism($entity);
+    }
   }
 
   /**
