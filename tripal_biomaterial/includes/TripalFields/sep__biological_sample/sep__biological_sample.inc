@@ -234,7 +234,7 @@ class sep__biological_sample extends ChadoField {
         if ($properties) {
 
           foreach ($properties as $property) {
-	if (property_exists($property->type_id) && property_exists($property->type_id->name)){
+	if (property_exists($property, "type_id") && property_exists($property, "name"){
 
 
             $name = strtolower($property->type_id->name);
