@@ -1,3 +1,6 @@
+[![DOI](https://zenodo.org/badge/49081816.svg)](https://zenodo.org/badge/latestdoi/49081816)
+
+
 # Tripal\_analysis\_expression
 
 This is an extension module for the Tripal project. 
