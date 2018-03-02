@@ -202,6 +202,7 @@ class sep__biological_sample extends ChadoField {
    *
    * @param $entity
    *
+   * @throws \Exception
    * @return mixed
    */
   protected function load_for_organism(&$entity) {
@@ -232,21 +233,18 @@ class sep__biological_sample extends ChadoField {
         $tissue = NULL;
 
         if ($properties) {
-
           foreach ($properties as $property) {
-	if (property_exists($property->type_id) && property_exists($property->type_id->name)){
-
-
-            $name = strtolower($property->type_id->name);
-            if ($name == "tissue") {
-              $tissue = $property->value;
-            }
-            if ($name == "treatment") {
-              $treatment = $property->value;
+            if (property_exists($property, 'type_id') && property_exists($property->type_id, 'name')) {
+              $name = strtolower($property->type_id->name);
+              if ($name == "tissue") {
+                $tissue = $property->value;
+              }
+              if ($name == "treatment") {
+                $treatment = $property->value;
+              }
             }
           }
         }
-      }
 
         $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial", $b_record_id);
         $value = [
