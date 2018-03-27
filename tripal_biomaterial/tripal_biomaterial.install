@@ -49,13 +49,9 @@ function tripal_biomaterial_install() {
 
 
   //Add cvalue_id if not already present in biomateiralprop
-
-  chado_query("ALTER TABLE {biomaterialprop} ADD COLUMN cvalue_id bigint;
-ALTER TABLE {biomaterialprop} ADD CONSTRAINT biomaterialprop_cvalue_id_fkey FOREIGN KEY (cvalue_id) REFERENCES {cvterm} (cvterm_id) ON DELETE SET NULL;
-");
+  tripal_biomaterial_update_7301();
 
 }
-
 
 
 /**
@@ -177,47 +173,40 @@ function tripal_biomaterial_uninstall() {
 
 
 /**
- * Correct cases where the ncbi biosample accession was inserted into biomaterial.dbxref_id instead of added as a true dbxref
+ * Correct cases where the ncbi biosample accession was inserted into
+ * biomaterial.dbxref_id instead of added as a true dbxref
  *
  */
-function tripal_biomaterial_update_7300(){
-  
-    $sql = "SELECT * FROM {biomaterial}";
-    $results = chado_query($sql);
-    foreach($results as $result) {
+function tripal_biomaterial_update_7300() {
+  $sql = "SELECT * FROM {biomaterial}";
+  $results = chado_query($sql);
+  foreach ($results as $result) {
 
-      if ($result->dbxref_id) {
-        $sql = "SELECT DB.name, DBX.accession FROM {dbxref} DBX
+    if ($result->dbxref_id) {
+      $sql = "SELECT DB.name, DBX.accession FROM {dbxref} DBX
         INNER JOIN {db} DB ON  DBX.db_id = db.db_id
         WHERE DBX.dbxref_id = :dbxref_id";
 
-        $dbxref = chado_query($sql, [":dbxref_id" => $result->dbxref_id])->fetchObject();
-        if ($dbxref->name == "NCBI BioSample") {
-          $biomaterial_id = $result->biomaterial_id;
-          $ncbi_accession = $dbxref->accession;
+      $dbxref = chado_query($sql, [":dbxref_id" => $result->dbxref_id])->fetchObject();
+      if ($dbxref->name == "NCBI BioSample") {
+        $biomaterial_id = $result->biomaterial_id;
+        $ncbi_accession = $dbxref->accession;
 
-          tripal_associate_dbxref('biomaterial', $biomaterial_id, [
-            'accession' => $ncbi_accession,
-            'db_name' => 'NCBI BioSample'
-          ]);
-        }
+        tripal_associate_dbxref('biomaterial', $biomaterial_id, [
+          'accession' => $ncbi_accession,
+          'db_name' => 'NCBI BioSample',
+        ]);
       }
     }
+  }
 }
 
 /**
  * Updates the biomaterialprop table to support cvterm target values
- *
  */
-
 function tripal_biomaterial_update_7301() {
-
   if (!chado_column_exists('biomaterialprop', 'cvalue_id')) {
-
-    chado_query("ALTER TABLE {biomaterialprop} ADD COLUMN cvalue_id bigint;
-ALTER TABLE {biomaterialprop} ADD CONSTRAINT biomaterialprop_cvalue_id_fkey FOREIGN KEY (cvalue_id) REFERENCES {cvterm} (cvterm_id) ON DELETE SET NULL;
-");
+    chado_query("ALTER TABLE {biomaterialprop} ADD COLUMN cvalue_id bigint");
+    chado_query("ALTER TABLE {biomaterialprop} ADD CONSTRAINT biomaterialprop_cvalue_id_fkey FOREIGN KEY (cvalue_id) REFERENCES {cvterm} (cvterm_id) ON DELETE SET NULL;");
   }
-
-
 }

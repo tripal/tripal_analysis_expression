@@ -1,0 +1,21 @@
+language: php
+
+# Add php version so composer doesn't complain
+php:
+  - 7.1
+
+services:
+  - docker
+
+env:
+  - DRUPAL_ROOT=/var/www/html
+
+before_script:
+  - docker pull statonlab/tripal3
+  - composer install
+
+script:
+  - docker run -it -d --rm --name tripal -v "$(pwd)":/modules/tripal_analysis_expression statonlab/tripal3
+  - sleep 30 # We pause here so postgres and apache complete booting up
+  - docker exec -it tripal drush pm-enable -y tripal_analysis_expression
+  - docker exec -it tripal bash -c "cd /modules/tripal_analysis_expression && DRUPAL_ROOT=/var/www/html ./vendor/bin/phpunit"
