@@ -278,4 +278,3 @@ function tripal_analysis_expression_heatmap_block(&$block) {
     }
   }
 }
-
