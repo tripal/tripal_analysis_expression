@@ -9,7 +9,7 @@
  *
  * @param string $phase
  *
- * @ingroup tripal_analysis_expression
+ * @ingroup tripal_analysis_exprtripal_elasticsearch/collectionsession
  */
 function tripal_analysis_expression_requirements($phase) {
   $requirements = [];
@@ -142,7 +142,7 @@ function tripal_analysis_expression_add_mview_expression_feature() {
   INNER JOIN assay_biomaterial AB ON AB.assay_id = A.assay_id
   INNER JOIN biomaterial B ON B.biomaterial_id = AB.biomaterial_id";
 
-  tripal_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment, false);
+  chado_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment, false);
 }
 
 /**
@@ -213,7 +213,7 @@ function tripal_analysis_expression_add_mview_expression_feature_all() {
               INNER JOIN biomaterial B ON B.biomaterial_id = AB.biomaterial_id
               INNER JOIN analysis AN ON AN.analysis_id = Q.analysis_id";
 
-  tripal_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment, false);
+  chado_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment, false);
 }
 
 /**
