@@ -504,7 +504,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       // Make sure there are no duplicate biomaterials.
       for ($i = 0; $i < $num_biosamples; $i++) {
-        $biomaterial_names[] = $xml->BioSample[$i]->Ids->Id[1];
+        $Ids = $xml->BioSample[$i]->Ids;
+        $biomaterial_name = $this->find_primary_ID($Ids);
+        $biomaterial_names[] = $biomaterial_name;
       }
 
       // Make sure there are not duplicate biomaterials.
@@ -532,6 +534,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     print "\nDone.\n";
     return;
   }
+
 
   /**
    * @param $organism_id
@@ -612,7 +615,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     $biomaterial_description = $comment ? (string) $comment : (string) $description;
 
-
     $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description);
 
     // Add to biomaterialprop table.
@@ -634,6 +636,28 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     }
 
+  }
+
+  /**
+   * @param $ids the IDs subset of the XML.  For example,
+   * <Ids>
+   *   <Id db="BioSample" is_primary="1">professional</Id>
+   *   </Ids>
+   *
+   * @return String, the biomaterial ID string value.
+   */
+  private function find_primary_ID($ids){
+
+    if (count($ids) === 1){
+      return (string)  $ids[0]->Id;
+    }
+    foreach ($ids as $id){
+      $attributes = $id->attributes();
+      if (isset($attributes[['is_primary']])){
+        return (string)  $id->Id;
+      }
+    }
+    return (string)  $ids[0]->Id;
   }
 
   /**
