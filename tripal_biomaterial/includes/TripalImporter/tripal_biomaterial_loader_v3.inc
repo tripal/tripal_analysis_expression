@@ -395,7 +395,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
   public function run() {
 
     $arguments = $this->arguments['run_args'];
-    $file_path = $this->arguments['file']['file_path'];
+    $file_path = $this->arguments['files']['file_path'];
+    if (array_key_exists('file_path', $this->arguments['files'][0])){
+      $file_path = $this->arguments['files'][0]['file_path'];
+    }
     $organism_id = $arguments['organism_id'];
     $analysis_id = $arguments['analysis_id'];
     $field_info = $arguments['cvterm_configuration'];
@@ -431,8 +434,15 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       }
     }
 
-    $extension = explode('.', $file_path);
-    $extension = $extension[count($extension) - 1];
+    if (array_key_exists('file_remote', $this->arguments['files'][0])){
+      $extension = explode('.', $this->arguments['files'][0]['file_remote']);
+      $extension = $extension[count($extension) - 1];
+    }
+    else {
+      $extension = explode('.', $file_path);
+      $extension = $extension[count($extension) - 1];
+    }
+
 
     tripal_set_message(t("Job Submitted!  After running the job, remember to") . l('publish the inserted BioSamples.', 'admin/content/bio_data/publish/'), TRIPAL_INFO);
 
@@ -461,6 +471,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     // Check file path to see if file is accessible.nsaction = db_transaction();
     try {
       if (!is_readable($file_path)) {
+        print "it happened here";
         print "ERROR: File is not readable or not present.";
         exit;
       }
