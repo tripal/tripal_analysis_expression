@@ -471,7 +471,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     // Check file path to see if file is accessible.nsaction = db_transaction();
     try {
       if (!is_readable($file_path)) {
-        print "it happened here";
         print "ERROR: File is not readable or not present.";
         exit;
       }
