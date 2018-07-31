@@ -20,8 +20,6 @@ function tripal_protocol_bundle_fields_info_alter(&$fields, $bundle, $term) {
   if (isset($bundle->data_table) AND ($bundle->data_table == 'arraydesign')) {
     $fields['local__manufacturer_id']['type'] = 'chado_linker__contact';
     $fields['local__manufacturer_id']['widget']['settings']['chado_table'] = 'contact';
-
-
   }
 }
 

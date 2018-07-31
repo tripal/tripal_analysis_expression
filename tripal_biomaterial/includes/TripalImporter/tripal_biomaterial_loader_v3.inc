@@ -395,7 +395,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
   public function run() {
 
     $arguments = $this->arguments['run_args'];
-    $file_path = $this->arguments['file']['file_path'];
+    $file_path = $this->arguments['files']['file_path'];
+    if (array_key_exists('file_path', $this->arguments['files'][0])){
+      $file_path = $this->arguments['files'][0]['file_path'];
+    }
     $organism_id = $arguments['organism_id'];
     $analysis_id = $arguments['analysis_id'];
     $field_info = $arguments['cvterm_configuration'];
@@ -431,8 +434,15 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       }
     }
 
-    $extension = explode('.', $file_path);
-    $extension = $extension[count($extension) - 1];
+    if (array_key_exists('file_remote', $this->arguments['files'][0])){
+      $extension = explode('.', $this->arguments['files'][0]['file_remote']);
+      $extension = $extension[count($extension) - 1];
+    }
+    else {
+      $extension = explode('.', $file_path);
+      $extension = $extension[count($extension) - 1];
+    }
+
 
     tripal_set_message(t("Job Submitted!  After running the job, remember to") . l('publish the inserted BioSamples.', 'admin/content/bio_data/publish/'), TRIPAL_INFO);
 
@@ -462,14 +472,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     try {
       if (!is_readable($file_path)) {
         print "ERROR: File is not readable or not present.";
-        exit;
+        return;
       }
 
       // check if the file given is empty
       $fileSize = filesize($file_path);
       if ($fileSize == 0) {
         print("ERROR: File at $file_path is empty. Try again with a new file.\n");
-        exit;
+        return;
       }
 
       // Load the contents of the xml file into a string.
@@ -477,7 +487,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       if (!$xml_raw) {
         print "ERROR: Unable to read file.";
-        exit;
+        return;
       }
 
       // Parse the file.
@@ -487,14 +497,16 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       if ($num_biosamples == 0) {
         print("ERROR: wrong format at $file_path. XML file must include'BioSample' tag\n");
-        exit;
+        return;
       }
 
       $biomaterial_names = [];
 
       // Make sure there are no duplicate biomaterials.
       for ($i = 0; $i < $num_biosamples; $i++) {
-        $biomaterial_names[] = $xml->BioSample[$i]->Ids->Id[1];
+        $Ids = $xml->BioSample[$i]->Ids;
+        $biomaterial_name = $this->find_primary_ID($Ids);
+        $biomaterial_names[] = $biomaterial_name;
       }
 
       // Make sure there are not duplicate biomaterials.
@@ -505,7 +517,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           print "  " . $repeat . "\n";
         }
         print "Please make sure there is only one instance of each " . "Sample name in the biomaterial file.\n";
-        exit;
+        return;
       }
 
       // Load biomaterials.
@@ -522,6 +534,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     print "\nDone.\n";
     return;
   }
+
 
   /**
    * @param $organism_id
@@ -602,7 +615,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     $biomaterial_description = $comment ? (string) $comment : (string) $description;
 
-
     $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description);
 
     // Add to biomaterialprop table.
@@ -624,6 +636,28 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     }
 
+  }
+
+  /**
+   * @param $ids the IDs subset of the XML.  For example,
+   * <Ids>
+   *   <Id db="BioSample" is_primary="1">professional</Id>
+   *   </Ids>
+   *
+   * @return String, the biomaterial ID string value.
+   */
+  private function find_primary_ID($ids){
+
+    if (count($ids) === 1){
+      return (string)  $ids[0]->Id;
+    }
+    foreach ($ids as $id){
+      $attributes = $id->attributes();
+      if (isset($attributes[['is_primary']])){
+        return (string)  $id->Id;
+      }
+    }
+    return (string)  $ids[0]->Id;
   }
 
   /**
@@ -688,7 +722,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           'db_name' => 'tripal',
         ], ['update_existing' => FALSE])) {
           print "ERROR: Could not insert biomaterial attribute name into the biomaterial_property controlled vocabulary table.";
-          exit;
+          return;
         }
       }
 
@@ -726,7 +760,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     try {
       if (!is_readable($file_path)) {
         print "ERROR: File is not readable or not present.";
-        exit;
+        return;
       }
 
       $num_biosamples = 0;
@@ -736,7 +770,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $fileSize = filesize($file_path);
       if ($fileSize == 0) {
         print("ERROR: File at $file_path is empty. Try again with a new file.\n");
-        exit;
+        return;
       }
 
       $extension = explode('.', $file_path);
@@ -772,7 +806,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       if ($num_biosamples == 0) {
         print("ERROR: Wrong file format at $file_path. File must contain a column named 'sample_name'.\n");
         print("Please try again with a file that contains at least one column named 'sample_name' in its header line, followed by lines of biosample data.\n");
-        exit;
+        return;
       }
 
       // Get the file pointer.
@@ -796,7 +830,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           print "  " . $repeat . "\n";
         }
         print "Please make sure there is only one instance of each " . "header in the biomaterial file\n";
-        exit;
+        return;
       }
 
       $biomaterial_names = [];
@@ -916,7 +950,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
               'db_name' => 'tripal',
             ], ['update_existing' => FALSE])) {
               print "ERROR: Could not insert biomaterial attribute name into the controlled vocabulary table.";
-              exit;
+              return;
             }
 
             $record = [
@@ -973,7 +1007,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           print "  " . $repeat . "\n";
         }
         print "Please make sure there is only one instance of each " . "sample_name in the biomaterial file.\n";
-        exit;
+        return;
       }
     } catch (Exception $e) {
       print "\n";
@@ -1002,7 +1036,7 @@ function test_biosample_cvterms_xml(
   try {
     if (!is_readable($file_path)) {
       form_set_error("ERROR: File is not readable or not present.");
-      exit;
+      return;
     }
 
     // check if the file given is empty
@@ -1119,7 +1153,7 @@ function test_biosample_cvterms_flat(
   $fileSize = filesize($file_path);
   if ($fileSize == 0) {
     tripal_set_message("ERROR: File at $file_path is empty. Try again with a new file.", "warning");
-    exit;
+    return;
   }
   //Figure out CSV vs TSV
   $extension = explode('.', $file_path);
@@ -1154,7 +1188,7 @@ function test_biosample_cvterms_flat(
   //print error message and exit if there's no biosample, or that there's no "sample_name" column in flat file
   if ($num_biosamples == 0) {
     tripal_set_message("ERROR: Wrong file format at $file_path. File must contain a column named 'sample_name'.", "warning");
-    exit;
+    return;
   }
 
   // Get the file pointer.
@@ -1171,7 +1205,7 @@ function test_biosample_cvterms_flat(
   // Make sure there are not duplicate biomaterial headers.
   if (count($header_repeats = array_diff_assoc($headers, array_unique($headers))) > 0) {
     tripal_set_message("ERROR: The header" . $header_repeats[0] . " is present more than once.  Please make sure there is only one instance of each header.");
-    exit;
+    return;
   }
 
   for ($i = 0; $i < count($headers); $i++) {

@@ -361,7 +361,7 @@ class tripal_expression_data_loader extends TripalImporter{
 
     //Retrieve arguments
     $arguments = $this->arguments['run_args'];
-    $filepath = $this->arguments['file']['file_path'];
+    $filepath = $this->arguments['files'][0]['file_path'];
     $fileext = $arguments['fileext'];
     $filetype = $arguments['filetype'];
     $re_start = $arguments['re_start'];
@@ -472,7 +472,8 @@ class tripal_expression_data_loader extends TripalImporter{
 
     $uniq_name = $this->get_unique_name($organism_id, $analysis_id);
 
-    $transaction = db_transaction();
+    //not needed as importer provides transaction
+    //$transaction = db_transaction();
 
     try {
       // Create the array design.
@@ -480,8 +481,7 @@ class tripal_expression_data_loader extends TripalImporter{
       $re_ext = '/^.+\.(' . $fileext . ')/';
 
       // A matrix file.
-      if ($filetype == 'mat' and is_file($filepath) and preg_match($re_ext, $filepath)) {
-
+      if ($filetype == 'mat' and is_file($filepath)) {
         $this->tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames);
       }
 
@@ -490,6 +490,7 @@ class tripal_expression_data_loader extends TripalImporter{
         $features = $this->tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames);
       }
       else { // Multiple files in the column format.
+
         $dir_handle = @opendir($filepath) or die("Unable to open $filepath");
         $total_files = count(glob($filepath . '/*.' . $fileext));
         $num_file = 0;
@@ -519,14 +520,13 @@ class tripal_expression_data_loader extends TripalImporter{
           ]);
           if ($analysisfeature == FALSE) {
             print "ERROR: Unable to write to analysisfeature table\n";
-            exit;
+            return;
           }
         }
       }
     } catch (Exception $e) {
       print "\n";
       watchdog_exception('T_expression_load', $e);
-      $transaction->rollback();
       print "FAILED: Rolling back database changes...\n";
     }
     print "\nDone.\n";
@@ -649,7 +649,7 @@ class tripal_expression_data_loader extends TripalImporter{
 
     if ($num_lines < 2){
       print "Error reading file.\n Please ensure that your file is readable and try again.";
-      exit;
+      return;
     }
 
     // Make sure there not duplicate feature names.
@@ -660,7 +660,7 @@ class tripal_expression_data_loader extends TripalImporter{
         print "  " . $repeat . "\n";
       }
       print "Please make sure there is only one instance of each feature in the expression file\n";
-      exit;
+      return;
     }
 
     // Get rid of the feature_array.
@@ -684,6 +684,7 @@ class tripal_expression_data_loader extends TripalImporter{
     if ($int_length < 1) {
       $int_length = 1;
     }
+
 
     // Loop through every line in a file.
     //while($line = fgets($mat_fp) and (intval(ftell($mat_fp)) < $num_lines) {
@@ -719,6 +720,7 @@ class tripal_expression_data_loader extends TripalImporter{
         $num_col = count($linepart);
         $linepart = array_values($linepart);
 
+
         if ($mat_head == 0) {
           foreach ($linepart as $sample) {
             $quant_array[] = expression_create_biomaterial_structure($sample, $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $uniq_name);
@@ -732,7 +734,7 @@ class tripal_expression_data_loader extends TripalImporter{
               print "  " . $repeat . "\n";
             }
             print "Please make sure there is only one instance of each " . "biomaterial in the expression file\n";
-            exit;
+            return;
           }
 
           $num_biomaterials = count($linepart);
@@ -751,10 +753,10 @@ class tripal_expression_data_loader extends TripalImporter{
             else {
               print "Loader failed because of a blank line in the data section of the expression file.\n";
             }
-            exit;
+            return;
           }
 
-          //exit;
+          //return;
 
           if ($cur_feature % $int_length == 0) {
             $percent = sprintf("%.2f", ($cur_feature / $num_features) * 100);
@@ -782,7 +784,7 @@ class tripal_expression_data_loader extends TripalImporter{
                 ]);
                 if ($analysisfeature == FALSE) {
                   print "ERROR: Unable to write to analysisfeature table\n";
-                  exit;
+                  return;
                 }
               }
               /*if($analysisfeature) {
@@ -791,7 +793,7 @@ class tripal_expression_data_loader extends TripalImporter{
                   $values);
                 if($analysisfeature==FALSE) {
                   print "ERROR: Unable to update analysisfeature table\n";
-                  exit;
+                  return;
                 }
               } */
             }
@@ -914,7 +916,7 @@ class tripal_expression_data_loader extends TripalImporter{
         print "  " . $repeat . "\n";
       }
       print "Please make sure there is only one instance of each " . "feature in the expression file\n";
-      exit;
+      return;
     }
 
     // Get rid of the feature_array.
@@ -978,7 +980,7 @@ class tripal_expression_data_loader extends TripalImporter{
           else {
             print "Loader failed because of a blank line in the data section of the expression file.\n";
           }
-          exit;
+          return;
         }
 
         $num_col = count($linepart);
@@ -1039,7 +1041,7 @@ class tripal_expression_data_loader extends TripalImporter{
 
     if (!$feature_object) {
       print "ERROR: The feature, " . $feature . ", found in the expression file " . "was not found in the Chado database. Please ensure that the " . "feature has been loaded into the database and that the feature name is " . "both unique and correct.\n\n";
-      exit;
+      return;
     }
 
     if ($feature_object->organism_id != $organism_id) {
@@ -1047,7 +1049,7 @@ class tripal_expression_data_loader extends TripalImporter{
       $analysis_org = chado_query($sql, [":organism_id" => $organism_id])->fetchObject();
       $feature_org = chado_query($sql, [":organism_id" => $feature_object->organism_id])->fetchObject();
       print "ERROR: Mismatch between the organism selected in the expression analysis " . "and the organism of a feature from the expression file.\n" . "  Analysis organism: " . $analysis_org->genus . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n" . "  Feature organism: " . $feature_org->genus . " " . $feature_org->species . " (" . $feature_org->common_name . ")\n" . "  On feature: " . $feature . "\n" . "Please ensure that the organism selected for the expression " . "analysis and the organism for each feature in the expression " . "file are the same.\n";
-      exit;
+      return NULL;
     }
 
     return $feature_object->feature_id;
