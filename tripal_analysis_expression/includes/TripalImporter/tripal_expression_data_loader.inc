@@ -520,7 +520,7 @@ class tripal_expression_data_loader extends TripalImporter{
           ]);
           if ($analysisfeature == FALSE) {
             print "ERROR: Unable to write to analysisfeature table\n";
-            exit;
+            return;
           }
         }
       }
@@ -649,7 +649,7 @@ class tripal_expression_data_loader extends TripalImporter{
 
     if ($num_lines < 2){
       print "Error reading file.\n Please ensure that your file is readable and try again.";
-      exit;
+      return;
     }
 
     // Make sure there not duplicate feature names.
@@ -660,7 +660,7 @@ class tripal_expression_data_loader extends TripalImporter{
         print "  " . $repeat . "\n";
       }
       print "Please make sure there is only one instance of each feature in the expression file\n";
-      exit;
+      return;
     }
 
     // Get rid of the feature_array.
@@ -734,7 +734,7 @@ class tripal_expression_data_loader extends TripalImporter{
               print "  " . $repeat . "\n";
             }
             print "Please make sure there is only one instance of each " . "biomaterial in the expression file\n";
-            exit;
+            return;
           }
 
           $num_biomaterials = count($linepart);
@@ -753,10 +753,10 @@ class tripal_expression_data_loader extends TripalImporter{
             else {
               print "Loader failed because of a blank line in the data section of the expression file.\n";
             }
-            exit;
+            return;
           }
 
-          //exit;
+          //return;
 
           if ($cur_feature % $int_length == 0) {
             $percent = sprintf("%.2f", ($cur_feature / $num_features) * 100);
@@ -784,7 +784,7 @@ class tripal_expression_data_loader extends TripalImporter{
                 ]);
                 if ($analysisfeature == FALSE) {
                   print "ERROR: Unable to write to analysisfeature table\n";
-                  exit;
+                  return;
                 }
               }
               /*if($analysisfeature) {
@@ -793,7 +793,7 @@ class tripal_expression_data_loader extends TripalImporter{
                   $values);
                 if($analysisfeature==FALSE) {
                   print "ERROR: Unable to update analysisfeature table\n";
-                  exit;
+                  return;
                 }
               } */
             }
@@ -916,7 +916,7 @@ class tripal_expression_data_loader extends TripalImporter{
         print "  " . $repeat . "\n";
       }
       print "Please make sure there is only one instance of each " . "feature in the expression file\n";
-      exit;
+      return;
     }
 
     // Get rid of the feature_array.
@@ -980,7 +980,7 @@ class tripal_expression_data_loader extends TripalImporter{
           else {
             print "Loader failed because of a blank line in the data section of the expression file.\n";
           }
-          exit;
+          return;
         }
 
         $num_col = count($linepart);
@@ -1041,7 +1041,7 @@ class tripal_expression_data_loader extends TripalImporter{
 
     if (!$feature_object) {
       print "ERROR: The feature, " . $feature . ", found in the expression file " . "was not found in the Chado database. Please ensure that the " . "feature has been loaded into the database and that the feature name is " . "both unique and correct.\n\n";
-      exit;
+      return;
     }
 
     if ($feature_object->organism_id != $organism_id) {
