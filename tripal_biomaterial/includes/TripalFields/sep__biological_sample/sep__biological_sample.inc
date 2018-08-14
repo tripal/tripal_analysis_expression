@@ -151,6 +151,10 @@ class sep__biological_sample extends ChadoField {
 
     $results = chado_query($sql, [":analysis_id" => $analysis_id])->fetchAll();
 
+    if (!$results){
+      unset($entity->{$field});
+    }
+
     if ($results) {
       $i = 0;
       foreach ($results as $biomaterial) {
@@ -215,6 +219,10 @@ class sep__biological_sample extends ChadoField {
             WHERE B.taxon_id = :organism_id';
 
     $results = chado_query($sql, [":organism_id" => $organism_id])->fetchAll();
+
+    if (!$results){
+      unset($entity->{$field});
+    }
 
     $i = 0;
     if ($results) {

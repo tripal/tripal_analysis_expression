@@ -82,7 +82,7 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $base_table = $entity->chado_table;
-    if ($items[0] == null) {
+    if (empty($items)) {
       return;
     }
 
@@ -116,18 +116,18 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
       }
 
       //we dont use contact
-//      if (isset($biomaterial["contact_id"])) {
-//        $id = chado_get_record_entity_by_table('contact', $biomaterial["contact_id"]);
-//        $b_contact = $biomaterial["contact_name"];
-//
-//        if ($id) {
-//          $b_contact = l($biomaterial["contact_id"], 'bio_data/' . $id, ['attributes' => ['target' => '_blank']]);
-//        }
-//      }
+      //      if (isset($biomaterial["contact_id"])) {
+      //        $id = chado_get_record_entity_by_table('contact', $biomaterial["contact_id"]);
+      //        $b_contact = $biomaterial["contact_name"];
+      //
+      //        if ($id) {
+      //          $b_contact = l($biomaterial["contact_id"], 'bio_data/' . $id, ['attributes' => ['target' => '_blank']]);
+      //        }
+      //      }
 
 
-        $tissue = $biomaterial['tissue'];
-        $treatment = $biomaterial['treatment'];
+      $tissue = $biomaterial['tissue'];
+      $treatment = $biomaterial['treatment'];
 
       $description = $biomaterial["description"];
       if (strlen($description) > 300) {
@@ -137,7 +137,7 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
 
       $row = [
         $b_name,
-       // $b_contact ?: 'Not set',
+        // $b_contact ?: 'Not set',
         $tissue ?: 'Not set',
         $treatment ?: "Not set",
         $description,
@@ -151,8 +151,8 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
     $output = theme('table', [
       'header' => $headers,
       'rows' => $chunks[$current_page],
-      'attributes' => ['class' => ['table-layout-fixed']]
- ]);
+      'attributes' => ['class' => ['table-layout-fixed']],
+    ]);
 
     $output .= theme('pager', [
       'quantity' => 5,
@@ -160,7 +160,7 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
       'parameters' => ['tripal_pane' => 'gp_Biomaterials'],
     ]);
 
-  $element[] = ['#markup' => $output];
+    $element[] = ['#markup' => $output];
 
 
   }
