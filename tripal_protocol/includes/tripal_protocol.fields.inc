@@ -30,7 +30,11 @@ function tripal_protocol_bundle_fields_info_alter(&$fields, $bundle, $term) {
  * @param $bundle
  * @param $term
  */
-function tripal_protocol_bundle_instances_info_alter(&$instances, $bundle, $term) {
+function tripal_protocol_bundle_instances_info_alter(
+  &$instances,
+  $bundle,
+  $term
+) {
   if (isset($bundle->data_table) AND ($bundle->data_table == 'protocol')) {
     $text_fields = [
       'local__protocol_description',
@@ -131,68 +135,67 @@ function tripal_protocol_bundle_fields_info($entity_type, $bundle) {
 
   if (isset($bundle->data_table) AND ($bundle->data_table == 'arraydesign')) {
     // First add my term.
-    tripal_insert_cvterm(array(
+    tripal_insert_cvterm([
       'id' => 'OBI:0000835',
       'name' => 'manufacturer',
       'cv_name' => 'OBI',
       'definition' => 'A person or organization that has a manufacturer role',
-    ));
+    ]);
 
     // Then describe the field defined by that term.
     $field_name = 'obi__manufacturer';
     $field_type = 'obi__manufacturer';
-    $fields[$field_name] = array(
+    $fields[$field_name] = [
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
       'locked' => FALSE,
-      'storage' => array(
+      'storage' => [
         'type' => 'field_chado_storage',
-      ),
-    );
+      ],
+    ];
 
     //microarray type
-    tripal_insert_cvterm(array(
+    tripal_insert_cvterm([
       'id' => 'OBI:0000052',
       'name' => 'microarray platform',
       'cv_name' => 'OBI',
       'definition' => 'A microarray platform is a platform that contains the instruments, software and reagents needed to perform a microarray protocol',
-    ));
+    ]);
 
     // Then describe the field defined by that term.
     $field_name = 'obi__microarray_platform';
     $field_type = 'obi__microarray_platform';
-    $fields[$field_name] = array(
+    $fields[$field_name] = [
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
       'locked' => FALSE,
-      'storage' => array(
+      'storage' => [
         'type' => 'field_chado_storage',
-      ),
-    );
+      ],
+    ];
 
     //Substrate
-    tripal_insert_cvterm(array(
+    tripal_insert_cvterm([
       'id' => 'EFO:0005061',
       'name' => 'substrate',
       'cv_name' => 'EFO',
       'definition' => 'A substrate is the surface on which material, such as an organism, is grown or attached.',
-    ));
+    ]);
 
     // Then describe the field defined by that term.
     $field_name = 'efo__substrate';
     $field_type = 'efo__substrate';
-    $fields[$field_name] = array(
+    $fields[$field_name] = [
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
       'locked' => FALSE,
-      'storage' => array(
+      'storage' => [
         'type' => 'field_chado_storage',
-      ),
-    );
-
+      ],
+    ];
   }
 
   return $fields;
@@ -236,6 +239,9 @@ function tripal_protocol_bundle_instances_info($entity_type, $bundle) {
       'description' => 'Protocol type',
       'required' => TRUE,
       'settings' => [
+        'term_vocabulary' => 'local',
+        'term_name' => 'protocol_type',
+        'term_accession' => 'protocol_type',
         'auto_attach' => TRUE,
         'chado_table' => $bundle->data_table,
         'chado_column' => 'type_id',
@@ -258,93 +264,99 @@ function tripal_protocol_bundle_instances_info($entity_type, $bundle) {
   if (isset($bundle->data_table) AND ($bundle->data_table == 'arraydesign')) {
     $field_name = 'obi__manufacturer';
     $field_type = 'obi__manufacturer';
-    $instances[$field_name] =  array(
+    $instances[$field_name] = [
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
       'label' => 'manufacturer',
       'description' => 'Manufacturer of an entity ie an array',
       'required' => FALSE,
-      'settings' => array(
+      'settings' => [
+        'term_vocabulary' => 'OBI',
+        'term_name' => 'manufacturer',
+        'term_accession' => '0000835',
         'auto_attach' => TRUE,
         'chado_table' => 'contact',
         'chado_column' => 'manufacturer_id',
         'base_table' => $bundle->data_table,
-      ),
-      'widget' => array(
+      ],
+      'widget' => [
         'type' => 'obi__manufacturer_widget',
-        'settings' => array(),
-      ),
-      'display' => array(
-        'default' => array(
+        'settings' => [],
+      ],
+      'display' => [
+        'default' => [
           'label' => 'hidden',
           'type' => 'obi__manufacturer_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
+          'settings' => [],
+        ],
+      ],
+    ];
 
     // microarray design.
 
-      $field_name = 'obi__microarray_platform';
-      $field_type = 'obi__microarray_platform';
-      $instances[$field_name] =  array(
-        'field_name' => $field_name,
-        'entity_type' => $entity_type,
-        'bundle' => $bundle->name,
-        'label' => 'Microarray platform',
-        'description' => 'A microarray platform is a platform that contains the instruments, software and reagents needed to perform a microarray protocol',
-        'required' => FALSE,
-        'settings' => array(
-          'auto_attach' => FALSE,
-          'chado_table' => $bundle->data_table,
-          'chado_column' => 'platformtype_id',
-          'base_table' => $bundle->data_table,
-        ),
-        'widget' => array(
-          'type' => 'obi__microarray_platform_widget',
-          'settings' => array(),
-        ),
-        'display' => array(
-          'default' => array(
-            'label' => 'hidden',
-            'type' => 'obi__microarray_platform_formatter',
-            'settings' => array(),
-          ),
-        ),
-      );
+    $field_name = 'obi__microarray_platform';
+    $field_type = 'obi__microarray_platform';
+    $instances[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Microarray platform',
+      'description' => 'A microarray platform is a platform that contains the instruments, software and reagents needed to perform a microarray protocol',
+      'required' => FALSE,
+      'settings' => [
+        'term_vocabulary' => 'OBI',
+        'term_name' => 'microarray platform',
+        'term_accession' => '0000052',
+        'auto_attach' => FALSE,
+        'chado_table' => $bundle->data_table,
+        'chado_column' => 'platformtype_id',
+        'base_table' => $bundle->data_table,
+      ],
+      'widget' => [
+        'type' => 'obi__microarray_platform_widget',
+        'settings' => [],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'hidden',
+          'type' => 'obi__microarray_platform_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
 
-      //substrate
+    //substrate
     $field_name = 'efo__substrate';
     $field_type = 'efo__substrate';
-    $instances[$field_name] =  array(
+    $instances[$field_name] = [
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
       'label' => 'Microarray substrate',
       'description' => 'The material used for the substrate of a microarray (ie glass, nylon)',
       'required' => FALSE,
-      'settings' => array(
+      'settings' => [
+        'term_vocabulary' => 'EFO',
+        'term_name' => 'substrate',
+        'term_accession' => '0005061',
         'auto_attach' => FALSE,
-        'chado_table' =>  $bundle->data_table,
+        'chado_table' => $bundle->data_table,
         'chado_column' => 'substratetype_id',
         'base_table' => $bundle->data_table,
-      ),
-      'widget' => array(
+      ],
+      'widget' => [
         'type' => 'efo__substrate_widget',
-        'settings' => array(),
-      ),
-      'display' => array(
-        'default' => array(
+        'settings' => [],
+      ],
+      'display' => [
+        'default' => [
           'label' => 'hidden',
           'type' => 'efo__substrate_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-
-
-
+          'settings' => [],
+        ],
+      ],
+    ];
   }
 
   return $instances;
