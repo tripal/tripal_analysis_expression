@@ -91,7 +91,7 @@ function tripal_biomaterial_bundle_instances_info($entity_type, $bundle) {
   if (isset($bundle->data_table) AND ($bundle->data_table == 'organism' || $bundle->data_table == 'analysis')) {
     $field_name = 'sep__biological_sample';
 
-    $description = "List of biosamples associated with this" . $bundle->data_table;
+    $description = "List of biosamples associated with this " . $bundle->data_table;
 
     $instances[$field_name] = [
       'field_name' => $field_name,
@@ -101,6 +101,9 @@ function tripal_biomaterial_bundle_instances_info($entity_type, $bundle) {
       'description' => $description,
       'required' => FALSE,
       'settings' => [
+        'term_vocabulary' => 'sep',
+        'term_name' => 'biological sample',
+        'term_accession' => '00195',
         'auto_attach' => FALSE,
         'chado_table' => $bundle->data_table,
         'chado_column' => $bundle->data_table == 'organism' ? 'organism_id' : 'analysis_id',

@@ -112,6 +112,9 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
       'description' => 'Visualize expression data',
       'required' => FALSE,
       'settings' => [
+        'term_vocabulary' => 'data',
+        'term_name' => 'gene_expression_data',
+        'term_accession' => '2603',
         'auto_attach' => TRUE,
         'chado_table' => $bundle->data_table,
         'chado_column' => 'feature_id',
@@ -140,6 +143,9 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
       'description' => 'Access expression data',
       'required' => FALSE,
       'settings' => [
+        'term_vocabulary' => 'data',
+        'term_name' => 'gene_expression_data',
+        'term_accession' => '2603',
         'auto_attach' => TRUE,
         'chado_table' => $bundle->data_table,
         'chado_column' => 'analysis_id',
