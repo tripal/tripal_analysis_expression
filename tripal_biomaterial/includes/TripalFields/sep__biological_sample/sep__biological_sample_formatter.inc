@@ -107,6 +107,10 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
       $description = NULL;
 
       $biomaterial = $item['value'];
+      if(empty($biomaterial)) {
+        return null;
+      }
+
       $b_name = $biomaterial["name"];
       $record = $biomaterial["record_id"];
       $id = $biomaterial["entity_id"];
