@@ -109,7 +109,7 @@ function tripal_analysis_expression_heatmap_settings_form_submit($form, &$form_s
 function feature_heatmap_form($form, &$form_state) {
   $form['descriptions'] = [
     '#type' => 'item',
-    '#markup' => t('<b>Feature unique names need to be separated by comma, spaces, tabs or newlines.</b>'),
+    '#markup' => t('<b>Feature unique names need to be separated by commas.</b>'),
   ];
 
   $form['example_button'] = [
