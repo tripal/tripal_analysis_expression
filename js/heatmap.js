@@ -2,8 +2,10 @@
   Drupal.behaviors.tripal_analysis_expression = {
     attach: function(context, settings){
       $(document).ready(function(){
-        this.settings = settings.tripal_analysis_expression:
-        if(! this.settings){ return };
+        this.settings = settings.tripal_analysis_expression;
+        if(!this.settings){
+            return;
+        }
         var heatmap_data = eval(this.settings.heatmap_data);
         //var layout       = eval(settings.tripal_analysis_expression.heatmap_layout);
         var left_margin = this.settings.left_margin;
