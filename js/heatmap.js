@@ -2,12 +2,12 @@
   Drupal.behaviors.tripal_analysis_expression = {
     attach: function(context, settings){
       $(document).ready(function(){
-        var config = settings.tripal_analysis_expression:
-        if(! config){ return };
-        var heatmap_data = eval(config.heatmap_data);
+        this.settings = settings.tripal_analysis_expression:
+        if(! this.settings){ return };
+        var heatmap_data = eval(this.settings.heatmap_data);
         //var layout       = eval(settings.tripal_analysis_expression.heatmap_layout);
-        var left_margin = config.left_margin;
-        var bottom_margin = config.bottom_margin;
+        var left_margin = this.settings.left_margin;
+        var bottom_margin = this.settings.bottom_margin;
         var layout = {
                 title: 'Expression Heatmap',
                 /*
