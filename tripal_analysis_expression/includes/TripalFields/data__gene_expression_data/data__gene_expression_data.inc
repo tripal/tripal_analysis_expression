@@ -157,7 +157,6 @@ class data__gene_expression_data extends ChadoField {
       $min_num_biomaterials = variable_get('chado_feature_expression_min_num_biomaterials');
 
       $has_exp = FALSE;
-      $first_sig = 1;
 
       $sql = "SELECT ER.signal, B.name, B.biomaterial_id, B.description, Q.quantification_id, AN.analysis_id, AN.name AS analysis_name
               FROM {elementresult} ER
@@ -258,6 +257,8 @@ class data__gene_expression_data extends ChadoField {
 
       // Save data into the entity
       $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
+
+      dpm($variables);
 
       return $entity;
     }
