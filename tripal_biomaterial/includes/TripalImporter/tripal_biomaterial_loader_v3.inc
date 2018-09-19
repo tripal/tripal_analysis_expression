@@ -126,7 +126,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
 
 
-    if ((isset($form_state['values']['file_local'])) || isset($form_state['values']['file_upload'])) {
+    if ((isset($form_state['values']['file_local'])) || isset($form_state['values']['file_upload']) || isset($form_state['values']['file_upload_existing'])) {
 
 
       //$this->create($run_args, $file);
@@ -139,6 +139,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       }
       if (isset($form_state['values']['file_upload'])) {
         $fid = trim($form_state['values']['file_upload'][0]);
+        if (!empty($fid)) {
+          $file = file_load($fid);
+          $file_path = base_path() . drupal_realpath($file->uri);
+        }
+      }
+
+      if (isset($form_state['values']['file_upload_existing'])){
+        $fid = $form_state['values']['file_upload_existing'];
         if (!empty($fid)) {
           $file = file_load($fid);
           $file_path = base_path() . drupal_realpath($file->uri);
