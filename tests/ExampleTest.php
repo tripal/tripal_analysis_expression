@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
 /**

@@ -152,7 +152,7 @@ class tripal_expression_data_loader extends TripalImporter{
 
     $lt_message = tripal_set_message(t('If the array design does not appear in this list, ') . l(t('add a new arraydesign.'), 'bio_data/add') . t(' If an array design is not selected, then a generic array design will be created for the analysis.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
-    $arraydesigns = tripal_get_arraydesign_select_options(FALSE);
+    $arraydesigns = tripal_analysis_expression_get_arraydesign_select_options();
 
     $form['experimental_design']['arraydesign_id'] = [
       '#title' => t('Array Design'),
@@ -196,7 +196,7 @@ class tripal_expression_data_loader extends TripalImporter{
 
     $lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'bio_data/add') . t(' An acquisition protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
-    $acquisitions = tripal_get_protocol_select_options(FALSE, 'Acquisition Protocol');
+    $acquisitions = tripal_analysis_expression_get_protocol_select_options('Acquisition Protocol');
 
     //TODO: WE DONT USE THIS (BUT WE SHOULD)
 
