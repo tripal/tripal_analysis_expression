@@ -97,9 +97,18 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     //should be as many elements as listed for this feature
     $this->assertNotFalse($result);
 
-    var_dump($result);
+    $this->assertEquals(1, count($result));
 
-    $this->assertEquals(3, count($result));
 
+
+    $query = db_select('chado.elementresult', 'er');
+   $query->join('chado.element', 'e', 'e.element_id = er.element_id');
+    $query->fields('er');
+    $query->condition('e.feature_id', $features[0]->feature_id);
+      $results = $query->execute()
+      ->fetchAll();
+
+    $this->assertNotFalse($results);
+    $this->assertEquals(3, count($results));
   }
 }
