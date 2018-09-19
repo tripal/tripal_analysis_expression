@@ -7,7 +7,7 @@ use StatonLab\TripalTestSuite\TripalTestCase;
 
 class tripal_expression_data_loaderTest extends TripalTestCase {
 
-     use DBTransaction;
+  use DBTransaction;
 
   private function load_biomaterials($organism, $analysis) {
     module_load_include('inc', 'tripal_biomaterial', 'includes/TripalImporter/tripal_biomaterial_loader_v3');
@@ -75,12 +75,12 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
       'organism_id' => $organism->organism_id,
       'analysis_id' => $analysis->analysis_id,
       //optional
-      'fileext' => null,
+      'fileext' => NULL,
       'feature_uniquenames' => 'uniq',
-      're_start' => null,
-      're_stop' => null,
-      'feature_uniquenames' => null,
-      'quantificationunits' => null,
+      're_start' => NULL,
+      're_stop' => NULL,
+      'feature_uniquenames' => NULL,
+      'quantificationunits' => NULL,
     ];
 
     $importer = new \tripal_expression_data_loader();
@@ -100,15 +100,58 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $this->assertEquals(1, count($result));
 
 
-
     $query = db_select('chado.elementresult', 'er');
-   $query->join('chado.element', 'e', 'e.element_id = er.element_id');
+    $query->join('chado.element', 'e', 'e.element_id = er.element_id');
     $query->fields('er');
     $query->condition('e.feature_id', $features[0]->feature_id);
-      $results = $query->execute()
+    $results = $query->execute()
       ->fetchAll();
 
     $this->assertNotFalse($results);
     $this->assertEquals(3, count($results));
+  }
+
+  public function test_expression_loader_doesnt_overwite_biomat_properties() {
+
+
+    $organism = factory('chado.organism')->create();
+    $analysis = factory('chado.analysis')->create();
+
+    $this->load_biomaterials($organism, $analysis);
+    //create teh expected features
+
+    $features = $this->create_features($organism, NULL);
+
+
+    module_load_include('inc', 'tripal_analysis_expression', 'includes/TripalImporter/tripal_expression_data_loader');
+    $file = ['file_local' => __DIR__ . '/../example_files/example_expression.tsv'];
+
+
+    $run_args = [
+      'filetype' => 'mat', //matrix file type
+      'organism_id' => $organism->organism_id,
+      'analysis_id' => $analysis->analysis_id,
+      //optional
+      'fileext' => NULL,
+      'feature_uniquenames' => 'uniq',
+      're_start' => NULL,
+      're_stop' => NULL,
+      'feature_uniquenames' => NULL,
+      'quantificationunits' => NULL,
+    ];
+
+    $importer = new \tripal_expression_data_loader();
+    $importer->create($run_args, $file);
+    $importer->prepareFiles();
+    $importer->run();
+
+    $query = db_select('chado.biomaterialprop', 'bp');
+    $query->join('chado.biomaterial', 'b', 'b.biomaterial_id = bp.biomaterial_id');
+    $query->fields('bp', ['value']);
+    $query->condition('b.name', 'art');
+    $query->condition('bp.value', 'husband');
+    $prop = $query->execute()->fetchField();
+
+    $this->assertEquals('husband', $prop);
   }
 }
