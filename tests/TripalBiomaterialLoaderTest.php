@@ -33,11 +33,12 @@ class TripalBiomaterialLoaderTest extends TripalTestCase {
      $this->assertArrayHasKey('attributes', $output);
      $this->assertArrayHasKey('values', $output);
 
-     var_dump($output);
-
      //TODO: The form manually deals with this stuff, and it does it 2x, once for properties and once for values.  it should be refactored.
 
      $fields = $output["attributes"];
+     $this->assertArrayHasKey('camera', $fields);
+     $this->assertArrayHasKey('city', $fields);
+
      $property_values = $output["values"];
    }
 

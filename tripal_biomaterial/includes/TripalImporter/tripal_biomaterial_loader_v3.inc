@@ -1057,8 +1057,6 @@ function tripal_biomaterial_test_biosample_cvterms_xml(
       return;
     }
 
-    ddl($file_path);
-
     // check if the file given is empty
     $fileSize = filesize($file_path);
     if ($fileSize == 0) {
