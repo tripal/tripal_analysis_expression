@@ -123,12 +123,22 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     $description = t('After submitting uploading your file(s) and clicking the Check Biosamples button, you can configure individual cvterms for your biomaterial properties here.');
 
     //TODO:  should the importer class provide a "get files" method?
+
+
+
     if ((isset($form_state['values']['file_local'])) || isset($form_state['values']['file_upload'])) {
+
+
+      //$this->create($run_args, $file);
+    //  $this->prepareFiles();
+  //    $file_path = $this->arguments['files'][0]['file_path'];
+
+
       if (isset($form_state['values']['file_local'])) {
         $file_path = trim($form_state['values']['file_local']);
       }
       if (isset($form_state['values']['file_upload'])) {
-        $fid = trim($form_state['values']['file_upload']);
+        $fid = trim($form_state['values']['file_upload'][0]);
         if (!empty($fid)) {
           $file = file_load($fid);
           $file_path = base_path() . drupal_realpath($file->uri);
@@ -145,7 +155,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       $terms_to_check = NULL;
       if ($file_type == 'xml') {
-        $terms_to_check = test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
+        $terms_to_check = tripal_biomaterial_test_biosample_cvterms_xml($file_path, $organism_id, $analysis_id);
       }
       else {
         $terms_to_check = test_biosample_cvterms_flat($file_path);
@@ -1027,7 +1037,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
  * @param $file_path
  * @param $organism_id
  */
-function test_biosample_cvterms_xml(
+function tripal_biomaterial_test_biosample_cvterms_xml(
   $file_path,
   $organism_id,
   $analysis_id
@@ -1038,6 +1048,8 @@ function test_biosample_cvterms_xml(
       form_set_error("ERROR: File is not readable or not present.");
       return;
     }
+
+    ddl($file_path);
 
     // check if the file given is empty
     $fileSize = filesize($file_path);
@@ -1082,7 +1094,7 @@ function test_biosample_cvterms_xml(
 
     // Test all biomaterials
     for ($i = 0; $i < $num_biosamples; $i++) {
-      $output = test_xml_data($organism_id, $xml->BioSample[$i], $analysis_id, $output);
+      $output = tripal_biomaterial_test_xml_data($organism_id, $xml->BioSample[$i], $analysis_id, $output);
     }
   } catch (Exception $e) {
     print "\n";
@@ -1096,7 +1108,7 @@ function test_biosample_cvterms_xml(
  * @param $organism_id
  * @param $biosample
  */
-function test_xml_data(
+function tripal_biomaterial_test_xml_data(
   $organism_id,
   $biosample,
   $analysis_id,
@@ -1245,5 +1257,7 @@ function test_biosample_cvterms_flat(
  */
 
 function cvterm_validator_callback(&$form, &$form_state) {
-  return $form['class_elements']['cvterms'];
+
+  return $form['cvterms'];
+  //return $form['class_elements']['cvterms'];
 }
