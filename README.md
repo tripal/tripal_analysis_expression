@@ -25,8 +25,7 @@ The purpose of the module is to visually represent gene expression for Tripal fe
 
 1. Tripal
 2. Tripal Chado
-3. Tripal Protocol (Included)
-4. Tripal Biomaterial (Included)
+3. Tripal Biomaterial (Included)
 
 
 # Installation
@@ -249,6 +248,8 @@ You can also assign quantification units to **all unitless quantifications** usi
 # Protocols
 
 Acquisition, Quantification, Array Design, and Assays all utilize protocols to describe them.  Think of protocols as the **experimental design**, and Acquisitions, Quantifications, Array Designs, and Assays as the experiment following that experimental design.
+
+Note that these content types are provided by **Tripal Core**.
 
 There is currently no support for inputting, or displaying, acquisitions, quantifications, or assays.  The Expression module creates generic instances of these entities.
 
