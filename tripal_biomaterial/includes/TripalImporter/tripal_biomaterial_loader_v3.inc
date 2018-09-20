@@ -3,11 +3,8 @@
 class tripal_biomaterial_loader_v3 extends TripalImporter {
 
   public static $name = 'Chado Biological Sample (Biomaterial) Loader';
-
   public static $machine_name = 'chado_biosample_loader';
-
   public static $description = 'Import biological samples (Biomaterials) from NCBI BioSamples';
-
   public static $file_types = ['xml', 'tsv', 'csv'];
 
   public static $upload_description = "Please upload an NCBI BioSample file.  This can be in XML with an .xml extension, or flat file format with a .tsv or .csv extension.<br><br> If loading a CSV/TSV flat file, the first line must be the column name.  The only field that is required to create a biosample is the name (column: sample_name). It is recommended that a description (column: description), biomaterial provider (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column 
@@ -1149,4 +1146,3 @@ function cvterm_validator_callback(&$form, &$form_state) {
 
   return $form['cvterms'];
 }
-

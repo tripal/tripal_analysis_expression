@@ -8,37 +8,6 @@
  */
 
 /**
- * This function is intented to be used in autcomplete forms for biomaterials.
- *
- * @param $text
- *   The string to search for.
- *
- * @return
- *   A json array of terms that begin with the provided string.
- *
- * @ingroup tripal_biomaterial_api
- */
-function tripal_autocomplete_biomaterial($text) {
-  $matches = [];
-
-  $sql = "SELECT * FROM {biomaterial} WHERE lower(name) like lower(:name) ";
-  $args = [];
-  $args[':name'] = $text . '%';
-  $sql .= "ORDER BY name ";
-  $sql .= "LIMIT 25 OFFSET 0 ";
-  $results = chado_query($sql, $args);
-  $items = [];
-  foreach ($results as $biomaterial) {
-    // Don't include null biomaterials
-    if ($biomaterial->name == 'null') {
-      continue;
-    }
-    $items[$biomaterial->name] = $biomaterial->name;
-  }
-  drupal_json_output($items);
-}
-
-/**
  *
  * Implements a function to create a generic quantification. Only a name,
  * acuqisition_id, and analysis_id are required to create an assay record. A
@@ -50,14 +19,6 @@ function tripal_autocomplete_biomaterial($text) {
  *   associated. This parameter is necessary for the creation of the
  *   quantification record.
  *
- * @param $biomaterial_id
- *  The biomaterial_id of one of the biomaterials of the experiment. This will
- *   be used to create a unique name for the quantification.
- *
- * @param $organism_id
- *  The organism_id of the organism associated with the experiment. This will
- *   be used to create a unique name for the quantification.
- *
  * @param $analysis_id
  *  The analysis_id of the analysis associated with the experiment. This
  *   parameter is necessary for the creation of the quantification record. This
@@ -68,21 +29,14 @@ function tripal_autocomplete_biomaterial($text) {
 
 function create_generic_quantification(
   $acquisition_id,
-  $biomaterial_id,
-  $organism_id,
   $analysis_id,
   $uniq_name
 ) {
-  /*$biomaterial = chado_query('SELECT name FROM {biomaterial} WHERE biomaterial_id = :biomaterial_id', array(':biomaterial_id' => $biomaterial_id))->fetchField();
-  $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id', array(':organism_id' => $organism_id))->fetchField();
-  $organism_s  = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id', array(':organism_id' => $organism_id))->fetchField();
-  $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id', array(':analysis_id' => $analysis_id))->fetchField(); */
+
   $quantification_id = chado_query('select quantification_id from {quantification} where name = :name limit 1', [':name' => $uniq_name])->fetchField();
-  //$quantification_id = chado_query('select quantification_id from {quantification} where name = :name limit 1',array(':name' => $biomaterial . ' - ' . $organism_g . " " . $organism_s . ' - ' . $analysis))->fetchField();
   if (!$quantification_id) {
     $values = [
       'name' => $uniq_name,
-      //'name' => $biomaterial . ' - ' . $organism_g . " " . $organism_s . ' - ' . $analysis,
       'acquisition_id' => $acquisition_id,
       'analysis_id' => $analysis_id,
     ];
@@ -247,7 +201,7 @@ function expression_create_biomaterial_structure(
   $warning
 ) {
   // Create the biomaterial
-  $biomaterial_id = tripal_biomaterial_create_biomaterial($biomaterial, $analysis_id, $organism_id, $contact_id, $dbxref_id, '', $warning);
+  $biomaterial_id = tripal_biomaterial_create_biomaterial($biomaterial, $analysis_id, $organism_id, $contact_id, $dbxref_id = NULL, '', $warning);
 
   $uniq_name = $biomaterial . $uniq_name;
 
@@ -255,13 +209,7 @@ function expression_create_biomaterial_structure(
   $contact_id = $contact_id ? $contact_id : create_generic_contact();
   $assay_id = $assay_id ? $assay_id : create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
   $acquisition_id = $acquisition_id ? $acquisition_id : create_generic_acquisition($assay_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
-  $quantification_id = $quantification_id ? $quantification_id : create_generic_quantification($acquisition_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
-  //$assay_id         = $assay_id          ? create_unique_assay($assay_id, $contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id)
-  // : create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id);
-  //$acquisition_id   = $acquisition_id    ? create_unique_acquisition($acquisition_id, $assay_id, $biomaterial_id, $organism_id, $analysis_id)
-  //  : create_generic_acquisition($assay_id, $biomaterial_id, $organism_id, $analysis_id);
-  // $quantification_id = $quantification_id ? create_unique_quantification($quantification_id, $acquisition_id, $biomaterial_id, $organism_id, $analysis_id)
-  // : create_generic_quantification($acquisition_id, $biomaterial_id, $organism_id, $analysis_id);
+  $quantification_id = $quantification_id ? $quantification_id : create_generic_quantification($acquisition_id, $analysis_id, $uniq_name);
 
   // Create a generic channel. A channel_id is necessary for the assay_biomaterial table.
   $channel_id = create_generic_channel();
@@ -269,15 +217,12 @@ function expression_create_biomaterial_structure(
 
   //Attach the units to the quantification
   if ($quantificationunits) {
-      //get cvterm.
-
 
     $cvterm_id = tripal_get_cvterm([
-
       'name' => 'unit_of_measure',
       'cv_id' => [
-        'name' => 'sep'
-        ]
+        'name' => 'sep',
+      ],
     ])->cvterm_id;
 
     if (!$cvterm_id) {
@@ -296,7 +241,6 @@ function expression_create_biomaterial_structure(
     ];
     $result = chado_insert_record('quantificationprop', $values);
   }
-
   return $quantification_id;
 }
 
@@ -659,7 +603,7 @@ function create_generic_assay(
  * @ingroup tripal_analysis_expression
  */
 
- function tripal_biomaterial_create_biomaterial(
+function tripal_biomaterial_create_biomaterial(
   $biomaterial,
   $analysis_id,
   $organism_id,
@@ -771,17 +715,12 @@ function create_generic_acquisition(
   $analysis_id,
   $uniq_name
 ) {
-  /* $biomaterial = chado_query('SELECT name FROM {biomaterial} WHERE biomaterial_id = :biomaterial_id', array(':biomaterial_id' => $biomaterial_id))->fetchField();
-   $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id', array(':organism_id' => $organism_id))->fetchField();
-   $organism_s  = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id', array(':organism_id' => $organism_id))->fetchField();
-   $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id', array(':analysis_id' => $analysis_id))->fetchField();*/
+
   $acquisition_id = chado_query('select acquisition_id from {acquisition} where name = :name limit 1', [':name' => $uniq_name])->fetchField();
-  //$acquisition_id = chado_query('select acquisition_id from {acquisition} where name = :name limit 1',array(':name' => $biomaterial . ' - ' . $organism_g . " " . $organism_s . ' - ' . $analysis))->fetchField();
+
   if (!$acquisition_id) {
     $values = [
       'name' => $uniq_name,
-      //biomaterial . ' - ' . $organism_g . " " . $organism_s . ' - ' . $analysis,
-      //'name' => $biomaterial . ' - ' . $organism_g . " " . $organism_s . ' - ' . $analysis,
       'assay_id' => $assay_id,
     ];
     $acquisition = chado_insert_record('acquisition', $values);
@@ -800,7 +739,7 @@ function create_generic_acquisition(
  *
  * @return mixed
  */
- function tripal_biomaterial_create_biomaterial_contact($contact_name) {
+function tripal_biomaterial_create_biomaterial_contact($contact_name) {
   $contact_id = chado_query('select contact_id from {contact} where name = :name limit 1', [':name' => $contact_name])->fetchField();
   if (!$contact_id) {
     $values = [
@@ -816,7 +755,7 @@ function create_generic_acquisition(
   return $contact_id;
 }
 
- function tripal_biomaterial_create_ncbi_db($url_name, $db_name, $db_description) {
+function tripal_biomaterial_create_ncbi_db($url_name, $db_name, $db_description) {
 
   $url = "http://www.ncbi.nlm.nih.gov/";
   $urlprefix = "http://www.ncbi.nlm.nih.gov/" . $url_name . "/";
@@ -846,6 +785,5 @@ function create_generic_acquisition(
       exit;
     }
   }
-
   return $db_id;
 }
