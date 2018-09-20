@@ -1,82 +1,33 @@
 <?php
 
+/**
+ * Class tripal_expression_data_loader
+ * @see TripalImporter
+ */
+
 class tripal_expression_data_loader extends TripalImporter {
 
-  // --------------------------------------------------------------------------
-  //                     EDITABLE STATIC CONSTANTS
-  //
-  // The following constants SHOULD be set for each descendant class.  They are
-  // used by the static functions to provide information to Drupal about
-  // the field and it's default widget and formatter.
-  // --------------------------------------------------------------------------
-
-  /**
-   * The name of this loader.  This name will be presented to the site
-   * user.
-   */
   public static $name = 'Chado Expression Data Loader';
 
-  /**
-   * The machine name for this loader. This name will be used to construct
-   * the URL for the loader.
-   */
   public static $machine_name = 'Chado_Expression_Data_Loader';
 
-  /**
-   * A brief description for this loader.  This description will be
-   * presented to the site user.
-   */
+
   public static $description = 'Import expression data.  Requires an analaysis and biomaterial.';
 
-  /**
-   * An array containing the extensions of allowed file types.
-   */
   public static $file_types = ['csv', 'tsv', 'txt'];
 
-  /**
-   * Provides information to the user about the file upload.  Typically this
-   * may include a description of the file types allowed.
-   */
   public static $upload_description = 'Expression data can be loaded from two format types. Select the column format for files that have two columns - transcript id and expression value. Select the matrix format for files that specify biosample by column and transcript by row. If "Column Format" is selected, the name of the column file will be taken as the biomaterial name. It is recommended to avoid the use of white space in column file names and in biomaterial names.<br>  Please verify the column or file names match the intended biomaterial name in the database.';
 
-  /**
-   * The title that should appear above the upload button.
-   */
   public static $upload_title = 'Upload expression data';
 
-  /**
-   * If the loader should require an analysis record.  To maintain provenance
-   * we should always indicate where the data we are uploading comes from.
-   * Tripal attempts to use this by associating upload files
-   * with an analysis record.  The analysis record provides the details for
-   * how the file was created or obtained. Set this to FALSE if the loader
-   * should not require an analysis when loading. if $use_analysis is set to
-   * true then the form values will have an 'analysis_id' key in the $form_state
-   * array on submitted forms.
-   */
   public static $use_analysis = TRUE;
 
-  /**
-   * If the $use_analysis value is set above then this value indicates if the
-   * analysis should be required.
-   */
   public static $require_analysis = TRUE;
 
-  /**
-   * Text that should appear on the button at the bottom of the importer
-   * form.
-   */
   public static $button_text = 'Import expression data';
-
-  /**
-   * Indicates the methods that the file uploader will support.
-   */
   public static $methods = [
-    // Allow the user to upload a file to the server.
     'file_upload' => TRUE,
-    // Allow the user to provide the path on the Tripal server for the file.
     'file_local' => TRUE,
-    // Allow the user to provide a remote URL for the file.
     'file_remote' => FALSE,
   ];
 
@@ -86,12 +37,6 @@ class tripal_expression_data_loader extends TripalImporter {
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-
-
-    $default_time = REQUEST_TIME;
-    $year = format_date($default_time, 'custom', 'Y');
-    $month = format_date($default_time, 'custom', 'n');
-    $day = format_date($default_time, 'custom', 'j');
 
     // get a list of organisms for the user to choose
     $sql = "SELECT * FROM {organism} ORDER BY genus, species";
@@ -1087,7 +1032,7 @@ AND f.type_id = :type_id', [
    * @ingroup tripal_analysis_expression
    */
 
-  protected function tripal_expression_find_feature_id(
+  private function tripal_expression_find_feature_id(
     $feature,
     $organism_id,
     $feature_uniquenames,
@@ -1111,16 +1056,21 @@ AND f.type_id = :type_id', [
     $count = $query->countQuery()->execute()->fetchField();
 
     if ($count > 1) {
-      print "ERROR: More than one feature matches the feature name: {$feature}.\n.
+
+      //TODO:  This print is redundant with logMessage, but Test Suite needs help dealing with logMessage outside of a job- see
+      //https://github.com/statonlab/TripalTestSuite/issues/116
+      print "ERROR: More than one feature matches the feature name.\n";
+      $message ="ERROR: More than one feature matches the feature name: !feature.\n
       Please specify a term for the feature type.\n";
-      return;
+      $this->logMessage($message, ['!feature' => $feature], TRIPAL_ERROR);
+      return FALSE;
     }
     $feature_object = $query->execute()->fetchObject();
 
     if (!$feature_object) {
       print "ERROR: The feature, " . $feature . ", found in the expression file was not found in the Chado database.
        Please ensure that the feature has been loaded into the database and that the feature name is both unique and correct.\n\n";
-      return;
+      return FALSE;
     }
 
     if ($feature_object->organism_id != $organism_id) {

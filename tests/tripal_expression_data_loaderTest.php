@@ -193,18 +193,14 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
 
 
   /**
-   * If we ever match > 1 feature, we need to throw an error.
-   * Tests for matrix.
-   *
-   * @throws \Exception
+   * @group wip
    */
-  public function test_type_required() {
-
+  public function test_type_required_submethod() {
 
     $organism = factory('chado.organism')->create();
     $analysis = factory('chado.analysis')->create();
 
-    $this->load_biomaterials($organism, $analysis);
+    // $this->load_biomaterials($organism, $analysis);
     //create teh expected features
 
     $so = chado_get_cv(['name' => 'sequence']);
@@ -218,36 +214,19 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
 
 
     module_load_include('inc', 'tripal_analysis_expression', 'includes/TripalImporter/tripal_expression_data_loader');
-    $file = ['file_local' => __DIR__ . '/../example_files/example_expression.tsv'];
 
-
-    $run_args = [
-      'filetype' => 'mat', //matrix file type
-      'organism_id' => $organism->organism_id,
-      'analysis_id' => $analysis->analysis_id,
-      //optional
-      'type' => NULL,
-      'fileext' => NULL,
-      'feature_uniquenames' => 'uniq',
-      're_start' => NULL,
-      're_stop' => NULL,
-      'feature_uniquenames' => NULL,
-      'quantificationunits' => NULL,
-    ];
 
     $importer = new \tripal_expression_data_loader();
-    $importer->create($run_args, $file);
-    $importer->prepareFiles();
-    $importer->run();
 
-    //should fail because above loader failed.
+    $private = reflect($importer);
 
-    //TODO: this is bootleg.  We should instead properly use the exceptions in the importer class.
-    $this->expectException(Exception);
+    $feature = $private->tripal_expression_find_feature_id(
+      $featuresA[0]->name,
+      $organism->organism_id,
+      $feature_uniquenames = FALSE,
+      $type_id = NULL);
 
-    $query = db_select('chado.elementresult', 'er');
-    $query->fields('er');
-    $query->execute()->fetchAll();
+    $this->assertFalse($feature);
   }
 
   /**
