@@ -47,10 +47,8 @@ function tripal_biomaterial_install() {
     'base_table' => 1,
   ])->condition('table_name', 'biomaterial', '=')->execute();
 
-
   //Add cvalue_id if not already present in biomateiralprop
   tripal_biomaterial_update_7301();
-
 }
 
 

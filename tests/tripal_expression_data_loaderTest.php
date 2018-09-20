@@ -193,7 +193,6 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
 
 
   /**
-   * @group wip
    */
   public function test_type_required_submethod() {
 
