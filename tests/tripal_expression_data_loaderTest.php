@@ -290,4 +290,53 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $this->assertEquals(3, count($results));
 
   }
+
+//  /**
+//   * @ticket 159
+//   *
+//   * This test shows the warning is OK. However, it doesnt throw an exception!  Commented out for now.
+//   */
+//  public function test_dupe_sample_name_in_expression_loader(){
+//
+//
+//    $organism = factory('chado.organism')->create();
+//    $analysis = factory('chado.analysis')->create();
+//
+//    $this->load_biomaterials($organism, $analysis);
+//    //create expected features
+//
+//    $featuresA = $this->create_features($organism);
+//
+//
+//    module_load_include('inc', 'tripal_analysis_expression', 'includes/TripalImporter/tripal_expression_data_loader');
+//    $file = ['file_local' => __DIR__ . '/example/dupe_sample_name_expression.tsv'];
+//
+//
+//    $run_args = [
+//      'filetype' => 'mat', //matrix file type
+//      'organism_id' => $organism->organism_id,
+//      'analysis_id' => $analysis->analysis_id,
+//      //'seqtype' => $termA->name,
+//      //optional
+//      'type' => NULL,
+//      'fileext' => NULL,
+//      'feature_uniquenames' => 'uniq',
+//      're_start' => NULL,
+//      're_stop' => NULL,
+//      'feature_uniquenames' => NULL,
+//      'quantificationunits' => NULL,
+//    ];
+//
+//    $importer = new \tripal_expression_data_loader();
+//    $importer->create($run_args, $file);
+//    $importer->prepareFiles();
+//    $importer->run();
+//
+//    $this->expectException(Exception);
+//
+//    $query = db_select('chado.elementresult', 'er');
+//    $query->fields('er');
+//    $query->execute()->fetchAll();
+//
+//  }
 }
