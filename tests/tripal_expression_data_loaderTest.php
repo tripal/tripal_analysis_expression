@@ -154,4 +154,86 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
 
     $this->assertEquals('husband', $prop);
   }
+
+
+  public function test_specifying_type() {
+
+
+    $organism = factory('chado.organism')->create();
+    $analysis = factory('chado.analysis')->create();
+
+    $this->load_biomaterials($organism, $analysis);
+    //create teh expected features
+
+    $termA = factory('chado.cvterm')->create();
+    $termB = factory('chado.cvterm')->create();
+
+
+    $featuresA = $this->create_features($organism, $termA);
+    $featuresB = $this->create_features($organism, $termB);
+
+
+    module_load_include('inc', 'tripal_analysis_expression', 'includes/TripalImporter/tripal_expression_data_loader');
+    $file = ['file_local' => __DIR__ . '/../example_files/example_expression.tsv'];
+
+
+    $run_args = [
+      'filetype' => 'mat', //matrix file type
+      'organism_id' => $organism->organism_id,
+      'analysis_id' => $analysis->analysis_id,
+      //optional
+      'type' => NULL,
+      'fileext' => NULL,
+      'feature_uniquenames' => 'uniq',
+      're_start' => NULL,
+      're_stop' => NULL,
+      'feature_uniquenames' => NULL,
+      'quantificationunits' => NULL,
+    ];
+
+    $importer = new \tripal_expression_data_loader();
+    $importer->create($run_args, $file);
+    $importer->prepareFiles();
+    $importer->run();
+
+    //should fail and we dont have features
+
+    $query = db_select('chado.elementresult', 'er');
+    $query->join('chado.element', 'e', 'e.element_id = er.element_id');
+    $query->fields('er');
+    $query->condition('e.feature_id', [
+      $featuresA[0]->feature_id,
+      $featuresA[1]->feature_id,
+      $featuresB[0]->feature_id,
+      $featuresB[1]->feature_id,
+    ]);
+    $results = $query->execute()
+      ->fetchAll();
+
+    $this->assertFalse($results);
+
+
+    $run_args['type'] = $termA->cvterm_id;
+
+    $importer = new \tripal_expression_data_loader();
+    $importer->create($run_args, $file);
+    $importer->prepareFiles();
+    $importer->run();
+
+    //Now we hsould have it associated with term A
+
+
+    $query = db_select('chado.elementresult', 'er');
+    $query->join('chado.element', 'e', 'e.element_id = er.element_id');
+    $query->fields('er');
+    $query->condition('e.feature_id', [
+      $featuresA[0]->feature_id,
+    ]);
+    $results = $query->execute()
+      ->fetchAll();
+
+    $this->assertTrue($results);
+    $this->assertEquals(3, count($results));
+
+  }
 }
