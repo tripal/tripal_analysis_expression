@@ -1032,7 +1032,7 @@ AND f.type_id = :type_id', [
    * @ingroup tripal_analysis_expression
    */
 
-  protected function tripal_expression_find_feature_id(
+  private function tripal_expression_find_feature_id(
     $feature,
     $organism_id,
     $feature_uniquenames,
@@ -1063,14 +1063,14 @@ AND f.type_id = :type_id', [
       $message ="ERROR: More than one feature matches the feature name: !feature.\n
       Please specify a term for the feature type.\n";
       $this->logMessage($message, ['!feature' => $feature], TRIPAL_ERROR);
-      return;
+      return FALSE;
     }
     $feature_object = $query->execute()->fetchObject();
 
     if (!$feature_object) {
       print "ERROR: The feature, " . $feature . ", found in the expression file was not found in the Chado database.
        Please ensure that the feature has been loaded into the database and that the feature name is both unique and correct.\n\n";
-      return;
+      return FALSE;
     }
 
     if ($feature_object->organism_id != $organism_id) {
