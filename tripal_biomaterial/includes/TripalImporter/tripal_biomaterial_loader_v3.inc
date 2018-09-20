@@ -60,26 +60,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     $description = t('After submitting uploading your file(s) and clicking the Check Biosamples button, you can configure individual cvterms for your biomaterial properties here.');
 
     if ((isset($form_state['values']['file_local'])) || isset($form_state['values']['file_upload']) || isset($form_state['values']['file_upload_existing'])) {
-
-
-      if (isset($form_state['values']['file_local'])) {
-        $file_path = trim($form_state['values']['file_local']);
-      }
-      if (isset($form_state['values']['file_upload'])) {
-        $fid = trim($form_state['values']['file_upload'][0]);
-        if (!empty($fid)) {
-          $file = file_load($fid);
-          $file_path = base_path() . drupal_realpath($file->uri);
-        }
-      }
-
-      if (isset($form_state['values']['file_upload_existing'])){
-        $fid = $form_state['values']['file_upload_existing'];
-        if (!empty($fid)) {
-          $file = file_load($fid);
-          $file_path = base_path() . drupal_realpath($file->uri);
-        }
-      }
+      $file_path = $this->findFile($form_state['values']);
 
       $extension = explode('.', $file_path);
       $extension = $extension[count($extension) - 1];
@@ -966,6 +947,38 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
   }
 
 
+  /**
+   * Get the filepath of the biomaterial file (local, upload, or upload existing).
+   * @param $values
+   *
+   * @return null|string
+   */
+  private function findFile($values){
+
+    $file_path = null;
+
+    if (isset($values['file_local'])) {
+      $file_path = trim($values['file_local']);
+    }
+    if (isset($form_state['values']['file_upload'])) {
+      $fid = trim($values['file_upload'][0]);
+      if (!empty($fid)) {
+        $file = file_load($fid);
+        $file_path = base_path() . drupal_realpath($file->uri);
+      }
+    }
+
+    if (isset($values['file_upload_existing'])){
+      $fid = $values['file_upload_existing'];
+      if (!empty($fid)) {
+        $file = file_load($fid);
+        $file_path = base_path() . drupal_realpath($file->uri);
+      }
+    }
+    return $file_path;
+  }
+
+
   //end of class
 }
 
@@ -1195,3 +1208,4 @@ function cvterm_validator_callback(&$form, &$form_state) {
   return $form['cvterms'];
   //return $form['class_elements']['cvterms'];
 }
+
