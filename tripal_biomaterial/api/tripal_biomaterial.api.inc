@@ -243,17 +243,18 @@ function expression_create_biomaterial_structure(
   $acquisition_id,
   $quantification_id,
   $quantificationunits,
-  $uniq_name
+  $uniq_name,
+  $warning
 ) {
   // Create the biomaterial
-  $biomaterial_id = tripal_biomaterial_create_biomaterial($biomaterial, $analysis_id, $organism_id, $contact_id, $dbxref_id, '');
+  $biomaterial_id = tripal_biomaterial_create_biomaterial($biomaterial, $analysis_id, $organism_id, $contact_id, $dbxref_id, '', $warning);
 
   $uniq_name = $biomaterial . $uniq_name;
 
   // Create the following records if not provided by the user.
   $contact_id = $contact_id ? $contact_id : create_generic_contact();
   $assay_id = $assay_id ? $assay_id : create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
-  $acquisition_id = $acquistion_id ? $acquisition_id : create_generic_acquisition($assay_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
+  $acquisition_id = $acquisition_id ? $acquisition_id : create_generic_acquisition($assay_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
   $quantification_id = $quantification_id ? $quantification_id : create_generic_quantification($acquisition_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
   //$assay_id         = $assay_id          ? create_unique_assay($assay_id, $contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id)
   // : create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id);
@@ -664,12 +665,13 @@ function create_generic_assay(
   $organism_id,
   $biosourceprovider_id,
   $dbxref_id,
-  $biomaterial_description
+  $biomaterial_description,
+  $warnings = TRUE
 ) {
   $biomaterial_result = chado_query('select biomaterial_id, taxon_id, description from {biomaterial} where name = :name limit 1', [':name' => $biomaterial])->fetchObject();
 
   // if sample_name already exists in chado db, print warning message
-  if ($biomaterial_result->taxon_id) {
+  if ($biomaterial_result->taxon_id && $warnings) {
     print("WARNING: Biomaterial with sample_name of '$biomaterial' alreay exists in the database. Overwriting database entries for $biomaterial...\n");
   }
 

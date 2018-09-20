@@ -165,6 +165,7 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $importer->prepareFiles();
     $importer->run();
 
+    //first check every column of the biomaterial.  it shouldnt have changed.
     $biomat_post = db_select('chado.biomaterial', 'b')
       ->condition('b.name', $biomat_name)
       ->fields('b')
@@ -174,8 +175,8 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $keys = ['taxon_id', 'biosourceprovider_id', 'dbxref_id', 'name', 'description'];
 
     foreach ($keys as $key){
+      $this->assertObjectHasAttribute($key, $biomat_post);
       $this->assertEquals($original_biomat->$key, $biomat_post->$key, "Biomaterial key $key was changed by expression loader.\n  {$original_biomat->$key} => {$biomat_post->$key}.");
-
     }
 
     //Check properties

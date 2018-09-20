@@ -782,7 +782,8 @@ AND f.type_id = :type_id', [
 
         if ($mat_head == 0) {
           foreach ($linepart as $sample) {
-            $quant_array[] = expression_create_biomaterial_structure($sample, $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $uniq_name);
+            $warning = FALSE;
+            $quant_array[] = expression_create_biomaterial_structure($sample, $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $uniq_name, $warning);
           }
 
           // Make sure there not duplicate biomaterial names.
