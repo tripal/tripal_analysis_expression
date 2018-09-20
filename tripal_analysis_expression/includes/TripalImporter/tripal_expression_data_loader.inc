@@ -1,6 +1,6 @@
 <?php
 
-class tripal_expression_data_loader extends TripalImporter{
+class tripal_expression_data_loader extends TripalImporter {
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -109,6 +109,19 @@ class tripal_expression_data_loader extends TripalImporter{
       '#options' => $organisms,
     ];
 
+
+    $cv = tripal_get_cv(['name' => 'sequence']);
+    $cv_id = $cv->cv_id;
+
+    $form['seqtype'] = [
+      '#type' => 'textfield',
+      '#title' => t('Sequence Type'),
+      '#required' => TRUE,
+      '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the sequences in the expression file (e.g. gene, mRNA, polypeptide, etc...).  Only necessary if the uniquename does not uniquely identify the feature for this organism.'),
+      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id",
+    ];
+
+
     //protocols, assays, etc go here
 
     $form['experimental_design'] = [
@@ -141,14 +154,14 @@ class tripal_expression_data_loader extends TripalImporter{
 
     //    $lt_message = tripal_set_message(t('If the biomaterial provider is not present in the dropdown list, ') . l(t('add a new contact.'), 'bio_data/add') . t(' A biomaterial provider is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
-//    $form['experimental_design']['biosourceprovider_id'] = [
-//      '#title' => t('Biomaterial Provider'),
-//      '#type' => 'select',
-//      '#empty_value' => '',
-//      '#description' => t('The contact who provided the biomaterial. If the biomaterial is already') . (' present in the database, the biomaterial provider selected here will') . (' overwrite the biomaterial provider set for the biomaterial in the database.'),
-//      '#options' => $form['choose_contact']['#value'],
-//      '#suffix' => $lt_message,
-//    ];
+    //    $form['experimental_design']['biosourceprovider_id'] = [
+    //      '#title' => t('Biomaterial Provider'),
+    //      '#type' => 'select',
+    //      '#empty_value' => '',
+    //      '#description' => t('The contact who provided the biomaterial. If the biomaterial is already') . (' present in the database, the biomaterial provider selected here will') . (' overwrite the biomaterial provider set for the biomaterial in the database.'),
+    //      '#options' => $form['choose_contact']['#value'],
+    //      '#suffix' => $lt_message,
+    //    ];
 
     $lt_message = tripal_set_message(t('If the array design does not appear in this list, ') . l(t('add a new arraydesign.'), 'bio_data/add') . t(' If an array design is not selected, then a generic array design will be created for the analysis.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
@@ -165,34 +178,34 @@ class tripal_expression_data_loader extends TripalImporter{
     //TODO: WE DONT USE THIS (BUT WE SHOULD)
 
     //
-//    $form['experimental_design']['acquisition_details'] = [
-//      '#title' => t('Acquisition Details'),
-//      '#type' => 'fieldset',
-//      '#description' => t('This represents the quantification technique. In the case of a microarray, it is scanning, in the case of a sequencer, it is sequencing. The output of this process is a digitial image of an array for a microarray or a set of digital images or nucleotide base calls for a sequencer.'),
-//      '#collapsible' => TRUE,
-//      '#collapsed' => FALSE,
-//      '#weight' => 1,
-//    ];
+    //    $form['experimental_design']['acquisition_details'] = [
+    //      '#title' => t('Acquisition Details'),
+    //      '#type' => 'fieldset',
+    //      '#description' => t('This represents the quantification technique. In the case of a microarray, it is scanning, in the case of a sequencer, it is sequencing. The output of this process is a digitial image of an array for a microarray or a set of digital images or nucleotide base calls for a sequencer.'),
+    //      '#collapsible' => TRUE,
+    //      '#collapsed' => FALSE,
+    //      '#weight' => 1,
+    //    ];
 
-//    $form['experimental_design']['acquisition_details']['acquisitiondate'] = [
-//      '#type' => 'date',
-//      '#title' => t('Date Acquisition Run'),
-//      '#description' => t('If no date is provided, then the current date will be used.'),
-//      '#required' => TRUE,
-//      '#default_value' => [
-//        'year' => $year,
-//        'month' => $month,
-//        'day' => $day,
-//      ],
-//    ];
+    //    $form['experimental_design']['acquisition_details']['acquisitiondate'] = [
+    //      '#type' => 'date',
+    //      '#title' => t('Date Acquisition Run'),
+    //      '#description' => t('If no date is provided, then the current date will be used.'),
+    //      '#required' => TRUE,
+    //      '#default_value' => [
+    //        'year' => $year,
+    //        'month' => $month,
+    //        'day' => $day,
+    //      ],
+    //    ];
 
     //TODO: WE DONT USE THIS (BUT WE SHOULD)
 
     //    $form['experimental_design']['acquisition_details']['acquisition_uri'] = [
-//      '#type' => 'textfield',
-//      '#title' => t('Acquisition URI'),
-//      '#description' => t('URI location that describes the acquisition.'),
-//    ];
+    //      '#type' => 'textfield',
+    //      '#title' => t('Acquisition URI'),
+    //      '#description' => t('URI location that describes the acquisition.'),
+    //    ];
 
     $lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'bio_data/add') . t(' An acquisition protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
@@ -201,13 +214,13 @@ class tripal_expression_data_loader extends TripalImporter{
     //TODO: WE DONT USE THIS (BUT WE SHOULD)
 
     //
-//    $form['experimental_design']['acquisition_details']['acquisition_protocol_id'] = [
-//      '#title' => t('Acquisition Protocol'),
-//      '#type' => 'select',
-//      '#description' => t('The protocol associated with this acquisition.'),
-//      '#options' => $acquisitions,
-//      '#suffix' => $lt_message,
-//    ];
+    //    $form['experimental_design']['acquisition_details']['acquisition_protocol_id'] = [
+    //      '#title' => t('Acquisition Protocol'),
+    //      '#type' => 'select',
+    //      '#description' => t('The protocol associated with this acquisition.'),
+    //      '#options' => $acquisitions,
+    //      '#suffix' => $lt_message,
+    //    ];
 
     $form['experimental_design']['quantification_details'] = [
       '#title' => t('Quantification Details'),
@@ -224,28 +237,28 @@ class tripal_expression_data_loader extends TripalImporter{
     ];
     //TODO: WE DONT USE THIS (BUT WE SHOULD)
 
-//    $form['experimental_design']['quantification_details']['quantificationdate'] = [
-//      '#type' => 'date',
-//      '#title' => t('Date Quantification Run'),
-//      '#description' => t('If no date is provided, then the current date will be used.'),
-//      '#required' => TRUE,
-//      '#default_value' => [
-//        'year' => $year,
-//        'month' => $month,
-//        'day' => $day,
-//      ],
-//    ];
+    //    $form['experimental_design']['quantification_details']['quantificationdate'] = [
+    //      '#type' => 'date',
+    //      '#title' => t('Date Quantification Run'),
+    //      '#description' => t('If no date is provided, then the current date will be used.'),
+    //      '#required' => TRUE,
+    //      '#default_value' => [
+    //        'year' => $year,
+    //        'month' => $month,
+    //        'day' => $day,
+    //      ],
+    //    ];
 
 
     //TODO: WE DONT USE THIS (BUT WE SHOULD)
 
     //    $form['experimental_design']['quantification_details']['quantification_uri'] = [
-//      '#type' => 'textfield',
-//      '#title' => t('Quantification URI'),
-//      '#description' => t('URI location that describes the quantification.'),
-//    ];
-//
-//    $lt_message = tripal_set_message(t('If the quantification operator is not present in the dropdown list, ') . l(t('add a new contact.'), 'bio_data/add') . t('A quantication operator is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+    //      '#type' => 'textfield',
+    //      '#title' => t('Quantification URI'),
+    //      '#description' => t('URI location that describes the quantification.'),
+    //    ];
+    //
+    //    $lt_message = tripal_set_message(t('If the quantification operator is not present in the dropdown list, ') . l(t('add a new contact.'), 'bio_data/add') . t('A quantication operator is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
 
     //     Obtain the list of contacts from the chado contact table.
     $sql = 'SELECT
@@ -265,28 +278,28 @@ class tripal_expression_data_loader extends TripalImporter{
 
     //TODO: WE DONT USE THIS (BUT WE SHOULD)
     //
-//    $form['experimental_design']['quantification_details']['quantification_operator_id'] = [
-//      '#title' => t('Quantification Operator'),
-//      '#type' => 'select',
-//      '#empty_value' => '',
-//      '#description' => t('The quantification operator. If the operator does not appear in this list, ') . l(t('add a new contact.'), 'bio_data/add') . t(' An operator is not required.'),
-//      '#options' => $form['choose_contact']['#value'],
-//      '#suffix' => $lt_message,
-//    ];
+    //    $form['experimental_design']['quantification_details']['quantification_operator_id'] = [
+    //      '#title' => t('Quantification Operator'),
+    //      '#type' => 'select',
+    //      '#empty_value' => '',
+    //      '#description' => t('The quantification operator. If the operator does not appear in this list, ') . l(t('add a new contact.'), 'bio_data/add') . t(' An operator is not required.'),
+    //      '#options' => $form['choose_contact']['#value'],
+    //      '#suffix' => $lt_message,
+    //    ];
 
 
     //TODO: WE DONT USE THIS (BUT WE SHOULD)
-//    $lt_message = tripal_set_message(t('If the quantification protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'bio_data/add') . t(' A quantification protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
-//
-//    $quantifications = tripal_get_protocol_select_options(FALSE, 'Quantification Protocol');
+    //    $lt_message = tripal_set_message(t('If the quantification protocol is not present in the dropdown list, ') . l(t('add a new protocol.'), 'bio_data/add') . t(' A quantification protocol is not required.'), TRIPAL_INFO, ['return_html' => TRUE]);
+    //
+    //    $quantifications = tripal_get_protocol_select_options(FALSE, 'Quantification Protocol');
 
-//    $form['experimental_design']['quantification_details']['quantification_protocol_id'] = [
-//      '#title' => t('Quantification Protocol'),
-//      '#type' => 'select',
-//      '#description' => t('The protocol associated with this quantification.'),
-//      '#options' => $quantifications,
-//      '#suffix' => $lt_message,
-//    ];
+    //    $form['experimental_design']['quantification_details']['quantification_protocol_id'] = [
+    //      '#title' => t('Quantification Protocol'),
+    //      '#type' => 'select',
+    //      '#description' => t('The protocol associated with this quantification.'),
+    //      '#options' => $quantifications,
+    //      '#suffix' => $lt_message,
+    //    ];
 
     $form['filetype'] = [
       '#type' => 'radios',
@@ -342,6 +355,20 @@ class tripal_expression_data_loader extends TripalImporter{
     $re_start = $form_state['values']['re_start'];
     $re_end = $form_state['values']['re_end'];
 
+    $seqtype = isset($form_state['values']['seqtype']) ? $form_state['values']['seqtype'] : NULL;
+
+    if ($seqtype) {
+      $identifier = [
+        'cv_id' => ['name' => 'sequence'],
+        'name' => $seqtype,
+      ];
+    }
+
+    $type = chado_get_cvterm($identifier);
+
+    if (!$type) {
+      form_set_error('seqtype', 'Please provide a valid parent type (or none at all)');
+    }
     // Validate the regular expressions if provided.
     if ($re_start and @preg_match('/' . $re_start . '/', NULL) === FALSE) {
       form_set_error('re_start', 'Invalid regular expression for the start of expression data: ' . $re_start);
@@ -370,6 +397,9 @@ class tripal_expression_data_loader extends TripalImporter{
     if (isset($arguments['analysis_id'])) {
       $analysis_id = $arguments['analysis_id'];
     }
+    if (isset($arguments['analysis_id'])) {
+      $seqtype = $arguments['seqtype'];
+    }
     $feature_uniquenames = $arguments['feature_uniquenames'];
     $arraydesign_id = $arguments['arraydesign_id'];
 
@@ -377,20 +407,19 @@ class tripal_expression_data_loader extends TripalImporter{
 
     //we dont actually use these variables so lets not collect the data.
     //but, we do pass it around a million ways so lets declare the variables
-    $assaydate = null;//$arguments['assaydate'];
-    $contact_id = null;//$arguments['contact_id'];
-    $acquisitiondate = null;// $acquisitiondate = $arguments['acquisitiondate'];
-    $create_biosamples = null;// $create_biosamples = $arguments['create_biosamples'];
-    $quantificationdate = null;// $quantificationdate = $arguments['quantificationdate'];
+    $assaydate = NULL;//$arguments['assaydate'];
+    $contact_id = NULL;//$arguments['contact_id'];
+    $acquisitiondate = NULL;// $acquisitiondate = $arguments['acquisitiondate'];
+    $create_biosamples = NULL;// $create_biosamples = $arguments['create_biosamples'];
+    $quantificationdate = NULL;// $quantificationdate = $arguments['quantificationdate'];
     //
-
 
 
     tripal_set_message(t("Job Submitted!  If new Biosamples will be created in this job, remember to") . l('publish them after the job runs.',
         'admin/content/bio_data/publish/'), TRIPAL_INFO);
 
 
-    $this->tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $quantificationunits, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples);
+    $this->tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $quantificationunits, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples, $seqtype);
   }
 
   /**
@@ -439,6 +468,9 @@ class tripal_expression_data_loader extends TripalImporter{
    * @param $create_biosamples
    * Allow creation of new biosamples.  Defaults to false: we want users to
    *   load in annotated biosamples instead.
+   * @param $seqtype
+   * Specify the feature type to associate the data with, or, NULL.
+   *
    *
    * @ingroup tripal_analysis_expression
    */
@@ -458,9 +490,19 @@ class tripal_expression_data_loader extends TripalImporter{
     $re_start,
     $re_stop,
     $feature_uniquenames,
-    $create_biosamples
+    $create_biosamples,
+    $seqtype
   ) {
 
+    $seqtype_id = NULL;
+    if ($seqtype) {
+      $identifier = [
+        'cv_id' => ['name' => 'sequence'],
+        'name' => $seqtype,
+      ];
+
+      $seqtype_id = chado_get_cvterm($identifier)->cvterm_id;
+    }
 
     //these should be passed in parameters but are optional and apparently not used.
     //BC
@@ -472,9 +514,6 @@ class tripal_expression_data_loader extends TripalImporter{
 
     $uniq_name = $this->get_unique_name($organism_id, $analysis_id);
 
-    //not needed as importer provides transaction
-    //$transaction = db_transaction();
-
     try {
       // Create the array design.
       $arraydesign_id = $arraydesign_id ? $arraydesign_id : create_generic_arraydesign(create_generic_contact());
@@ -482,7 +521,7 @@ class tripal_expression_data_loader extends TripalImporter{
 
       // A matrix file.
       if ($filetype == 'mat' and is_file($filepath)) {
-        $this->tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames);
+        $this->tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames, $seqtype_id);
       }
 
       // The column format.
@@ -509,10 +548,29 @@ class tripal_expression_data_loader extends TripalImporter{
 
       // Associate features with an analysis.
       foreach ($features as $feature_id) {
-        $analysisfeature_id = chado_query('SELECT analysisfeature_id FROM {analysisfeature} WHERE analysis_id = :analysis_id AND feature_id = :feature_id', [
-          ':analysis_id' => $analysis_id,
-          ':feature_id' => $feature_id,
-        ])->fetchField();
+
+        //TODO: THIS WENT IN THE WRONG PLACE I THINK
+
+        if ($seqtype_id) {
+
+          $query = chado_query('SELECT afanalysisfeature_id FROM {analysisfeature} af 
+INNER JOIN {feature} f ON f.feature_id = af.feature_id
+WHERE af.analysis_id = :analysis_id 
+AND af.feature_id = :feature_id
+AND f.type_id = :type_id', [
+            ':analysis_id' => $analysis_id,
+            ':feature_id' => $feature_id,
+            ':type_id' => $seqtype_id,
+          ]);
+
+        }
+        else {
+          $query = chado_query('SELECT analysisfeature_id FROM {analysisfeature} WHERE analysis_id = :analysis_id AND feature_id = :feature_id', [
+            ':analysis_id' => $analysis_id,
+            ':feature_id' => $feature_id,
+          ]);
+        }
+        $analysisfeature_id = $query->fetchField();
         if (!$analysisfeature_id) {
           $analysisfeature = chado_insert_record('analysisfeature', [
             'analysis_id' => $analysis_id,
@@ -587,6 +645,10 @@ class tripal_expression_data_loader extends TripalImporter{
    * @param $fileext
    *  The file extension of the expression files to be loaded.
    *
+   * @param $feature_uniquenames
+   *
+   * @param $type_id
+   *
    * @ingroup tripal_analysis_expression
    */
 
@@ -604,7 +666,8 @@ class tripal_expression_data_loader extends TripalImporter{
     $re_start,
     $re_stop,
     $uniq_name,
-    $feature_uniquenames
+    $feature_uniquenames,
+    $type_id
   ) {
 
     $data_ln = 0;
@@ -647,14 +710,13 @@ class tripal_expression_data_loader extends TripalImporter{
       }
     }
 
-    if ($num_lines < 2){
+    if ($num_lines < 2) {
       print "Error reading file.\n Please ensure that your file is readable and try again.";
       return;
     }
 
     // Make sure there not duplicate feature names.
     if (count($feature_repeats = array_diff_assoc($feature_array, array_unique($feature_array))) > 0) {
-      //if (count($linepart) != count(array_unique($linepart))) {
       print "ERROR: There are multiple instance of the following feature(s) in the expression file:\n";
       foreach ($feature_repeats as $repeat) {
         print "  " . $repeat . "\n";
@@ -666,15 +728,11 @@ class tripal_expression_data_loader extends TripalImporter{
     // Get rid of the feature_array.
     unset($feature_array);
 
-    //fclose($mat_fp);
     // Rewind the file.
     rewind($mat_fp);
     $mat_head = 0;
 
     $mat_fp = fopen($filepath, 'r');
-
-    $set_fp = '';
-
     $load_limit = 500;
 
     // Calculate interval length.
@@ -687,11 +745,13 @@ class tripal_expression_data_loader extends TripalImporter{
 
 
     // Loop through every line in a file.
-    //while($line = fgets($mat_fp) and (intval(ftell($mat_fp)) < $num_lines) {
 
     print "Loading complete: " . 0 . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
 
     for ($j = 0; $j < $num_lines and $line = fgets($mat_fp); $j++) {
+
+      //i moved this here since $timestart is only used in the print below, but unsure of its purpose- BC
+      $time_start = microtime(TRUE);
 
       if ($j % $load_limit == 0) {
         $set_fp = ftell($mat_fp);
@@ -700,7 +760,6 @@ class tripal_expression_data_loader extends TripalImporter{
         if ($j != 0) {
           print $load_limit / ($time_end - $time_start) . " lines per second\n";
         }
-        $time_start = microtime(TRUE);
         $mat_fp = fopen($filepath, 'r');
         fseek($mat_fp, $set_fp);
       }
@@ -728,7 +787,6 @@ class tripal_expression_data_loader extends TripalImporter{
 
           // Make sure there not duplicate biomaterial names.
           if (count($bio_repeats = array_diff_assoc($linepart, array_unique($linepart))) > 0) {
-            //if (count($linepart) != count(array_unique($linepart))) {
             print "ERROR: There are multiple instance of the following " . "biomaterial(s) in the expression file:\n";
             foreach ($bio_repeats as $repeat) {
               print "  " . $repeat . "\n";
@@ -756,18 +814,14 @@ class tripal_expression_data_loader extends TripalImporter{
             return;
           }
 
-          //return;
-
           if ($cur_feature % $int_length == 0) {
             $percent = sprintf("%.2f", ($cur_feature / $num_features) * 100);
             print "Loading complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \n";
           }
-          //  if ($j % $load_limit == 0) {
-          //   print "Processing Feature $cur_feature of $num_features\n";
-          // }
+
           $cur_feature++;
           for ($i = 1; $i < $num_col; $i++) {
-            $feature_id = $this->tripal_expression_find_feature_id($linepart[0], $organism_id, $feature_uniquenames);
+            $feature_id = $this->tripal_expression_find_feature_id($linepart[0], $organism_id, $feature_uniquenames, $type_id);
             $element_id = tripal_expression_element($arraydesign_id, $feature_id);
             $elementresult_id = tripal_expression_elementresult($element_id, $quant_array[$i - 1], $linepart[$i]);
             // Create a record in the analysisfeature table. This will allow the analysis to appear in the
@@ -1021,26 +1075,50 @@ class tripal_expression_data_loader extends TripalImporter{
    * @param $feature
    *  The name of the feature to be found.
    *
+   * @param $organism_id
+   * The organism to find it in
+   *
+   * @param $feature_uniquenames
+   *
+   * @param $type_id
+   * The type_id of the feature.  Can be Null.
+   *
    * @ingroup tripal_analysis_expression
    */
 
   protected function tripal_expression_find_feature_id(
     $feature,
     $organism_id,
-    $feature_uniquenames
+    $feature_uniquenames,
+    $type_id = NULL
   ) {
 
-    if ($feature_uniquenames == 'uniq') {
-      $sql = "SELECT feature_id, organism_id FROM {feature} WHERE uniquename = :feature";
+    $query = db_select('chado.feature', 'f');
+    $query->fields('f', ['organism_id', 'feature_id']);
+
+    if ($feature_uniquenames == 'uniquename') {
+      $query->condition('f.uniquename', $feature);
     }
     else {
-      $sql = "SELECT feature_id, organism_id FROM {feature} WHERE name = :feature";
+      $query->condition('f.name', $feature);
     }
 
-    $feature_object = chado_query($sql, [':feature' => $feature])->fetchObject();
+    if ($type_id) {
+      $query->condition('f.type_id', $type_id);
+    }
+
+    $count = $query->countQuery()->execute()->fetchField();
+
+    if ($count > 1) {
+      print "ERROR: More than one feature matches the feature name: {$feature}.\n.
+      Please specify a term for the feature type.\n";
+      return;
+    }
+    $feature_object = $query->execute()->fetchObject();
 
     if (!$feature_object) {
-      print "ERROR: The feature, " . $feature . ", found in the expression file " . "was not found in the Chado database. Please ensure that the " . "feature has been loaded into the database and that the feature name is " . "both unique and correct.\n\n";
+      print "ERROR: The feature, " . $feature . ", found in the expression file was not found in the Chado database.
+       Please ensure that the feature has been loaded into the database and that the feature name is both unique and correct.\n\n";
       return;
     }
 
@@ -1048,7 +1126,11 @@ class tripal_expression_data_loader extends TripalImporter{
       $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
       $analysis_org = chado_query($sql, [":organism_id" => $organism_id])->fetchObject();
       $feature_org = chado_query($sql, [":organism_id" => $feature_object->organism_id])->fetchObject();
-      print "ERROR: Mismatch between the organism selected in the expression analysis " . "and the organism of a feature from the expression file.\n" . "  Analysis organism: " . $analysis_org->genus . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n" . "  Feature organism: " . $feature_org->genus . " " . $feature_org->species . " (" . $feature_org->common_name . ")\n" . "  On feature: " . $feature . "\n" . "Please ensure that the organism selected for the expression " . "analysis and the organism for each feature in the expression " . "file are the same.\n";
+      print "ERROR: Mismatch between the organism selected in the expression analysis and the organism of a feature from the expression file.\n
+        Analysis organism: " . $analysis_org->genus . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n
+          Feature organism: " . $feature_org->genus . " " . $feature_org->species . " (" . $feature_org->common_name . ")\n
+            On feature: " . $feature . "\n
+             Please ensure that the organism selected for the expression analysis and the organism for each feature in the expression file are the same.\n";
       return NULL;
     }
 

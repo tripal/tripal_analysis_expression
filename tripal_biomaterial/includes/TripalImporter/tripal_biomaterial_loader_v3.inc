@@ -2,78 +2,19 @@
 
 class tripal_biomaterial_loader_v3 extends TripalImporter {
 
-  // --------------------------------------------------------------------------
-  //                     EDITABLE STATIC CONSTANTS
-  //
-  // The following constants SHOULD be set for each descendant class.  They are
-  // used by the static functions to provide information to Drupal about
-  // the field and it's default widget and formatter.
-  // --------------------------------------------------------------------------
-
-  /**
-   * The name of this loader.  This name will be presented to the site
-   * user.
-   */
   public static $name = 'Chado Biological Sample (Biomaterial) Loader';
-
-  /**
-   * The machine name for this loader. This name will be used to construct
-   * the URL for the loader.
-   */
   public static $machine_name = 'chado_biosample_loader';
-
-  /**
-   * A brief description for this loader.  This description will be
-   * presented to the site user.
-   */
   public static $description = 'Import biological samples (Biomaterials) from NCBI BioSamples';
-
-  /**
-   * An array containing the extensions of allowed file types.
-   */
   public static $file_types = ['xml', 'tsv', 'csv'];
-
-  /**
-   * Provides information to the user about the file upload.  Typically this
-   * may include a description of the file types allowed.
-   */
   public static $upload_description = "Please upload an NCBI BioSample file.  This can be in XML with an .xml extension, or flat file format with a .tsv or .csv extension.<br><br> If loading a CSV/TSV flat file, the first line must be the column name.  The only field that is required to create a biosample is the name (column: sample_name). It is recommended that a description (column: description), biomaterial provider (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column 
     titles not associated with a cvterm below.  <br>This loader will create dbxref records for the following 
     column headers if present: biosample_accession, bioproject_accession, and sra_accession. Other accessions should
     be uploaded using a bulk loader template. ";
 
-  /**
-   * The title that should appear above the upload button.
-   */
   public static $upload_title = 'Import new Biosamples/Biomaterials';
-
-  /**
-   * If the loader should require an analysis record.  To maintain provenance
-   * we should always indicate where the data we are uploading comes from.
-   * Tripal attempts to use this by associating upload files
-   * with an analysis record.  The analysis record provides the details for
-   * how the file was created or obtained. Set this to FALSE if the loader
-   * should not require an analysis when loading. if $use_analysis is set to
-   * true then the form values will have an 'analysis_id' key in the $form_state
-   * array on submitted forms.
-   */
   public static $use_analysis = TRUE;
-
-  /**
-   * If the $use_analysis value is set above then this value indicates if the
-   * analysis should be required.
-   */
   public static $require_analysis = FALSE;
-
-  /**
-   * Text that should appear on the button at the bottom of the importer
-   * form.
-   */
   public static $button_text = 'Import Biosamples';
-
-  /**
-   * Indicates the methods that the file uploader will support.
-   */
   public static $methods = [
     // Allow the user to upload a file to the server.
     'file_upload' => TRUE,
@@ -82,7 +23,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     // Allow the user to provide a remote URL for the file.
     'file_remote' => FALSE,
   ];
-
   public static $file_required = TRUE;
 
   /**
@@ -90,22 +30,18 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
    */
   public function form($form, &$form_state) {
 
-
-    // get a list of organisms for the user to choose
-    $sql = "SELECT * FROM {organism} ORDER BY genus, species";
-    $results = chado_query($sql);
-    $organisms = [];
-    foreach ($results as $org) {
-      $organisms[$org->organism_id] = $org->common_name;
-    }
+   $organisms =  chado_get_organism_select_options(FALSE);
 
     $form['organism_id'] = [
       '#title' => t('Organism'),
       '#type' => t('select'),
       '#required' => TRUE,
+      '#default_value' => 0,
       '#description' => t('The organism from which the biosamples were collected.  Each upload must consist of samples from the same organism.'),
       '#options' => $organisms,
+
     ];
+
 
     $form['biomaterial_cvterm_validator'] = [
       '#type' => 'button',
@@ -117,21 +53,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       '#submit' => ['cvterm_validator_callback_submit'],
     ];
 
+
     $fields = [];
     $property_values = [];
 
     $description = t('After submitting uploading your file(s) and clicking the Check Biosamples button, you can configure individual cvterms for your biomaterial properties here.');
 
-    //TODO:  should the importer class provide a "get files" method?
-
-
-
     if ((isset($form_state['values']['file_local'])) || isset($form_state['values']['file_upload']) || isset($form_state['values']['file_upload_existing'])) {
-
-
-      //$this->create($run_args, $file);
-    //  $this->prepareFiles();
-  //    $file_path = $this->arguments['files'][0]['file_path'];
 
 
       if (isset($form_state['values']['file_local'])) {
