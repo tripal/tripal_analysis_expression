@@ -82,7 +82,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $terms_to_check = NULL;
       if ($file_type == 'xml') {
         $terms_to_check = $this->parse_xml_biomaterial_file($file_path, $organism_id, $analysis_id);
-        dpm($terms_to_check);
       }
       else {
         $terms_to_check = test_biosample_cvterms_flat($file_path);
@@ -418,7 +417,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       print "Loading BioSample " . ($i + 1) . " of " . $num_biosamples . "\n";
       $this->add_xml_data($organism_id, $xml->BioSample[$i], $analysis_id, $insert_fields, $insert_cvalues);
     }
-    return;
   }
 
 
@@ -454,7 +452,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     // Create a contact if contact is not present.
     if ($biomaterial_provider) {
-      $contact_name = "";
       if ($biomaterial_provider->Last && $biomaterial_provider->First) {
         $contact_name = $biomaterial_provider->Last . ", " . $biomaterial_provider->First;
       }
@@ -496,7 +493,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         // 'version' => $version,
         'description' => '',
       ]);
-      $dbxref_sra_id = $dbxref_sra->dbxref_id;
     }
 
     $biomaterial_description = $comment ? (string) $comment : (string) $description;
@@ -507,21 +503,19 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     $this->add_xml_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id, $insert_fields, $insert_cvalues);
 
     // Add to biomaterial_dbxref table.
-    if ($sra_accession) {
+    if ($dbxref_sra) {
       tripal_associate_dbxref('biomaterial', $biomaterial_id, [
         'accession' => $sra_accession,
         'db_name' => 'NCBI SRA',
       ]);
     }
     //Also add the NCBI BioSample DBXREF previously inserted into the biomaterial table
-    if ($sample_accession) {
+    if ($dbxref_biosample) {
       tripal_associate_dbxref('biomaterial', $biomaterial_id, [
         'accession' => $sample_accession,
         'db_name' => 'NCBI BioSample',
       ]);
-
     }
-
   }
 
   /**
@@ -578,10 +572,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $attr_name = (string) $attr->attributes()->attribute_name;
       $value = (string) $attr;
 
-      if (!$value) {
-        print "ERROR: no value in the XML for " . $attr_name . ".  Make sure the XML is formatted properly and try again.";
-      }
-
       if ($attr_name == "biomaterial_provider") {
         continue;
       }
@@ -607,8 +597,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           'is_relationship' => 0,
           'db_name' => 'tripal',
         ], ['update_existing' => FALSE])) {
-          print "ERROR: Could not insert biomaterial attribute name into the biomaterial_property controlled vocabulary table.";
-          return;
+          $this->logMessage('Could not insert biomaterial attribute !name into the biomaterial_property controlled vocabulary table.', ['!name' => $attr_name], TRIPAL_ERROR);
+          return FALSE;
         }
       }
 
