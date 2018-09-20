@@ -235,19 +235,28 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
       'quantificationunits' => NULL,
     ];
 
+
+
     $importer = new \tripal_expression_data_loader();
     $importer->create($run_args, $file);
     $importer->prepareFiles();
-    $importer->run();
+
+
+    $message = "ERROR: More than one feature matches the feature name:";
+    $output = silent(function() use ($importer) {
+      $importer->run();
+    });
+
+    $output->assertSee($message);
 
     //should fail because above loader failed.
-
-    //TODO: this is bootleg.  We should instead properly use the exceptions in the importer class.
-    $this->expectException(Exception);
-
-    $query = db_select('chado.elementresult', 'er');
-    $query->fields('er');
-    $query->execute()->fetchAll();
+//
+//    //TODO: this is bootleg.  We should instead properly use the exceptions in the importer class.
+//    $this->expectException(Exception);
+//
+//    $query = db_select('chado.elementresult', 'er');
+//    $query->fields('er');
+//    $query->execute()->fetchAll();
   }
 
   /**
