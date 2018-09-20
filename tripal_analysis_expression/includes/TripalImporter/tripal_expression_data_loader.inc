@@ -501,7 +501,7 @@ class tripal_expression_data_loader extends TripalImporter {
         'name' => $seqtype,
       ];
 
-      $seqtype_id = chado_get_cvterm($identifier);
+      $seqtype_id = chado_get_cvterm($identifier)->cvterm_id;
     }
 
     //these should be passed in parameters but are optional and apparently not used.
@@ -513,9 +513,6 @@ class tripal_expression_data_loader extends TripalImporter {
     $features = [];
 
     $uniq_name = $this->get_unique_name($organism_id, $analysis_id);
-
-    //not needed as importer provides transaction
-    //$transaction = db_transaction();
 
     try {
       // Create the array design.
@@ -648,6 +645,10 @@ AND f.type_id = :type_id', [
    * @param $fileext
    *  The file extension of the expression files to be loaded.
    *
+   * @param $feature_uniquenames
+   *
+   * @param $type_id
+   *
    * @ingroup tripal_analysis_expression
    */
 
@@ -665,7 +666,8 @@ AND f.type_id = :type_id', [
     $re_start,
     $re_stop,
     $uniq_name,
-    $feature_uniquenames
+    $feature_uniquenames,
+    $type_id
   ) {
 
     $data_ln = 0;
@@ -715,7 +717,6 @@ AND f.type_id = :type_id', [
 
     // Make sure there not duplicate feature names.
     if (count($feature_repeats = array_diff_assoc($feature_array, array_unique($feature_array))) > 0) {
-      //if (count($linepart) != count(array_unique($linepart))) {
       print "ERROR: There are multiple instance of the following feature(s) in the expression file:\n";
       foreach ($feature_repeats as $repeat) {
         print "  " . $repeat . "\n";
@@ -727,15 +728,11 @@ AND f.type_id = :type_id', [
     // Get rid of the feature_array.
     unset($feature_array);
 
-    //fclose($mat_fp);
     // Rewind the file.
     rewind($mat_fp);
     $mat_head = 0;
 
     $mat_fp = fopen($filepath, 'r');
-
-    $set_fp = '';
-
     $load_limit = 500;
 
     // Calculate interval length.
@@ -748,11 +745,13 @@ AND f.type_id = :type_id', [
 
 
     // Loop through every line in a file.
-    //while($line = fgets($mat_fp) and (intval(ftell($mat_fp)) < $num_lines) {
 
     print "Loading complete: " . 0 . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
 
     for ($j = 0; $j < $num_lines and $line = fgets($mat_fp); $j++) {
+
+      //i moved this here since $timestart is only used in the print below, but unsure of its purpose- BC
+      $time_start = microtime(TRUE);
 
       if ($j % $load_limit == 0) {
         $set_fp = ftell($mat_fp);
@@ -761,7 +760,6 @@ AND f.type_id = :type_id', [
         if ($j != 0) {
           print $load_limit / ($time_end - $time_start) . " lines per second\n";
         }
-        $time_start = microtime(TRUE);
         $mat_fp = fopen($filepath, 'r');
         fseek($mat_fp, $set_fp);
       }
@@ -789,7 +787,6 @@ AND f.type_id = :type_id', [
 
           // Make sure there not duplicate biomaterial names.
           if (count($bio_repeats = array_diff_assoc($linepart, array_unique($linepart))) > 0) {
-            //if (count($linepart) != count(array_unique($linepart))) {
             print "ERROR: There are multiple instance of the following " . "biomaterial(s) in the expression file:\n";
             foreach ($bio_repeats as $repeat) {
               print "  " . $repeat . "\n";
@@ -817,18 +814,14 @@ AND f.type_id = :type_id', [
             return;
           }
 
-          //return;
-
           if ($cur_feature % $int_length == 0) {
             $percent = sprintf("%.2f", ($cur_feature / $num_features) * 100);
             print "Loading complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \n";
           }
-          //  if ($j % $load_limit == 0) {
-          //   print "Processing Feature $cur_feature of $num_features\n";
-          // }
+
           $cur_feature++;
           for ($i = 1; $i < $num_col; $i++) {
-            $feature_id = $this->tripal_expression_find_feature_id($linepart[0], $organism_id, $feature_uniquenames);
+            $feature_id = $this->tripal_expression_find_feature_id($linepart[0], $organism_id, $feature_uniquenames, $type_id);
             $element_id = tripal_expression_element($arraydesign_id, $feature_id);
             $elementresult_id = tripal_expression_elementresult($element_id, $quant_array[$i - 1], $linepart[$i]);
             // Create a record in the analysisfeature table. This will allow the analysis to appear in the
@@ -1082,26 +1075,50 @@ AND f.type_id = :type_id', [
    * @param $feature
    *  The name of the feature to be found.
    *
+   * @param $organism_id
+   * The organism to find it in
+   *
+   * @param $feature_uniquenames
+   *
+   * @param $type_id
+   * The type_id of the feature.  Can be Null.
+   *
    * @ingroup tripal_analysis_expression
    */
 
   protected function tripal_expression_find_feature_id(
     $feature,
     $organism_id,
-    $feature_uniquenames
+    $feature_uniquenames,
+    $type_id = NULL
   ) {
 
-    if ($feature_uniquenames == 'uniq') {
-      $sql = "SELECT feature_id, organism_id FROM {feature} WHERE uniquename = :feature";
+    $query = db_select('chado.feature', 'f');
+    $query->fields('f', ['organism_id', 'feature_id']);
+
+    if ($feature_uniquenames == 'uniquename') {
+      $query->condition('f.uniquename', $feature);
     }
     else {
-      $sql = "SELECT feature_id, organism_id FROM {feature} WHERE name = :feature";
+      $query->condition('f.name', $feature);
     }
 
-    $feature_object = chado_query($sql, [':feature' => $feature])->fetchObject();
+    if ($type_id) {
+      $query->condition('f.type_id', $type_id);
+    }
+
+    $count = $query->countQuery()->execute()->fetchField();
+
+    if ($count > 1) {
+      print "ERROR: More than one feature matches the feature name: {$feature}.\n.
+      Please specify a term for the feature type.\n";
+      return;
+    }
+    $feature_object = $query->execute()->fetchObject();
 
     if (!$feature_object) {
-      print "ERROR: The feature, " . $feature . ", found in the expression file " . "was not found in the Chado database. Please ensure that the " . "feature has been loaded into the database and that the feature name is " . "both unique and correct.\n\n";
+      print "ERROR: The feature, " . $feature . ", found in the expression file was not found in the Chado database.
+       Please ensure that the feature has been loaded into the database and that the feature name is both unique and correct.\n\n";
       return;
     }
 
@@ -1109,7 +1126,11 @@ AND f.type_id = :type_id', [
       $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
       $analysis_org = chado_query($sql, [":organism_id" => $organism_id])->fetchObject();
       $feature_org = chado_query($sql, [":organism_id" => $feature_object->organism_id])->fetchObject();
-      print "ERROR: Mismatch between the organism selected in the expression analysis " . "and the organism of a feature from the expression file.\n" . "  Analysis organism: " . $analysis_org->genus . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n" . "  Feature organism: " . $feature_org->genus . " " . $feature_org->species . " (" . $feature_org->common_name . ")\n" . "  On feature: " . $feature . "\n" . "Please ensure that the organism selected for the expression " . "analysis and the organism for each feature in the expression " . "file are the same.\n";
+      print "ERROR: Mismatch between the organism selected in the expression analysis and the organism of a feature from the expression file.\n
+        Analysis organism: " . $analysis_org->genus . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n
+          Feature organism: " . $feature_org->genus . " " . $feature_org->species . " (" . $feature_org->common_name . ")\n
+            On feature: " . $feature . "\n
+             Please ensure that the organism selected for the expression analysis and the organism for each feature in the expression file are the same.\n";
       return NULL;
     }
 

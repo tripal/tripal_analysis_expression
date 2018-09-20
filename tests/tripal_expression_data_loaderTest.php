@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use PHPUnit\Exception;
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
@@ -156,7 +157,7 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
   }
 
 
-  public function test_specifying_type() {
+  public function test_type_required() {
 
 
     $organism = factory('chado.organism')->create();
@@ -198,43 +199,72 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $importer->prepareFiles();
     $importer->run();
 
-    //should fail and we dont have features
+    //should fail because above loader failed.
+
+    //TODO: this is bootleg.  We should instead properly use the exceptions in the importer class.
+    $this->expectException(Exception);
 
     $query = db_select('chado.elementresult', 'er');
-    $query->join('chado.element', 'e', 'e.element_id = er.element_id');
     $query->fields('er');
-    $query->condition('e.feature_id', [
-      $featuresA[0]->feature_id,
-      $featuresA[1]->feature_id,
-      $featuresB[0]->feature_id,
-      $featuresB[1]->feature_id,
-    ]);
-    $results = $query->execute()
-      ->fetchAll();
+    $query->execute()->fetchAll();
+  }
 
-    $this->assertFalse($results);
+  /**
+   */
+  public function test_specifying_type_allows_name_overlap_loading(){
 
 
-    $run_args['seqtype'] = $termA->name;
+    $organism = factory('chado.organism')->create();
+    $analysis = factory('chado.analysis')->create();
+
+    $this->load_biomaterials($organism, $analysis);
+    //create teh expected features
+
+    $so =  chado_get_cv(array('name' => 'sequence'));
+
+    $termA = factory('chado.cvterm')->create(['cv_id' => $so->cv_id]);
+    $termB = factory('chado.cvterm')->create(['cv_id' => $so->cv_id]);
+
+
+    $featuresA = $this->create_features($organism, $termA);
+    $featuresB = $this->create_features($organism, $termB);
+
+
+    module_load_include('inc', 'tripal_analysis_expression', 'includes/TripalImporter/tripal_expression_data_loader');
+    $file = ['file_local' => __DIR__ . '/../example_files/example_expression.tsv'];
+
+
+    $run_args = [
+      'filetype' => 'mat', //matrix file type
+      'organism_id' => $organism->organism_id,
+      'analysis_id' => $analysis->analysis_id,
+      'seqtype' =>  $termA->name,
+      //optional
+      'type' => NULL,
+      'fileext' => NULL,
+      'feature_uniquenames' => 'uniq',
+      're_start' => NULL,
+      're_stop' => NULL,
+      'feature_uniquenames' => NULL,
+      'quantificationunits' => NULL,
+    ];
 
     $importer = new \tripal_expression_data_loader();
     $importer->create($run_args, $file);
     $importer->prepareFiles();
     $importer->run();
 
-    //Now we hsould have it associated with term A
-
 
     $query = db_select('chado.elementresult', 'er');
     $query->join('chado.element', 'e', 'e.element_id = er.element_id');
     $query->fields('er');
-    $query->condition('e.feature_id', [
-      $featuresA[0]->feature_id,
-    ]);
+    $query->condition('e.feature_id',
+      $featuresA[0]->feature_id
+    );
     $results = $query->execute()
       ->fetchAll();
 
-    $this->assertTrue($results);
+    $this->assertNotEmpty($results);
     $this->assertEquals(3, count($results));
 
   }
