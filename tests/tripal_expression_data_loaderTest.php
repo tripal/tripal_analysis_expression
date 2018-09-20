@@ -112,6 +112,14 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $this->assertEquals(3, count($results));
   }
 
+
+  /**
+   * Expression loader threw a scar-sounding error that it was overwriting biomaterials if they were already loaded.  Make sure that we dont lose the biomat properties.
+   *
+   * @ticket 232
+   *
+   * @throws \Exception
+   */
   public function test_expression_loader_doesnt_overwite_biomat_properties() {
 
 
@@ -146,6 +154,8 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $importer->prepareFiles();
     $importer->run();
 
+    //TODO:  Check other components of the biomaterial (IE the xref_id, any nullable columns).
+
     $query = db_select('chado.biomaterialprop', 'bp');
     $query->join('chado.biomaterial', 'b', 'b.biomaterial_id = bp.biomaterial_id');
     $query->fields('bp', ['value']);
@@ -154,9 +164,17 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $prop = $query->execute()->fetchField();
 
     $this->assertEquals('husband', $prop);
+
+
   }
 
 
+  /**
+   * If we ever match > 1 feature, we need to throw an error.
+   * Tests for matrix.
+   *
+   * @throws \Exception
+   */
   public function test_type_required() {
 
 
@@ -166,7 +184,7 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $this->load_biomaterials($organism, $analysis);
     //create teh expected features
 
-    $so =  chado_get_cv(array('name' => 'sequence'));
+    $so = chado_get_cv(['name' => 'sequence']);
 
     $termA = factory('chado.cvterm')->create(['cv_id' => $so->cv_id]);
     $termB = factory('chado.cvterm')->create(['cv_id' => $so->cv_id]);
@@ -210,8 +228,11 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
   }
 
   /**
+   * Test that if two features have the same name, we can specify the type_id
+   * to successfully load expression data.
+   *
    */
-  public function test_specifying_type_allows_name_overlap_loading(){
+  public function test_specifying_type_allows_name_overlap_loading() {
 
 
     $organism = factory('chado.organism')->create();
@@ -220,7 +241,7 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $this->load_biomaterials($organism, $analysis);
     //create teh expected features
 
-    $so =  chado_get_cv(array('name' => 'sequence'));
+    $so = chado_get_cv(['name' => 'sequence']);
 
     $termA = factory('chado.cvterm')->create(['cv_id' => $so->cv_id]);
     $termB = factory('chado.cvterm')->create(['cv_id' => $so->cv_id]);
@@ -238,7 +259,7 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
       'filetype' => 'mat', //matrix file type
       'organism_id' => $organism->organism_id,
       'analysis_id' => $analysis->analysis_id,
-      'seqtype' =>  $termA->name,
+      'seqtype' => $termA->name,
       //optional
       'type' => NULL,
       'fileext' => NULL,
