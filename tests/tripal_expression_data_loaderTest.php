@@ -114,7 +114,9 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
 
 
   /**
-   * Expression loader threw a scar-sounding error that it was overwriting biomaterials if they were already loaded.  Make sure that we dont lose the biomat properties.
+   * Expression loader threw a scar-sounding error that it was overwriting
+   * biomaterials if they were already loaded.  Make sure that we dont lose the
+   * biomat properties.
    *
    * @ticket 232
    *
@@ -127,9 +129,17 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $analysis = factory('chado.analysis')->create();
 
     $this->load_biomaterials($organism, $analysis);
-    //create teh expected features
+    //create expected features
 
     $features = $this->create_features($organism, NULL);
+
+    $biomat_name = 'art';
+
+    $original_biomat = db_select('chado.biomaterial', 'b')
+      ->fields('b')
+      ->condition('name', $biomat_name)
+      ->execute()
+      ->fetchObject();
 
 
     module_load_include('inc', 'tripal_analysis_expression', 'includes/TripalImporter/tripal_expression_data_loader');
@@ -149,22 +159,35 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
       'quantificationunits' => NULL,
     ];
 
+
     $importer = new \tripal_expression_data_loader();
     $importer->create($run_args, $file);
     $importer->prepareFiles();
     $importer->run();
 
-    //TODO:  Check other components of the biomaterial (IE the xref_id, any nullable columns).
+    //first check every column of the biomaterial.  it shouldnt have changed.
+    $biomat_post = db_select('chado.biomaterial', 'b')
+      ->condition('b.name', $biomat_name)
+      ->fields('b')
+      ->execute()
+      ->fetchObject();
 
+    $keys = ['taxon_id', 'biosourceprovider_id', 'dbxref_id', 'name', 'description'];
+
+    foreach ($keys as $key){
+      $this->assertObjectHasAttribute($key, $biomat_post);
+      $this->assertEquals($original_biomat->$key, $biomat_post->$key, "Biomaterial key $key was changed by expression loader.\n  {$original_biomat->$key} => {$biomat_post->$key}.");
+    }
+
+    //Check properties
     $query = db_select('chado.biomaterialprop', 'bp');
     $query->join('chado.biomaterial', 'b', 'b.biomaterial_id = bp.biomaterial_id');
     $query->fields('bp', ['value']);
-    $query->condition('b.name', 'art');
+    $query->condition('b.name', $biomat_name);
     $query->condition('bp.value', 'husband');
     $prop = $query->execute()->fetchField();
 
     $this->assertEquals('husband', $prop);
-
 
   }
 
