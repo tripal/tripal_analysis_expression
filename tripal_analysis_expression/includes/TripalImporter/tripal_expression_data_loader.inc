@@ -494,6 +494,15 @@ class tripal_expression_data_loader extends TripalImporter {
     $seqtype
   ) {
 
+    $seqtype_id = NULL;
+    if ($seqtype) {
+      $identifier = [
+        'cv_id' => ['name' => 'sequence'],
+        'name' => $seqtype,
+      ];
+
+      $seqtype_id = chado_get_cvterm($identifier);
+    }
 
     //these should be passed in parameters but are optional and apparently not used.
     //BC
@@ -515,7 +524,7 @@ class tripal_expression_data_loader extends TripalImporter {
 
       // A matrix file.
       if ($filetype == 'mat' and is_file($filepath)) {
-        $this->tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames);
+        $this->tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames, $seqtype_id);
       }
 
       // The column format.
@@ -543,7 +552,9 @@ class tripal_expression_data_loader extends TripalImporter {
       // Associate features with an analysis.
       foreach ($features as $feature_id) {
 
-        if ($seqtype){
+        //TODO: THIS WENT IN THE WRONG PLACE I THINK
+
+        if ($seqtype_id) {
 
           $query = chado_query('SELECT afanalysisfeature_id FROM {analysisfeature} af 
 INNER JOIN {feature} f ON f.feature_id = af.feature_id
@@ -552,7 +563,7 @@ AND af.feature_id = :feature_id
 AND f.type_id = :type_id', [
             ':analysis_id' => $analysis_id,
             ':feature_id' => $feature_id,
-            ':type_id' => $seqtype
+            ':type_id' => $seqtype_id,
           ]);
 
         }

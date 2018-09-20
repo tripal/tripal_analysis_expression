@@ -165,8 +165,10 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $this->load_biomaterials($organism, $analysis);
     //create teh expected features
 
-    $termA = factory('chado.cvterm')->create();
-    $termB = factory('chado.cvterm')->create();
+    $so =  chado_get_cv(array('name' => 'sequence'));
+
+    $termA = factory('chado.cvterm')->create(['cv_id' => $so->cv_id]);
+    $termB = factory('chado.cvterm')->create(['cv_id' => $so->cv_id]);
 
 
     $featuresA = $this->create_features($organism, $termA);
@@ -213,7 +215,7 @@ class tripal_expression_data_loaderTest extends TripalTestCase {
     $this->assertFalse($results);
 
 
-    $run_args['type'] = $termA->cvterm_id;
+    $run_args['seqtype'] = $termA->name;
 
     $importer = new \tripal_expression_data_loader();
     $importer->create($run_args, $file);
