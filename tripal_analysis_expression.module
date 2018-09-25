@@ -759,7 +759,7 @@ function tripal_analysis_expression_block_info(){
   $blocks = array();
   $blocks['input_features'] = array(
     'info' => t('tripal_analysis_expression features form for heatmap'),
-    'status' => 1,
+//    'status' => 1,
     'region' => 'content',
     'weight' => 24,
     'cache' => DRUPAL_NO_CACHE
@@ -767,7 +767,7 @@ function tripal_analysis_expression_block_info(){
 
   $blocks['heatmap_features'] = array(
     'info' => t('tripal_analysis_expression heatmap display'),
-    'status' => 1,
+//    'status' => 1,
     'region' => 'content',
     'weight' => 25,
     'cache' => DRUPAL_NO_CACHE
