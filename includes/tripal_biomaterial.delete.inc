@@ -179,7 +179,7 @@ function tripal_biomaterial_delete_biomaterials($biomaterial_names, $organism_id
     print "Deletion completed successfully. Deleted $num_deleted biomaterial(s).\n";
 
     print "Now removing orphaned biomaterial pages\n";
-    chado_cleanup_orphaned_nodes('biomaterial', $num_deletes[0]->cnt, 'chado_biomaterial', 'chado_biomaterial');
+    chado_cleanup_orphaned_nodes('biomaterial', $num_deleted, 'chado_biomaterial', 'chado_biomaterial');
   }
   catch (Exception $e) {
     print "\n"; 
