@@ -106,7 +106,7 @@ function tripal_biomaterial_loader($form, &$form_state) {
     '#markup' => t('The flat file loader expects a file where the first line is the title of each column. 
     The only field that is required to create a biomaterial is the name of the biomaterial (column: sample_name). 
     It is recommended that a description (column: description), organism (column: organism), biomaterial provider 
-    (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), 
+    (column: biomaterial_provider), accession (column: biosample_accession), treatment (column: treatment), 
     and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column 
     titles not already present in the database.<br><br>This loader will create dbxref records for the following 
     column headers if present, biosample_accession, bioproject_accession, and sra_accession. Other accessions should
@@ -314,8 +314,8 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
     if ($header == 'biomaterial_provider') {
       $biomaterial_headers['biomaterial_provider'] = $i;
     }
-    if ($header == 'biomaterial_accession') {
-      $acc_headers['biomaterial_accession'] = $i;
+    if ($header == 'biosample_accession') {
+      $acc_headers['biosample_accession'] = $i;
     } 
     if ($header == 'sra_accession') {
       $acc_headers['sra_accession'] = $i;
@@ -359,33 +359,11 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
       if ($name == 'biomaterial_provider' and $line[$index] != "") { 
         $biosourceprovider_id = create_biomaterial_contact($line[$index]);
       }
-      if ($name == 'biosample_accession') {
-        // In case there is no biosample database
-        $ncbi_biosample_id = create_ncbi_db('biosample', 'NCBI BioSample', '');    
-        $values = array(
-          'accession' => $line[$index],
-          'db_id' => $ncbi_biosample_id,
-        ); 
-        $dbxref = chado_insert_record('dbxref',$values); 
-        $dbxref_id = $dbxref->dbxref_id;
-        //$value['primary_dbxref'] = $line[$index];
-      }
-
     }
 
-    // Create an accession to the bioproject
-  //  $ncbi_bioproject_id = create_ncbi_db('bioproject', 'NCBI BioSample', '');    
 
-    // Create entry in the dbxref table. 
-  /*  $dbxref_bioproject= tripal_insert_dbxref(array(
-      'db_id' => $ncbi_bioproject_id,
-      'accession' => $line[$acc_header['bioproject_accession']],
-     // 'version' => $version,
-      'description' => '',
-      )
-    ); 
-    $dbxref_bioproject_id = $dbxref_bioproject->dbxref_id;
-   */
+    $dbxref_id = NULL;
+    //note:  this dbxref (ncbi biosample) previously was insert into the biomaterial table.  This is incorrect: this column is only for INTERNAL accessions.
 
     // Create the biomaterial based on the values given.
     $biomaterial_id = create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $description);
@@ -398,6 +376,9 @@ function flat_biomaterial_parser($flat_path, $organism_id, $flat_file_type) {
       }
       else if($name == 'bioproject_accession') { 
         $db_id = create_ncbi_db('bioproject', 'NCBI BioProject', '');     
+      }
+      else if($name === 'biosample_accession'){
+        $db_id = create_ncbi_db('biosample', 'NCBI BioSample', '');
       }
       // First check to see if there is a dbxref record in the database corresponding to the accession number from the file.
       $record = chado_select_record('dbxref', array('dbxref_id'), array('accession' => $line[$index], 'db_id' => $db_id));
@@ -614,7 +595,10 @@ function add_xml_data($organism_id, $biosample) {
 
   $biomaterial_description = $comment ? (string)$comment : (string)$description;
 
-  $biomaterial_id = create_biomaterial($unique_name, '', $organism_id, $biosourceprovider_id, $dbxref_biosample_id, $biomaterial_description);
+  $dbxref_id = NULL;
+  //note:  this dbxref (ncbi biosample) previously was insert into the biomaterial table.  This is incorrect: t his column is only for INTERNAL accessions.
+
+  $biomaterial_id = create_biomaterial($unique_name, '', $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description);
 
   // Add to biomaterialprop table. 
   add_xml_biomaterial_properties($biosample->Attributes->Attribute, $biomaterial_id);
