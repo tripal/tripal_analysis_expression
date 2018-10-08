@@ -258,8 +258,6 @@ class data__gene_expression_data extends ChadoField {
       // Save data into the entity
       $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
 
-      dpm($variables);
-
       return $entity;
     }
   }
