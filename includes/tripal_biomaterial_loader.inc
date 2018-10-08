@@ -106,7 +106,7 @@ function tripal_biomaterial_loader($form, &$form_state) {
     '#markup' => t('The flat file loader expects a file where the first line is the title of each column. 
     The only field that is required to create a biomaterial is the name of the biomaterial (column: sample_name). 
     It is recommended that a description (column: description), organism (column: organism), biomaterial provider 
-    (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), 
+    (column: biomaterial_provider), accession (column: biosample_accession), treatment (column: treatment), 
     and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column 
     titles not already present in the database.<br><br>This loader will create dbxref records for the following 
     column headers if present, biosample_accession, bioproject_accession, and sra_accession. Other accessions should
