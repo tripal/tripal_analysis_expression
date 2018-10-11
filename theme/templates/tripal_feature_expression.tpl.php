@@ -5,7 +5,7 @@ $feature = $variables['node']->feature;
 
 if (!$variables['has_exp'] and $variables['json_exp']) { ?>
 
-No biomaterial libraries express this feature.
+All biomaterials associated with this feature have an expression value of 0.
 
 <?php }
 
