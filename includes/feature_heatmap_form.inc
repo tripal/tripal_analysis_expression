@@ -181,14 +181,14 @@ function generate_heatmap_values() {
     $z = array();
     $text = array();
     $max_id_len = 0;
-    global $base_url;
     foreach ($expression_data as $feature_id => $values) {
       // obtain max feature id length
       if (strlen($feature_id) > $max_id_len) {
         $max_id_len = strlen($feature_id);
       }
-      $nid = chado_get_nid_from_id('feature', $feature_id);
-      $y[] = '<a href="'.$base_url.'/node/' . $nid . '">' . $feature_id . '</a>';
+      $fid = $expressions[$feature_id]->feature_id;
+      $nid = chado_get_nid_from_id('feature', $fid);
+      $y[] = l($feature_id, 'node/'.$nid);
       $x = array_keys($values);
       $signals = array();
       $descriptions = array();
