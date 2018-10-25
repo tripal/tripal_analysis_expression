@@ -161,7 +161,7 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
     $output .= theme('pager', [
       'quantity' => 5,
       'element' => $elements,
-      'parameters' => ['tripal_pane' => 'gp_Biomaterials'],
+      'parameters' => ['tripal_pane' => 'group_biosamples'],
     ]);
 
     $element[] = ['#markup' => $output];
