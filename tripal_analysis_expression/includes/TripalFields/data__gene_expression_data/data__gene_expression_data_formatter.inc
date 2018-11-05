@@ -7,7 +7,7 @@
  * Display:
  * Configuration:
  */
-class data__gene_expression_data_formatter extends ChadoFieldFormatter {
+class data__gene_expression_data_formatter extends ChadoFieldFormatter{
 
   // The default label for this field.
   public static $default_label = 'Expression';
@@ -81,13 +81,20 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
    *    An element array compatible with that returned by the
    *    hook_field_formatter_view() function.
    */
-  public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
+  public function view(
+    &$element,
+    $entity_type,
+    $entity,
+    $langcode,
+    $items,
+    $display
+  ) {
     if ($entity->chado_table === "analysis") {
       $field = 'data__gene_expression_data';
       $variables = $entity->{$field}['und'][0];
 
       if (!isset($variables["features"])) {
-        return null;
+        return NULL;
       }
 
       $analysis_id = $entity->chado_record_id;
@@ -95,7 +102,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
       $biomaterials = $variables["features"]["biomaterials"];
 
       if (empty($feature_ids)) {
-        return null;
+        return NULL;
       }
 
       $element[] = [
@@ -108,7 +115,6 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
       ];
     }
 
-
     if ($entity->chado_table === "feature") {
       $field = 'data__gene_expression_data';
       $variables = $entity->{$field}['und'][0];
@@ -116,7 +122,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
       $feature_id = $entity->chado_record_id;
 
       if (!$variables['has_exp'] && $variables['json_exp']) {
-        return null;
+        return NULL;
       }
       elseif ($variables['json_exp']) {
         $default_analysis = $variables['analyses'][0]->analysis_id; // starting analysis for download link
@@ -126,7 +132,8 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
         $expression_display = $variables['expression_display'];
         $biomaterial_display_width = $variables['biomaterial_display_width'];
 
-        drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css/expression.css');
+        drupal_add_css(drupal_get_path('module',
+            'tripal_analysis_expression') . '/theme/css/expression.css');
         drupal_add_js([
           'heatMapRaw' => $json_exp,
           'maxLength' => $limit_label_length,
@@ -136,15 +143,17 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter {
           'selectedAnalysis' => $default_analysis,
           'feature_id' => $feature_id,
         ], 'setting');
-        drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/expression.js');
+        drupal_add_js(drupal_get_path('module',
+            'tripal_analysis_expression') . '/theme/js/expression.js');
 
         $content = theme('feature_expression_plot', [
           'analyses' => $variables['analyses'],
-          'default_analysis' => $default_analysis,
+          'default_analysis_id' => $default_analysis,
+          'feature_id' => $feature_id,
         ]);
       }
       else {
-        return null;
+        return NULL;
       }
 
       $element[] = [

@@ -16,7 +16,6 @@ require_once 'includes/feature_heatmap_form.inc';
 require_once 'includes/analysis_expression_data_downloader.inc';
 require_once 'includes/tripal_analysis_expression.api.inc';
 
-
 /**
  * Implements hook_help().
  *
@@ -31,14 +30,14 @@ function tripal_analysis_expression_help($path, $arg) {
     case 'admin/help#tripal_analysis_expression' :
       {
         $ret_val = '<p>' . t('The expression module allows the user to load and display expression information.  It relies on the protocols and biomaterial modules to store the data in Chado.') . '</p>';
-        $ret_val .= "<b>" . l(t("Expression Loader V3"), "loaders/Chado_Expression_Data_Loader") . "</b> - ";
+        $ret_val .= "<b>" . l(t("Expression Loader V3"),
+            "loaders/Chado_Expression_Data_Loader") . "</b> - ";
         $ret_val .= t("The Tripal expression loader.  Data is loaded in matrix or column file format.  Expession data is associated with an analysis and biomaterial, and values are linked to individual features (generally an expression level in a biomaterial)<br><br>");
         return $ret_val;
         break;
       }
   }
 }
-
 
 /**
  * Implements hook_menu().
@@ -89,7 +88,6 @@ function tripal_analysis_expression_menu() {
     'type' => MENU_CALLBACK,
   ];
 
-
   $items['tripal/analysis-expression/download'] = [
     'title' => '',
     'access arguments' => ['download content'],
@@ -136,6 +134,7 @@ function tripal_analysis_expression_theme($existing, $type, $theme, $path) {
       'variables' => [
         'analyses' => [],
         'default_analysis_id' => 0,
+        'feature_id' => 0,
       ],
       'template' => 'tripal_analysis_expression.feature',
       'path' => "$path/theme/templates",
@@ -187,11 +186,16 @@ function tripal_analysis_expression_generate_feature_map_input_block() {
   $content .= '<div class="heatmap-column">' . render($input_textarea) . '</div>';
   $content .= '</div>';
 
-  drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css/feature_heatmap.css');
-  drupal_add_js(['visual_expression_example' => variable_get('tripal_analysis_expression_heatmap_example')], ['type' => 'setting']);
-  drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/example.js');
-  drupal_add_js(['heatmap_search' => ['base_url' => $base_url]], ['type' => 'setting']);
-  drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap-search.js');
+  drupal_add_css(drupal_get_path('module',
+      'tripal_analysis_expression') . '/theme/css/feature_heatmap.css');
+  drupal_add_js(['visual_expression_example' => variable_get('tripal_analysis_expression_heatmap_example')],
+    ['type' => 'setting']);
+  drupal_add_js(drupal_get_path('module',
+      'tripal_analysis_expression') . '/theme/js/example.js');
+  drupal_add_js(['heatmap_search' => ['base_url' => $base_url]],
+    ['type' => 'setting']);
+  drupal_add_js(drupal_get_path('module',
+      'tripal_analysis_expression') . '/theme/js/heatmap-search.js');
 
   return $content;
 }
@@ -249,10 +253,14 @@ function tripal_analysis_expression_heatmap_block(&$block) {
                  Download expression data for these features
                </a>';
 
-      drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
-      drupal_add_js(['tripal_analysis_expression' => ['data' => $heatmap]], ['type' => 'setting']);
-      drupal_add_js(['tripal_analysis_expression' => ['baseURL' => $base_url]], ['type' => 'setting']);
-      drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js/heatmap.js');
+      drupal_add_js(drupal_get_path('module',
+          'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
+      drupal_add_js(['tripal_analysis_expression' => ['data' => $heatmap]],
+        ['type' => 'setting']);
+      drupal_add_js(['tripal_analysis_expression' => ['baseURL' => $base_url]],
+        ['type' => 'setting']);
+      drupal_add_js(drupal_get_path('module',
+          'tripal_analysis_expression') . '/theme/js/heatmap.js');
     }
     else {
       $block['subject'] = '';

@@ -165,8 +165,6 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
     ]);
 
     $element[] = ['#markup' => $output];
-
-
   }
 
   /**
