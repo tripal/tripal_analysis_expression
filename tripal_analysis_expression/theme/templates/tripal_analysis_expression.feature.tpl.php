@@ -1,3 +1,10 @@
+<p><strong>Available Analyses</strong></p>
+<ul>
+    <?php foreach ($variables['analyses'] as $analysis) : ?>
+    <li><?php print l($analysis->name, 'bio_data/'.chado_get_record_entity_by_table('analysis', $analysis->analysis_id)) ?></li>
+    <?php endforeach; ?>
+</ul>
+
 <p><strong>Select an Expression Analysis</strong></p>
 
 <select id="analyses-dropdown">
