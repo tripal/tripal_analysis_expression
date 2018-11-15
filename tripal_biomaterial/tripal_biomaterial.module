@@ -47,7 +47,7 @@ function tripal_biomaterial_help($path, $arg) {
  * @ingroup tripal_biomaterial
  */
 function tripal_biomaterial_permission() {
-
+  return [];
 }
 
 /**
