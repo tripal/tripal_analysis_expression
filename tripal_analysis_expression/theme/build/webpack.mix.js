@@ -10,5 +10,5 @@ let mix = require('laravel-mix');
  | file for your application, as well as bundling up your JS files.
  |
  */
-mix.browserSync('hwg.dev');
+mix.browserSync('tripal.test');
 mix.sass('scss/feature_heatmap.scss', '../css');
