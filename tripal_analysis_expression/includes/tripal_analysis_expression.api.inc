@@ -57,3 +57,93 @@ function tripal_analysis_expression_get_protocol_select_options(
   }
   return $prot_list;
 }
+
+/**
+ * Moves the uploaded file to a new location and adds its path to the analysisprop table.
+ *
+ * @param $form
+ * @param $form_state
+ * @throws \Exception
+ */
+function tripal_analysis_expression_manage_file($form, $form_state) {
+  $values = $form_state['values'];
+
+  $file_existing = isset($values['file_upload_existing']) ? $values['file_upload_existing'] : NULL;
+  $file_upload = isset($values['file_upload']) ? $values['file_upload'] : NULL;
+  $file_local = isset($values['file_local']) ? $values['file_local'] : NULL;
+  $file = NULL;
+
+  if ($file_upload || $file_existing) {
+    $fid = isset($file_existing) ? $file_existing : $file_upload;
+    $file = file_load($fid);
+  }
+
+  $file = $file_local ? $file_local : $file;
+
+  if (!isset($file)) {
+    return;
+  }
+
+  // stores the file in a location where we can find it later
+  $file_path = tripal_analysis_expression_copy_uploaded_file($file);
+
+  $analysis_id = $values['analysis_id'];
+
+  // try to add the file_path to analysisprop
+  if (!tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path)) {
+    drupal_set_message('Failed to add the file_path as a property of the analysis. Make sure the analysis provided exists.', 'error');
+  }
+}
+
+/**
+ * Copies the uploaded file to public://expression. This will create the directory if it does not exist.
+ *
+ * @param $file
+ * @return string
+ */
+function tripal_analysis_expression_copy_uploaded_file($file) {
+  $destination = 'public://expression';
+  file_prepare_directory($destination, FILE_CREATE_DIRECTORY);
+
+  is_object($file) ?
+    file_copy($file, $destination, FILE_EXISTS_ERROR) :
+    file_unmanaged_copy($file, $destination, FILE_EXISTS_ERROR);
+
+  return drupal_realpath($destination);
+}
+
+/**
+ * Add the file path as a property of the analysis.
+ *
+ * @param $analysis_id
+ * @param $file_path
+ * @return bool|\DatabaseStatementInterface|int
+ * @throws \Exception
+ */
+function tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path) {
+  $cvterm = chado_insert_cvterm([
+    'id' => 'local:data_source_file',
+    'name' => 'data_source_file',
+    'cv_name' => 'local',
+  ]);
+
+  $analysis = db_select('chado.analysis', 'a')
+    ->fields('a')
+    ->condition('analysis_id', $analysis_id, '=')
+    ->execute()
+    ->fetchAll();
+
+  if (empty($analysis)) {
+    return false;
+  }
+
+  $id = db_insert('chado.analysisprop')
+    ->fields([
+      'analysis_id' => $analysis_id,
+      'type_id' => $cvterm->cvterm_id,
+      'value' => $file_path
+    ])
+    ->execute();
+
+  return $id ? $id : false;
+}
