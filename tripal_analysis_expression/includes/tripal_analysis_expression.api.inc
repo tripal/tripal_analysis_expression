@@ -141,7 +141,7 @@ function tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path) {
     ->fields([
       'analysis_id' => $analysis_id,
       'type_id' => $cvterm->cvterm_id,
-      'value' => $file_path
+      'value' => $file_path,
     ])
     ->execute();
 
