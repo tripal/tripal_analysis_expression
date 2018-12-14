@@ -73,43 +73,47 @@ function tripal_analysis_expression_manage_file($form, $form_state) {
   $file_local = isset($values['file_local']) ? $values['file_local'] : NULL;
   $file = NULL;
 
+  $file = $file_local ? $file_local : $file;
+
   if ($file_upload || $file_existing) {
     $fid = isset($file_existing) ? $file_existing : $file_upload;
     $file = file_load($fid);
   }
 
-  $file = $file_local ? $file_local : $file;
-
   if (!isset($file)) {
     return;
   }
 
+  $path = is_object($file) ? $file->uri : $file;
+
   // stores the file in a location where we can find it later
-  $file_path = tripal_analysis_expression_copy_uploaded_file($file);
+  $file_path = tripal_analysis_expression_copy_uploaded_file($path);
 
   $analysis_id = $values['analysis_id'];
 
   // try to add the file_path to analysisprop
   if (!tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path)) {
-    drupal_set_message('Failed to add the file_path as a property of the analysis. Make sure the analysis provided exists.', 'error');
+    drupal_set_message('File path was not added as a property of the analysis because the analysis already contains an expression file.', 'error');
   }
 }
 
 /**
- * Copies the uploaded file to public://expression. This will create the directory if it does not exist.
+ * Copies the uploaded file to public://expression.
+ * This will create the directory if it does not exist.
  *
- * @param $file
+ * @param $uri
+ *  URI to the file.
  * @return string
+ *  Returns the file path to the new location of the file.
  */
-function tripal_analysis_expression_copy_uploaded_file($file) {
+function tripal_analysis_expression_copy_uploaded_file($uri) {
   $destination = 'public://expression';
   file_prepare_directory($destination, FILE_CREATE_DIRECTORY);
 
-  is_object($file) ?
-    file_copy($file, $destination, FILE_EXISTS_ERROR) :
-    file_unmanaged_copy($file, $destination, FILE_EXISTS_ERROR);
-
-  return drupal_realpath($destination);
+  $file_name = pathinfo($uri)['basename'];
+  $new_path = $destination . '/' . uniqid() . '_' . $file_name;
+  copy($uri, $new_path);
+  return $new_path;
 }
 
 /**
@@ -127,13 +131,13 @@ function tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path) {
     'cv_name' => 'local',
   ]);
 
-  $analysis = db_select('chado.analysis', 'a')
+  $analysis = db_select('chado.analysisprop', 'a')
     ->fields('a')
     ->condition('analysis_id', $analysis_id, '=')
     ->execute()
     ->fetchAll();
 
-  if (empty($analysis)) {
+  if ($analysis) {
     return false;
   }
 

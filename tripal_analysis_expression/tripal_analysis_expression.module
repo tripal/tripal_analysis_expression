@@ -285,7 +285,7 @@ function tripal_analysis_expression_heatmap_block(&$block) {
  * @return mixed
  */
 function tripal_analysis_expression_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id != 'tripal_get_importer_form') {
+  if (!in_array('tripal_expression_data_loader', $form_state['build_info']['args'])) {
     return $form;
   }
 

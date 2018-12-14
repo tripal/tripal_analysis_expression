@@ -117,17 +117,33 @@ class data__gene_expression_data extends ChadoField {
    *   value of the field.
    */
   public function load($entity) {
-
     if ($entity->chado_table === "analysis") {
       $field = get_class();
       $analysis_id = $entity->chado_record_id;
       $features = $this->get_analysis_info($analysis_id);
+
+      $sql = 'SELECT a.value FROM {chado.analysisprop} a WHERE a.analysis_id = :analysis_id AND a.type_id = :type_id';
+
+      $cvterm_id = tripal_get_cvterm([
+        'name' => 'data_source_file',
+        'cv_id' => [
+          'name' => 'local',
+        ],
+      ])->cvterm_id;
+
+      $file = db_query($sql, [
+        ':analysis_id' => $analysis_id,
+        ':type_id' => $cvterm_id,
+      ])->fetchField();
+
       $variables = ["features" => $features];
+      $variables['file'] = $file;
 
       if (count($features["features"]) == 0) {
         $entity->{$field}['und'][0]["values"] = NULL;
         return;
       }
+
       // Save data into the entity
       $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
 

@@ -100,6 +100,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
       $analysis_id = $entity->chado_record_id;
       $feature_ids = $variables["features"]["features"];
       $biomaterials = $variables["features"]["biomaterials"];
+      $file = $variables['file'];
 
       if (empty($feature_ids)) {
         return NULL;
@@ -111,6 +112,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
           'analysis_id' => $analysis_id,
           'biomaterials_count' => count($biomaterials),
           'features_count' => count($feature_ids),
+          'file' => $file,
         ]),
       ];
     }
