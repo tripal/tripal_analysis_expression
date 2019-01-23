@@ -273,23 +273,3 @@ function tripal_analysis_expression_heatmap_block(&$block) {
     }
   }
 }
-
-/**
- * Implementation of hook_form_alter().
- * Move the submitted form and form_state data to the move_uploaded_file() function.
- *
- * @param $form
- * @param $form_state
- * @param $form_id
- *
- * @return mixed
- */
-function tripal_analysis_expression_form_alter(&$form, &$form_state, $form_id) {
-  if (!in_array('tripal_expression_data_loader', $form_state['build_info']['args'])) {
-    return $form;
-  }
-
-  $form['#submit'][] = 'tripal_analysis_expression_manage_file';
-
-  return $form;
-}

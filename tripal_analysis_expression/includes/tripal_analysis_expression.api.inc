@@ -59,45 +59,6 @@ function tripal_analysis_expression_get_protocol_select_options(
 }
 
 /**
- * Moves the uploaded file to a new location and adds its path to the analysisprop table.
- *
- * @param $form
- * @param $form_state
- * @throws \Exception
- */
-function tripal_analysis_expression_manage_file($form, $form_state) {
-  $values = $form_state['values'];
-
-  $file_existing = isset($values['file_upload_existing']) ? $values['file_upload_existing'] : NULL;
-  $file_upload = isset($values['file_upload']) ? $values['file_upload'] : NULL;
-  $file_local = isset($values['file_local']) ? $values['file_local'] : NULL;
-  $file = NULL;
-
-  $file = $file_local ? $file_local : $file;
-
-  if ($file_upload || $file_existing) {
-    $fid = isset($file_existing) ? $file_existing : $file_upload;
-    $file = file_load($fid);
-  }
-
-  if (!isset($file)) {
-    return;
-  }
-
-  $path = is_object($file) ? $file->uri : $file;
-
-  // stores the file in a location where we can find it later
-  $file_path = tripal_analysis_expression_copy_uploaded_file($path);
-
-  $analysis_id = $values['analysis_id'];
-
-  // try to add the file_path to analysisprop
-  if (!tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path)) {
-    drupal_set_message('File path was not added as a property of the analysis because the analysis already contains an expression file.', 'error');
-  }
-}
-
-/**
  * Copies the uploaded file to public://expression.
  * This will create the directory if it does not exist.
  *
@@ -106,13 +67,21 @@ function tripal_analysis_expression_manage_file($form, $form_state) {
  * @return string
  *  Returns the file path to the new location of the file.
  */
-function tripal_analysis_expression_copy_uploaded_file($uri) {
+function tripal_analysis_expression_cache_file($file_path) {
   $destination = 'public://expression';
-  file_prepare_directory($destination, FILE_CREATE_DIRECTORY);
+  if (!file_prepare_directory($destination, FILE_CREATE_DIRECTORY)) {
+    print ("Could not create directory at $destination, please check your permissions and try again.\n");
+    return false;
+  }
 
-  $file_name = pathinfo($uri)['basename'];
+  $file_name = pathinfo($file_path)['basename'];
   $new_path = $destination . '/' . uniqid() . '_' . $file_name;
-  copy($uri, $new_path);
+
+  if (!copy($file_path, $new_path)) {
+    print ("Could not copy $file_path to $new_path.");
+    return false;
+  }
+
   return $new_path;
 }
 
