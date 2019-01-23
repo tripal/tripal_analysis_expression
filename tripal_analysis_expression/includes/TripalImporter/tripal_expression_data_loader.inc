@@ -43,7 +43,7 @@ class tripal_expression_data_loader extends TripalImporter {
     $results = chado_query($sql);
     $organisms = [];
     foreach ($results as $org) {
-      $organisms[$org->organism_id] = $org->common_name;
+      $organisms[$org->organism_id] = $org->genus . ' ' . $org->species;
     }
 
     $form['organism_id'] = [
