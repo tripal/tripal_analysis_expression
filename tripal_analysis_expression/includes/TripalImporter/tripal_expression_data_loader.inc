@@ -526,21 +526,21 @@ AND f.type_id = :type_id', [
             return;
           }
         }
-
-        // Attempt to cache the file
-        $cache_loc = tripal_analysis_expression_cache_file($filepath);
-
-        if (!$cache_loc) {
-          print "ERROR: Failed to cache file $filepath\n";
-          return;
-        }
-
-        if (!tripal_analysis_expression_add_file_as_prop($analysis_id, $cache_loc)) {
-          print "ERROR: Could not add filepath $cache_loc as a property of the analysis\n";
-          return;
-        }
-
       }
+
+      $cache_loc = tripal_analysis_expression_cache_file($filepath);
+
+      if (!$cache_loc) {
+        print ("ERROR: Failed to cache file $filepath\n");
+        return;
+      }
+
+      if (!tripal_analysis_expression_add_file_as_prop($analysis_id, $cache_loc)) {
+        print ("ERROR: Failed to add $cache_loc to analysisprop table\n");
+        return;
+      };
+
+
     } catch (Exception $e) {
       print "\n";
       watchdog_exception('T_expression_load', $e);

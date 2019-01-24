@@ -71,7 +71,7 @@ function tripal_analysis_expression_cache_file($file_path) {
   $destination = 'public://expression';
   if (!file_prepare_directory($destination, FILE_CREATE_DIRECTORY)) {
     print ("Could not create directory at $destination, please check your permissions and try again.\n");
-    return false;
+    // return false;
   }
 
   $file_name = pathinfo($file_path)['basename'];
@@ -100,15 +100,16 @@ function tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path) {
     'cv_name' => 'local',
   ]);
 
-  $analysis = db_select('chado.analysisprop', 'a')
-    ->fields('a')
-    ->condition('analysis_id', $analysis_id, '=')
-    ->execute()
-    ->fetchAll();
-
-  if ($analysis) {
-    return false;
-  }
+  //$analysis = db_select('chado.analysisprop', 'a')
+  //  ->fields('a')
+  //  ->condition('analysis_id', $analysis_id, '=')
+  //  ->execute()
+  //  ->fetchAll();
+  //
+  //if ($analysis) {
+  //  print("$file_path could not be added to the analysisprop table because an analysis with id $analysis_id already exists.\n");
+  //  return false;
+  //}
 
   $id = db_insert('chado.analysisprop')
     ->fields([

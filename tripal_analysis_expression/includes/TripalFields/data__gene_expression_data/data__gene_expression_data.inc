@@ -134,7 +134,9 @@ class data__gene_expression_data extends ChadoField {
       $file = db_query($sql, [
         ':analysis_id' => $analysis_id,
         ':type_id' => $cvterm_id,
-      ])->fetchField();
+      ])->range(0,1)
+        ->orderBy('analysisprop_id', 'DESC')
+        ->fetchField();
 
       $variables = ["features" => $features];
       $variables['file'] = $file;
