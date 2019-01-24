@@ -100,16 +100,17 @@ function tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path) {
     'cv_name' => 'local',
   ]);
 
-  //$analysis = db_select('chado.analysisprop', 'a')
-  //  ->fields('a')
-  //  ->condition('analysis_id', $analysis_id, '=')
-  //  ->execute()
-  //  ->fetchAll();
-  //
-  //if ($analysis) {
-  //  print("$file_path could not be added to the analysisprop table because an analysis with id $analysis_id already exists.\n");
-  //  return false;
-  //}
+  // analysis_id in analysisprop must be unique or job will fail
+  $analysis = db_select('chado.analysisprop', 'a')
+    ->fields('a')
+    ->condition('analysis_id', $analysis_id, '=')
+    ->execute()
+    ->fetchAll();
+
+  if ($analysis) {
+    print("$file_path could not be added to the analysisprop table because an analysis with id $analysis_id already exists.\n");
+    return false;
+  }
 
   $id = db_insert('chado.analysisprop')
     ->fields([
