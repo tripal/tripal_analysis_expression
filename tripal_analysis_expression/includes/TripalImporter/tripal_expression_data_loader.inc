@@ -38,13 +38,7 @@ class tripal_expression_data_loader extends TripalImporter {
    */
   public function form($form, &$form_state) {
 
-    // get a list of organisms for the user to choose
-    $sql = "SELECT * FROM {organism} ORDER BY genus, species";
-    $results = chado_query($sql);
-    $organisms = [];
-    foreach ($results as $org) {
-      $organisms[$org->organism_id] = $org->genus . ' ' . $org->species;
-    }
+    $organisms = chado_get_organism_select_options(FALSE);
 
     $form['organism_id'] = [
       '#title' => t('Organism'),
@@ -53,7 +47,7 @@ class tripal_expression_data_loader extends TripalImporter {
       '#description' => t('The organism from which the biosamples were collected.'),
       '#options' => $organisms,
     ];
-
+    
 
     $cv = tripal_get_cv(['name' => 'sequence']);
     $cv_id = $cv->cv_id;
