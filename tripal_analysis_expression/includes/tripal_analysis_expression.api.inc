@@ -57,3 +57,68 @@ function tripal_analysis_expression_get_protocol_select_options(
   }
   return $prot_list;
 }
+
+/**
+ * Copies the uploaded file to public://expression.
+ * This will create the directory if it does not exist.
+ *
+ * @param $uri
+ *  URI to the file.
+ * @return string
+ *  Returns the file path to the new location of the file.
+ */
+function tripal_analysis_expression_cache_file($file_path) {
+  $destination = 'public://expression';
+  if (!file_prepare_directory($destination, FILE_CREATE_DIRECTORY)) {
+    print ("Could not create directory at $destination, please check your permissions and try again.\n");
+    // return false;
+  }
+
+  $file_name = pathinfo($file_path)['basename'];
+  $new_path = $destination . '/' . uniqid() . '_' . $file_name;
+
+  if (!copy($file_path, $new_path)) {
+    print ("Could not copy $file_path to $new_path.");
+    return false;
+  }
+
+  return $new_path;
+}
+
+/**
+ * Add the file path as a property of the analysis.
+ *
+ * @param $analysis_id
+ * @param $file_path
+ * @return bool|\DatabaseStatementInterface|int
+ * @throws \Exception
+ */
+function tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path) {
+  $cvterm = chado_insert_cvterm([
+    'id' => 'local:data_source_file',
+    'name' => 'data_source_file',
+    'cv_name' => 'local',
+  ]);
+
+  // analysis_id in analysisprop must be unique or job will fail
+  $analysis = db_select('chado.analysisprop', 'a')
+    ->fields('a')
+    ->condition('analysis_id', $analysis_id, '=')
+    ->execute()
+    ->fetchAll();
+
+  if ($analysis) {
+    print("$file_path could not be added to the analysisprop table because an analysis with id $analysis_id already exists.\n");
+    return false;
+  }
+
+  $id = db_insert('chado.analysisprop')
+    ->fields([
+      'analysis_id' => $analysis_id,
+      'type_id' => $cvterm->cvterm_id,
+      'value' => $file_path,
+    ])
+    ->execute();
+
+  return $id ? $id : false;
+}
