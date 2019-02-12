@@ -879,7 +879,8 @@ AND f.type_id = :type_id', [
     $inter = 0;
     $data_ln = 0;
     preg_match('/^.+\/(.+)\.' . $fileext . '$/', $filepath, $biomaterial);
-    $quantification_id = expression_create_biomaterial_structure($biomaterial[1], $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $uniq_name);
+    $quantification_id = expression_create_biomaterial_structure($biomaterial[1], $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $uniq_name, $warning);
+
 
     $features = [];
 
