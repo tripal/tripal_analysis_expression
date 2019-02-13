@@ -247,7 +247,7 @@ function tripal_analysis_expression_update_7203() {
 }
 
 /**
- * If cvalue column for cvtermprop doesn't exist, add it
+ * If cvalue_id column for cvtermprop doesn't exist, add it
  */
 function tripal_analysis_expression_update_7300() {
   $cvalue_exists = db_query('SELECT column_name 
@@ -257,6 +257,6 @@ function tripal_analysis_expression_update_7300() {
     ')->fetchAll();
 
   if (!$cvalue_exists) {
-    db_query('ALTER TABLE chado.feature_cvtermprop ADD COLUMN cvalue bigint');
+    db_query('ALTER TABLE chado.feature_cvtermprop ADD COLUMN cvalue_id bigint');
   }
 }
