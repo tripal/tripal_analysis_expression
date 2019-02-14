@@ -26,7 +26,7 @@ class tripal_expression_pvalue_loader extends TripalImporter {
   /**
    * An array containing the extensions of allowed file types.
    */
-  public static $file_types = ['csv'];
+  public static $file_types = ['csv', 'tsv'];
 
   /**
    * Provides information to the user about the file upload.  Typically this
@@ -41,7 +41,7 @@ class tripal_expression_pvalue_loader extends TripalImporter {
     // Allow the user to upload a file to the server.
     'file_upload' => TRUE,
     // Allow the user to provide the path on the Tripal server for the file.
-    'file_local' => FALSE,
+    'file_local' => TRUE,
     // Allow the user to provide a remote URL for the file.
     'file_remote' => FALSE,
   ];
@@ -95,7 +95,8 @@ class tripal_expression_pvalue_loader extends TripalImporter {
     parent::formValidate($form, $form_state);
 
     $values = $form_state['values'];
-    if (!isset($values['file_local']) && !isset($values['file_upload']) && !isset($values['file_upload_existing'])) {
+    // neither file_upload nor file_upload_existing default to null
+    if (!isset($values['file_local']) && empty($values['file_upload']) && empty($values['file_upload_existing'])) {
       return;
     }
 
@@ -110,14 +111,10 @@ class tripal_expression_pvalue_loader extends TripalImporter {
       }
     }
 
-    $file_path = '';
-
-    if (isset($values['file_local']) || isset($values['file_upload']) || isset($values['file_upload_existing'])) {
-      $file_path = $this->findFile($values);
-      if (!$file_path) {
-        form_set_error('file_upload', 'Failed to get file path.');
-        return;
-      }
+    $file_path = $this->findFile($values);
+    if (!$file_path) {
+      form_set_error('file_upload', 'Failed to get file path.');
+      return;
     }
 
     $fp = fopen($file_path, 'r');
@@ -148,7 +145,9 @@ class tripal_expression_pvalue_loader extends TripalImporter {
     $analysis_id = $run_args['analysis_id'];
     $organism_id = $run_args['organism_id'];
 
-    $file_name = pathinfo($file_path)['filename'];
+    $file_info = pathinfo($file_path);
+    $file_name = $file_info['filename'];
+    $file_ext = $file_info['extension'];
     $cvterms = explode('_', $file_name);
     $cvterm_name = $cvterms[0];
     $cvalue_name = isset($cvterms[1]) ? $cvterms[1] : NULL;
@@ -162,29 +161,35 @@ class tripal_expression_pvalue_loader extends TripalImporter {
     $this->cvalue_type_id = 343;
     $this->pvalue_cvterm_id = 344;
 
-    $this->parseFile($file_path, $analysis_id, $organism_id, $this->cvterm_id, $this->cvalue_id, $cvalue_name);
+    $this->parseFile($file_path, $file_ext, $analysis_id, $organism_id, $this->cvterm_id, $this->cvalue_id, $cvalue_name);
   }
 
   /**
    * Creates cvterms and cvtermprops for pvalues and features from the file.
    *
    * @param $file_path
+   * @param $file_ext
+   *  Either tsv or csv, determines delimiter for fgetcsv.
    * @param $organism_id
    * @param $analysis_id
    * @param $cvterm_id
+   *  The cvterm from the first word of the filename.
    * @param $cvalue_id
+   *  The cvterm from subsequent words of the filename.
    * @param $cvalue_name
+   *  The string name of the cvalue_id.
    * @throws \Exception
    */
-  private function parseFile($file_path, $organism_id, $analysis_id, $cvterm_id, $cvalue_id, $cvalue_name) {
+  private function parseFile($file_path, $file_ext, $organism_id, $analysis_id, $cvterm_id, $cvalue_id, $cvalue_name) {
     $file_size = filesize($file_path);
     $this->setTotalItems($file_size);
     $this->setItemsHandled(0);
     $bytes_read = 0;
+    $delimiter = $file_ext == 'csv' ? ',' : "\t";
 
     $fp = fopen($file_path, 'r');
 
-    while ($line = fgetcsv($fp, 0, ',')) {
+    while ($line = fgetcsv($fp, 0, $delimiter)) {
       $feature_name = $line[0];
       $p_adj = $line[1];
 
@@ -217,19 +222,18 @@ class tripal_expression_pvalue_loader extends TripalImporter {
    * @param $values
    *  The array of values from form_state.
    *
-   * @return null|string
-   *  String containing the path to the file.
+   * @return bool|string
+   *  String containing the path to the file, or false on failure.
    */
+
   private function findFile($values) {
-    $file_path = NULL;
 
     if (isset($values['file_local'])) {
       $file_path = trim($values['file_local']);
-    }
+      return $file_path;
 
-    // value defaults to 0, isset will return true, so we use not empty instead
-    else if (!empty($values['file_upload'])) {
-      $fid = trim($values['file_upload'][0]);
+    } else if (!empty($values['file_upload'])) {
+      $fid = trim($values['file_upload']);
       if (!$fid) {
         return false;
       }
@@ -238,9 +242,10 @@ class tripal_expression_pvalue_loader extends TripalImporter {
         return false;
       }
       $file_path = base_path() . drupal_realpath($file->uri);
-    }
+      return $file_path;
 
-    else if (!empty($values['file_upload_existing'])) {
+    } else if (!empty($values['file_upload_existing'])) {
+
       $fid = $values['file_upload_existing'];
       if (!$fid) {
         return false;
@@ -250,9 +255,10 @@ class tripal_expression_pvalue_loader extends TripalImporter {
         return false;
       }
       $file_path = base_path() . drupal_realpath($file->uri);
+      return $file_path;
     }
 
-    return $file_path;
+    return false;
   }
 
   /**
