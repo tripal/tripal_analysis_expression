@@ -266,10 +266,9 @@ class tripal_expression_pvalue_loader extends TripalImporter {
    *
    * @param $feature_id
    *  The feature with which to associate this cvterm.
-   * @param $cvterm_id
-   *  The id of the cvterm.
    * @return \DatabaseStatementInterface|int
    *  The id of the inserted feature cvterm.
+   * @throws \Exception
    */
   private function insert_feature_cvterm($feature_id) {
     $feature_cvterm_id = db_insert('chado.feature_cvterm')
@@ -290,14 +289,16 @@ class tripal_expression_pvalue_loader extends TripalImporter {
    *  The id of the feature cvterm with which to associate this cvtermprop.
    *  @see tripal_expression_pvalue_loader::insert_feature_cvterm()
    * @param $type_id
-   *
+   *  Value to be inserted into the type_id column.
    * @param $value
-   *  The text value of the cvterm.
+   *  Value to be inserted into the value column.
    * @param null $cvalue_id
    *  Optional parameter indicating an associated cvterm.
    *
    * @return \DatabaseStatementInterface|int
    *  The id of the inserted feature cvtermprop.
+   *
+   * @throws \Exception
    */
   private function insert_feature_cvtermprop($feature_cvterm_id, $type_id, $value, $cvalue_id = NULL) {
     $fields = [];
