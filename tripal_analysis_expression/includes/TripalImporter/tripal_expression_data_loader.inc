@@ -38,13 +38,7 @@ class tripal_expression_data_loader extends TripalImporter {
    */
   public function form($form, &$form_state) {
 
-    // get a list of organisms for the user to choose
-    $sql = "SELECT * FROM {organism} ORDER BY genus, species";
-    $results = chado_query($sql);
-    $organisms = [];
-    foreach ($results as $org) {
-      $organisms[$org->organism_id] = $org->common_name;
-    }
+    $organisms = chado_get_organism_select_options(FALSE);
 
     $form['organism_id'] = [
       '#title' => t('Organism'),
@@ -53,7 +47,7 @@ class tripal_expression_data_loader extends TripalImporter {
       '#description' => t('The organism from which the biosamples were collected.'),
       '#options' => $organisms,
     ];
-
+    
 
     $cv = tripal_get_cv(['name' => 'sequence']);
     $cv_id = $cv->cv_id;
@@ -527,6 +521,20 @@ AND f.type_id = :type_id', [
           }
         }
       }
+
+      $cache_loc = tripal_analysis_expression_cache_file($filepath);
+
+      if (!$cache_loc) {
+        print ("ERROR: Failed to cache file $filepath\n");
+        return;
+      }
+
+      if (!tripal_analysis_expression_add_file_as_prop($analysis_id, $cache_loc)) {
+        print ("ERROR: Failed to add $cache_loc to analysisprop table\n");
+        return;
+      };
+
+
     } catch (Exception $e) {
       print "\n";
       watchdog_exception('T_expression_load', $e);
@@ -871,7 +879,8 @@ AND f.type_id = :type_id', [
     $inter = 0;
     $data_ln = 0;
     preg_match('/^.+\/(.+)\.' . $fileext . '$/', $filepath, $biomaterial);
-    $quantification_id = expression_create_biomaterial_structure($biomaterial[1], $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $uniq_name);
+    $quantification_id = expression_create_biomaterial_structure($biomaterial[1], $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $uniq_name, $warning);
+
 
     $features = [];
 
