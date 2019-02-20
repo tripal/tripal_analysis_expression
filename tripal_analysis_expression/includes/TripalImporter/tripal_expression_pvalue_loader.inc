@@ -72,6 +72,11 @@ class tripal_expression_pvalue_loader extends TripalImporter {
   private $pvalue_cvterm_id;
 
   /**
+   * The cvterm id for analysis.
+   */
+  private $analysis_cvterm_id;
+
+  /**
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
@@ -96,11 +101,11 @@ class tripal_expression_pvalue_loader extends TripalImporter {
 
     $values = $form_state['values'];
     // neither file_upload nor file_upload_existing default to null
-    if (!isset($values['file_local']) && empty($values['file_upload']) && empty($values['file_upload_existing'])) {
+    if (empty($values['file_local']) && empty($values['file_upload']) && empty($values['file_upload_existing'])) {
       return;
     }
 
-    if (isset($values['file_local'])) {
+    if (!empty($values['file_local'])) {
       if (!file_exists($values['file_local'])) {
         form_set_error('file_local', 'Local file path provided does not exist. Please ensure the file path is valid and try again.');
         return;
@@ -156,6 +161,7 @@ class tripal_expression_pvalue_loader extends TripalImporter {
       ->fetchField();
     $this->cvterm_id = $this->get_cvterm_id($cvterm_name);
     $this->cvalue_id = $this->get_cvterm_id($cvalue_name);
+    $this->analysis_cvterm_id = $this->get_cvterm_id('analysis');
 
     // HARD CODED VALUES, TESTING PURPOSES ONLY
     $this->cvalue_type_id = 343;
@@ -201,13 +207,13 @@ class tripal_expression_pvalue_loader extends TripalImporter {
       $feature_cvterm_id = $this->insert_feature_cvterm($feature_id, $cvterm_id);
 
       // associated cvterm
-      $this->insert_feature_cvtermprop($feature_cvterm_id, $cvterm_id, $cvalue_name, $cvalue_id);
+      $this->insert_feature_cvtermprop($feature_cvterm_id, $this->cvalue_type_id, $cvalue_name, $cvalue_id);
 
       // pvalue
       $this->insert_feature_cvtermprop($feature_cvterm_id, $this->pvalue_cvterm_id, $p_adj);
 
       // analysis
-      $this->insert_feature_cvtermprop($feature_cvterm_id, $analysis_id, $analysis_id);
+      $this->insert_feature_cvtermprop($feature_cvterm_id, $this->analysis_cvterm_id, $analysis_id);
     }
 
     fclose($fp);
@@ -228,7 +234,7 @@ class tripal_expression_pvalue_loader extends TripalImporter {
 
   private function findFile($values) {
 
-    if (isset($values['file_local'])) {
+    if (!empty($values['file_local'])) {
       $file_path = trim($values['file_local']);
       return $file_path;
 
