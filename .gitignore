@@ -2,3 +2,4 @@
 vendor/
 .env
 vendor/
+sites/default/files/
