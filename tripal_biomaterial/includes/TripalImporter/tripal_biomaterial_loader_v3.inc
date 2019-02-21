@@ -768,7 +768,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         }
 
         // Create the biomaterial based on the values given.
-        $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $description);
+        $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $description, TRUE);
 
         // Insert database accessions.
         foreach ($acc_headers as $name => $index) {
@@ -812,7 +812,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
         // Insert into the biomaterialprop table.
         foreach ($prop_headers as $name => $index) {
-          if (!key_exists($insert_fields[$name])) {  //If we didnt choose an association in the form, we're inserting it into biomaterial_property
+
+          if (!key_exists($name, $insert_fields)) {  //If we didnt choose an association in the form, we're inserting it into biomaterial_property
 
             //get xml attributes
             if (!tripal_insert_cvterm([
