@@ -614,39 +614,40 @@ function tripal_biomaterial_create_biomaterial(
 ) {
   $biomaterial_result = chado_query('select biomaterial_id, taxon_id, description from {biomaterial} where name = :name limit 1', [':name' => $biomaterial])->fetchObject();
 
-  // if sample_name already exists in chado db, print warning message
-  if ($biomaterial_result->taxon_id && $warnings) {
-    print("WARNING: Biomaterial with sample_name of '$biomaterial' alreay exists in the database. Overwriting database entries for $biomaterial...\n");
+  $biomaterial_id = NULL;
+
+  if ($biomaterial_result) {
+
+    // if sample_name already exists in chado db, print warning message
+    if ($biomaterial_result->taxon_id && $warnings) {
+      print("WARNING: Biomaterial with sample_name of '$biomaterial' alreay exists in the database. Overwriting database entries for $biomaterial...\n");
+      if ($biomaterial_result->taxon_id and $biomaterial_result->taxon_id != $organism_id) {
+        $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
+        $analysis_org = chado_query($sql, [":organism_id" => $organism_id])->fetchObject();
+        $biomaterial_org = chado_query($sql, [":organism_id" => $biomaterial_result->taxon_id])->fetchObject();
+        print "ERROR: Mismatch between the organism selected in the loader " . "and the organism of a biomaterial in the Chado database.\n" . "  Organism selected by loader: " . $analysis_org->genus . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n" . "  Biomaterial organism: " . $biomaterial_org->genus . " " . $biomaterial_org->species . " (" . $biomaterial_org->common_name . ")\n" . "  On biomaterial: " . $biomaterial . "\n" . "Please ensure that the organism selected by the loader " . "and the organism for each biomaterial in the file to be loaded " . "are the same. If these organisms should not be the same, " . "delete the offending biomaterial in Chado or change the name of " . "the biomaterial to another unique name.\n";
+        exit;
+      }
+    }
+
+    $biomaterial_id = $biomaterial_result->biomaterial_id;
+
+    //overwrite the existing description value
+    if ($biomaterial_description == '' and $biomaterial_result->description != '') {
+      $biomaterial_description = '';
+    }
+
   }
 
-  if ($biomaterial_result->taxon_id and $biomaterial_result->taxon_id != $organism_id) {
-    $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
-    $analysis_org = chado_query($sql, [":organism_id" => $organism_id])->fetchObject();
-    $biomaterial_org = chado_query($sql, [":organism_id" => $biomaterial_result->taxon_id])->fetchObject();
-    print "ERROR: Mismatch between the organism selected in the loader " . "and the organism of a biomaterial in the Chado database.\n" . "  Organism selected by loader: " . $analysis_org->genus . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n" . "  Biomaterial organism: " . $biomaterial_org->genus . " " . $biomaterial_org->species . " (" . $biomaterial_org->common_name . ")\n" . "  On biomaterial: " . $biomaterial . "\n" . "Please ensure that the organism selected by the loader " . "and the organism for each biomaterial in the file to be loaded " . "are the same. If these organisms should not be the same, " . "delete the offending biomaterial in Chado or change the name of " . "the biomaterial to another unique name.\n";
-    exit;
-  }
-
-  $biomaterial_id = $biomaterial_result->biomaterial_id;
-
-  if ($analysis_id) {
+  //if description is blank but we have an analysis, use that instead.
+  if ($analysis_id && $biomaterial_description == '') {
     $analysis_name = chado_select_record('analysis', ['name'], ['analysis_id' => $analysis_id]);
-  }
-
-  if ($biomaterial_description == '' and $biomaterial_result->description != '') {
-    $biomaterial_description = '';
-  }
-
-  elseif ($biomaterial_description == '' && $analysis_id) {
-    $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_name[0]->name;
+      $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_name[0]->name;
   }
 
   $values = [
     'name' => $biomaterial,
-    //'description' => $biomaterial_description,
-    //'biosourceprovider_id' => $biosourceprovider_id,
     'taxon_id' => $organism_id,
-    //  'dbxref_id' => $dbxref_id,
   ];
 
   if ($dbxref_id) {
@@ -669,7 +670,7 @@ function tripal_biomaterial_create_biomaterial(
     }
   }
 
-  if ($biomaterial_id) {
+  else {
     print("Updating record for biomaterial id = $biomaterial_id\n");
     $biomaterial = chado_update_record('biomaterial', ['name' => $biomaterial], $values, ['return_record' => TRUE]);
     if ($biomaterial == FALSE) {
