@@ -186,7 +186,7 @@ class tripal_expression_pvalue_loader extends TripalImporter {
    *  The string name of the cvalue_id.
    * @throws \Exception
    */
-  private function parseFile($file_path, $file_ext, $organism_id, $analysis_id, $cvterm_id, $cvalue_id, $cvalue_name) {
+  private function parseFile($file_path, $file_ext, $analysis_id, $organism_id, $cvterm_id, $cvalue_id, $cvalue_name) {
     $file_size = filesize($file_path);
     $this->setTotalItems($file_size);
     $this->setItemsHandled(0);
