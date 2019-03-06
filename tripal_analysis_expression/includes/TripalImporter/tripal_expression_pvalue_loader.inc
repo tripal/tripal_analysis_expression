@@ -157,7 +157,7 @@ class tripal_expression_pvalue_loader extends TripalImporter {
     $cvterm_name = $cvterms[0];
     $cvalue_name = isset($cvterms[1]) ? $cvterms[1] : NULL;
 
-    $this->pub_id = db_query('SELECT pub_id FROM chado.pub WHERE title IS NULL ORDER BY pub_id ASC limit 1')
+    $this->pub_id = chado_query('SELECT pub_id FROM pub WHERE title IS NULL ORDER BY pub_id ASC limit 1')
       ->fetchField();
     $this->cvterm_id = $this->get_cvterm_id($cvterm_name);
     $this->cvalue_id = $this->get_cvterm_id($cvalue_name);
@@ -167,7 +167,7 @@ class tripal_expression_pvalue_loader extends TripalImporter {
     $this->cvalue_type_id = 343;
     $this->pvalue_cvterm_id = 344;
 
-    $this->parseFile($file_path, $file_ext, $analysis_id, $organism_id, $this->cvterm_id, $this->cvalue_id, $cvalue_name);
+    $this->parseFile($file_path, $file_ext, $analysis_id, $organism_id, $cvalue_name);
   }
 
   /**
@@ -186,7 +186,7 @@ class tripal_expression_pvalue_loader extends TripalImporter {
    *  The string name of the cvalue_id.
    * @throws \Exception
    */
-  private function parseFile($file_path, $file_ext, $analysis_id, $organism_id, $cvterm_id, $cvalue_id, $cvalue_name) {
+  private function parseFile($file_path, $file_ext, $analysis_id, $organism_id, $cvalue_name) {
     $file_size = filesize($file_path);
     $this->setTotalItems($file_size);
     $this->setItemsHandled(0);
@@ -204,10 +204,10 @@ class tripal_expression_pvalue_loader extends TripalImporter {
       $this->setItemsHandled($bytes_read);
 
       $feature_id = $this->get_feature_id($feature_name);
-      $feature_cvterm_id = $this->insert_feature_cvterm($feature_id, $cvterm_id);
+      $feature_cvterm_id = $this->insert_feature_cvterm($feature_id, $this->cvterm_id);
 
       // associated cvterm
-      $this->insert_feature_cvtermprop($feature_cvterm_id, $this->cvalue_type_id, $cvalue_name, $cvalue_id);
+      $this->insert_feature_cvtermprop($feature_cvterm_id, $this->cvalue_type_id, $cvalue_name, $this->cvalue_id);
 
       // pvalue
       $this->insert_feature_cvtermprop($feature_cvterm_id, $this->pvalue_cvterm_id, $p_adj);
