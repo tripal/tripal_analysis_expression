@@ -10,8 +10,11 @@
 class tripal_biomaterial_loader_v3 extends TripalImporter {
 
   public static $name = 'Chado Biological Sample (Biomaterial) Loader';
+
   public static $machine_name = 'chado_biosample_loader';
+
   public static $description = 'Import biological samples (Biomaterials) from NCBI BioSamples';
+
   public static $file_types = ['xml', 'tsv', 'csv'];
 
   public static $upload_description = "Please upload an NCBI BioSample file.  This can be in XML with an .xml extension, or flat file format with a .tsv or .csv extension.<br><br> If loading a CSV/TSV flat file, the first line must be the column name.  The only field that is required to create a biosample is the name (column: sample_name). It is recommended that a description (column: description), biomaterial provider (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column 
@@ -33,8 +36,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     // Allow the user to provide the path on the Tripal server for the file.
     'file_local' => TRUE,
     /**
- * Allow the user to provide a remote URL for the file.
- */
+     * Allow the user to provide a remote URL for the file.
+     */
     'file_remote' => FALSE,
   ];
 
@@ -132,203 +135,122 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       '#tree' => TRUE,
     ];
 
+    // Build the property cvterm and cvalue portion of the form.
     foreach ($fields as $field) {
-      $cv_array = [];
-      $field_options = array_values($field);
-      $field_options = array_unique($field_options);
-
-      // Get terms.
-      $sql = "SELECT CV.name AS cv_name, DB.name AS db_name, DBX.accession AS dbx_accession, CVT.name AS cvt_name, CVT.definition AS cvt_def, CVT.cvterm_id AS cvt_id FROM {cvterm} AS CVT
-              INNER JOIN {CV} AS CV ON CVT.cv_id = CV.cv_id
-              INNER JOIN {dbxref} as DBX ON CVT.dbxref_id = DBX.dbxref_id
-              INNER JOIN {db} as DB ON DBX.db_id = DB.db_id
-              WHERE CVT.name  IN (:field)";
-
-      $existing_field_terms = chado_query($sql, [":field" => $field_options])->fetchAll();
-
-      foreach ($existing_field_terms as $field_term) {
-        $cv_name = $field_term->cv_name;
-        $db_name = $field_term->db_name;
-        $accession = $field_term->dbx_accession;
-        $cvt_name = $field_term->cvt_name;
-        $cvt_def = $field_term->cvt_def;
-        $cvt_id = $field_term->cvt_id;
-
-        $cv_array[$cv_name]["cv"] = $cv_name;
-        $cv_array[$cv_name]["db"] = $db_name;
-        $cv_array[$cv_name]["accession"] = $accession;
-        $cv_array[$cv_name]["cvt_name"] = $cvt_name;
-        $cv_array[$cv_name]["cvt_def"] = $cvt_def;
-        $cv_array[$cv_name]["cvt_id"] = $cvt_id;
-
-      }
-
-      $field_label = reset($field);
-      $description = count($field_options) . " variations queried: ";
-
-      foreach ($field_options as $subfield) {
-        $description .= '"' . $subfield . '"' . "  ";
-      }
-
-      $form['cvterms']['cvterm_configuration'][$field_label] = [
-        '#type' => 'fieldset',
-        '#title' => t($field_label),
-        '#collapsible' => TRUE,
-        '#collapsed' => FALSE,
-        '#description' => $description,
-      ];
-
-      $header = [
-        "CVterm name",
-        "CV name",
-        "DB name",
-        "Accession",
-        "CVterm definition",
-      ];
-
-      $rows = [];
-      foreach ($cv_array as $cv_name => $field_term) {
-        $db_name = $field_term["db"];
-        $accession = $field_term["accession"];
-        $cvt_name = $cv_array[$cv_name]["cvt_name"];
-        $cvt_def = $cv_array[$cv_name]["cvt_def"];
-        $cvt_id = $cv_array[$cv_name]["cvt_id"];
-
-        $row = [$cvt_name, $cv_name, $db_name, $accession, $cvt_def];
-
-        $info = [
-          'cvt_name' => $cvt_name,
-          'cv_name' => $cv_name,
-          'db_name' => $db_name,
-          'cvt_accession' => $accession,
-          'cvt_id' => $cvt_id,
-        ];
-
-        // Stick the info in the form so we can match it up later.
-        $form['cvterms']['cvterm_configuration'][$field_label][$cv_name] = [
-          '#type' => 'value',
-          '#value' => $info,
-        ];
-
-        $rows[$cv_name] = $row;
-      }
-
-      // If no rows then the term isn't in DB.
-      if (!$rows) {
-        $markup = "<p>There is no cvterm in the Chado database matching the property <b>$field_label</b>.  You can insert a term and try again, or submit and use a generic cv.</p>";
-        $form['cvterms']['cvterm_configuration'][$field_label] = [
-          '#markup' => $markup,
-        ];
-      }
-      else {
-
-        $form['cvterms']['cvterm_configuration'][$field_label]['choose'] = [
-          '#type' => 'tableselect',
-          '#header' => $header,
-          '#options' => $rows,
-          '#multiple' => FALSE,
-        ];
-      }
+      $this->build_term_form_item($form, $field, "cvterm_configuration");
     }
 
-    // Now do almost the same thing for property values.  Oops.
-    // TODO refactor these since we do it 2x.
     foreach ($property_values as $property_value) {
-
-      $cv_array = [];
-
-      // Get terms.
-      $sql = "SELECT CV.name AS cv_name, DB.name AS db_name, DBX.accession AS dbx_accession, CVT.name AS cvt_name, CVT.definition AS cvt_def, CVT.cvterm_id AS cvt_id  FROM {cvterm} AS CVT
-              INNER JOIN {CV} AS CV ON CVT.cv_id = CV.cv_id
-              INNER JOIN {dbxref} as DBX ON CVT.dbxref_id = DBX.dbxref_id
-              INNER JOIN {db} as DB ON DBX.db_id = DB.db_id
-              WHERE CVT.name  = :field";
-
-      $prop_result = chado_query($sql, [":field" => $property_value])->fetchAll();
-
-      foreach ($prop_result as $field_term) {
-        $cv_name = $field_term->cv_name;
-        $db_name = $field_term->db_name;
-        $accession = $field_term->dbx_accession;
-        $cvt_name = $field_term->cvt_name;
-        $cvt_def = $field_term->cvt_def;
-
-        $cv_array[$cv_name]["cv"] = $cv_name;
-        $cv_array[$cv_name]["db"] = $db_name;
-        $cv_array[$cv_name]["accession"] = $accession;
-        $cv_array[$cv_name]["cvt_name"] = $cvt_name;
-        $cv_array[$cv_name]["cvt_def"] = $cvt_def;
-        $cv_array[$cv_name]["cvt_id"] = $field_term->cvt_id;
-
-      }
-
-      $form['cvterms']['cvalue_configuration'][$property_value] = [
-        '#type' => 'fieldset',
-        '#title' => t($property_value),
-        '#collapsible' => TRUE,
-        '#collapsed' => FALSE,
-      ];
-
-      $header = [
-        "CVterm name",
-        "CV name",
-        "DB name",
-        "Accession",
-        "CVterm definition",
-      ];
-
-      $rows = [];
-      foreach ($cv_array as $cv_name => $field_term) {
-        $db_name = $field_term["db"];
-        $accession = $field_term["accession"];
-        $cvt_name = $cv_array[$cv_name]["cvt_name"];
-        $cvt_def = $cv_array[$cv_name]["cvt_def"];
-        $cvt_id = $cv_array[$cv_name]["cvt_id"];
-
-        $row = [$cvt_name, $cv_name, $db_name, $accession, $cvt_def];
-        $rows[$cv_name] = $row;
-
-        $info = [
-          'cvt_name' => $cvt_name,
-          'cv_name' => $cv_name,
-          'db_name' => $db_name,
-          'cvt_accession' => $accession,
-          'cvt_id' => $cvt_id,
-        ];
-
-        // Stick the info in the form so we can match it up later.
-        $form['cvterms']['cvalue_configuration'][$property_value][$cv_name] = [
-          '#type' => 'value',
-          '#value' => $info,
-        ];
-
-      }
-
-      // If no rows then the term isn't in DB.
-      if (!$rows) {
-        $markup = "<p>There is no cvterm in the Chado database matching the property <b>$property_value</b>.  You can insert a term and try again, or submit not use a cvterm for this property value.</p>";
-        $form['cvterms']['cvalue_configuration'][$property_value]['choose'] = [
-          '#markup' => $markup,
-        ];
-      }
-      else {
-
-        $form['cvterms']['cvalue_configuration'][$property_value]['choose'] = [
-          '#type' => 'tableselect',
-          '#header' => $header,
-          '#options' => $rows,
-          '#multiple' => FALSE,
-        ];
-      }
+      $this->build_term_form_item($form, $property_value, "cvalue_configuration");
     }
 
     return $form;
   }
 
   /**
-   * @see TripalImporter::formValidate()
+   * Builds the property to term mapping form area.  Reused for cvterms and
+   * cvalues.
+   *
+   * @param array $form
+   *   The drupal form array.
+   * @param string $property_value
+   *   The name of property that will be checked for cvterms.
+   * @param string $cvterm_or_cvalue
+   *   The piece of the form array to build in.
+   *    Should be 'cvalue_configuration' or 'cvterm_configuration'.
+   *
+   * @return mixed
+   *
+   * @throws \Exception
    */
-  public function formValidate($form, &$form_state) {
+  private function build_term_form_item(array $form, string $property_value, string $cvterm_or_cvalue) {
+    $cv_array = [];
+
+    // Get terms.
+    $sql = "SELECT CV.name AS cv_name, DB.name AS db_name, DBX.accession AS dbx_accession, CVT.name AS cvt_name, CVT.definition AS cvt_def, CVT.cvterm_id AS cvt_id  FROM {cvterm} AS CVT
+              INNER JOIN {CV} AS CV ON CVT.cv_id = CV.cv_id
+              INNER JOIN {dbxref} as DBX ON CVT.dbxref_id = DBX.dbxref_id
+              INNER JOIN {db} as DB ON DBX.db_id = DB.db_id
+              WHERE CVT.name  = :field";
+
+    $prop_result = chado_query($sql, [":field" => $property_value])->fetchAll();
+
+    foreach ($prop_result as $field_term) {
+      $cv_name = $field_term->cv_name;
+      $db_name = $field_term->db_name;
+      $accession = $field_term->dbx_accession;
+      $cvt_name = $field_term->cvt_name;
+      $cvt_def = $field_term->cvt_def;
+
+      $cv_array[$cv_name]["cv"] = $cv_name;
+      $cv_array[$cv_name]["db"] = $db_name;
+      $cv_array[$cv_name]["accession"] = $accession;
+      $cv_array[$cv_name]["cvt_name"] = $cvt_name;
+      $cv_array[$cv_name]["cvt_def"] = $cvt_def;
+      $cv_array[$cv_name]["cvt_id"] = $field_term->cvt_id;
+
+    }
+
+    $form['cvterms'][$cvterm_or_cvalue][$property_value] = [
+      '#type' => 'fieldset',
+      '#title' => t($property_value),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    ];
+
+    $header = [
+      "CVterm name",
+      "CV name",
+      "DB name",
+      "Accession",
+      "CVterm definition",
+    ];
+
+    $rows = [];
+    foreach ($cv_array as $cv_name => $field_term) {
+      $db_name = $field_term["db"];
+      $accession = $field_term["accession"];
+      $cvt_name = $cv_array[$cv_name]["cvt_name"];
+      $cvt_def = $cv_array[$cv_name]["cvt_def"];
+      $cvt_id = $cv_array[$cv_name]["cvt_id"];
+
+      $row = [$cvt_name, $cv_name, $db_name, $accession, $cvt_def];
+      $rows[$cv_name] = $row;
+
+      $info = [
+        'cvt_name' => $cvt_name,
+        'cv_name' => $cv_name,
+        'db_name' => $db_name,
+        'cvt_accession' => $accession,
+        'cvt_id' => $cvt_id,
+      ];
+
+      // Stick the info in the form so we can match it up later.
+      $form['cvterms'][$cvterm_or_cvalue][$property_value][$cv_name] = [
+        '#type' => 'value',
+        '#value' => $info,
+      ];
+
+    }
+
+    // If no rows then the term isn't in DB.
+    if (!$rows) {
+      $markup = "<p>There is no cvterm in the Chado database matching the property <b>$property_value</b>.  You can insert a term and try again, or submit and use a generic term.</p>";
+      $form['cvterms'][$cvterm_or_cvalue][$property_value]['choose'] = [
+        '#markup' => $markup,
+      ];
+    }
+    else {
+
+      $form['cvterms'][$cvterm_or_cvalue][$property_value]['choose'] = [
+        '#type' => 'tableselect',
+        '#header' => $header,
+        '#options' => $rows,
+        '#multiple' => FALSE,
+      ];
+    }
+
+    return $form;
   }
 
   /**
@@ -383,8 +305,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $extension = explode('.', $file_path);
       $extension = $extension[count($extension) - 1];
     }
-
-    tripal_set_message(t("Job Submitted!  After running the job, remember to") . l('publish the inserted BioSamples.', 'admin/content/bio_data/publish/'), TRIPAL_INFO);
 
     if ($extension == "xml") {
       $this->load_biosample_xml($file_path, $insert_fields, $insert_cvalues);
@@ -628,11 +548,12 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
    */
   protected function load_biosample_flat(
     $file_path,
-    $organism_id,
-    $analysis_id,
     $insert_fields,
     $insert_cvalues
   ) {
+
+    $organism_id = $this->organism_id;
+    $analysis_id = $this->analysis_id;
     try {
       if (!is_readable($file_path)) {
         print "ERROR: File is not readable or not present.";
@@ -642,7 +563,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $num_biosamples = 0;
       $cur_biosample = 0;
 
-      // Check if the file given is empty.
       $fileSize = filesize($file_path);
       if ($fileSize == 0) {
         print("ERROR: File at $file_path is empty. Try again with a new file.\n");
@@ -652,14 +572,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $extension = explode('.', $file_path);
       $extension = $extension[count($extension) - 1];
 
+      // Defaults are for csv unless tsv selected.
+      $separator = ",";
+      $enclosure = '"';
+
       if ($extension == "tsv") {
         $separator = "\t";
         $enclosure = "\0";
-      }
-      else {
-        // Auto assume file is using csv format.
-        $separator = ",";
-        $enclosure = '"';
       }
 
       // Count the number of biomaterials in the file.
@@ -675,23 +594,17 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       while ($line = fgets($fp)) {
         $num_biosamples++;
       }
-
       fclose($fp);
 
       if ($num_biosamples == 0) {
-
         $message = "ERROR: Wrong file format at !path. File must contain a column named 'sample_name'.  
         Please try again with a file that contains at least one column named 'sample_name' in its header line, followed by lines of biosample data.";
-
         tripal_report_error('tripal_biomaterial_loader', TRIPAL_ERROR, $message, ['!path' => $file_path], ['print' => TRUE]);
         return;
-
       }
 
-      // Get the file pointer.
       $fp = fopen($file_path, "r");
 
-      // $headers = fgetcsv($fp);
       while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
         foreach ($line as $field) {
           if (preg_match("/(sample_name)/", $field)) {
@@ -713,18 +626,15 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       }
 
       $biomaterial_names = [];
-
       $biomaterial_headers = [];
       $prop_headers = [];
       $acc_headers = [];
 
       for ($i = 0; $i < count($headers); $i++) {
         $header = trim(str_replace("*", "", $headers[$i]));
-        // drupal_set_message("'" . $header . "'");.
         if ($header == 'sample_name') {
           $biomaterial_headers['sample_name'] = $i;
-          // drupal_set_message("here ***");
-        } //***
+        }
         if ($header == 'organism') {
           $biomaterial_headers['organism'] = $i;
         }
@@ -749,10 +659,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       }
 
       while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
-
-        print "Loading BioSample " . ($cur_biosample + 1) . " of " . $num_biosamples . "\n";
-
         $cur_biosample++;
+
+        tripal_report_error('tripal_biomaterial_loader', TRIPAL_NOTICE, 'Loading Biosample !curr of !num', [
+          '!curr' => $cur_biosample,
+          '!num' => $num_biosamples,
+        ], ['print' => TRUE]);
+
         $unique_name = '';
         $description = '';
         $biosourceprovider_id = '';
@@ -778,41 +691,46 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
         // Insert database accessions.
         foreach ($acc_headers as $name => $index) {
-          // Get the db_id.
+          $url_name = '';
+          $db_name = '';
           if ($name == 'sra_accession') {
-            $db_id = tripal_biomaterial_create_ncbi_db('sra', 'NCBI SRA', '');
+            $url_name = 'sra';
+            $db_name = 'NCBI SRA';
           }
-          elseif ($name == 'biosample_accession') {
-            // In case there is no biosample database.
-            $db_id = tripal_biomaterial_create_ncbi_db('biosample', 'NCBI BioSample', '');
+
+          if ($name == 'biosample_accession') {
+            $url_name = 'biosample';
+            $db_name = 'NCBI Biosample';
           }
-          else {
-            if ($name == 'bioproject_accession') {
-              $db_id = tripal_biomaterial_create_ncbi_db('bioproject', 'NCBI BioProject', '');
-            }
+          if ($name == 'bioproject_accession') {
+            $url_name = 'bioproject';
+            $db_name = 'NCBI BioProject';
           }
+
+          $db_id = tripal_biomaterial_create_ncbi_db($url_name, $db_name, '');
+
           // First check to see if there is a dbxref record in the database corresponding to the accession number from the file.
-          $record = chado_select_record('dbxref', ['dbxref_id'], [
+          $values = [
             'accession' => $line[$index],
             'db_id' => $db_id,
-          ]);
+          ];
+          $record = chado_select_record('dbxref', ['dbxref_id'], $values);
           if (empty($record)) {
             // Insert value into dbxref table.
-            $values = [
-              'accession' => $line[$index],
-              'db_id' => $db_id,
-            ];
-            $dbxref = chado_insert_record('dbxref', $values);
-            $dbxref_id = $dbxref['dbxref_id'];
+            $record = chado_insert_record('dbxref', $values);
+          }
+          $dbxref_id = $record['dbxref_id'];
 
-            // Insert into the biomaterial_dbxref table.
-            // TODO Add error checking?
-            $values = [
-              'biomaterial_id' => $biomaterial_id,
-              'dbxref_id' => $dbxref_id,
-            ];
-            $biomaterial_dbxref = chado_insert_record('biomaterial_dbxref', $values);
-            $biomaterial_dbxref_id = $biomaterial_dbxref['biomaterial_dbxref_id'];
+          // Insert into the biomaterial_dbxref table.
+          $values = [
+            'biomaterial_id' => $biomaterial_id,
+            'dbxref_id' => $dbxref_id,
+          ];
+
+          $record = chado_select_record('biomaterial_dbxref', $values);
+
+          if (empty($record)) {
+            $record = chado_insert_record('biomaterial_dbxref', $values);
           }
         }
 
@@ -1059,6 +977,7 @@ function test_biosample_cvterms_flat(
   // Check if the file given is empty.
   $fileSize = filesize($file_path);
   if ($fileSize == 0) {
+
     tripal_set_message("ERROR: File at $file_path is empty. Try again with a new file.", "warning");
     return;
   }
@@ -1117,7 +1036,15 @@ function test_biosample_cvterms_flat(
 
   for ($i = 0; $i < count($headers); $i++) {
     $header = trim(str_replace("*", "", $headers[$i]));
-    if (in_array($header, ['sample_name', 'organism', 'description', ' biomaterial_provider', 'biomaterial_accession', 'sra_accession', 'bioproject_accession'])) {
+    if (in_array($header, [
+      'sample_name',
+      'organism',
+      'description',
+      ' biomaterial_provider',
+      'biomaterial_accession',
+      'sra_accession',
+      'bioproject_accession',
+    ])) {
     }
     else {
       $attribute_list[]["attributes"] = $header;

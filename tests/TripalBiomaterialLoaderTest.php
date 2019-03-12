@@ -83,7 +83,10 @@ class TripalBiomaterialLoaderTest extends TripalTestCase {
     $organism = factory('chado.organism')->create();
     $analysis = factory('chado.analysis')->create();
 
-    $importer->load_biosample_flat($file, $organism->organism_id, $analysis->analysis_id, [], []);
+    $importer->analysis_id = $analysis->analysis_id;
+    $importer->organism_id = $organism->organism_id;
+
+    $importer->load_biosample_flat($file, [], []);
 
     $biomat = db_select('chado.biomaterial', 'b')->fields('b')->condition('b.name', 'SM1')->execute()->fetchObject();
 
@@ -95,8 +98,10 @@ class TripalBiomaterialLoaderTest extends TripalTestCase {
     $organism = factory('chado.organism')->create();
     $analysis = factory('chado.analysis')->create();
 
+    $importer->analysis_id = $analysis->analysis_id;
+    $importer->organism_id = $organism->organism_id;
 
-    $importer->load_biosample_flat($file, $organism->organism_id, $analysis->analysis_id, [], []);
+    $importer->load_biosample_flat($file, [], []);
 
     $biomat = db_select('chado.biomaterial', 'b')->fields('b')->condition('b.name', 'R20T17')->execute()->fetchObject();
 
