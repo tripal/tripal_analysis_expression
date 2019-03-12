@@ -41,9 +41,7 @@ function tripal_analysis_expression_get_arraydesign_select_options() {
  *
  * @ingroup tripal_protocol_api
  */
-function tripal_analysis_expression_get_protocol_select_options(
-  $protocol_type
-) {
+function tripal_analysis_expression_get_protocol_select_options($protocol_type) {
   $prot_list = [];
   $prot_list[] = 'Select a protocol';
 
@@ -68,21 +66,24 @@ function tripal_analysis_expression_get_protocol_select_options(
  * @param $uri
  *   URI to the file.
  *
- * @return string
+ * @return string|boolean
  *   Returns the file path to the new location of the file.
  */
 function tripal_analysis_expression_cache_file($file_path) {
   $destination = 'public://expression';
   if (!file_prepare_directory($destination, FILE_CREATE_DIRECTORY)) {
-    print ("Could not create directory at $destination, please check your permissions and try again.\n");
-    // Return false;.
+    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR,
+      "Could not create directory at $destination, please check your permissions and try again.\n",
+      [], ['print' => TRUE]);
+    return FALSE;
   }
 
   $file_name = pathinfo($file_path)['basename'];
   $new_path = $destination . '/' . uniqid() . '_' . $file_name;
 
   if (!copy($file_path, $new_path)) {
-    print ("Could not copy $file_path to $new_path.");
+    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR,
+      "Could not copy $file_path to $new_path.", [], ['print' => TRUE]);
     return FALSE;
   }
 
