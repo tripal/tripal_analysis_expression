@@ -116,7 +116,7 @@ function tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path) {
   $exists = chado_get_property($record, $property);
   //if this exact file path already exists then dont re-add.
 
-  if (!exists) {
+  if (!$exists) {
     $options = ['update_if_present' => FALSE];
     $exists = chado_insert_property($record, $property, $options);
   }
