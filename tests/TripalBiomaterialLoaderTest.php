@@ -89,6 +89,23 @@ class TripalBiomaterialLoaderTest extends TripalTestCase {
 
     $this->assertNotFalse($biomat);
     $this->assertEquals('Sugar Maple - pooled seedling leaf RNAs from various stress treatments', $biomat->description);
+
+    $file = __DIR__ . '/../example_files/3175-biomaterial.csv';
+    $importer = reflect(new \tripal_biomaterial_loader_v3());
+    $organism = factory('chado.organism')->create();
+    $analysis = factory('chado.analysis')->create();
+
+
+    $importer->load_biosample_flat($file, $organism->organism_id, $analysis->analysis_id, [], []);
+
+    $biomat = db_select('chado.biomaterial', 'b')->fields('b')->condition('b.name', 'R20T17')->execute()->fetchObject();
+
+    $this->assertNotFalse($biomat);
+    $this->assertEquals('HLB tolerant sample', $biomat->description);
+
   }
+
+
+
 
 }
