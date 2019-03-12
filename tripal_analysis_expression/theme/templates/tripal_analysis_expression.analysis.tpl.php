@@ -4,12 +4,14 @@
     across <?php print $variables['biomaterials_count']; ?> biosamples.
 </p>
 
+<?php if($variables['file']): ?>
 <p>
     <a href="<?php print file_create_url($variables['file']) ?>"
        id="expressionDownloadLink">
         Download all expression data associated with this analysis.
     </a>
 </p>
+<?php endif; ?>
 
 <script>
   (function ($) {
