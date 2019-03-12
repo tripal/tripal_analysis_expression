@@ -45,21 +45,6 @@ class TripalBiomaterialLoaderTest extends TripalTestCase {
     $this->assertEquals(5, count($results));
   }
 
-  /**
-   * @group wip
-   */
-  public function test_parse_xml_biomaterial_file() {
-    $file = __DIR__ . '/../example_files/biomaterials_example.xml';
-
-    module_load_include('inc', 'tripal_biomaterial', 'includes/TripalImporter/tripal_biomaterial_loader_v3');
-
-    $importer = reflect(new \tripal_biomaterial_loader_v3());
-
-    $out = $importer->parse_xml_biomaterial_file($file);
-    $fields = $out["attributes"];
-    $this->assertArrayHasKey('camera', $fields);
-    $this->assertArrayHasKey('city', $fields);
-  }
 
   /**
    * @group csv
