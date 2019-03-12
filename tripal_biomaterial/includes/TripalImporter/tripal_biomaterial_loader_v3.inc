@@ -716,11 +716,12 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $record = chado_select_record('dbxref', ['dbxref_id'], $values);
         if (! empty($record)) {
           $record = $record[0];
+          $dbxref_id = $record->dbxref_id;
           // Insert value into dbxref table.
         } else {
           $record = chado_insert_record('dbxref', $values);
+          $dbxref_id = $record['dbxref_id'];
         }
-        $dbxref_id = $record->dbxref_id;
 
         // Insert into the biomaterial_dbxref table.
         $values = [
