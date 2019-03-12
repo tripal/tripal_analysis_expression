@@ -1,0 +1,7 @@
+sample_name,description,biomaterial_provider,organism,cultivar,geo_loc_name,tissue,treatment
+R19T23,HLB susceptible sample,Yongping Duan,Citrus paradisi,Marsh,"USDA Picos Farm, Ft. Pierce, FL, USA",leaves,HLB susceptible
+R19T24,HLB susceptible sample,Yongping Duan,Citrus paradisi,Marsh,"USDA Picos Farm, Ft. Pierce, FL, USA",leaves,HLB susceptible
+R20T24,HLB susceptible sample,Yongping Duan,Citrus paradisi,Marsh,"USDA Picos Farm, Ft. Pierce, FL, USA",leaves,HLB susceptible
+R20T18,HLB tolerant sample,Yongping Duan,Citrus paradisi,Jackson,"USDA Picos Farm, Ft. Pierce, FL, USA",leaves,HLB tolerant
+R20T17,HLB tolerant sample,Yongping Duan,Citrus paradisi,Jackson,"USDA Picos Farm, Ft. Pierce, FL, USA",leaves,HLB tolerant
+R19T17,HLB tolerant sample,Yongping Duan,Citrus paradisi,Jackson,"USDA Picos Farm, Ft. Pierce, FL, USA",leaves,HLB tolerant
