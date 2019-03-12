@@ -554,269 +554,261 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     $organism_id = $this->organism_id;
     $analysis_id = $this->analysis_id;
-    try {
-      if (!is_readable($file_path)) {
-        print "ERROR: File is not readable or not present.";
-        return;
-      }
+    if (!is_readable($file_path)) {
+      print "ERROR: File is not readable or not present.";
+      return;
+    }
 
-      $num_biosamples = 0;
-      $cur_biosample = 0;
+    $num_biosamples = 0;
+    $cur_biosample = 0;
 
-      $fileSize = filesize($file_path);
-      if ($fileSize == 0) {
-        print("ERROR: File at $file_path is empty. Try again with a new file.\n");
-        return;
-      }
+    $fileSize = filesize($file_path);
+    if ($fileSize == 0) {
+      print("ERROR: File at $file_path is empty. Try again with a new file.\n");
+      return;
+    }
 
-      $extension = explode('.', $file_path);
-      $extension = $extension[count($extension) - 1];
+    $extension = explode('.', $file_path);
+    $extension = $extension[count($extension) - 1];
 
-      // Defaults are for csv unless tsv selected.
-      $separator = ",";
-      $enclosure = '"';
+    // Defaults are for csv unless tsv selected.
+    $separator = ",";
+    $enclosure = '"';
 
-      if ($extension == "tsv") {
-        $separator = "\t";
-        $enclosure = "\0";
-      }
+    if ($extension == "tsv") {
+      $separator = "\t";
+      $enclosure = "\0";
+    }
 
-      // Count the number of biomaterials in the file.
-      $fp = fopen($file_path, "r");
-      while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
-        foreach ($line as $field) {
-          if (preg_match("/(sample_name)/", $field)) {
-            break 2;
-          }
+    // Count the number of biomaterials in the file.
+    $fp = fopen($file_path, "r");
+    while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
+      foreach ($line as $field) {
+        if (preg_match("/(sample_name)/", $field)) {
+          break 2;
         }
       }
+    }
 
-      while ($line = fgets($fp)) {
-        $num_biosamples++;
-      }
-      fclose($fp);
+    while ($line = fgets($fp)) {
+      $num_biosamples++;
+    }
+    fclose($fp);
 
-      if ($num_biosamples == 0) {
-        $message = "ERROR: Wrong file format at !path. File must contain a column named 'sample_name'.  
+    if ($num_biosamples == 0) {
+      $message = "ERROR: Wrong file format at !path. File must contain a column named 'sample_name'.  
         Please try again with a file that contains at least one column named 'sample_name' in its header line, followed by lines of biosample data.";
-        tripal_report_error('tripal_biomaterial_loader', TRIPAL_ERROR, $message, ['!path' => $file_path], ['print' => TRUE]);
-        return;
+      tripal_report_error('tripal_biomaterial_loader', TRIPAL_ERROR, $message, ['!path' => $file_path], ['print' => TRUE]);
+      return;
+    }
+
+    $fp = fopen($file_path, "r");
+
+    while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
+      foreach ($line as $field) {
+        if (preg_match("/(sample_name)/", $field)) {
+          break 2;
+        }
+      }
+    }
+    $headers = $line;
+
+    // Make sure there are not duplicate biomaterial headers.
+    if (count($header_repeats = array_diff_assoc($headers, array_unique($headers))) > 0) {
+
+      print "ERROR: There are multiple instance of the following " . "header(s) in the biomaterial file:\n";
+      foreach ($header_repeats as $repeat) {
+        print "  " . $repeat . "\n";
+      }
+      print "Please make sure there is only one instance of each " . "header in the biomaterial file\n";
+      return;
+    }
+
+    $biomaterial_names = [];
+    $biomaterial_headers = [];
+    $prop_headers = [];
+    $acc_headers = [];
+
+    for ($i = 0; $i < count($headers); $i++) {
+      $header = trim(str_replace("*", "", $headers[$i]));
+      if ($header == 'sample_name') {
+        $biomaterial_headers['sample_name'] = $i;
+      }
+      if ($header == 'organism') {
+        $biomaterial_headers['organism'] = $i;
+      }
+      if ($header == 'description') {
+        $biomaterial_headers['description'] = $i;
+      }
+      if ($header == 'biomaterial_provider') {
+        $biomaterial_headers['biomaterial_provider'] = $i;
+      }
+      if ($header == 'biomaterial_accession') {
+        $acc_headers['biomaterial_accession'] = $i;
+      }
+      if ($header == 'sra_accession') {
+        $acc_headers['sra_accession'] = $i;
+      }
+      if ($header == 'bioproject_accession') {
+        $acc_headers['bioproject_accession'] = $i;
+      }
+      else {
+        $prop_headers[$headers[$i]] = $i;
+      }
+    }
+
+    while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
+      $cur_biosample++;
+
+      tripal_report_error('tripal_biomaterial_loader', TRIPAL_NOTICE, 'Loading Biosample !curr of !num', [
+        '!curr' => $cur_biosample,
+        '!num' => $num_biosamples,
+      ], ['print' => TRUE]);
+
+      $unique_name = '';
+      $description = '';
+      $biosourceprovider_id = '';
+      $dbxref_id = '';
+
+      $biomaterial_names[] = $line[$biomaterial_headers['sample_name']];
+
+      // Gather the fields to insert into the biomaterial table.
+      foreach ($biomaterial_headers as $name => $index) {
+        if ($name == 'sample_name') {
+          $unique_name = $line[$index];
+        }
+        if ($name == 'description') {
+          $description = $line[$index];
+        }
+        if ($name == 'biomaterial_provider' and $line[$index] != "") {
+          $biosourceprovider_id = tripal_biomaterial_create_biomaterial_contact($line[$index]);
+        }
       }
 
-      $fp = fopen($file_path, "r");
+      // Create the biomaterial based on the values given.
+      $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $description, TRUE);
 
-      while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
-        foreach ($line as $field) {
-          if (preg_match("/(sample_name)/", $field)) {
-            break 2;
+      // Insert database accessions.
+      foreach ($acc_headers as $name => $index) {
+        $url_name = '';
+        $db_name = '';
+        if ($name == 'sra_accession') {
+          $url_name = 'sra';
+          $db_name = 'NCBI SRA';
+        }
+
+        if ($name == 'biosample_accession') {
+          $url_name = 'biosample';
+          $db_name = 'NCBI Biosample';
+        }
+        if ($name == 'bioproject_accession') {
+          $url_name = 'bioproject';
+          $db_name = 'NCBI BioProject';
+        }
+
+        $db_id = tripal_biomaterial_create_ncbi_db($url_name, $db_name, '');
+
+        // First check to see if there is a dbxref record in the database corresponding to the accession number from the file.
+        $values = [
+          'accession' => $line[$index],
+          'db_id' => $db_id,
+        ];
+        $record = chado_select_record('dbxref', ['dbxref_id'], $values);
+        if (empty($record)) {
+          // Insert value into dbxref table.
+          $record = chado_insert_record('dbxref', $values);
+        }
+        $dbxref_id = $record['dbxref_id'];
+
+        // Insert into the biomaterial_dbxref table.
+        $values = [
+          'biomaterial_id' => $biomaterial_id,
+          'dbxref_id' => $dbxref_id,
+        ];
+
+        $record = chado_select_record('biomaterial_dbxref', $values);
+
+        if (empty($record)) {
+          $record = chado_insert_record('biomaterial_dbxref', $values);
+        }
+      }
+
+      // Insert into the biomaterialprop table.
+      foreach ($prop_headers as $name => $index) {
+
+        // If we didnt choose an association in the form, use biomaterial_property.
+        if (!key_exists($name, $insert_fields)) {
+
+          // Get xml attributes.
+          if (!tripal_insert_cvterm([
+            'name' => $name,
+            'definition' => '',
+            'cv_name' => 'biomaterial_property',
+            'is_relationship' => 0,
+            'db_name' => 'tripal',
+          ], ['update_existing' => FALSE])) {
+            tripal_report_error('tripal_biomaterial_loader', TRIPAL_ERROR, 'Could not insert biomaterial attribute name into the controlled vocabulary table.');
+            return;
           }
-        }
-      }
-      $headers = $line;
 
-      // Make sure there are not duplicate biomaterial headers.
-      if (count($header_repeats = array_diff_assoc($headers, array_unique($headers))) > 0) {
-
-        print "ERROR: There are multiple instance of the following " . "header(s) in the biomaterial file:\n";
-        foreach ($header_repeats as $repeat) {
-          print "  " . $repeat . "\n";
-        }
-        print "Please make sure there is only one instance of each " . "header in the biomaterial file\n";
-        return;
-      }
-
-      $biomaterial_names = [];
-      $biomaterial_headers = [];
-      $prop_headers = [];
-      $acc_headers = [];
-
-      for ($i = 0; $i < count($headers); $i++) {
-        $header = trim(str_replace("*", "", $headers[$i]));
-        if ($header == 'sample_name') {
-          $biomaterial_headers['sample_name'] = $i;
-        }
-        if ($header == 'organism') {
-          $biomaterial_headers['organism'] = $i;
-        }
-        if ($header == 'description') {
-          $biomaterial_headers['description'] = $i;
-        }
-        if ($header == 'biomaterial_provider') {
-          $biomaterial_headers['biomaterial_provider'] = $i;
-        }
-        if ($header == 'biomaterial_accession') {
-          $acc_headers['biomaterial_accession'] = $i;
-        }
-        if ($header == 'sra_accession') {
-          $acc_headers['sra_accession'] = $i;
-        }
-        if ($header == 'bioproject_accession') {
-          $acc_headers['bioproject_accession'] = $i;
+          $record = [
+            'table' => 'biomaterial',
+            'id' => $biomaterial_id,
+          ];
+          $property = [
+            'type_name' => $name,
+            'cv_name' => 'biomaterial_property',
+            'value' => $line[$index],
+          ];
+          $options = [
+            'update_if_present' => TRUE,
+          ];
+          chado_insert_property($record, $property, $options);
         }
         else {
-          $prop_headers[$headers[$i]] = $i;
-        }
-      }
-
-      while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
-        $cur_biosample++;
-
-        tripal_report_error('tripal_biomaterial_loader', TRIPAL_NOTICE, 'Loading Biosample !curr of !num', [
-          '!curr' => $cur_biosample,
-          '!num' => $num_biosamples,
-        ], ['print' => TRUE]);
-
-        $unique_name = '';
-        $description = '';
-        $biosourceprovider_id = '';
-        $dbxref_id = '';
-
-        $biomaterial_names[] = $line[$biomaterial_headers['sample_name']];
-
-        // Gather the fields to insert into the biomaterial table.
-        foreach ($biomaterial_headers as $name => $index) {
-          if ($name == 'sample_name') {
-            $unique_name = $line[$index];
+          $cv_name = "biomaterial_property";
+          if ($insert_fields[$name]) {
+            $cv_name = $insert_fields[$name];
           }
-          if ($name == 'description') {
-            $description = $line[$index];
-          }
-          if ($name == 'biomaterial_provider' and $line[$index] != "") {
-            $biosourceprovider_id = tripal_biomaterial_create_biomaterial_contact($line[$index]);
-          }
-        }
-
-        // Create the biomaterial based on the values given.
-        $biomaterial_id = tripal_biomaterial_create_biomaterial($unique_name, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $description, TRUE);
-
-        // Insert database accessions.
-        foreach ($acc_headers as $name => $index) {
-          $url_name = '';
-          $db_name = '';
-          if ($name == 'sra_accession') {
-            $url_name = 'sra';
-            $db_name = 'NCBI SRA';
-          }
-
-          if ($name == 'biosample_accession') {
-            $url_name = 'biosample';
-            $db_name = 'NCBI Biosample';
-          }
-          if ($name == 'bioproject_accession') {
-            $url_name = 'bioproject';
-            $db_name = 'NCBI BioProject';
-          }
-
-          $db_id = tripal_biomaterial_create_ncbi_db($url_name, $db_name, '');
-
-          // First check to see if there is a dbxref record in the database corresponding to the accession number from the file.
-          $values = [
-            'accession' => $line[$index],
-            'db_id' => $db_id,
-          ];
-          $record = chado_select_record('dbxref', ['dbxref_id'], $values);
-          if (empty($record)) {
-            // Insert value into dbxref table.
-            $record = chado_insert_record('dbxref', $values);
-          }
-          $dbxref_id = $record['dbxref_id'];
-
-          // Insert into the biomaterial_dbxref table.
-          $values = [
-            'biomaterial_id' => $biomaterial_id,
-            'dbxref_id' => $dbxref_id,
+          // If the key exists in insert_fields array, the user chose a CV for this term, so we won't insert, but insert property with correct CV.
+          $record = [
+            'table' => 'biomaterial',
+            'id' => $biomaterial_id,
           ];
 
-          $record = chado_select_record('biomaterial_dbxref', $values);
+          $cvalue_id = NULL;
+          $cvalue_text = $line[$index];
 
-          if (empty($record)) {
-            $record = chado_insert_record('biomaterial_dbxref', $values);
+          if ($insert_cvalues[$cvalue_text]) {
+            $cvalue_id = $insert_cvalues[$cvalue_text];
           }
-        }
 
-        // Insert into the biomaterialprop table.
-        foreach ($prop_headers as $name => $index) {
-
-          // If we didnt choose an association in the form, we're inserting it into biomaterial_property.
-          if (!key_exists($name, $insert_fields)) {
-
-            // Get xml attributes.
-            if (!tripal_insert_cvterm([
-              'name' => $name,
-              'definition' => '',
-              'cv_name' => 'biomaterial_property',
-              'is_relationship' => 0,
-              'db_name' => 'tripal',
-            ], ['update_existing' => FALSE])) {
-              print "ERROR: Could not insert biomaterial attribute name into the controlled vocabulary table.";
-              return;
-            }
-
-            $record = [
-              'table' => 'biomaterial',
-              'id' => $biomaterial_id,
-            ];
-            $property = [
-              'type_name' => $name,
-              'cv_name' => 'biomaterial_property',
-              'value' => $line[$index],
-            ];
-            $options = [
-              'update_if_present' => TRUE,
-            ];
-            chado_insert_property($record, $property, $options);
-          }
-          else {
-            $cv_name = "biomaterial_property";
-            if ($insert_fields[$name]) {
-              $cv_name = $insert_fields[$name];
-            }
-            // If the key exists in insert_fields array, the user chose a CV for this term, so we won't insert, but insert property with correct CV.
-            $record = [
-              'table' => 'biomaterial',
-              'id' => $biomaterial_id,
-            ];
-
-            $cvalue_id = NULL;
-            $cvalue_text = $line[$index];
-
-            if ($insert_cvalues[$cvalue_text]) {
-              $cvalue_id = $insert_cvalues[$cvalue_text];
-            }
-
-            $property = [
-              'type_name' => $name,
-              'cv_name' => $cv_name,
-              'value' => $cvalue_text,
-              'cvalue_id' => $cvalue_id,
-            ];
-            $options = [
-              'update_if_present' => TRUE,
-            ];
-            chado_insert_property($record, $property, $options);
-          }
+          $property = [
+            'type_name' => $name,
+            'cv_name' => $cv_name,
+            'value' => $cvalue_text,
+            'cvalue_id' => $cvalue_id,
+          ];
+          $options = [
+            'update_if_present' => TRUE,
+          ];
+          chado_insert_property($record, $property, $options);
         }
       }
+    }
 
-      // Make sure there are not duplicate biomaterials.
-      if (count($sample_repeats = array_diff_assoc($biomaterial_names, array_unique($biomaterial_names))) > 0) {
-        // If (count($linepart) != count(array_unique($linepart))) {.
-        print "ERROR: There are multiple instance of the following " . "sample_name(s) in the biomaterial file:\n";
-        foreach ($sample_repeats as $repeat) {
-          print "  " . $repeat . "\n";
-        }
-        print "Please make sure there is only one instance of each " . "sample_name in the biomaterial file.\n";
-        return;
+    // Make sure there are not duplicate biomaterials.
+    if (count($sample_repeats = array_diff_assoc($biomaterial_names, array_unique($biomaterial_names))) > 0) {
+      // If (count($linepart) != count(array_unique($linepart))) {.
+      print "ERROR: There are multiple instance of the following " . "sample_name(s) in the biomaterial file:\n";
+      foreach ($sample_repeats as $repeat) {
+        print "  " . $repeat . "\n";
       }
+      print "Please make sure there is only one instance of each " . "sample_name in the biomaterial file.\n";
+      return;
     }
-    catch (Exception $e) {
-      print "\n";
-      watchdog_exception('T_expression_load', $e);
-      // $transaction->rollback();
-      print "FAILED: Rolling back database changes...\n";
-    }
-    print "\nDone.\n";
-    return;
+
+    return TRUE;
   }
 
   /**
