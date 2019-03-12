@@ -387,7 +387,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     tripal_set_message(t("Job Submitted!  After running the job, remember to") . l('publish the inserted BioSamples.', 'admin/content/bio_data/publish/'), TRIPAL_INFO);
 
     if ($extension == "xml") {
-      $this->load_biosample_xml($file_path,  $insert_fields, $insert_cvalues);
+      $this->load_biosample_xml($file_path, $insert_fields, $insert_cvalues);
     }
     else {
       $this->load_biosample_flat($file_path, $insert_fields, $insert_cvalues);
@@ -444,8 +444,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     $description = $biosample->Description->Title;
 
     // Right now we use the organism_id on the form instead of the organism value from the XML here.  If the user was uploading an xml file with mixed organisms, this would be problematic.
-   // $organism = $biosample->Description->Organism->OrganismName;
-
+    // $organism = $biosample->Description->Organism->OrganismName;.
     $comment = $biosample->Description->Comment->Paragraph;
     $ncbi_owner = $biosample->Owner->Name;
 
@@ -679,11 +678,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       fclose($fp);
 
-      // Print error message and exit if there's no biosample, or that there's no "sample_name" column in flat file.
       if ($num_biosamples == 0) {
-        print("ERROR: Wrong file format at $file_path. File must contain a column named 'sample_name'.\n");
-        print("Please try again with a file that contains at least one column named 'sample_name' in its header line, followed by lines of biosample data.\n");
+
+        $message = "ERROR: Wrong file format at !path. File must contain a column named 'sample_name'.  
+        Please try again with a file that contains at least one column named 'sample_name' in its header line, followed by lines of biosample data.";
+
+        tripal_report_error('tripal_biomaterial_loader', TRIPAL_ERROR, $message, ['!path' => $file_path], ['print' => TRUE]);
         return;
+
       }
 
       // Get the file pointer.
@@ -701,7 +703,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       // Make sure there are not duplicate biomaterial headers.
       if (count($header_repeats = array_diff_assoc($headers, array_unique($headers))) > 0) {
-        // If (count($linepart) != count(array_unique($linepart))) {.
+
         print "ERROR: There are multiple instance of the following " . "header(s) in the biomaterial file:\n";
         foreach ($header_repeats as $repeat) {
           print "  " . $repeat . "\n";
@@ -1044,7 +1046,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
  *
  * @return array
  *
- *   This function goes through a flat file and will return the headers
+ *   This function goes through a flat file and will return the headers.
  */
 function test_biosample_cvterms_flat(
   $file_path
