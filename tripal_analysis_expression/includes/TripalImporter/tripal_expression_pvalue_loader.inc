@@ -8,34 +8,46 @@ class tripal_expression_pvalue_loader extends TripalImporter{
   /**
    * The name of this loader.  This name will be presented to the site
    * user.
+   *
+   * @var string
    */
   public static $name = 'Tripal Expression Pvalue Loader';
 
   /**
    * The machine name for this loader. This name will be used to construct
    * the URL for the loader.
+   *
+   * @var string
    */
   public static $machine_name = 'tripal_expression_pvalue_loader';
 
   /**
    * A brief description for this loader.  This description will be
    * presented to the site user.
+   *
+   * @var string
    */
   public static $description = 'Import pvalues for features.';
 
   /**
    * An array containing the extensions of allowed file types.
+   *
+   * @var array
    */
   public static $file_types = ['csv', 'tsv'];
 
   /**
    * Provides information to the user about the file upload.  Typically this
    * may include a description of the file types allowed.
+   *
+   * @var string
    */
   public static $upload_description = 'Files containing pvalue must be uploaded as a two column tsv or csv file, where the first column consists of the names of the features and the second column consists of the adjusted p-values.';
 
   /**
    * Indicates the methods that the file uploader will support.
+   *
+   * @var array
    */
   public static $methods = [
     // Allow the user to upload a file to the server.
@@ -46,45 +58,64 @@ class tripal_expression_pvalue_loader extends TripalImporter{
     'file_remote' => FALSE,
   ];
 
+  /**
+   * @var bool
+   */
   public static $file_required = TRUE;
 
   /**
    * The publication ID for feature_cvterm.
+   *
+   * @var int
    */
   private $pub_id;
 
   /**
    * The id of the cvterm to insert into feature_cvterm.
+   *
+   * @var int
    */
   private $cvterm_id;
 
   /**
    * The id of the other cvterm.
+   *
+   * @var int
    */
   private $cvalue_id;
 
   /**
    * String name of the cvterm associated with the keyword.
+   *
+   * @var string
    */
   private $cvalue_name;
 
   /**
    * The type id to be used when inserting the other cvterm as a prop.
+   *
+   * @var int
    */
   private $cvalue_type_id;
 
   /**
    * The cvterm id for p-value.
+   *
+   * @var int
    */
   private $pvalue_cvterm_id;
 
   /**
    * The cvterm id for analysis.
+   *
+   * @var int
    */
   private $analysis_cvterm_id;
 
   /**
    * ID for analysis.
+   *
+   * @var int
    */
   private $analysis_id;
 
@@ -92,6 +123,19 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
+
+    $form['evidence_code'] = [
+      '#title' => t('Evidence Code'),
+      '#type' => 'select',
+      '#description' => t('The evidence code that relates the cvterms.'),
+      '#options' => drupal_map_assoc([
+        'up-regulated',
+        'down-regulated',
+        'related to'
+      ]),
+      '#required' => TRUE,
+    ];
+
     return $form;
   }
 
@@ -162,13 +206,15 @@ class tripal_expression_pvalue_loader extends TripalImporter{
     $file_name = $file_info['filename'];
     $file_ext = $file_info['extension'];
 
+    $evidence_code = $run_args['evidence_code'];
+
     $cvterms = explode('_', $file_name);
     $cvterm_name = $cvterms[0];
     $this->cvterm_id = chado_get_cvterm(['name' => $cvterm_name])->cvterm_id;
 
     $this->cvalue_name = isset($cvterms[1]) ? $cvterms[1] : NULL;
     $this->cvalue_id = chado_get_cvterm(['name' => $this->cvalue_name])->cvterm_id;
-    $this->cvalue_type_id = tripal_analysis_expression_get_evidence_code_id();
+    $this->cvalue_type_id = tripal_analysis_expression_get_evidence_code_id($evidence_code);
 
     $this->analysis_cvterm_id = chado_get_cvterm(['name' => 'analysis'])->cvterm_id;
     $this->analysis_id = $run_args['analysis_id'];
@@ -183,16 +229,11 @@ class tripal_expression_pvalue_loader extends TripalImporter{
   /**
    * Creates cvterms and cvtermprops for pvalues and features from the file.
    *
-   * @param $file_path
-   * @param $file_ext
+   * @param string $file_path
+   * @param string $file_ext
    *  Either tsv or csv, determines delimiter for fgetcsv.
    * @param $cvterm_id
    *  The cvterm from the first word of the filename.
-   * @param $cvalue_id
-   *  The cvterm from subsequent words of the filename.
-   * @param $cvalue_name
-   *  The string name of the cvalue_id.
-   *
    * @throws \Exception
    */
   private function parseFile($file_path, $file_ext) {
@@ -229,7 +270,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    *
    * Originally from tripal_biomaterial.
    *
-   * @param $values
+   * @param array $values
    *  The array of values from form_state.
    *
    * @return bool|string
@@ -280,7 +321,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
   /**
    * Gets any existing p-value data that exists for the given feature.
    *
-   * @param $feature_id
+   * @param int $feature_id
    *  The id of the feature for which you want to find data.
    *
    * @return bool
@@ -327,7 +368,9 @@ class tripal_expression_pvalue_loader extends TripalImporter{
         ':analysis_id' => $this->analysis_id,
       ])->fetchObject();
 
-      if (is_object($props)) return $props;
+      if (is_object($props)) {
+        return $props;
+      }
     }
 
     return NULL;
@@ -366,14 +409,14 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    * Inserts a new entry into the feature_cvtermprop table and returns the id
    * of the new record.
    *
-   * @param $feature_cvterm_id
+   * @param int $feature_cvterm_id
    *  The id of the feature cvterm with which to associate this cvtermprop.
    *
    * @see tripal_expression_pvalue_loader::insert_feature_cvterm()
    *
-   * @param $type_id
+   * @param int $type_id
    *  Value to be inserted into the type_id column.
-   * @param $value
+   * @param string $value
    *  Value to be inserted into the value column.
    * @param null $cvalue_id
    *  Optional parameter indicating an associated cvterm.
@@ -408,7 +451,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    * Inserts a new entry into the feature_cvterm table and returns the id of
    * the new record.
    *
-   * @param $feature_id
+   * @param int $feature_id
    *  The feature with which to associate this cvterm.
    *
    * @return \DatabaseStatementInterface|int
@@ -429,7 +472,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
   /**
    * Get the ID of the cvterm with a known name.
    *
-   * @param $feature_name
+   * @param string $feature_name
    *
    * @return mixed
    *  Integer ID of the cvterm.
