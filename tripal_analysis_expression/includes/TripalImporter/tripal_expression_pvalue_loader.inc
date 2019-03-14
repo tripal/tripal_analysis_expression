@@ -3,7 +3,7 @@
 /**
  * @see TripalImporter
  */
-class tripal_expression_pvalue_loader extends TripalImporter {
+class tripal_expression_pvalue_loader extends TripalImporter{
 
   /**
    * The name of this loader.  This name will be presented to the site
@@ -52,14 +52,21 @@ class tripal_expression_pvalue_loader extends TripalImporter {
    * The publication ID for feature_cvterm.
    */
   private $pub_id;
+
   /**
    * The id of the cvterm to insert into feature_cvterm.
    */
   private $cvterm_id;
+
   /**
    * The id of the other cvterm.
    */
   private $cvalue_id;
+
+  /**
+   * String name of the cvterm associated with the keyword.
+   */
+  private $cvalue_name;
 
   /**
    * The type id to be used when inserting the other cvterm as a prop.
@@ -77,18 +84,14 @@ class tripal_expression_pvalue_loader extends TripalImporter {
   private $analysis_cvterm_id;
 
   /**
+   * ID for analysis.
+   */
+  private $analysis_id;
+
+  /**
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-
-    $form['organism_id'] = [
-      '#title' => t('Organism'),
-      '#type' => t('select'),
-      '#required' => TRUE,
-      '#description' => t('The organism associated with the features.'),
-      '#options' => chado_get_organism_select_options(FALSE),
-    ];
-
     return $form;
   }
 
@@ -107,11 +110,15 @@ class tripal_expression_pvalue_loader extends TripalImporter {
 
     if (!empty($values['file_local'])) {
       if (!file_exists($values['file_local'])) {
-        form_set_error('file_local', 'Local file path provided does not exist. Please ensure the file path is valid and try again.');
+        form_set_error('file_local',
+          'Local file path provided does not exist. Please ensure the file path is valid and try again.');
+
         return;
       }
       if (is_dir($values['file_local'])) {
-        form_set_error('file_local', 'File provided is a directory. Please upload a .csv file.');
+        form_set_error('file_local',
+          'File provided is a directory. Please upload a .csv file.');
+
         return;
       }
     }
@@ -119,6 +126,7 @@ class tripal_expression_pvalue_loader extends TripalImporter {
     $file_path = $this->findFile($values);
     if (!$file_path) {
       form_set_error('file_upload', 'Failed to get file path.');
+
       return;
     }
 
@@ -126,11 +134,14 @@ class tripal_expression_pvalue_loader extends TripalImporter {
 
     if (!$fp) {
       form_set_error('file_upload', 'Failed to open file. Please try again.');
+
       return;
     }
 
     if (count(fgetcsv($fp, 0, ',')) != 2) {
-      form_set_error('file_upload', 'File provided contains incorrect number of columns. This importer requires that the uploaded file contain exactly two columns containing the feature name and the pvalue.');
+      form_set_error('file_upload',
+        'File provided contains incorrect number of columns. This importer requires that the uploaded file contain exactly two columns containing the feature name and the pvalue.');
+
       return;
     }
 
@@ -141,33 +152,32 @@ class tripal_expression_pvalue_loader extends TripalImporter {
    * @see TripalImporter::run()
    */
   public function run() {
-    $run_args  = $this->arguments['run_args'];
+    $run_args = $this->arguments['run_args'];
     $file_path = $this->arguments['files']['file_path'];
     if (array_key_exists('file_path', $this->arguments['files'][0])) {
       $file_path = $this->arguments['files'][0]['file_path'];
     }
 
-    $analysis_id = $run_args['analysis_id'];
-    $organism_id = $run_args['organism_id'];
-
     $file_info = pathinfo($file_path);
     $file_name = $file_info['filename'];
     $file_ext = $file_info['extension'];
+
     $cvterms = explode('_', $file_name);
     $cvterm_name = $cvterms[0];
-    $cvalue_name = isset($cvterms[1]) ? $cvterms[1] : NULL;
+    $this->cvterm_id = chado_get_cvterm(['name' => $cvterm_name])->cvterm_id;
 
-    $this->pub_id = chado_query('SELECT pub_id FROM pub WHERE title IS NULL ORDER BY pub_id ASC limit 1')
-      ->fetchField();
-    $this->cvterm_id = $this->get_cvterm_id($cvterm_name);
-    $this->cvalue_id = $this->get_cvterm_id($cvalue_name);
-    $this->analysis_cvterm_id = $this->get_cvterm_id('analysis');
+    $this->cvalue_name = isset($cvterms[1]) ? $cvterms[1] : NULL;
+    $this->cvalue_id = chado_get_cvterm(['name' => $this->cvalue_name])->cvterm_id;
+    $this->cvalue_type_id = tripal_analysis_expression_get_evidence_code_id();
 
-    // HARD CODED VALUES, TESTING PURPOSES ONLY
-    $this->cvalue_type_id = 343;
-    $this->pvalue_cvterm_id = 344;
+    $this->analysis_cvterm_id = chado_get_cvterm(['name' => 'analysis'])->cvterm_id;
+    $this->analysis_id = $run_args['analysis_id'];
 
-    $this->parseFile($file_path, $file_ext, $analysis_id, $organism_id, $cvalue_name);
+    $this->pvalue_cvterm_id = tripal_analysis_expression_get_pvalue_id();
+
+    $this->pub_id = chado_query('SELECT pub_id FROM {pub} WHERE title IS NULL ORDER BY pub_id ASC limit 1')->fetchField();
+
+    $this->parseFile($file_path, $file_ext);
   }
 
   /**
@@ -176,17 +186,16 @@ class tripal_expression_pvalue_loader extends TripalImporter {
    * @param $file_path
    * @param $file_ext
    *  Either tsv or csv, determines delimiter for fgetcsv.
-   * @param $organism_id
-   * @param $analysis_id
    * @param $cvterm_id
    *  The cvterm from the first word of the filename.
    * @param $cvalue_id
    *  The cvterm from subsequent words of the filename.
    * @param $cvalue_name
    *  The string name of the cvalue_id.
+   *
    * @throws \Exception
    */
-  private function parseFile($file_path, $file_ext, $analysis_id, $organism_id, $cvalue_name) {
+  private function parseFile($file_path, $file_ext) {
     $file_size = filesize($file_path);
     $this->setTotalItems($file_size);
     $this->setItemsHandled(0);
@@ -197,23 +206,18 @@ class tripal_expression_pvalue_loader extends TripalImporter {
 
     while ($line = fgetcsv($fp, 0, $delimiter)) {
       $feature_name = $line[0];
-      $p_adj = $line[1];
+      $pvalue = $line[1];
 
       $bytes_read += drupal_strlen($feature_name);
-      $bytes_read += drupal_strlen($p_adj);
+      $bytes_read += drupal_strlen($pvalue);
       $this->setItemsHandled($bytes_read);
 
       $feature_id = $this->get_feature_id($feature_name);
-      $feature_cvterm_id = $this->insert_feature_cvterm($feature_id, $this->cvterm_id);
 
-      // associated cvterm
-      $this->insert_feature_cvtermprop($feature_cvterm_id, $this->cvalue_type_id, $cvalue_name, $this->cvalue_id);
+      $data = $this->get_existing_data($feature_id);
 
-      // pvalue
-      $this->insert_feature_cvtermprop($feature_cvterm_id, $this->pvalue_cvterm_id, $p_adj);
-
-      // analysis
-      $this->insert_feature_cvtermprop($feature_cvterm_id, $this->analysis_cvterm_id, $analysis_id);
+      is_object($data) ? $this->updateData($data->feature_cvterm_id,
+        $pvalue) : $this->insertData($feature_id, $pvalue);
     }
 
     fclose($fp);
@@ -233,67 +237,140 @@ class tripal_expression_pvalue_loader extends TripalImporter {
    */
 
   private function findFile($values) {
-
     if (!empty($values['file_local'])) {
       $file_path = trim($values['file_local']);
-      return $file_path;
 
-    } else if (!empty($values['file_upload'])) {
-      $fid = trim($values['file_upload']);
-      if (!$fid) {
-        return false;
-      }
-      $file = file_load($fid);
-      if (!$file) {
-        return false;
-      }
-      $file_path = base_path() . drupal_realpath($file->uri);
-      return $file_path;
-
-    } else if (!empty($values['file_upload_existing'])) {
-
-      $fid = $values['file_upload_existing'];
-      if (!$fid) {
-        return false;
-      }
-      $file = file_load($fid);
-      if (!$file) {
-        return false;
-      }
-      $file_path = base_path() . drupal_realpath($file->uri);
       return $file_path;
     }
+    else {
+      if (!empty($values['file_upload'])) {
+        $fid = trim($values['file_upload']);
+        if (!$fid) {
+          return FALSE;
+        }
+        $file = file_load($fid);
+        if (!$file) {
+          return FALSE;
+        }
+        $file_path = base_path() . drupal_realpath($file->uri);
 
-    return false;
+        return $file_path;
+      }
+      else {
+        if (!empty($values['file_upload_existing'])) {
+
+          $fid = $values['file_upload_existing'];
+          if (!$fid) {
+            return FALSE;
+          }
+          $file = file_load($fid);
+          if (!$file) {
+            return FALSE;
+          }
+          $file_path = base_path() . drupal_realpath($file->uri);
+
+          return $file_path;
+        }
+      }
+    }
+
+    return FALSE;
   }
 
   /**
-   * Inserts a new entry into the feature_cvterm table and returns the id of the new record.
+   * Gets any existing p-value data that exists for the given feature.
    *
    * @param $feature_id
-   *  The feature with which to associate this cvterm.
-   * @return \DatabaseStatementInterface|int
-   *  The id of the inserted feature cvterm.
+   *  The id of the feature for which you want to find data.
+   *
+   * @return bool
    * @throws \Exception
    */
-  private function insert_feature_cvterm($feature_id) {
-    $feature_cvterm_id = db_insert('chado.feature_cvterm')
-      ->fields([
-        'feature_id' => $feature_id,
-        'cvterm_id' => $this->cvterm_id,
-        'pub_id' => $this->pub_id,
-      ])
-      ->execute();
+  public function get_existing_data($feature_id) {
+    $sql = 'SELECT feature_cvterm_id FROM { feature_cvterm } WHERE feature_id=:feature_id AND cvterm_id=:cvterm_id';
 
-    return $feature_cvterm_id;
+    $feature_cvterms = chado_query($sql, [
+      ':feature_id' => $feature_id,
+      ':cvterm_id' => $this->cvterm_id,
+    ])->fetchAll();
+
+    if (empty($feature_cvterms)) {
+      return FALSE;
+    }
+
+    $analysis_cvterm_id = chado_get_cvterm(['name' => 'analysis'])->cvterm_id;
+
+    foreach ($feature_cvterms as $feature_cvterm) {
+      $feature_cvterm_id = $feature_cvterm->feature_cvterm_id;
+
+      $props = chado_query('
+        SELECT p1.feature_cvterm_id,
+               p1.value AS evidence_code,
+               p2.value AS p_value,
+               p3.value AS analysis_id
+        FROM { feature_cvtermprop } p1    
+        JOIN { feature_cvtermprop } p2
+        ON p2.feature_cvterm_id=p1.feature_cvterm_id
+        AND p2.type_id=:pvalue_type_id
+        JOIN { feature_cvtermprop } p3
+        ON p3.feature_cvterm_id=p1.feature_cvterm_id
+        AND p3.type_id=:analysis_cvterm_id
+        AND p3.value=:analysis_id
+        WHERE p1.feature_cvterm_id=:feature_cvterm_id
+        AND p1.type_id=:cvalue_type_id
+        AND p1.value=:cvalue_name', [
+        ':feature_cvterm_id' => $feature_cvterm_id,
+        ':cvalue_type_id' => $this->cvalue_type_id,
+        ':cvalue_name' => $this->cvalue_name,
+        ':pvalue_type_id' => $this->pvalue_cvterm_id,
+        ':analysis_cvterm_id' => $analysis_cvterm_id,
+        ':analysis_id' => $this->analysis_id,
+      ])->fetchObject();
+
+      if (is_object($props)) return $props;
+    }
+
+    return NULL;
+  }
+
+  private function updateData($feature_cvterm_id, $pvalue) {
+    db_update('chado.feature_cvtermprop')
+      ->fields([
+        'value' => $pvalue,
+      ])
+      ->condition('feature_cvterm_id', $feature_cvterm_id, '=')
+      ->condition('type_id', $this->pvalue_cvterm_id, '=')
+      ->execute();
+  }
+
+  private function insertData($feature_id, $pvalue) {
+    $highest_rank = chado_query('SELECT rank FROM { feature_cvterm } WHERE feature_id=:feature_id ORDER BY rank DESC LIMIT 1',
+      [':feature_id' => $feature_id])->fetchField();
+
+    $rank = $highest_rank === FALSE ? 0 : $highest_rank + 1;
+
+    $feature_cvterm_id = $this->insert_feature_cvterm($feature_id, $rank);
+
+    // evidence code
+    $this->insert_feature_cvtermprop($feature_cvterm_id, $this->cvalue_type_id,
+      $this->cvalue_name, $this->cvalue_id);
+    // pvalue
+    $this->insert_feature_cvtermprop($feature_cvterm_id,
+      $this->pvalue_cvterm_id, $pvalue);
+    // analysis
+    $this->insert_feature_cvtermprop($feature_cvterm_id,
+      $this->analysis_cvterm_id, $this->analysis_id);
   }
 
   /**
-   * Inserts a new entry into the feature_cvtermprop table and returns the id of the new record.
+   * Inserts a new entry into the feature_cvtermprop table and returns the id
+   * of the new record.
    *
    * @param $feature_cvterm_id
    *  The id of the feature cvterm with which to associate this cvtermprop.
-   *  @see tripal_expression_pvalue_loader::insert_feature_cvterm()
+   *
+   * @see tripal_expression_pvalue_loader::insert_feature_cvterm()
+   *
    * @param $type_id
    *  Value to be inserted into the type_id column.
    * @param $value
@@ -306,7 +383,12 @@ class tripal_expression_pvalue_loader extends TripalImporter {
    *
    * @throws \Exception
    */
-  private function insert_feature_cvtermprop($feature_cvterm_id, $type_id, $value, $cvalue_id = NULL) {
+  private function insert_feature_cvtermprop(
+    $feature_cvterm_id,
+    $type_id,
+    $value,
+    $cvalue_id = NULL
+  ) {
     $fields = [];
     $fields['feature_cvterm_id'] = $feature_cvterm_id;
     $fields['type_id'] = $type_id;
@@ -323,29 +405,32 @@ class tripal_expression_pvalue_loader extends TripalImporter {
   }
 
   /**
-   * Get the ID of the cvterm with a known name.
+   * Inserts a new entry into the feature_cvterm table and returns the id of
+   * the new record.
    *
-   * @param $cvterm_name
-   * @return int
-   *  Integer ID of the cvterm.
+   * @param $feature_id
+   *  The feature with which to associate this cvterm.
+   *
+   * @return \DatabaseStatementInterface|int
+   *  The id of the inserted feature cvterm.
    * @throws \Exception
    */
-  private function get_cvterm_id($cvterm_name) {
-    $cvterm_id = db_query('SELECT cv.cvterm_id FROM {chado.cvterm} cv WHERE cv.name = :cvterm_name',
-      [':cvterm_name' => $cvterm_name])->fetchField();
+  private function insert_feature_cvterm($feature_id, $rank) {
+    $feature_cvterm_id = db_insert('chado.feature_cvterm')->fields([
+      'feature_id' => $feature_id,
+      'cvterm_id' => $this->cvterm_id,
+      'pub_id' => $this->pub_id,
+      'rank' => $rank,
+    ])->execute();
 
-    if (empty($cvterm_id)) {
-      throw new Exception(t('The cvterm, !cvterm, does not exist in the database.',
-        ['!cvterm' => $cvterm_name]));
-    }
-
-    return $cvterm_id;
+    return $feature_cvterm_id;
   }
 
   /**
    * Get the ID of the cvterm with a known name.
    *
    * @param $feature_name
+   *
    * @return mixed
    *  Integer ID of the cvterm.
    * @throws \Exception
