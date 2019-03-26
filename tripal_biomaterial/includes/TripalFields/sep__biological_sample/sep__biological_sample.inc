@@ -137,7 +137,7 @@ class sep__biological_sample extends ChadoField {
    */
   protected function load_for_analysis(&$entity) {
     $field = get_class();
-    $entity->{$field}['und'][0] = NULL;//set default null
+    $entity->{$field}['und'][0]['value'] = NULL;//set default null
     $analysis_id = $entity->chado_record_id;
 
     $sql = 'SELECT B.biomaterial_id, B.name, B.description
@@ -151,8 +151,8 @@ class sep__biological_sample extends ChadoField {
 
     $results = chado_query($sql, [":analysis_id" => $analysis_id])->fetchAll();
 
-    if (!$results){
-      unset($entity->{$field});
+    if (!$results) {
+      return;
     }
 
     if ($results) {
@@ -211,7 +211,7 @@ class sep__biological_sample extends ChadoField {
    */
   protected function load_for_organism(&$entity) {
     $field = get_class();
-    $entity->{$field}['und'][0] = NULL;
+    $entity->{$field}['und'][0]['value'] = NULL;
     $organism_id = $entity->chado_record_id;
 
     $sql = 'SELECT B.biomaterial_id, B.name, B.description
@@ -220,8 +220,8 @@ class sep__biological_sample extends ChadoField {
 
     $results = chado_query($sql, [":organism_id" => $organism_id])->fetchAll();
 
-    if (!$results){
-      unset($entity->{$field});
+    if (!$results) {
+      return;
     }
 
     $i = 0;
