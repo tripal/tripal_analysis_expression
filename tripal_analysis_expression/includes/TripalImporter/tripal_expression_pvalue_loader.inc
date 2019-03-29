@@ -186,6 +186,17 @@ class tripal_expression_pvalue_loader extends TripalImporter{
       }
     }
 
+    if (!chado_get_cvterm(['name' => $values['keyword_1']])) {
+      form_set_error('keyword_1', 'Cvterm provided does not exist.');
+        return;
+    }
+
+    if (!chado_get_cvterm(['name' => $values['keyword_2']])) {
+      form_set_error('keyword_2', 'Cvterm provided does not exist.');
+      return;
+    }
+
+
     $file_path = $this->findFile($values);
     if (!$file_path) {
       form_set_error('file_upload', 'Failed to get file path.');
