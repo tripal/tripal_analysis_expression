@@ -136,6 +136,25 @@ class tripal_expression_pvalue_loader extends TripalImporter{
       '#required' => TRUE,
     ];
 
+    $so_id = chado_query('SELECT cv_id FROM { cv } WHERE name=:cv_name',
+      [':cv_name' => 'sequence'])->fetchField();
+
+    $form['keyword_1'] = [
+      '#type' => 'textfield',
+      '#title' => t('Keyword 1'),
+      '#required' => TRUE,
+      '#description' => t('Keyword 1'),
+      '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/0',
+    ];
+
+    $form['keyword_2'] = [
+      '#type' => 'textfield',
+      '#title' => t('Keyword 2'),
+      '#required' => TRUE,
+      '#description' => t('Keyword 2'),
+      '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/0',
+    ];
+
     return $form;
   }
 
@@ -203,22 +222,19 @@ class tripal_expression_pvalue_loader extends TripalImporter{
     }
 
     $file_info = pathinfo($file_path);
-    $file_name = $file_info['filename'];
     $file_ext = $file_info['extension'];
 
     $evidence_code = $run_args['evidence_code'];
-
-    $cvterms = explode('_', $file_name);
-    $cvterm_name = $cvterms[0];
+    $cvterm_name = $run_args['keyword_1'];
     $this->cvterm_id = chado_get_cvterm(['name' => $cvterm_name])->cvterm_id;
 
-    $this->cvalue_name = isset($cvterms[1]) ? $cvterms[1] : NULL;
+    $this->cvalue_name = $run_args['keyword_2'];
     $this->cvalue_id = chado_get_cvterm(['name' => $this->cvalue_name])->cvterm_id;
-    $this->cvalue_type_id = tripal_analysis_expression_get_evidence_code_id($evidence_code);
 
     $this->analysis_cvterm_id = chado_get_cvterm(['name' => 'analysis'])->cvterm_id;
     $this->analysis_id = $run_args['analysis_id'];
 
+    $this->cvalue_type_id = tripal_analysis_expression_get_evidence_code_id($evidence_code);
     $this->pvalue_cvterm_id = tripal_analysis_expression_get_pvalue_id();
 
     $this->pub_id = chado_query('SELECT pub_id FROM {pub} WHERE title IS NULL ORDER BY pub_id ASC limit 1')->fetchField();
