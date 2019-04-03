@@ -143,7 +143,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
       '#type' => 'textfield',
       '#title' => t('Keyword'),
       '#required' => TRUE,
-      '#description' => t('Keyword'),
+      '#description' => t('If the controlled vocabulary term does not show up, please ' . l('create it first.',
+          'admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add')),
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/0',
     ];
 
@@ -261,7 +262,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
 
     while ($line = fgetcsv($fp, 0, $delimiter)) {
       $feature_name = $line[0];
-      $pvalue = $line[1];
+      $pvalue = floatval($line[1]);
 
       $bytes_read += drupal_strlen($feature_name);
       $bytes_read += drupal_strlen($pvalue);
@@ -423,8 +424,9 @@ class tripal_expression_pvalue_loader extends TripalImporter{
     $feature_cvterm_id = $this->insert_feature_cvterm($feature_id, $rank);
 
     // evidence code
-    $this->insert_feature_cvtermprop($feature_cvterm_id, $this->evidence_code_cvterm_id,
-      $this->evidence_code, $this->evidence_code_id);
+    $this->insert_feature_cvtermprop($feature_cvterm_id,
+      $this->evidence_code_cvterm_id, $this->evidence_code,
+      $this->evidence_code_id);
     // pvalue
     $this->insert_feature_cvtermprop($feature_cvterm_id,
       $this->pvalue_cvterm_id, $pvalue);
