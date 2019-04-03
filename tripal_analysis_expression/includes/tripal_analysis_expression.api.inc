@@ -129,13 +129,7 @@ function tripal_analysis_expression_get_pvalue_id() {
   return 344;
 }
 
-function tripal_analysis_expression_get_evidence_code_id($evidence_code) {
-  switch ($evidence_code) {
-    case 'up-regulated': return 345;
-    case 'down-regulated': return 346;
-    case 'related to': return 347;
-  }
-
-  return NULL;
+function tripal_analysis_expression_get_evidence_code_id() {
+  return 345;
 }
 

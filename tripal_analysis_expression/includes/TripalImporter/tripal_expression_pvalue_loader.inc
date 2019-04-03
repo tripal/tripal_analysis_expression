@@ -82,21 +82,21 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    *
    * @var int
    */
-  private $cvalue_id;
+  private $evidence_code;
 
   /**
    * String name of the cvterm associated with the keyword.
    *
    * @var string
    */
-  private $cvalue_name;
+  private $evidence_code_id;
 
   /**
    * The type id to be used when inserting the other cvterm as a prop.
    *
    * @var int
    */
-  private $cvalue_type_id;
+  private $evidence_code_cvterm_id;
 
   /**
    * The cvterm id for p-value.
@@ -131,7 +131,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
       '#options' => drupal_map_assoc([
         'up-regulated',
         'down-regulated',
-        'related to'
+        'related to',
       ]),
       '#required' => TRUE,
     ];
@@ -139,19 +139,11 @@ class tripal_expression_pvalue_loader extends TripalImporter{
     $so_id = chado_query('SELECT cv_id FROM { cv } WHERE name=:cv_name',
       [':cv_name' => 'sequence'])->fetchField();
 
-    $form['keyword_1'] = [
+    $form['keyword'] = [
       '#type' => 'textfield',
-      '#title' => t('Keyword 1'),
+      '#title' => t('Keyword'),
       '#required' => TRUE,
-      '#description' => t('Keyword 1'),
-      '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/0',
-    ];
-
-    $form['keyword_2'] = [
-      '#type' => 'textfield',
-      '#title' => t('Keyword 2'),
-      '#required' => TRUE,
-      '#description' => t('Keyword 2'),
+      '#description' => t('Keyword'),
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/0',
     ];
 
@@ -186,16 +178,11 @@ class tripal_expression_pvalue_loader extends TripalImporter{
       }
     }
 
-    if (!chado_get_cvterm(['name' => $values['keyword_1']])) {
-      form_set_error('keyword_1', 'Cvterm provided does not exist.');
-        return;
-    }
+    if (!chado_get_cvterm(['name' => $values['keyword']])) {
+      form_set_error('keyword', 'Cvterm provided does not exist.');
 
-    if (!chado_get_cvterm(['name' => $values['keyword_2']])) {
-      form_set_error('keyword_2', 'Cvterm provided does not exist.');
       return;
     }
-
 
     $file_path = $this->findFile($values);
     if (!$file_path) {
@@ -235,17 +222,16 @@ class tripal_expression_pvalue_loader extends TripalImporter{
     $file_info = pathinfo($file_path);
     $file_ext = $file_info['extension'];
 
-    $evidence_code = $run_args['evidence_code'];
-    $cvterm_name = $run_args['keyword_1'];
+    $cvterm_name = $run_args['keyword'];
     $this->cvterm_id = chado_get_cvterm(['name' => $cvterm_name])->cvterm_id;
 
-    $this->cvalue_name = $run_args['keyword_2'];
-    $this->cvalue_id = chado_get_cvterm(['name' => $this->cvalue_name])->cvterm_id;
+    $this->evidence_code = $run_args['evidence_code'];
+    $this->evidence_code_id = chado_get_cvterm(['name' => $this->evidence_code])->cvterm_id;
+    $this->evidence_code_cvterm_id = tripal_analysis_expression_get_evidence_code_id();
 
     $this->analysis_cvterm_id = chado_get_cvterm(['name' => 'analysis'])->cvterm_id;
     $this->analysis_id = $run_args['analysis_id'];
 
-    $this->cvalue_type_id = tripal_analysis_expression_get_evidence_code_id($evidence_code);
     $this->pvalue_cvterm_id = tripal_analysis_expression_get_pvalue_id();
 
     $this->pub_id = chado_query('SELECT pub_id FROM {pub} WHERE title IS NULL ORDER BY pub_id ASC limit 1')->fetchField();
@@ -261,6 +247,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    *  Either tsv or csv, determines delimiter for fgetcsv.
    * @param $cvterm_id
    *  The cvterm from the first word of the filename.
+   *
    * @throws \Exception
    */
   private function parseFile($file_path, $file_ext) {
@@ -351,7 +338,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    * @param int $feature_id
    *  The id of the feature for which you want to find data.
    *
-   * @return bool
+   * @return object|NULL
    * @throws \Exception
    */
   public function get_existing_data($feature_id) {
@@ -385,11 +372,11 @@ class tripal_expression_pvalue_loader extends TripalImporter{
         AND p3.type_id=:analysis_cvterm_id
         AND p3.value=:analysis_id
         WHERE p1.feature_cvterm_id=:feature_cvterm_id
-        AND p1.type_id=:cvalue_type_id
-        AND p1.value=:cvalue_name', [
+        AND p1.type_id=:evidence_code_cvterm_id
+        AND p1.value=:evidence_code', [
         ':feature_cvterm_id' => $feature_cvterm_id,
-        ':cvalue_type_id' => $this->cvalue_type_id,
-        ':cvalue_name' => $this->cvalue_name,
+        ':evidence_code_cvterm_id' => $this->evidence_code_cvterm_id,
+        ':evidence_code' => $this->evidence_code,
         ':pvalue_type_id' => $this->pvalue_cvterm_id,
         ':analysis_cvterm_id' => $analysis_cvterm_id,
         ':analysis_id' => $this->analysis_id,
@@ -403,6 +390,12 @@ class tripal_expression_pvalue_loader extends TripalImporter{
     return NULL;
   }
 
+  /**
+   * Updates existing data.
+   *
+   * @param int $feature_cvterm_id
+   * @param int $pvalue
+   */
   private function updateData($feature_cvterm_id, $pvalue) {
     db_update('chado.feature_cvtermprop')
       ->fields([
@@ -413,6 +406,14 @@ class tripal_expression_pvalue_loader extends TripalImporter{
       ->execute();
   }
 
+  /**
+   * Inserts new data.
+   *
+   * @param int $feature_id
+   * @param int $pvalue
+   *
+   * @throws \Exception
+   */
   private function insertData($feature_id, $pvalue) {
     $highest_rank = chado_query('SELECT rank FROM { feature_cvterm } WHERE feature_id=:feature_id ORDER BY rank DESC LIMIT 1',
       [':feature_id' => $feature_id])->fetchField();
@@ -422,8 +423,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
     $feature_cvterm_id = $this->insert_feature_cvterm($feature_id, $rank);
 
     // evidence code
-    $this->insert_feature_cvtermprop($feature_cvterm_id, $this->cvalue_type_id,
-      $this->cvalue_name, $this->cvalue_id);
+    $this->insert_feature_cvtermprop($feature_cvterm_id, $this->evidence_code_cvterm_id,
+      $this->evidence_code, $this->evidence_code_id);
     // pvalue
     $this->insert_feature_cvtermprop($feature_cvterm_id,
       $this->pvalue_cvterm_id, $pvalue);
@@ -439,8 +440,6 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    * @param int $feature_cvterm_id
    *  The id of the feature cvterm with which to associate this cvtermprop.
    *
-   * @see tripal_expression_pvalue_loader::insert_feature_cvterm()
-   *
    * @param int $type_id
    *  Value to be inserted into the type_id column.
    * @param string $value
@@ -452,6 +451,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    *  The id of the inserted feature cvtermprop.
    *
    * @throws \Exception
+   * @see tripal_expression_pvalue_loader::insert_feature_cvterm()
+   *
    */
   private function insert_feature_cvtermprop(
     $feature_cvterm_id,
