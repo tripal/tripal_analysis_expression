@@ -137,11 +137,18 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     // Build the property cvterm and cvalue portion of the form.
     foreach ($fields as $field) {
-      $this->build_term_form_item($form, $field, "cvterm_configuration");
+      if (is_string($field)){
+        $field = [$field];
+      }
+
+      $form = $this->build_term_form_item($form, $field, "cvterm_configuration");
     }
 
     foreach ($property_values as $property_value) {
-      $this->build_term_form_item($form, $property_value, "cvalue_configuration");
+      if (is_string($property_value)){
+        $property_value = [$property_value];
+      }
+      $form = $this->build_term_form_item($form, $property_value, "cvalue_configuration");
     }
 
     return $form;
@@ -163,7 +170,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
    *
    * @throws \Exception
    */
-  private function build_term_form_item(array $form, string $property_value, string $cvterm_or_cvalue) {
+  private function build_term_form_item(array $form, array $property_value, string $cvterm_or_cvalue) {
     $cv_array = [];
 
     // Get terms.
@@ -171,7 +178,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
               INNER JOIN {CV} AS CV ON CVT.cv_id = CV.cv_id
               INNER JOIN {dbxref} as DBX ON CVT.dbxref_id = DBX.dbxref_id
               INNER JOIN {db} as DB ON DBX.db_id = DB.db_id
-              WHERE CVT.name  = :field";
+              WHERE CVT.name  IN (:field)";
 
     $prop_result = chado_query($sql, [":field" => $property_value])->fetchAll();
 
@@ -191,13 +198,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     }
 
-    $form['cvterms'][$cvterm_or_cvalue][$property_value] = [
+    $field_label = reset($property_value);
+
+    $form['cvterms'][$cvterm_or_cvalue][$field_label] = [
       '#type' => 'fieldset',
-      '#title' => t($property_value),
+      '#title' => t($field_label),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     ];
-
     $header = [
       "CVterm name",
       "CV name",
@@ -226,7 +234,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       ];
 
       // Stick the info in the form so we can match it up later.
-      $form['cvterms'][$cvterm_or_cvalue][$property_value][$cv_name] = [
+      $form['cvterms'][$cvterm_or_cvalue][$field_label][$cv_name] = [
         '#type' => 'value',
         '#value' => $info,
       ];
@@ -235,14 +243,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     // If no rows then the term isn't in DB.
     if (!$rows) {
-      $markup = "<p>There is no cvterm in the Chado database matching the property <b>$property_value</b>.  You can insert a term and try again, or submit and use a generic term.</p>";
-      $form['cvterms'][$cvterm_or_cvalue][$property_value]['choose'] = [
+      $markup = "<p>There is no cvterm in the Chado database matching the property <b>$field_label</b>.  You can insert a term and try again, or submit and use a generic term.</p>";
+      $form['cvterms'][$cvterm_or_cvalue][$field_label]['choose'] = [
         '#markup' => $markup,
       ];
     }
     else {
 
-      $form['cvterms'][$cvterm_or_cvalue][$property_value]['choose'] = [
+      $form['cvterms'][$cvterm_or_cvalue][$field_label]['choose'] = [
         '#type' => 'tableselect',
         '#header' => $header,
         '#options' => $rows,
@@ -717,7 +725,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         if (! empty($record)) {
           $record = $record[0];
           $dbxref_id = $record->dbxref_id;
-          // Insert value into dbxref table.
         } else {
           $record = chado_insert_record('dbxref', $values);
           $dbxref_id = $record['dbxref_id'];
