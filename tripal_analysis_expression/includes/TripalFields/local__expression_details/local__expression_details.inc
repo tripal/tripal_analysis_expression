@@ -126,7 +126,7 @@ class local__expression_details extends ChadoField{
       ])->fetchAll();
 
     $variables['pvalue_data'] = array_map(function ($item) {
-      $item->p_value = floatval($item->p_value);
+      $item->p_value = $item->p_value != NULL ? floatval($item->p_value) : 'N/A';
       return $item;
     }, $pvalue_data);
 

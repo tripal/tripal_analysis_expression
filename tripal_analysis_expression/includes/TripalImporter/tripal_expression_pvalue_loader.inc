@@ -136,9 +136,6 @@ class tripal_expression_pvalue_loader extends TripalImporter{
       '#required' => TRUE,
     ];
 
-    $so_id = chado_query('SELECT cv_id FROM { cv } WHERE name=:cv_name',
-      [':cv_name' => 'sequence'])->fetchField();
-
     $form['keyword'] = [
       '#type' => 'textfield',
       '#title' => t('Keyword'),
@@ -146,6 +143,25 @@ class tripal_expression_pvalue_loader extends TripalImporter{
       '#description' => t('If the controlled vocabulary term does not show up, please ' . l('create it first.',
           'admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add')),
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/0',
+    ];
+
+    $form['organism_id'] = [
+      '#title' => t('Organism'),
+      '#type' => t('select'),
+      '#required' => TRUE,
+      '#description' => t('The organism for the features.'),
+      '#options' => chado_get_organism_select_options(FALSE),
+    ];
+
+    $so_id = chado_query('SELECT cv_id FROM { cv } WHERE name=:cv_name',
+      [':cv_name' => 'sequence'])->fetchField();
+
+    $form['so_term'] = [
+      '#type' => 'textfield',
+      '#title' => t('Sequence Type'),
+      '#required' => TRUE,
+      '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the features (e.g. gene, mRNA, polypeptide, etc...)'),
+      '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/' . $so_id,
     ];
 
     return $form;
@@ -233,11 +249,14 @@ class tripal_expression_pvalue_loader extends TripalImporter{
     $this->analysis_cvterm_id = chado_get_cvterm(['name' => 'analysis'])->cvterm_id;
     $this->analysis_id = $run_args['analysis_id'];
 
+    $organism_id = $run_args['organism_id'];
+    $so_term = $run_args['so_term'];
+
     $this->pvalue_cvterm_id = tripal_analysis_expression_get_pvalue_id();
 
     $this->pub_id = chado_query('SELECT pub_id FROM {pub} WHERE title IS NULL ORDER BY pub_id ASC limit 1')->fetchField();
 
-    $this->parseFile($file_path, $file_ext);
+    $this->parseFile($file_path, $file_ext, $organism_id, $so_term);
   }
 
   /**
@@ -251,7 +270,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    *
    * @throws \Exception
    */
-  private function parseFile($file_path, $file_ext) {
+  private function parseFile($file_path, $file_ext, $organism_id, $so_term) {
     $file_size = filesize($file_path);
     $this->setTotalItems($file_size);
     $this->setItemsHandled(0);
@@ -262,13 +281,16 @@ class tripal_expression_pvalue_loader extends TripalImporter{
 
     while ($line = fgetcsv($fp, 0, $delimiter)) {
       $feature_name = $line[0];
-      $pvalue = floatval($line[1]);
+      $pvalue = $line[1] ? floatval($line[1]) : NULL;
 
       $bytes_read += drupal_strlen($feature_name);
       $bytes_read += drupal_strlen($pvalue);
       $this->setItemsHandled($bytes_read);
 
-      $feature_id = $this->get_feature_id($feature_name);
+      $type_id = chado_get_cvterm(['name' => $so_term])->cvterm_id;
+
+      $feature_id = $this->get_feature_id($feature_name, $organism_id,
+        $type_id);
 
       $data = $this->get_existing_data($feature_id);
 
@@ -508,12 +530,18 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    *  Integer ID of the cvterm.
    * @throws \Exception
    */
-  private function get_feature_id($feature_name) {
-    $feature_id = db_query('SELECT f.feature_id FROM {chado.feature} f WHERE uniquename = :feature_name',
-      [':feature_name' => $feature_name])->fetchField();
+  private function get_feature_id($feature_name, $organism_id, $type_id) {
+    $feature_id = db_query('SELECT f.feature_id FROM {chado.feature} f 
+        WHERE uniquename = :feature_name
+        AND organism_id = :organism_id
+        AND type_id = :type_id', [
+        ':feature_name' => $feature_name,
+        ':organism_id' => $organism_id,
+        ':type_id' => $type_id,
+      ])->fetchField();
 
     if (empty($feature_id)) {
-      throw new Exception(t('The feature, !feature, does not exist in the database.',
+      throw new Exception(t('The feature !feature does not exist in the database for the organism and sequence type provided. Please verify that the feature exists and that the correct organism and sequence type has been provided.',
         ['!feature' => $feature_name]));
     }
 
