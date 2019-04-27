@@ -6,23 +6,33 @@
   "commit": false,
   "contributors": [
     {
-      "login": "mestato",
-      "name": "Meg Staton",
-      "avatar_url": "https://avatars1.githubusercontent.com/u/508122?v=4",
-      "profile": "https://github.com/mestato",
-      "contributions": [
-        "fundingFinding",
-        "ideas"
-      ]
-    }
-      "login": "bradfordcondon",
-      "name": "Bradford Condon",
-      "avatar_url": "https://avatars2.githubusercontent.com/u/7063154?v=4",
-      "profile": "http://www.bradfordcondon.com/",
+      "login": "almasaeed2010",
+      "name": "Abdullah Almsaeed",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/1512664?v=4",
+      "profile": "http://almsaeedstudio.com",
       "contributions": [
         "code"
       ]
-    }
+     }
+     {
+       "login": "mestato",
+       "name": "Meg Staton",
+       "avatar_url": "https://avatars1.githubusercontent.com/u/508122?v=4",
+       "profile": "https://github.com/mestato",
+       "contributions": [
+         "fundingFinding",
+         "ideas"
+        ]
+      }
+      {
+        "login": "bradfordcondon",
+        "name": "Bradford Condon",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/7063154?v=4",
+        "profile": "http://www.bradfordcondon.com/",
+         "contributions": [
+           "code"
+         ]
+       }
   ],
   "contributorsPerLine": 7,
   "projectName": "tripal_analysis_expression",
