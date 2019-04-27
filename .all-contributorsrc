@@ -1,0 +1,23 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "almasaeed2010",
+      "name": "Abdullah Almsaeed",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/1512664?v=4",
+      "profile": "http://almsaeedstudio.com",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "tripal_analysis_expression",
+  "projectOwner": "tripal",
+  "repoType": "github",
+  "repoHost": "https://github.com"
+}
