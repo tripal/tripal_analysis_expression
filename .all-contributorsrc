@@ -15,6 +15,14 @@
         "ideas"
       ]
     }
+      "login": "bradfordcondon",
+      "name": "Bradford Condon",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/7063154?v=4",
+      "profile": "http://www.bradfordcondon.com/",
+      "contributions": [
+        "code"
+      ]
+    }
   ],
   "contributorsPerLine": 7,
   "projectName": "tripal_analysis_expression",
