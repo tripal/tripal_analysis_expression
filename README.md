@@ -281,7 +281,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore -->
-<table><tr><td align="center"><a href="http://www.bradfordcondon.com/"><img src="https://avatars2.githubusercontent.com/u/7063154?v=4" width="100px;" alt="Bradford Condon"/><br /><sub><b>Bradford Condon</b></sub></a><br /><a href="https://github.com/tripal/tripal_analysis_expression/commits?author=bradfordcondon" title="Code">💻</a></td></tr></table>
+<table><tr><td align="center"><a href="http://www.bradfordcondon.com/"><img src="https://avatars2.githubusercontent.com/u/7063154?v=4" width="100px;" alt="Bradford Condon"/><br /><sub><b>Bradford Condon</b></sub></a><br /><a href="https://github.com/tripal/tripal_analysis_expression/commits?author=bradfordcondon" title="Code">💻</a></td><td align="center"><a href="https://github.com/mestato"><img src="https://avatars1.githubusercontent.com/u/508122?v=4" width="100px;" alt="Meg Staton"/><br /><sub><b>Meg Staton</b></sub></a><br /><a href="#fundingFinding-mestato" title="Funding Finding">🔍</a> <a href="#ideas-mestato" title="Ideas, Planning, & Feedback">🤔</a></td></tr></table>
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
