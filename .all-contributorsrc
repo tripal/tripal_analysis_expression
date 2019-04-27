@@ -41,6 +41,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "mboudet",
+      "name": "mboudet",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/17642511?v=4",
+      "profile": "https://github.com/mboudet",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
