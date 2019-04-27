@@ -5,43 +5,54 @@
   "imageSize": 100,
   "commit": false,
   "contributors": [
-    {
-      "login": "almasaeed2010",
-      "name": "Abdullah Almsaeed",
-      "avatar_url": "https://avatars2.githubusercontent.com/u/1512664?v=4",
-      "profile": "http://almsaeedstudio.com",
-      "contributions": [
-        "code"
-      ]
-    },
-    {
-      "login": "mestato",
-      "name": "Meg Staton",
-      "avatar_url": "https://avatars1.githubusercontent.com/u/508122?v=4",
-      "profile": "https://github.com/mestato",
-      "contributions": [
-        "fundingFinding",
-        "ideas"
-      ]
-    },
-    {
-      "login": "bradfordcondon",
-      "name": "Bradford Condon",
-      "avatar_url": "https://avatars2.githubusercontent.com/u/7063154?v=4",
-      "profile": "http://www.bradfordcondon.com/",
-      "contributions": [
-        "code"
-      ]
-    },
-    {
-      "login": "jwest60",
-      "name": "Joe West",
-      "avatar_url": "https://avatars0.githubusercontent.com/u/32902460?v=4",
-      "profile": "https://github.com/jwest60",
-      "contributions": [
-        "code"
-      ]
-    },
+  {
+    "login": "mestato",
+    "name": "Meg Staton",
+    "avatar_url": "https://avatars1.githubusercontent.com/u/508122?v=4",
+    "profile": "https://github.com/mestato",
+    "contributions": [
+      "fundingFinding",
+      "ideas"
+    ]
+  },
+  {
+    "login": "bradfordcondon",
+    "name": "Bradford Condon",
+    "avatar_url": "https://avatars2.githubusercontent.com/u/7063154?v=4",
+    "profile": "http://www.bradfordcondon.com/",
+    "contributions": [
+      "code"
+    ]
+  },
+  {
+    "login": "almasaeed2010",
+    "name": "Abdullah Almsaeed",
+    "avatar_url": "https://avatars2.githubusercontent.com/u/1512664?v=4",
+    "profile": "http://almsaeedstudio.com",
+    "contributions": [
+      "code"
+    ]
+  },
+  {
+    "login": "jwest60",
+    "name": "Joe West",
+    "avatar_url": "https://avatars0.githubusercontent.com/u/32902460?v=4",
+    "profile": "https://github.com/jwest60",
+    "contributions": [
+      "code"
+    ]
+  },
+  {
+    "login": "MingChen0919",
+    "name": "Ming Chen",
+    "avatar_url": "https://avatars2.githubusercontent.com/u/1262709?v=4",
+    "profile": "https://github.com/MingChen0919",
+    "contributions": [
+      "code"
+    ]
+  },
+
+
     {
       "login": "mboudet",
       "name": "mboudet",
@@ -51,10 +62,12 @@
         "bug"
       ]
     }
+
   ],
   "contributorsPerLine": 7,
   "projectName": "tripal_analysis_expression",
   "projectOwner": "tripal",
   "repoType": "github",
-  "repoHost": "https://github.com"
+  "repoHost": "https://github.com",
+  "commitConvention": "none"
 }
