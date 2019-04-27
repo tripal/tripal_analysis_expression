@@ -1,4 +1,5 @@
 [![DOI](https://zenodo.org/badge/49081816.svg)](https://zenodo.org/badge/latestdoi/49081816)
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors)
 
 
 # Tripal\_analysis\_expression
@@ -273,3 +274,15 @@ There is currently no support for inputting, or displaying, acquisitions, quanti
 ### Expression Data Loader
 1. [Column file](example_files/exampleExpressionData.rpkm)
 2. [Matrix file](example_files/exampleMatrix.tsv)
+
+## Contributors
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore -->
+<table><tr><td align="center"><a href="https://github.com/mestato"><img src="https://avatars1.githubusercontent.com/u/508122?v=4" width="100px;" alt="Meg Staton"/><br /><sub><b>Meg Staton</b></sub></a><br /><a href="#fundingFinding-mestato" title="Funding Finding">🔍</a> <a href="#ideas-mestato" title="Ideas, Planning, & Feedback">🤔</a></td></tr></table>
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
