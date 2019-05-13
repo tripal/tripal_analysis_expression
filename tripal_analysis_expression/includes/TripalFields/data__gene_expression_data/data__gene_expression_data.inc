@@ -7,7 +7,7 @@
  * Data:
  * Assumptions:
  */
-class data__gene_expression_data extends ChadoField {
+class data__gene_expression_data extends ChadoField{
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -122,14 +122,17 @@ class data__gene_expression_data extends ChadoField {
       $analysis_id = $entity->chado_record_id;
       $features = $this->get_analysis_info($analysis_id);
 
-      $sql = 'SELECT a.value FROM {chado.analysisprop} a WHERE a.analysis_id = :analysis_id AND a.type_id = :type_id';
+      $sql = 'SELECT a.value FROM {chado.analysisprop} a 
+                WHERE a.analysis_id = :analysis_id 
+                AND a.type_id = :type_id';
 
       $cvterm_id = tripal_get_cvterm([
-        'name' => 'data_source_file',
-        'cv_id' => [
-          'name' => 'local',
-        ],
-      ])->cvterm_id;
+          'name' => 'data_source_file',
+          'cv_id' => [
+            'name' => 'local',
+          ],
+        ]) ?? new stdClass();
+      $cvterm_id = $cvterm_id->cvterm_id ?? 1;
 
       $file = db_query($sql, [
         ':analysis_id' => $analysis_id,
@@ -145,11 +148,11 @@ class data__gene_expression_data extends ChadoField {
       }
 
       // Save data into the entity
-      $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
+      $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0],
+        $variables);
 
       return $entity;
     }
-
 
     if ($entity->chado_table === "feature") {
 
@@ -235,7 +238,8 @@ class data__gene_expression_data extends ChadoField {
           }
         }
 
-        $node_present = chado_get_record_entity_by_table('biomaterial', $exp->biomaterial_id);
+        $node_present = chado_get_record_entity_by_table('biomaterial',
+          $exp->biomaterial_id);
 
         //Add a property for no sorting ie by biosample name
         $propstore["Biosample Name"] = $exp->name;
@@ -272,7 +276,8 @@ class data__gene_expression_data extends ChadoField {
       $variables['min_num_biomaterials'] = $min_num_biomaterials;
 
       // Save data into the entity
-      $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
+      $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0],
+        $variables);
 
       return $entity;
     }
@@ -301,7 +306,8 @@ class data__gene_expression_data extends ChadoField {
     if ($analyses) {
       $analyses = $analyses->fetchAll();
       foreach ($analyses as $key => $analysis) {
-        $analyses[$key]->url = 'bio_data/' . chado_get_record_entity_by_table('analysis', $analysis->analysis_id);
+        $analyses[$key]->url = 'bio_data/' . chado_get_record_entity_by_table('analysis',
+            $analysis->analysis_id);
       }
       return $analyses;
     }
@@ -310,9 +316,7 @@ class data__gene_expression_data extends ChadoField {
     }
   }
 
-
   protected function get_analysis_info($analysis_id) {
-
     $sql = "SELECT DISTINCT(feature_id)
       from {expression_feature_all}
       WHERE analysis_id = :analysis_id
@@ -337,11 +341,9 @@ class data__gene_expression_data extends ChadoField {
     $result = chado_query($sql, [":analysis_id" => $analysis_id]);
     if ($result) {
       $biomaterials = $result->fetchAll();
-
     }
 
     $output = ["features" => $features, "biomaterials" => $biomaterials];
     return ($output);
-
   }
 }

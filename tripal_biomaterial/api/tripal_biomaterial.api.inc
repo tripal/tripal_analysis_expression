@@ -27,13 +27,10 @@
  * @ingroup tripal_analysis_expression
  */
 
-function create_generic_quantification(
-  $acquisition_id,
-  $analysis_id,
-  $uniq_name
-) {
+function create_generic_quantification($acquisition_id, $analysis_id, $uniq_name) {
 
-  $quantification_id = chado_query('select quantification_id from {quantification} where name = :name limit 1', [':name' => $uniq_name])->fetchField();
+  $quantification_id = chado_query('select quantification_id from {quantification} where name = :name limit 1',
+    [':name' => $uniq_name])->fetchField();
   if (!$quantification_id) {
     $values = [
       'name' => $uniq_name,
@@ -66,10 +63,13 @@ function create_generic_quantification(
  */
 
 function tripal_expression_element($arraydesign_id, $feature_id) {
-  $element_id = chado_query('SELECT element_id FROM {element} WHERE arraydesign_id = :arraydesign_id AND feature_id = :feature_id', [
-    ':arraydesign_id' => $arraydesign_id,
-    ':feature_id' => $feature_id,
-  ])->fetchField();
+  if (!$feature_id) {
+    $element_id = chado_query('SELECT element_id FROM {element} WHERE arraydesign_id = :arraydesign_id AND feature_id = :feature_id',
+      [
+        ':arraydesign_id' => $arraydesign_id,
+        ':feature_id' => $feature_id,
+      ])->fetchField();
+  }
   if (!$element_id) {
     $values = [
       'arraydesign_id' => $arraydesign_id,
@@ -77,8 +77,9 @@ function tripal_expression_element($arraydesign_id, $feature_id) {
     ];
     $element = chado_insert_record('element', $values);
     if ($element == FALSE) {
-      print "ERROR: Unable to write to element table\n";
-      exit;
+      tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR,
+        "ERROR: Unable to write to element table\n");
+      return NULL;
     }
     $element_id = $element['element_id'];
   }
@@ -100,11 +101,7 @@ function tripal_expression_element($arraydesign_id, $feature_id) {
  * @ingroup tripal_analysis_expression
  */
 
-function tripal_expression_elementresult(
-  $element_id,
-  $quantification_id,
-  $signal
-) {
+function tripal_expression_elementresult($element_id, $quantification_id, $signal) {
 
   $values = [
     'element_id' => $element_id,
@@ -112,10 +109,11 @@ function tripal_expression_elementresult(
     'signal' => $signal,
   ];
 
-  $elementresult_id = chado_query('SELECT elementresult_id FROM {elementresult} WHERE element_id = :element_id AND quantification_id = :quantification_id', [
-    ':element_id' => $element_id,
-    ':quantification_id' => $quantification_id,
-  ])->fetchField();
+  $elementresult_id = chado_query('SELECT elementresult_id FROM {elementresult} WHERE element_id = :element_id AND quantification_id = :quantification_id',
+    [
+      ':element_id' => $element_id,
+      ':quantification_id' => $quantification_id,
+    ])->fetchField();
   if (!$elementresult_id) {
     $elementresult = chado_insert_record('elementresult', $values);
     if ($elementresult == FALSE) {
@@ -187,33 +185,26 @@ function tripal_expression_elementresult(
  * @ingroup tripal_analysis_expression
  */
 
-function expression_create_biomaterial_structure(
-  $biomaterial,
-  $organism_id,
-  $analysis_id,
-  $contact_id,
-  $arraydesign_id,
-  $assay_id,
-  $acquisition_id,
-  $quantification_id,
-  $quantificationunits,
-  $uniq_name,
-  $warning
-) {
+function expression_create_biomaterial_structure($biomaterial, $organism_id, $analysis_id, $contact_id, $arraydesign_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $uniq_name, $warning) {
   // Create the biomaterial
-  $biomaterial_id = tripal_biomaterial_create_biomaterial($biomaterial, $analysis_id, $organism_id, $contact_id, $dbxref_id = NULL, '', $warning);
+  $biomaterial_id = tripal_biomaterial_create_biomaterial($biomaterial,
+    $analysis_id, $organism_id, $contact_id, $dbxref_id = NULL, '', $warning);
 
   $uniq_name = $biomaterial . $uniq_name;
 
   // Create the following records if not provided by the user.
   $contact_id = $contact_id ? $contact_id : create_generic_contact();
-  $assay_id = $assay_id ? $assay_id : create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
-  $acquisition_id = $acquisition_id ? $acquisition_id : create_generic_acquisition($assay_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
-  $quantification_id = $quantification_id ? $quantification_id : create_generic_quantification($acquisition_id, $analysis_id, $uniq_name);
+  $assay_id = $assay_id ? $assay_id : create_generic_assay($contact_id,
+    $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
+  $acquisition_id = $acquisition_id ? $acquisition_id : create_generic_acquisition($assay_id,
+    $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
+  $quantification_id = $quantification_id ? $quantification_id : create_generic_quantification($acquisition_id,
+    $analysis_id, $uniq_name);
 
   // Create a generic channel. A channel_id is necessary for the assay_biomaterial table.
   $channel_id = create_generic_channel();
-  $assay_biomaterial_id = create_assay_biomaterial($assay_id, $biomaterial_id, $channel_id);
+  $assay_biomaterial_id = create_assay_biomaterial($assay_id, $biomaterial_id,
+    $channel_id);
 
   //Attach the units to the quantification
   if ($quantificationunits) {
@@ -267,12 +258,13 @@ function expression_create_biomaterial_structure(
  */
 
 function create_assay_biomaterial($assay_id, $biomaterial_id, $channel_id) {
-  $assay_biomaterial_id = chado_query('select assay_biomaterial_id from {assay_biomaterial} where rank = :rank and assay_id = :assay_id and biomaterial_id = :biomaterial_id and channel_id = :channel_id limit 1', [
-    ':rank' => 1,
-    ':assay_id' => $assay_id,
-    ':biomaterial_id' => $biomaterial_id,
-    ':channel_id' => $channel_id,
-  ])->fetchField();
+  $assay_biomaterial_id = chado_query('select assay_biomaterial_id from {assay_biomaterial} where rank = :rank and assay_id = :assay_id and biomaterial_id = :biomaterial_id and channel_id = :channel_id limit 1',
+    [
+      ':rank' => 1,
+      ':assay_id' => $assay_id,
+      ':biomaterial_id' => $biomaterial_id,
+      ':channel_id' => $channel_id,
+    ])->fetchField();
   if (!$assay_biomaterial_id) {
     $values = [
       'rank' => 1,
@@ -298,7 +290,8 @@ function create_assay_biomaterial($assay_id, $biomaterial_id, $channel_id) {
  */
 
 function create_generic_contact() {
-  $contact_id = chado_query('select contact_id from {contact} where name = :name limit 1', [':name' => 'Not provided'])->fetchField();
+  $contact_id = chado_query('select contact_id from {contact} where name = :name limit 1',
+    [':name' => 'Not provided'])->fetchField();
   if (!$contact_id) {
     $values = [
       'name' => 'Not provided',
@@ -322,7 +315,8 @@ function create_generic_contact() {
  */
 
 function create_generic_channel() {
-  $channel_id = chado_query('select channel_id from {channel} where name = :name limit 1', [':name' => 'Not provided'])->fetchField();
+  $channel_id = chado_query('select channel_id from {channel} where name = :name limit 1',
+    [':name' => 'Not provided'])->fetchField();
   if (!$channel_id) {
     $values = [
       'name' => 'Not provided',
@@ -346,7 +340,8 @@ function create_generic_channel() {
  */
 
 function create_generic_arraydesign($contact_id) {
-  $arraydesign_id = chado_query('select arraydesign_id from {arraydesign} where name = :name limit 1', [':name' => 'Not provided'])->fetchField();
+  $arraydesign_id = chado_query('select arraydesign_id from {arraydesign} where name = :name limit 1',
+    [':name' => 'Not provided'])->fetchField();
   if (!$arraydesign_id) {
     $values = [
       'name' => 'Not provided',
@@ -364,14 +359,13 @@ function create_generic_arraydesign($contact_id) {
   return $arraydesign_id;
 }
 
-function create_unique_arraydesign(
-  $arraydesign_id,
-  $organism_id,
-  $analysis_id
-) {
-  $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id', [':organism_id' => $organism_id])->fetchField();
-  $organism_s = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id', [':organism_id' => $organism_id])->fetchField();
-  $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id', [':analysis_id' => $analysis_id])->fetchField();
+function create_unique_arraydesign($arraydesign_id, $organism_id, $analysis_id) {
+  $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id',
+    [':organism_id' => $organism_id])->fetchField();
+  $organism_s = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id',
+    [':organism_id' => $organism_id])->fetchField();
+  $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id',
+    [':analysis_id' => $analysis_id])->fetchField();
 
   // Grab every field except the foreign key.
   $columns = [
@@ -406,18 +400,15 @@ function create_unique_arraydesign(
   return $arraydesign_id;
 }
 
-function create_unique_assay(
-  $assay_id,
-  $contact_id,
-  $arraydesign_id,
-  $biomaterial_id,
-  $organism_id,
-  $analysis_id
-) {
-  $biomaterial = chado_query('SELECT name FROM {biomaterial} WHERE biomaterial_id = :biomaterial_id', [':biomaterial_id' => $biomaterial_id])->fetchField();
-  $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id', [':organism_id' => $organism_id])->fetchField();
-  $organism_s = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id', [':organism_id' => $organism_id])->fetchField();
-  $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id', [':analysis_id' => $analysis_id])->fetchField();
+function create_unique_assay($assay_id, $contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id) {
+  $biomaterial = chado_query('SELECT name FROM {biomaterial} WHERE biomaterial_id = :biomaterial_id',
+    [':biomaterial_id' => $biomaterial_id])->fetchField();
+  $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id',
+    [':organism_id' => $organism_id])->fetchField();
+  $organism_s = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id',
+    [':organism_id' => $organism_id])->fetchField();
+  $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id',
+    [':analysis_id' => $analysis_id])->fetchField();
 
   // Grab every field except the foreign key.
   $columns = [
@@ -444,17 +435,15 @@ function create_unique_assay(
   return $assay_id;
 }
 
-function create_unique_acquisition(
-  $acquisition_id,
-  $assay_id,
-  $biomaterial_id,
-  $organism_id,
-  $analysis_id
-) {
-  $biomaterial = chado_query('SELECT name FROM {biomaterial} WHERE biomaterial_id = :biomaterial_id', [':biomaterial_id' => $biomaterial_id])->fetchField();
-  $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id', [':organism_id' => $organism_id])->fetchField();
-  $organism_s = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id', [':organism_id' => $organism_id])->fetchField();
-  $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id', [':analysis_id' => $analysis_id])->fetchField();
+function create_unique_acquisition($acquisition_id, $assay_id, $biomaterial_id, $organism_id, $analysis_id) {
+  $biomaterial = chado_query('SELECT name FROM {biomaterial} WHERE biomaterial_id = :biomaterial_id',
+    [':biomaterial_id' => $biomaterial_id])->fetchField();
+  $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id',
+    [':organism_id' => $organism_id])->fetchField();
+  $organism_s = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id',
+    [':organism_id' => $organism_id])->fetchField();
+  $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id',
+    [':analysis_id' => $analysis_id])->fetchField();
 
   // Grab every field except the foreign key.
   $columns = [
@@ -479,17 +468,15 @@ function create_unique_acquisition(
   return $acquisition_id;
 }
 
-function create_unique_quantification(
-  $quantification_id,
-  $acquisition_id,
-  $biomaterial_id,
-  $organism_id,
-  $analysis_id
-) {
-  $biomaterial = chado_query('SELECT name FROM {biomaterial} WHERE biomaterial_id = :biomaterial_id', [':biomaterial_id' => $biomaterial_id])->fetchField();
-  $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id', [':organism_id' => $organism_id])->fetchField();
-  $organism_s = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id', [':organism_id' => $organism_id])->fetchField();
-  $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id', [':analysis_id' => $analysis_id])->fetchField();
+function create_unique_quantification($quantification_id, $acquisition_id, $biomaterial_id, $organism_id, $analysis_id) {
+  $biomaterial = chado_query('SELECT name FROM {biomaterial} WHERE biomaterial_id = :biomaterial_id',
+    [':biomaterial_id' => $biomaterial_id])->fetchField();
+  $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id',
+    [':organism_id' => $organism_id])->fetchField();
+  $organism_s = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id',
+    [':organism_id' => $organism_id])->fetchField();
+  $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id',
+    [':analysis_id' => $analysis_id])->fetchField();
 
   // Grab every field except the foreign key.
   $columns = [
@@ -547,19 +534,13 @@ function create_unique_quantification(
  * @ingroup tripal_analysis_expression
  */
 
-function create_generic_assay(
-  $contact_id,
-  $arraydesign_id,
-  $biomaterial_id,
-  $organism_id,
-  $analysis_id,
-  $uniq_name
-) {
+function create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name) {
   /*$biomaterial = chado_query('SELECT name FROM {biomaterial} WHERE biomaterial_id = :biomaterial_id', array(':biomaterial_id' => $biomaterial_id))->fetchField();
   $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id', array(':organism_id' => $organism_id))->fetchField();
   $organism_s  = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id', array(':organism_id' => $organism_id))->fetchField();
   $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id', array(':analysis_id' => $analysis_id))->fetchField(); */
-  $assay_id = chado_query('select assay_id from {assay} where name = :name limit 1', [':name' => $uniq_name])->fetchField();
+  $assay_id = chado_query('select assay_id from {assay} where name = :name limit 1',
+    [':name' => $uniq_name])->fetchField();
   //$assay_id = chado_query('select assay_id from {assay} where name = :name limit 1',array(':name' => $biomaterial . ' - ' . $organism_g . " " . $organism_s . ' - ' . $analysis))->fetchField();
   if (!$assay_id) {
     $values = [
@@ -603,16 +584,9 @@ function create_generic_assay(
  * @ingroup tripal_analysis_expression
  */
 
-function tripal_biomaterial_create_biomaterial(
-  $biomaterial,
-  $analysis_id,
-  $organism_id,
-  $biosourceprovider_id,
-  $dbxref_id,
-  $biomaterial_description,
-  $warnings = TRUE
-) {
-  $biomaterial_result = chado_query('select biomaterial_id, taxon_id, description from {biomaterial} where name = :name limit 1', [':name' => $biomaterial])->fetchObject();
+function tripal_biomaterial_create_biomaterial($biomaterial, $analysis_id, $organism_id, $biosourceprovider_id, $dbxref_id, $biomaterial_description, $warnings = TRUE) {
+  $biomaterial_result = chado_query('select biomaterial_id, taxon_id, description from {biomaterial} where name = :name limit 1',
+    [':name' => $biomaterial])->fetchObject();
 
   $biomaterial_id = NULL;
 
@@ -623,8 +597,10 @@ function tripal_biomaterial_create_biomaterial(
       print("WARNING: Biomaterial with sample_name of '$biomaterial' alreay exists in the database. Overwriting database entries for $biomaterial...\n");
       if ($biomaterial_result->taxon_id and $biomaterial_result->taxon_id != $organism_id) {
         $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
-        $analysis_org = chado_query($sql, [":organism_id" => $organism_id])->fetchObject();
-        $biomaterial_org = chado_query($sql, [":organism_id" => $biomaterial_result->taxon_id])->fetchObject();
+        $analysis_org = chado_query($sql,
+          [":organism_id" => $organism_id])->fetchObject();
+        $biomaterial_org = chado_query($sql,
+          [":organism_id" => $biomaterial_result->taxon_id])->fetchObject();
         print "ERROR: Mismatch between the organism selected in the loader " . "and the organism of a biomaterial in the Chado database.\n" . "  Organism selected by loader: " . $analysis_org->genus . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n" . "  Biomaterial organism: " . $biomaterial_org->genus . " " . $biomaterial_org->species . " (" . $biomaterial_org->common_name . ")\n" . "  On biomaterial: " . $biomaterial . "\n" . "Please ensure that the organism selected by the loader " . "and the organism for each biomaterial in the file to be loaded " . "are the same. If these organisms should not be the same, " . "delete the offending biomaterial in Chado or change the name of " . "the biomaterial to another unique name.\n";
         exit;
       }
@@ -636,13 +612,13 @@ function tripal_biomaterial_create_biomaterial(
     if ($biomaterial_description == '' and $biomaterial_result->description != '') {
       $biomaterial_description = '';
     }
-
   }
 
   //if description is blank but we have an analysis, use that instead.
   if ($analysis_id && $biomaterial_description == '') {
-    $analysis_name = chado_select_record('analysis', ['name'], ['analysis_id' => $analysis_id]);
-      $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_name[0]->name;
+    $analysis_name = chado_select_record('analysis', ['name'],
+      ['analysis_id' => $analysis_id]);
+    $biomaterial_description = 'This biomaterial: ' . $biomaterial . ', was created for the analysis: ' . $analysis_name[0]->name;
   }
 
   $values = [
@@ -672,7 +648,8 @@ function tripal_biomaterial_create_biomaterial(
 
   else {
     print("Updating record for biomaterial id = $biomaterial_id\n");
-    $biomaterial = chado_update_record('biomaterial', ['name' => $biomaterial], $values, ['return_record' => TRUE]);
+    $biomaterial = chado_update_record('biomaterial', ['name' => $biomaterial],
+      $values, ['return_record' => TRUE]);
     if ($biomaterial == FALSE) {
       print "ERROR: Unable to update biomaterial_table\n";
       exit;
@@ -709,15 +686,10 @@ function tripal_biomaterial_create_biomaterial(
  * @ingroup tripal_analysis_expression
  */
 
-function create_generic_acquisition(
-  $assay_id,
-  $biomaterial_id,
-  $organism_id,
-  $analysis_id,
-  $uniq_name
-) {
+function create_generic_acquisition($assay_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name) {
 
-  $acquisition_id = chado_query('select acquisition_id from {acquisition} where name = :name limit 1', [':name' => $uniq_name])->fetchField();
+  $acquisition_id = chado_query('select acquisition_id from {acquisition} where name = :name limit 1',
+    [':name' => $uniq_name])->fetchField();
 
   if (!$acquisition_id) {
     $values = [
@@ -741,7 +713,8 @@ function create_generic_acquisition(
  * @return mixed
  */
 function tripal_biomaterial_create_biomaterial_contact($contact_name) {
-  $contact_id = chado_query('select contact_id from {contact} where name = :name limit 1', [':name' => $contact_name])->fetchField();
+  $contact_id = chado_query('select contact_id from {contact} where name = :name limit 1',
+    [':name' => $contact_name])->fetchField();
   if (!$contact_id) {
     $values = [
       'name' => $contact_name,
@@ -768,7 +741,8 @@ function tripal_biomaterial_create_ncbi_db($url_name, $db_name, $db_description)
     'url' => $url,
   ];
 
-  $db_id = chado_query('select db_id from {db} where name = :name limit 1', [':name' => $db_name])->fetchField();
+  $db_id = chado_query('select db_id from {db} where name = :name limit 1',
+    [':name' => $db_name])->fetchField();
 
   if (!$db_id) {
     $db = chado_insert_record('db', $values);
@@ -780,7 +754,8 @@ function tripal_biomaterial_create_ncbi_db($url_name, $db_name, $db_description)
   }
 
   if ($db_id) {
-    $db = chado_update_record('db', ['name' => 'db'], $values, ['return_record' => TRUE]);
+    $db = chado_update_record('db', ['name' => 'db'], $values,
+      ['return_record' => TRUE]);
     if ($db == FALSE) {
       print "ERROR: Unable to update db_table\n";
       exit;
