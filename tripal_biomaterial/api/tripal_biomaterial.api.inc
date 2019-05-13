@@ -63,13 +63,15 @@ function create_generic_quantification($acquisition_id, $analysis_id, $uniq_name
  */
 
 function tripal_expression_element($arraydesign_id, $feature_id) {
-  if (!$feature_id) {
-    $element_id = chado_query('SELECT element_id FROM {element} WHERE arraydesign_id = :arraydesign_id AND feature_id = :feature_id',
-      [
-        ':arraydesign_id' => $arraydesign_id,
-        ':feature_id' => $feature_id,
-      ])->fetchField();
+  if (empty($feature_id) || !$feature_id) {
+    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR, 'Please provide a valid feature id');
   }
+
+  $element_id = chado_query('SELECT element_id FROM {element} WHERE arraydesign_id = :arraydesign_id AND feature_id = :feature_id',
+    [
+      ':arraydesign_id' => $arraydesign_id,
+      ':feature_id' => $feature_id,
+    ])->fetchField();
   if (!$element_id) {
     $values = [
       'arraydesign_id' => $arraydesign_id,
@@ -647,7 +649,6 @@ function tripal_biomaterial_create_biomaterial($biomaterial, $analysis_id, $orga
   }
 
   else {
-    print("Updating record for biomaterial id = $biomaterial_id\n");
     $biomaterial = chado_update_record('biomaterial', ['name' => $biomaterial],
       $values, ['return_record' => TRUE]);
     if ($biomaterial == FALSE) {

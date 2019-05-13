@@ -771,7 +771,6 @@ AND f.type_id = :type_id', [
             }
             $element_id = tripal_expression_element($arraydesign_id,
               $feature_id);
-
             tripal_expression_elementresult($element_id, $quant_array[$i - 1],
               $linepart[$i]);
             // Create a record in the analysisfeature table. This will allow the analysis to appear in the
