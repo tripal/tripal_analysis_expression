@@ -106,6 +106,9 @@ function tripal_expression_element($arraydesign_id, $feature_id) {
  */
 
 function tripal_expression_elementresult($element_id, $quantification_id, $signal) {
+  if (empty($element_id) || !$element_id) {
+    return NULL;
+  }
 
   $values = [
     'element_id' => $element_id,
@@ -122,7 +125,7 @@ function tripal_expression_elementresult($element_id, $quantification_id, $signa
     $elementresult = chado_insert_record('elementresult', $values);
     if ($elementresult == FALSE) {
       print "ERROR: Unable to write to elementresult table\n";
-      exit;
+      return NULL;
     }
   }
   if ($elementresult_id) {
@@ -132,7 +135,7 @@ function tripal_expression_elementresult($element_id, $quantification_id, $signa
     ], $values);
     if ($elementresult == FALSE) {
       print "ERROR: Unable to update elementresult table\n";
-      exit;
+      return NULL;
     }
   }
 
@@ -260,7 +263,6 @@ function expression_create_biomaterial_structure($biomaterial, $organism_id, $an
  *
  * @ingroup tripal_analysis_expression
  */
-
 function create_assay_biomaterial($assay_id, $biomaterial_id, $channel_id) {
   $assay_biomaterial_id = chado_query('select assay_biomaterial_id from {assay_biomaterial} where rank = :rank and assay_id = :assay_id and biomaterial_id = :biomaterial_id and channel_id = :channel_id limit 1',
     [
