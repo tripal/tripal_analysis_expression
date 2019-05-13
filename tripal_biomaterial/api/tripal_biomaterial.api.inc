@@ -64,7 +64,7 @@ function create_generic_quantification($acquisition_id, $analysis_id, $uniq_name
 
 function tripal_expression_element($arraydesign_id, $feature_id) {
   if (empty($feature_id) || !$feature_id) {
-    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR,
+    tripal_report_error('tripal_analysis_expression', TRIPAL_WARNING,
       'Please provide a valid feature id');
     return NULL;
   }
