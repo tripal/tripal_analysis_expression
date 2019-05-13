@@ -64,7 +64,9 @@ function create_generic_quantification($acquisition_id, $analysis_id, $uniq_name
 
 function tripal_expression_element($arraydesign_id, $feature_id) {
   if (empty($feature_id) || !$feature_id) {
-    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR, 'Please provide a valid feature id');
+    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR,
+      'Please provide a valid feature id');
+    return NULL;
   }
 
   $element_id = chado_query('SELECT element_id FROM {element} WHERE arraydesign_id = :arraydesign_id AND feature_id = :feature_id',
