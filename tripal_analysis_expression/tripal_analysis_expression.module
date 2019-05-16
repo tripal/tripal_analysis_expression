@@ -17,6 +17,18 @@ require_once 'includes/analysis_expression_data_downloader.inc';
 require_once 'includes/tripal_analysis_expression.api.inc';
 
 /**
+ * Implements hook_permission().
+ */
+function tripal_analysis_expression_permission() {
+  return [
+    'administer tripal analysis expression' => [
+      'title' => t('Edit tripal analysis expression settings'),
+      'description' => t('Edit tripal analysis expression settings'),
+    ],
+  ];
+}
+
+/**
  * Implements hook_help().
  *
  * Display help and module information.
@@ -113,11 +125,11 @@ function tripal_analysis_expression_menu() {
  * @param $theme
  * @param $path
  *
+ * @return array
  * @see \theme() for paramaters instructions
  *
  * @ingroup tripal_analysis_expression
  *
- * @return array
  */
 function tripal_analysis_expression_theme($existing, $type, $theme, $path) {
   $items = [
