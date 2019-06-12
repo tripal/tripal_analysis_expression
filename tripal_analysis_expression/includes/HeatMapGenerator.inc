@@ -1,6 +1,6 @@
 <?php
 
-class HeatMapGenerator {
+class HeatMapGenerator{
 
   /**
    * GET feature names.
@@ -22,14 +22,15 @@ class HeatMapGenerator {
     }
 
     // Obtain unique names
-    $this->featureNames = array_map('trim', explode(',', $_GET['heatmap_feature_uniquename']));
+    $this->featureNames = array_map('trim',
+      explode(',', $_GET['heatmap_feature_uniquename']));
   }
 
   /**
    * Generate heat map data.
    *
-   * @throws \Exception
    * @return object|bool
+   * @throws \Exception
    */
   public function generate() {
     if (count($this->featureNames) < 2) {
@@ -41,7 +42,8 @@ class HeatMapGenerator {
     // Eager load biomaterial props
     foreach ($expression->biomaterials as $analysis_id => $biomaterial) {
       $this->biomaterialProps[$analysis_id] = [];
-      $this->loadBiomaterialProps($expression->biomaterials[$analysis_id], $analysis_id);
+      $this->loadBiomaterialProps($expression->biomaterials[$analysis_id],
+        $analysis_id);
     }
 
     // Set URLs
@@ -49,13 +51,22 @@ class HeatMapGenerator {
     // is not a big deal
     foreach ($expression->features as $analysis_id => $features) {
       foreach ($features as $feature_id => $feature) {
-        $expression->features[$analysis_id][$feature_id] = l($feature, 'bio_data/' . chado_get_record_entity_by_table('feature', $feature_id));
+        $expression->features[$analysis_id][$feature_id] = l($feature,
+          'bio_data/' . chado_get_record_entity_by_table('feature',
+            $feature_id));
       }
     }
 
     foreach ($expression->biomaterials as $analysis_id => $biomaterials) {
       foreach ($biomaterials as $biomaterial_id => $biomaterial) {
-        $expression->biomaterials[$analysis_id][$biomaterial_id]['name'] = l($biomaterial['name'], 'bio_data/' . chado_get_record_entity_by_table('biomaterial', $biomaterial_id));
+        $name = $this->trim($biomaterial['name']);
+        $expression->biomaterials[$analysis_id][$biomaterial_id]['name'] = l($name,
+          'bio_data/' . chado_get_record_entity_by_table('biomaterial',
+            $biomaterial_id), [
+            'attributes' => [
+              'title' => $biomaterial['name'],
+            ],
+          ]);
       }
     }
 
@@ -66,10 +77,24 @@ class HeatMapGenerator {
   }
 
   /**
+   * @param $str
+   * @param int $length
+   *
+   * @return string
+   */
+  public function trim($str, $length = 10) {
+    if (strlen($str) > $length) {
+      return substr($str, 0, $length) . '...';
+    }
+
+    return $str;
+  }
+
+  /**
    * Get features from the DB.
    *
-   * @throws \Exception
    * @return object
+   * @throws \Exception
    */
   protected function getExpressionData() {
     $sql = "SELECT ER.signal,
@@ -109,7 +134,8 @@ class HeatMapGenerator {
       $biomaterials[$expression->analysis_id][$expression->biomaterial_id] = [
         'name' => $expression->biomaterial_name,
         'contact' => $expression->contact_name ?: 'Not Set',
-        'description' => wordwrap($expression->biomaterial_description, 75, '<br />'),
+        'description' => wordwrap($expression->biomaterial_description, 75,
+          '<br />'),
         'props' => [],
       ];
       $features[$expression->analysis_id][$expression->feature_id] = $expression->feature_uniquename;
@@ -156,7 +182,8 @@ class HeatMapGenerator {
             INNER JOIN {biomaterialprop} BP ON B.biomaterial_id = BP.biomaterial_id
             INNER JOIN {cvterm} CVT ON BP.type_id = CVT.cvterm_id
             WHERE B.biomaterial_id IN (:ids)";
-    $props = chado_query($sql, [':ids' => array_keys($biomaterials)])->fetchAll();
+    $props = chado_query($sql,
+      [':ids' => array_keys($biomaterials)])->fetchAll();
 
     foreach ($props as $prop) {
       $biomaterials[$prop->biomaterial_id]['props'][$prop->name] = [
