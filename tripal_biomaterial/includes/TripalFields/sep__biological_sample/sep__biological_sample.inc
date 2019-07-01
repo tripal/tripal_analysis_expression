@@ -7,7 +7,7 @@
  * Data:
  * Assumptions:
  */
-class sep__biological_sample extends ChadoField {
+class sep__biological_sample extends ChadoField{
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -96,7 +96,6 @@ class sep__biological_sample extends ChadoField {
    *
    * @param $entity
    *
-   * @return
    *   An array of the following format:
    *     $entity->{$field_name}['und'][0]['value'] = $value;
    *   where:
@@ -116,15 +115,16 @@ class sep__biological_sample extends ChadoField {
    *   but those keys are for internal field use and are not considered the
    *   value of the field.
    *
-   *
+   * @return void
+   * @throws \Exception
    */
   public function load($entity) {
     if ($entity->chado_table == 'analysis') {
-      return $this->load_for_analysis($entity);
+      $this->load_for_analysis($entity);
     }
 
     if ($entity->chado_table == 'organism') {
-      return $this->load_for_organism($entity);
+      $this->load_for_organism($entity);
     }
   }
 
@@ -137,7 +137,7 @@ class sep__biological_sample extends ChadoField {
    */
   protected function load_for_analysis(&$entity) {
     $field = get_class();
-    $entity->{$field}['und'][0]['value'] = NULL;//set default null
+    $entity->{$field}['und'] = [];
     $analysis_id = $entity->chado_record_id;
 
     $sql = 'SELECT B.biomaterial_id, B.name, B.description
@@ -181,7 +181,8 @@ class sep__biological_sample extends ChadoField {
             $treatment = $property->value;
           }
         }
-        $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial", $b_record_id);
+        $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial",
+          $b_record_id);
 
         $value = [
           'name' => $biomaterial->name,
@@ -206,12 +207,12 @@ class sep__biological_sample extends ChadoField {
    *
    * @param $entity
    *
-   * @throws \Exception
    * @return mixed
+   * @throws \Exception
    */
   protected function load_for_organism(&$entity) {
     $field = get_class();
-    $entity->{$field}['und'][0]['value'] = NULL;
+    $entity->{$field}['und'] = [];
     $organism_id = $entity->chado_record_id;
 
     $sql = 'SELECT B.biomaterial_id, B.name, B.description
@@ -225,49 +226,49 @@ class sep__biological_sample extends ChadoField {
     }
 
     $i = 0;
-    if ($results) {
-      foreach ($results as $biomaterial) {
-        $b_record_id = $biomaterial->biomaterial_id;
+    foreach ($results as $biomaterial) {
+      $b_record_id = $biomaterial->biomaterial_id;
 
-        $values = [
-          'biomaterial_id' => $b_record_id,
-        ];
+      $values = [
+        'biomaterial_id' => $b_record_id,
+      ];
 
-        $biomat_full = chado_generate_var("biomaterial", $values);
-        $expanded = chado_expand_var($biomat_full, 'table', 'biomaterialprop');
-        $properties = $expanded->biomaterialprop;
+      $biomat_full = chado_generate_var("biomaterial", $values);
+      $expanded = chado_expand_var($biomat_full, 'table', 'biomaterialprop');
+      $properties = $expanded->biomaterialprop;
 
-        $treatment = NULL;
-        $tissue = NULL;
+      $treatment = NULL;
+      $tissue = NULL;
 
-        if ($properties) {
-          foreach ($properties as $property) {
-            if (property_exists($property, 'type_id') && property_exists($property->type_id, 'name')) {
-              $name = strtolower($property->type_id->name);
-              if ($name == "tissue") {
-                $tissue = $property->value;
-              }
-              if ($name == "treatment") {
-                $treatment = $property->value;
-              }
+      if ($properties) {
+        foreach ($properties as $property) {
+          if (property_exists($property,
+              'type_id') && property_exists($property->type_id, 'name')) {
+            $name = strtolower($property->type_id->name);
+            if ($name == "tissue") {
+              $tissue = $property->value;
+            }
+            if ($name == "treatment") {
+              $treatment = $property->value;
             }
           }
         }
-
-        $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial", $b_record_id);
-        $value = [
-          'name' => $biomaterial->name,
-          'record_id' => $b_record_id,
-          'entity_id' => $biomaterial_entity_id,
-          'description' => $biomaterial->description,
-          'tissue' => $tissue,
-          'treatment' => $treatment,
-        ];
-
-        $entity->{$field}['und'][$i]['value'] = $value;
-
-        $i++;
       }
+
+      $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial",
+        $b_record_id);
+      $value = [
+        'name' => $biomaterial->name,
+        'record_id' => $b_record_id,
+        'entity_id' => $biomaterial_entity_id,
+        'description' => $biomaterial->description,
+        'tissue' => $tissue,
+        'treatment' => $treatment,
+      ];
+
+      $entity->{$field}['und'][$i]['value'] = $value;
+
+      $i++;
     }
 
     return $entity;
