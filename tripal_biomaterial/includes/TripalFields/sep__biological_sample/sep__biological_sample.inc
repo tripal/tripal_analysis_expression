@@ -137,7 +137,7 @@ class sep__biological_sample extends ChadoField{
    */
   protected function load_for_analysis(&$entity) {
     $field = get_class();
-    $entity->{$field}['und'][0]['value'] = NULL;//set default null
+    $entity->{$field}['und'] = [];
     $analysis_id = $entity->chado_record_id;
 
     $sql = 'SELECT B.biomaterial_id, B.name, B.description
