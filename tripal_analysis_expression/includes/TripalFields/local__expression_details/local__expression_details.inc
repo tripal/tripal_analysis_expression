@@ -112,13 +112,13 @@ class local__expression_details extends ChadoField{
     $feature_id = $entity->chado_record->feature_id;
 
     $pvalue_data = chado_query('SELECT cv1.name as cvterm_name, p1.value as evidence_code, p2.value as p_value, a.name as analysis_name
-  FROM { feature_cvterm } fcvt
-  JOIN { cvterm } cv1 ON cv1.cvterm_id=fcvt.cvterm_id
-  JOIN { cvterm } cv2 ON cv2.name=\'analysis\'
-  JOIN { feature_cvtermprop } p1 ON p1.feature_cvterm_id=fcvt.feature_cvterm_id AND p1.type_id=:evidence_id
-  JOIN { feature_cvtermprop } p2 ON p2.feature_cvterm_id=fcvt.feature_cvterm_id AND p2.type_id=:pvalue_id
-  JOIN { feature_cvtermprop } p3 ON p3.feature_cvterm_id=fcvt.feature_cvterm_id AND p3.type_id=cv2.cvterm_id
-  JOIN { analysis } a ON a.analysis_id=p3.value::INTEGER
+  FROM {feature_cvterm} fcvt
+  JOIN {cvterm} cv1 ON cv1.cvterm_id=fcvt.cvterm_id
+  JOIN {cvterm} cv2 ON cv2.name=\'analysis\'
+  JOIN {feature_cvtermprop} p1 ON p1.feature_cvterm_id=fcvt.feature_cvterm_id AND p1.type_id=:evidence_id
+  JOIN {feature_cvtermprop} p2 ON p2.feature_cvterm_id=fcvt.feature_cvterm_id AND p2.type_id=:pvalue_id
+  JOIN {feature_cvtermprop} p3 ON p3.feature_cvterm_id=fcvt.feature_cvterm_id AND p3.type_id=cv2.cvterm_id
+  JOIN {analysis} a ON a.analysis_id=p3.value::INTEGER
   WHERE fcvt.feature_id = :feature_id', [
         ':feature_id' => $feature_id,
         ':evidence_id' => tripal_analysis_expression_get_evidence_code_id(),

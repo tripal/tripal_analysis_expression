@@ -153,7 +153,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
       '#options' => chado_get_organism_select_options(FALSE),
     ];
 
-    $so_id = chado_query('SELECT cv_id FROM { cv } WHERE name=:cv_name',
+    $so_id = chado_query('SELECT cv_id FROM {cv} WHERE name=:cv_name',
       [':cv_name' => 'sequence'])->fetchField();
 
     $form['so_term'] = [
@@ -365,7 +365,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    * @throws \Exception
    */
   public function get_existing_data($feature_id) {
-    $sql = 'SELECT feature_cvterm_id FROM { feature_cvterm } WHERE feature_id=:feature_id AND cvterm_id=:cvterm_id';
+    $sql = 'SELECT feature_cvterm_id FROM {feature_cvterm} WHERE feature_id=:feature_id AND cvterm_id=:cvterm_id';
 
     $feature_cvterms = chado_query($sql, [
       ':feature_id' => $feature_id,
@@ -386,11 +386,11 @@ class tripal_expression_pvalue_loader extends TripalImporter{
                p1.value AS evidence_code,
                p2.value AS p_value,
                p3.value AS analysis_id
-        FROM { feature_cvtermprop } p1    
-        JOIN { feature_cvtermprop } p2
+        FROM {feature_cvtermprop} p1    
+        JOIN {feature_cvtermprop} p2
         ON p2.feature_cvterm_id=p1.feature_cvterm_id
         AND p2.type_id=:pvalue_type_id
-        JOIN { feature_cvtermprop } p3
+        JOIN {feature_cvtermprop} p3
         ON p3.feature_cvterm_id=p1.feature_cvterm_id
         AND p3.type_id=:analysis_cvterm_id
         AND p3.value=:analysis_id
@@ -438,7 +438,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    * @throws \Exception
    */
   private function insertData($feature_id, $pvalue) {
-    $highest_rank = chado_query('SELECT rank FROM { feature_cvterm } WHERE feature_id=:feature_id ORDER BY rank DESC LIMIT 1',
+    $highest_rank = chado_query('SELECT rank FROM {feature_cvterm} WHERE feature_id=:feature_id ORDER BY rank DESC LIMIT 1',
       [':feature_id' => $feature_id])->fetchField();
 
     $rank = $highest_rank === FALSE ? 0 : $highest_rank + 1;
@@ -535,10 +535,10 @@ class tripal_expression_pvalue_loader extends TripalImporter{
         WHERE uniquename = :feature_name
         AND organism_id = :organism_id
         AND type_id = :type_id', [
-        ':feature_name' => $feature_name,
-        ':organism_id' => $organism_id,
-        ':type_id' => $type_id,
-      ])->fetchField();
+      ':feature_name' => $feature_name,
+      ':organism_id' => $organism_id,
+      ':type_id' => $type_id,
+    ])->fetchField();
 
     if (empty($feature_id)) {
       throw new Exception(t('The feature !feature does not exist in the database for the organism and sequence type provided. Please verify that the feature exists and that the correct organism and sequence type has been provided.',
