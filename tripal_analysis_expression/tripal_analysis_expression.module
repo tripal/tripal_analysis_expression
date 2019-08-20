@@ -102,7 +102,7 @@ function tripal_analysis_expression_menu() {
 
   $items['tripal/analysis-expression/download'] = [
     'title' => '',
-    'access arguments' => ['download content'],
+    'access arguments' => ['access content'],
     'page callback' => 'analysis_expression_data_downloader::callback',
     'type' => MENU_CALLBACK,
   ];
@@ -151,6 +151,13 @@ function tripal_analysis_expression_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_analysis_expression.feature',
       'path' => "$path/theme/templates",
     ],
+    
+    // tripal_feature theme
+    'tripal_feature_expression' => array (
+      'template' => 'tripal_feature_expression',
+      'variables' => array ('node' => NULL),
+      'path' => "$path/theme/templates"
+    ),
   ];
   return $items;
 }
@@ -283,5 +290,25 @@ function tripal_analysis_expression_heatmap_block(&$block) {
                                </p>');
       }
     }
+  }
+}
+
+/*******************************************************************************
+ * tripal_analysis_expression_nodeapi()
+ * HOOK: Implementation of hook_nodeapi()
+ * Display blast results for allowed node types
+ */
+function tripal_analysis_expression_node_view($node, $view_mode, $langcode) {
+  
+  switch ($node->type) {
+    case 'chado_feature':
+      if ($view_mode == 'full') {
+        $node->content['tripal_feature_expression'] = array(
+          '#markup' => theme('tripal_feature_expression', array('node' => $node)),
+          '#tripal_toc_id'    => 'expression',
+          '#tripal_toc_title' => 'Expression',
+        );
+      }
+      break;
   }
 }
