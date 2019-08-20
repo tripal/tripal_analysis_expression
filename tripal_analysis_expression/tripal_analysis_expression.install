@@ -59,6 +59,10 @@ function tripal_analysis_expression_install() {
   // Install mviews
   tripal_analysis_expression_add_mview_expression_feature_all();
   tripal_analysis_expression_add_mview_expression_feature();
+
+  // Add pvalue cvterms
+  tripal_analysis_expression_add_pvalue_cvterm();
+  tripal_analysis_expression_add_evidence_code_cvterms();
 }
 
 /**
@@ -216,6 +220,60 @@ function tripal_analysis_expression_add_mview_expression_feature_all() {
   chado_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment, false);
 }
 
+function tripal_analysis_expression_add_pvalue_cvterm() {
+  chado_insert_cvterm([
+    'id' => 'OBI:0000175',
+    'name' => 'p-value',
+    'cv_name' => 'OBI',
+    'db_name' => 'OBI',
+    'description' => 'A quantitative confidence value that represents the probability of obtaining a result at least as extreme as that actually obtained, assuming that the actual value was the result of chance alone.'
+  ]);
+}
+
+function tripal_analysis_expression_add_evidence_code_cvterms() {
+  chado_insert_cvterm([
+    'id' => 'GO:0010193',
+    'name' => 'response to ozone',
+    'cv_name' => 'GO',
+    'db_name' => 'GO',
+  ]);
+
+  chado_insert_cvterm([
+    'id' => 'GO:0009408',
+    'name' => 'response to heat',
+    'cv_name' => 'GO',
+    'db_name' => 'GO',
+  ]);
+
+  chado_insert_cvterm([
+    'id' => 'GO:0009414',
+    'name' => 'response to water deprivation',
+    'cv_name' => 'GO',
+    'db_name' => 'GO',
+  ]);
+
+  chado_insert_cvterm([
+    'id' => 'GO:0009409',
+    'name' => 'response to cold',
+    'cv_name' => 'GO',
+    'db_name' => 'GO',
+  ]);
+
+  chado_insert_cvterm([
+    'id' => 'GO:0009611',
+    'name' => 'response to wounding',
+    'cv_name' => 'GO',
+    'db_name' => 'GO',
+  ]);
+
+  chado_insert_cvterm([
+    'id' => 'GO:0009625',
+    'name' => 'response to insect',
+    'cv_name' => 'GO',
+    'db_name' => 'GO',
+  ]);
+}
+
 /**
  * Add heatmap variables.
  */
@@ -259,4 +317,9 @@ function tripal_analysis_expression_update_7300() {
   if (!$cvalue_exists) {
     db_query('ALTER TABLE chado.feature_cvtermprop ADD COLUMN cvalue_id bigint');
   }
+}
+
+function tripal_analysis_expression_update_7301() {
+  tripal_analysis_expression_add_pvalue_cvterm();
+  tripal_analysis_expression_add_evidence_code_cvterms();
 }

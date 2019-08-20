@@ -138,9 +138,9 @@ class tripal_expression_pvalue_loader extends TripalImporter{
 
     $form['keyword'] = [
       '#type' => 'textfield',
-      '#title' => t('Keyword'),
+      '#title' => t('Experimental Factor'),
       '#required' => TRUE,
-      '#description' => t('If the controlled vocabulary term does not show up, please ' . l('create it first.',
+      '#description' => t('What is this gene responding to (e.g. heat, drought, ozone)? If the controlled vocabulary term does not show up, please ' . l('create it first.',
           'admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add')),
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/0',
     ];
