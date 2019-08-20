@@ -116,7 +116,7 @@ class HeatMapGenerator{
             INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
             INNER JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
             LEFT JOIN {contact} C ON B.biosourceprovider_id = C.contact_id
-            WHERE F.uniquename IN (:uniquenames)";
+            WHERE F.name IN (:uniquenames)";
 
     $expressionData = chado_query($sql, [
       ':uniquenames' => $this->featureNames,
