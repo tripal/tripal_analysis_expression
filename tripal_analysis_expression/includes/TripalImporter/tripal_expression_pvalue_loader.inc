@@ -244,7 +244,10 @@ class tripal_expression_pvalue_loader extends TripalImporter{
 
     $this->evidence_code = $run_args['evidence_code'];
     $this->evidence_code_id = chado_get_cvterm(['name' => $this->evidence_code])->cvterm_id;
-    $this->evidence_code_cvterm_id = tripal_analysis_expression_get_evidence_code_id();
+    $this->evidence_code_cvterm_id = chado_get_cvterm([
+      'cv_id' => ['name' => 'local'],
+      'name' => 'evidence code',
+    ])->cvterm_id;
 
     $this->analysis_cvterm_id = chado_get_cvterm(['name' => 'analysis'])->cvterm_id;
     $this->analysis_id = $run_args['analysis_id'];
@@ -252,7 +255,10 @@ class tripal_expression_pvalue_loader extends TripalImporter{
     $organism_id = $run_args['organism_id'];
     $so_term = $run_args['so_term'];
 
-    $this->pvalue_cvterm_id = tripal_analysis_expression_get_pvalue_id();
+    $this->pvalue_cvterm_id = chado_get_cvterm([
+      'cv_id' => ['name' => 'OBI'],
+      'name' => 'p-value',
+    ])->cvterm_id;
 
     $this->pub_id = chado_query('SELECT pub_id FROM {pub} WHERE title IS NULL ORDER BY pub_id ASC limit 1')->fetchField();
 

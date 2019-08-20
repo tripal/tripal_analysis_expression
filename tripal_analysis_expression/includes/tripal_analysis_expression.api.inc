@@ -122,14 +122,3 @@ function tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path) {
 
   return $id ? $id : false;
 }
-
-
-// PVALUE TEST FUNCTIONS, NOT FOR USE
-function tripal_analysis_expression_get_pvalue_id() {
-  return 344;
-}
-
-function tripal_analysis_expression_get_evidence_code_id() {
-  return 345;
-}
-

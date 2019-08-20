@@ -111,6 +111,16 @@ class local__expression_details extends ChadoField{
 
     $feature_id = $entity->chado_record->feature_id;
 
+    $pvalue_cvterm_id = chado_get_cvterm([
+      'cv_id' => ['name' => 'OBI'],
+      'name' => 'p-value',
+    ])->cvterm_id;
+
+    $evidence_code_cvterm_id = chado_get_cvterm([
+      'cv_id' => ['name' => 'local'],
+      'name' => 'evidence code',
+    ])->cvterm_id;
+
     $pvalue_data = chado_query('SELECT cv1.name as cvterm_name, p1.value as evidence_code, p2.value as p_value, a.name as analysis_name
   FROM {feature_cvterm} fcvt
   JOIN {cvterm} cv1 ON cv1.cvterm_id=fcvt.cvterm_id
@@ -121,8 +131,8 @@ class local__expression_details extends ChadoField{
   JOIN {analysis} a ON a.analysis_id=p3.value::INTEGER
   WHERE fcvt.feature_id = :feature_id', [
         ':feature_id' => $feature_id,
-        ':evidence_id' => tripal_analysis_expression_get_evidence_code_id(),
-        ':pvalue_id' => tripal_analysis_expression_get_pvalue_id(),
+        ':evidence_id' => $evidence_code_cvterm_id,
+        ':pvalue_id' => $pvalue_cvterm_id,
       ])->fetchAll();
 
     $variables['pvalue_data'] = array_map(function ($item) {

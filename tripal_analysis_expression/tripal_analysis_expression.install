@@ -230,7 +230,7 @@ function tripal_analysis_expression_add_pvalue_cvterm() {
   ]);
 }
 
-function tripal_analysis_expression_add_evidence_code_cvterms() {
+function tripal_analysis_expression_add_experimental_factor_cvterms() {
   chado_insert_cvterm([
     'id' => 'GO:0010193',
     'name' => 'response to ozone',
@@ -271,6 +271,14 @@ function tripal_analysis_expression_add_evidence_code_cvterms() {
     'name' => 'response to insect',
     'cv_name' => 'GO',
     'db_name' => 'GO',
+  ]);
+}
+
+function tripal_analysis_expression_add_evidence_code_cvterm() {
+  chado_insert_cvterm([
+    'id' => 'local:evidence_code',
+    'name' => 'evidence code',
+    'cv_name' => 'local',
   ]);
 }
 
@@ -321,5 +329,6 @@ function tripal_analysis_expression_update_7300() {
 
 function tripal_analysis_expression_update_7301() {
   tripal_analysis_expression_add_pvalue_cvterm();
-  tripal_analysis_expression_add_evidence_code_cvterms();
+  tripal_analysis_expression_add_evidence_code_cvterm();
+  tripal_analysis_expression_add_experimental_factor_cvterms();
 }
