@@ -40,7 +40,7 @@ class local__expression_details_formatter extends ChadoFieldFormatter
     $header = ['Keyword', 'Evidence Code', 'P-value', 'Analysis'];
     $field = str_replace('_formatter', '', get_class());
     $variables = $entity->{$field}['und'][0];
-    $pvalue_data = $variables['pvalue_data'];
+    $pvalue_data = $variables['value'];
     $rows = [];
 
     foreach ($pvalue_data as $row) {

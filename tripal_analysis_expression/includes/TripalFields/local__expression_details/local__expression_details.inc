@@ -81,11 +81,11 @@ class local__expression_details extends ChadoField{
     // attached asynchronously.
     'auto_attach' => FALSE,
     // The table in Chado that the instance maps to.
-    'chado_table' => '',
+    'chado_table' => 'feature',
     // The column of the table in Chado where the value of the field comes from.
-    'chado_column' => '',
+    'chado_column' => 'feature_id',
     // The base table.
-    'base_table' => '',
+    'base_table' => 'feature',
   ];
 
   // A boolean specifying that users should not be allowed to create
@@ -107,8 +107,6 @@ class local__expression_details extends ChadoField{
 
   public function load($entity) {
     $field = get_class();
-    $variables = $entity->{$field}['und'][0];
-
     $feature_id = $entity->chado_record->feature_id;
 
     $pvalue_cvterm_id = chado_get_cvterm([
@@ -130,19 +128,15 @@ class local__expression_details extends ChadoField{
   JOIN {feature_cvtermprop} p3 ON p3.feature_cvterm_id=fcvt.feature_cvterm_id AND p3.type_id=cv2.cvterm_id
   JOIN {analysis} a ON a.analysis_id=p3.value::INTEGER
   WHERE fcvt.feature_id = :feature_id', [
-        ':feature_id' => $feature_id,
-        ':evidence_id' => $evidence_code_cvterm_id,
-        ':pvalue_id' => $pvalue_cvterm_id,
-      ])->fetchAll();
+      ':feature_id' => $feature_id,
+      ':evidence_id' => $evidence_code_cvterm_id,
+      ':pvalue_id' => $pvalue_cvterm_id,
+    ])->fetchAll();
 
-    $variables['pvalue_data'] = array_map(function ($item) {
+    $entity->{$field}['und'][0]['value'] = array_map(function ($item) {
       $item->p_value = $item->p_value != NULL ? floatval($item->p_value) : 'N/A';
       return $item;
     }, $pvalue_data);
-
-    // Save data into the entity
-    $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0],
-      $variables);
 
     return $entity;
   }
