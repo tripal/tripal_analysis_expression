@@ -15,7 +15,7 @@ Please note this module requires **Tripal 3** or greater.  The [Tripal 2 functio
 3. [Module Features](#features)
 4. [Loading Biosamples](#loading-biosamples)
 5. [Loading Expression Data](#loading-expression-data)
-6. [Loading P-Value Data](#loading-pvalue-data)
+6. [Loading P-Value Data](#loading-p-value-data)
 6. [Viewing Data](#viewing-and-downloading-data)
 7. [Administrative Pages](#administrative-pages)
 8. [Protocols](#protocols)
@@ -223,12 +223,11 @@ The P-Value Data Loader provides a way for the user to load p-value data for a f
 
 For an example p-value file, click [here](example_files/example_pvalue.csv).
 
-* File Upload - You may upload a file using the loader, or provide a path on the server.
-
+* **File Upload** - You may upload a file using the loader, or provide a path on the server.
 * **Analysis** - The analysis to associate the expression data with.
 * **Organism (required)** - The organism.
-* **Evidence Code** - A cvterm that describes the keyword.
-* **Keyword** - A cvterm that describes what the p-value is measuring.
+* **Evidence Code** - Either up-regulated, down-regulated, or related to, depending on the experimental factor
+* **Experimental Factor** - A cvterm that describes what the p-value is measuring.
 * **Sequence Type** - The sequence ontology term name that describes the features.
 
 # Viewing and Downloading Data
