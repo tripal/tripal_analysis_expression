@@ -420,7 +420,24 @@ class tripal_expression_data_loader extends TripalImporter{
    * @ingroup tripal_analysis_expression
    */
 
-  protected function tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $quantificationunits, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples, $seqtype) {
+  protected function tripal_expression_loader(
+    $organism_id,
+    $analysis_id,
+    $contact_id,
+    $arraydesign_id,
+    $assaydate,
+    $acquisitiondate,
+    $quantificationdate,
+    $quantificationunits,
+    $filepath,
+    $fileext,
+    $filetype,
+    $re_start,
+    $re_stop,
+    $feature_uniquenames,
+    $create_biosamples,
+    $seqtype
+  ) {
 
     $seqtype_id = NULL;
     if ($seqtype) {
@@ -472,7 +489,11 @@ class tripal_expression_data_loader extends TripalImporter{
         // Load all files with of type $fileext in the directory.
         while ($file = readdir($dir_handle)) {
           if (preg_match('/(.+)\.' . $fileext . '$/', $file)) {
-            print "File " . ($num_file + 1) . " of $total_files: $file                                       \n";
+            $this->logMessage('File !num_file of !total_files: !file', [
+                '!num_file' => $num_file + 1,
+                '!total_files' => $total_files,
+                '!file' => $file,
+              ]);
             $new_features = $this->tripal_expression_load_col_file($filepath . '/' . $file,
               $fileext, $arraydesign_id, $organism_id, $analysis_id,
               $contact_id, $assay_id, $acquisition_id, $quantification_id,
@@ -516,7 +537,8 @@ AND f.type_id = :type_id', [
             'feature_id' => $feature_id,
           ]);
           if ($analysisfeature == FALSE) {
-            print "ERROR: Unable to write to analysisfeature table\n";
+            $this->logMessage('Unable to write to analysisfeature table', [],
+              TRIPAL_ERROR);
             return;
           }
         }
@@ -525,21 +547,20 @@ AND f.type_id = :type_id', [
       $cache_loc = tripal_analysis_expression_cache_file($filepath);
 
       if (!$cache_loc) {
-        print ("ERROR: Failed to cache file $filepath\n");
+        $this->logMessage('Failed to cache file !filepath',
+          ['!filepath' => $filepath], TRIPAL_ERROR);
         return;
       }
 
       if (!tripal_analysis_expression_add_file_as_prop($analysis_id,
         $cache_loc)) {
-        print ("ERROR: Failed to add $cache_loc to analysisprop table\n");
+        $this->logMessage('Failed to add !cache_loc to analysisprop table',
+          ['!cache_loc' => $cache_loc], TRIPAL_ERROR);
         return;
       };
     } catch (Exception $e) {
-      print "\n";
-      watchdog_exception('T_expression_load', $e);
-      print "FAILED: Rolling back database changes...\n";
+      $this->logMessage('!e', ['!e' => $e], TRIPAL_ERROR);
     }
-    print "\nDone.\n";
 
     return;
   }
@@ -554,7 +575,6 @@ AND f.type_id = :type_id', [
     $sql = "SELECT name FROM {analysis} WHERE analysis_id = :analysis_id";
     $uniq_string .= chado_query($sql,
       [':analysis_id' => $analysis_id])->fetchField();
-    print $uniq_string;
     return $uniq_string;
   }
 
@@ -606,7 +626,23 @@ AND f.type_id = :type_id', [
    * @ingroup tripal_analysis_expression
    */
 
-  function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames, $type_id) {
+  function tripal_expression_load_mat_file(
+    $filepath,
+    $fileext,
+    $arraydesign_id,
+    $organism_id,
+    $analysis_id,
+    $contact_id,
+    $assay_id,
+    $acquisition_id,
+    $quantification_id,
+    $quantificationunits,
+    $re_start,
+    $re_stop,
+    $uniq_name,
+    $feature_uniquenames,
+    $type_id
+  ) {
     $data_ln = 0;
     $mat_fp = fopen($filepath, 'r');
     $num_col = 0;
@@ -648,18 +684,19 @@ AND f.type_id = :type_id', [
     }
 
     if ($num_lines < 2) {
-      print "Error reading file.\n Please ensure that your file is readable and try again.";
+      $this->logMessage("Error reading file.\n Please ensure that your file is readable and try again.",
+        [], TRIPAL_ERROR);
       return;
     }
 
     // Make sure there not duplicate feature names.
     if (count($feature_repeats = array_diff_assoc($feature_array,
         array_unique($feature_array))) > 0) {
-      print "ERROR: There are multiple instance of the following feature(s) in the expression file:\n";
+      $this->logMessage('There are multiple instance of the following feature(s) in the expression file:');
       foreach ($feature_repeats as $repeat) {
-        print "  " . $repeat . "\n";
+        $this->logMessage("  !repeat", ['!repeat' => $repeat], TRIPAL_ERROR);
       }
-      print "Please make sure there is only one instance of each feature in the expression file\n";
+      $this->logMessage('Please make sure there is only one instance of each feature in the expression file.');
       return;
     }
 
@@ -683,7 +720,8 @@ AND f.type_id = :type_id', [
 
     // Loop through every line in a file.
 
-    print "Loading complete: " . 0 . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
+    $this->logMessage("Loading complete: 0%. Memory: !memory_usage bytes. \r",
+      ['!memory_usage' => number_format(memory_get_usage())]);
 
     for ($j = 0; $j < $num_lines and $line = fgets($mat_fp); $j++) {
 
@@ -695,7 +733,8 @@ AND f.type_id = :type_id', [
         fclose($mat_fp);
         $time_end = microtime(TRUE);
         if ($j != 0) {
-          print $load_limit / ($time_end - $time_start) . " lines per second\n";
+          $this->logMessage('!lps lines per second',
+            ['!lps' => $load_limit / ($time_end - $time_start)]);
         }
         $mat_fp = fopen($filepath, 'r');
         fseek($mat_fp, $set_fp);
@@ -728,11 +767,11 @@ AND f.type_id = :type_id', [
           // Make sure there not duplicate biomaterial names.
           if (count($bio_repeats = array_diff_assoc($linepart,
               array_unique($linepart))) > 0) {
-            print "ERROR: There are multiple instance of the following " . "biomaterial(s) in the expression file:\n";
+            $this->logMessage('There are multiple instance of the following biomaterial(s) in the expression file:');
             foreach ($bio_repeats as $repeat) {
-              print "  " . $repeat . "\n";
+              $this->logMessage('!repeat', ['!repeat' => $repeat]);
             }
-            print "Please make sure there is only one instance of each " . "biomaterial in the expression file\n";
+            $this->logMessage('Please make sure there is only one instance of each biomaterial in the expression file');
             return;
           }
 
@@ -744,20 +783,29 @@ AND f.type_id = :type_id', [
 
           // Make sure that there are enough expression columns.
           if ($num_col != ($num_biomaterials + 1)) {
-            print "ERROR: Expression data in the data section of the matrix format must have a\n" . "feature name followed by tab separated expression values.\n" . "The number of expression values for each feature must equal\n" . "the number of biomaterials in the matrix file header.\n" . "Example matrix format:\n" . "  <feature name>       <expression value>	<expression value> ...\n";
+            $this->logMessage("Expression data in the data section of the matrix format must have a feature name followed by tab separated expression values. The number of expression values for each feature must equal the number of biomaterials in the matrix file header. Example matrix format:\n" . "  <feature name>       <expression value>	<expression value> ...");
             if (count($linepart) > 0) {
-              print "Loader failed on the following line:\n" . "  " . $line;
-              print "Loader expected " . ($num_biomaterials + 1) . " columns " . "but only found " . $num_col . " column(s).\n";
+              $this->logMessage("Loader failed on the following line:\n !line\n. Expected !expected_columns columns but only found !actual_columns column(s).",
+                [
+                  '!line' => $line,
+                  '!expected_columns' => $num_biomaterials + 1,
+                  '!actual_columns' => $num_col,
+                ], TRIPAL_ERROR);
             }
             else {
-              print "Loader failed because of a blank line in the data section of the expression file.\n";
+              $this->logMessage('Loader failed because of a blank line in the data section of the expression file.',
+                [], TRIPAL_ERROR);
             }
             return;
           }
 
           if ($cur_feature % $int_length == 0) {
             $percent = sprintf("%.2f", ($cur_feature / $num_features) * 100);
-            print "Loading complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \n";
+            $this->logMessage("Loading complete: !percent%. Memory: !memory_usage bytes. \r",
+              [
+                '!percent' => $percent,
+                '!memory_usage' => number_format(memory_get_usage()),
+              ]);
           }
 
           $cur_feature++;
@@ -849,7 +897,22 @@ AND f.type_id = :type_id', [
    * @ingroup tripal_analysis_expression
    */
 
-  function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames) {
+  function tripal_expression_load_col_file(
+    $filepath,
+    $fileext,
+    $arraydesign_id,
+    $organism_id,
+    $analysis_id,
+    $contact_id,
+    $assay_id,
+    $acquisition_id,
+    $quantification_id,
+    $quantificationunits,
+    $re_start,
+    $re_stop,
+    $uniq_name,
+    $feature_uniquenames
+  ) {
     $inter = 0;
     $data_ln = 0;
 
@@ -899,182 +962,206 @@ AND f.type_id = :type_id', [
     if (count($feature_repeats = array_diff_assoc($feature_array,
         array_unique($feature_array))) > 0) {
       //if (count($linepart) != count(array_unique($linepart))) {
-      print "ERROR: There are multiple instance of the following " . "feature(s) in the expression file:\n";
+      $this->logMessage('There are multiple instance of the following feature(s) in the expression file:');
       foreach ($feature_repeats as $repeat) {
-        print "  " . $repeat . "\n";
+        $this->logMessage("  !repeat", ['!repeat' => $repeat], TRIPAL_ERROR);
+
+        $this->logMessage('Please make sure there is only one instance of each feature in the expression file.');
+        return;
       }
-      print "Please make sure there is only one instance of each " . "feature in the expression file\n";
-      return;
-    }
 
-    // Get rid of the feature_array.
-    unset($feature_array);
+      // Get rid of the feature_array.
+      unset($feature_array);
 
-    // Calculate interval length.
-    $int_length = .01 * $num_features;
+      // Calculate interval length.
+      $int_length = .01 * $num_features;
 
-    // The minimum interval length is 1.
-    if ($int_length < 1) {
-      $int_length = 1;
-    }
-
-    $f_id = 0;
-    $e_id = 0;
-    $er_id = 0;
-    $af_id = 0;
-
-    print "Loading complete: " . 0 . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
-
-    $col_fp = fopen($filepath, 'r');
-    while ($line = fgets($col_fp)) {
-      if (preg_match('/' . $re_stop . '/', $line) and $re_stop) {
-        $data_ln = 0;
+      // The minimum interval length is 1.
+      if ($int_length < 1) {
+        $int_length = 1;
       }
-      if ($data_ln == 1 or !$re_start) {
-        //print "this is the line >>> $line <<<";
-        $inter++;
-        if ($inter % $int_length == 0) {
-          $percent = sprintf("%.2f", ($inter / $num_features) * 100);
-          print "Loading complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
-          ob_end_flush();
-          //  print "Find feature_id: " . $f_id/($num_features*.01) . "\n";
-          //  print "Create element_id: " . $e_id/($num_features*.01) . "\n";
-          //  print "Create elementresult_id: " . $er_id/($num_features*.01) . "\n";
-          //  print "Create analysisfeature_id: " . $af_id/($num_features*.01) . "\n\n";
 
-          $f_id = 0;
-          $e_id = 0;
-          $er_id = 0;
-          $af_id = 0;
+      $f_id = 0;
+      $e_id = 0;
+      $er_id = 0;
+      $af_id = 0;
+
+      $this->logMessage("Loading complete: 0%. Memory: !memory_usage bytes. \r",
+        ['!memory_usage' => number_format(memory_get_usage())]);
+
+      $col_fp = fopen($filepath, 'r');
+      while ($line = fgets($col_fp)) {
+        if (preg_match('/' . $re_stop . '/', $line) and $re_stop) {
+          $data_ln = 0;
         }
-        $linepart = preg_split('/\t/', $line, -1, PREG_SPLIT_NO_EMPTY);
+        if ($data_ln == 1 or !$re_start) {
+          //print "this is the line >>> $line <<<";
+          $inter++;
+          if ($inter % $int_length == 0) {
+            $percent = sprintf("%.2f", ($inter / $num_features) * 100);
+            $this->logMessage("Loading complete: !percent%. Memory: !memory_usage bytes. \r",
+              [
+                '!percent' => $percent,
+                '!memory_usage' => number_format(memory_get_usage()),
+              ]);
+            ob_end_flush();
+            //  print "Find feature_id: " . $f_id/($num_features*.01) . "\n";
+            //  print "Create element_id: " . $e_id/($num_features*.01) . "\n";
+            //  print "Create elementresult_id: " . $er_id/($num_features*.01) . "\n";
+            //  print "Create analysisfeature_id: " . $af_id/($num_features*.01) . "\n\n";
 
-        // Trim whitespace from columns.
-        $new_linepart = [];
-        foreach ($linepart as $col) {
-          $new_linepart[] = trim($col);
-        }
-        $linepart = array_filter($new_linepart, function ($var) {
-          return $var != "";
-        });
-        $linepart = array_values($linepart);
-
-        // Make sure that there are two columns.
-        if (count($linepart) != 2) {
-          print "ERROR: Expression data in the data section of the column format must have two columns separated by a tab.\n" . "Example column format:\n" . "  <feature name>	<expression value>\n";
-          if (count($linepart) > 0) {
-            print "Loader failed on the following line:\n" . "  " . $line . "\n";
+            $f_id = 0;
+            $e_id = 0;
+            $er_id = 0;
+            $af_id = 0;
           }
-          else {
-            print "Loader failed because of a blank line in the data section of the expression file.\n";
+          $linepart = preg_split('/\t/', $line, -1, PREG_SPLIT_NO_EMPTY);
+
+          // Trim whitespace from columns.
+          $new_linepart = [];
+          foreach ($linepart as $col) {
+            $new_linepart[] = trim($col);
           }
-          return;
+          $linepart = array_filter($new_linepart, function ($var) {
+            return $var != "";
+          });
+          $linepart = array_values($linepart);
+
+          // Make sure that there are two columns.
+          if (count($linepart) != 2) {
+            $this->logMessage("ERROR: Expression data in the data section of the column format must have two columns separated by a tab. Example column format:\n <feature name>	<expression value>");
+            if (count($linepart) > 0) {
+              $this->logMessage("Loader failed on the following line:\n !line",
+                ['!line' => $line]);
+            }
+            else {
+              $this->logMessage('Loader failed because of a blank line in the data section of the expression file.',
+                [], TRIPAL_ERROR);
+            }
+            return;
+          }
+
+          $num_col = count($linepart);
+
+          // Extract the feature id.
+          $start = microtime(TRUE);
+          $feature_id = $this->tripal_expression_find_feature_id($linepart[0],
+            $organism_id, $feature_uniquenames);
+
+          if (!$feature_id) {
+            $this->logMessage('Unable to find feature: !feature',
+              ['!feature' => $linepart[0]], TRIPAL_ERROR);
+            continue;
+          }
+
+          // Add to feature list;
+          $features[] = $feature_id;
+
+          //print "Find feature_id: ";
+          $f_id += microtime(TRUE) - $start . "\n";
+
+          $start = microtime(TRUE);
+          $element_id = tripal_expression_element($arraydesign_id, $feature_id);
+          //print "Create element_id: ";
+          $e_id += microtime(TRUE) - $start . "\n";
+
+          $start = microtime(TRUE);
+          tripal_expression_elementresult($element_id, $quantification_id,
+            $linepart[1]);
+          //print "Create elementresult_id: ";
+          $er_id += microtime(TRUE) - $start . "\n";
         }
-
-        $num_col = count($linepart);
-
-        // Extract the feature id.
-        $start = microtime(TRUE);
-        $feature_id = $this->tripal_expression_find_feature_id($linepart[0],
-          $organism_id, $feature_uniquenames);
-
-        if (!$feature_id) {
-          $this->logMessage('Unable to find feature: ' . $linepart[0]);
-          continue;
+        if (preg_match('/' . $re_start . '/', $line) and $re_start) {
+          $data_ln = 1;
         }
-
-        // Add to feature list;
-        $features[] = $feature_id;
-
-        //print "Find feature_id: ";
-        $f_id += microtime(TRUE) - $start . "\n";
-
-        $start = microtime(TRUE);
-        $element_id = tripal_expression_element($arraydesign_id, $feature_id);
-        //print "Create element_id: ";
-        $e_id += microtime(TRUE) - $start . "\n";
-
-        $start = microtime(TRUE);
-        tripal_expression_elementresult($element_id, $quantification_id,
-          $linepart[1]);
-        //print "Create elementresult_id: ";
-        $er_id += microtime(TRUE) - $start . "\n";
       }
-      if (preg_match('/' . $re_start . '/', $line) and $re_start) {
-        $data_ln = 1;
+      fclose($col_fp);
+      return $features;
+    }
+
+    /**
+     *
+     * Implements a function that find the find the feature_id from a feature
+     * name.
+     *
+     * @param $feature
+     *  The name of the feature to be found.
+     *
+     * @param $organism_id
+     * The organism to find it in
+     *
+     * @param $feature_uniquenames
+     *
+     * @param $type_id
+     * The type_id of the feature.  Can be Null.
+     *
+     * @ingroup tripal_analysis_expression
+     */
+
+    private
+    function tripal_expression_find_feature_id(
+      $feature,
+      $organism_id,
+      $feature_uniquenames,
+      $type_id = NULL
+    ) {
+      $query = db_select('chado.feature', 'f');
+      $query->fields('f', ['organism_id', 'feature_id']);
+
+      if ($feature_uniquenames == 'uniq') {
+        $query->condition('f.uniquename', $feature);
       }
-    }
-    fclose($col_fp);
-    return $features;
-  }
+      else {
+        $query->condition('f.name', $feature);
+      }
 
-  /**
-   *
-   * Implements a function that find the find the feature_id from a feature
-   * name.
-   *
-   * @param $feature
-   *  The name of the feature to be found.
-   *
-   * @param $organism_id
-   * The organism to find it in
-   *
-   * @param $feature_uniquenames
-   *
-   * @param $type_id
-   * The type_id of the feature.  Can be Null.
-   *
-   * @ingroup tripal_analysis_expression
-   */
+      if ($type_id) {
+        $query->condition('f.type_id', $type_id);
+      }
 
-  private function tripal_expression_find_feature_id($feature, $organism_id, $feature_uniquenames, $type_id = NULL) {
-    $query = db_select('chado.feature', 'f');
-    $query->fields('f', ['organism_id', 'feature_id']);
+      $count = (int) $query->countQuery()->execute()->fetchField();
 
-    if ($feature_uniquenames == 'uniq') {
-      $query->condition('f.uniquename', $feature);
-    }
-    else {
-      $query->condition('f.name', $feature);
-    }
-
-    if ($type_id) {
-      $query->condition('f.type_id', $type_id);
-    }
-
-    $count = (int) $query->countQuery()->execute()->fetchField();
-
-    if ($count > 1) {
-      $message = "ERROR: More than one feature matches the feature name: !feature.\n
+      if ($count > 1) {
+        $message = "ERROR: More than one feature matches the feature name: !feature.\n
       Please specify a term for the feature type.\n";
-      tripal_report_error('tripal_analysis_expression', TRIPAL_WARNING,
-        $message, ['!feature' => $feature], TRIPAL_ERROR);
-      return FALSE;
-    }
+        tripal_report_error('tripal_analysis_expression', TRIPAL_WARNING,
+          $message, ['!feature' => $feature], TRIPAL_ERROR);
+        return FALSE;
+      }
 
-    if ($count === 0) {
-      tripal_report_error('tripal_analysis_expression', TRIPAL_WARNING,
-        "The feature, " . $feature . ", found in the expression file was not found in the Chado database.
+      if ($count === 0) {
+        tripal_report_error('tripal_analysis_expression', TRIPAL_WARNING,
+          "The feature, " . $feature . ", found in the expression file was not found in the Chado database.
        Please ensure that the feature has been loaded into the database and that the feature name is both unique and correct.");
-      return FALSE;
+        return FALSE;
+      }
+
+      $feature_object = $query->execute()->fetchObject();
+
+      if ($feature_object->organism_id != $organism_id) {
+        $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
+        $analysis_org = chado_query($sql,
+          [":organism_id" => $organism_id])->fetchObject();
+        $feature_org = chado_query($sql,
+          [":organism_id" => $feature_object->organism_id])->fetchObject();
+        $analysis_org_sciname = $analysis_org->genus . ' ' . $analysis_org->species;
+        $feature_org_sciname = $feature_org->genus . ' ' . $feature_org->species;
+
+        $this->logMessage("Mismatch between the organism selected in the expression analysis and the organism of a feature from the expression file.\n
+        Analysis organism: !analysis_org_sciname (!a_common_name)\n
+        Feature organism: !feature_org_sciname (!f_common_name)\n
+        On feature: !feature\n
+        Please ensure that the organism selected for the expression analysis and the organism for each feature in the expression file are the same.\n",
+          [
+            '!analysis_org_sciname' => $analysis_org_sciname,
+            '!feature_org_sciname' => $feature_org_sciname,
+            '!a_common_name' => $analysis_org->common_name,
+            '!f_common_name' => $feature_org->common_name,
+            '!feature' => $feature,
+          ], TRIPAL_ERROR);
+        return FALSE;
+      }
+
+      return $feature_object->feature_id;
     }
-
-    $feature_object = $query->execute()->fetchObject();
-
-    if ($feature_object->organism_id != $organism_id) {
-      $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
-      $analysis_org = chado_query($sql,
-        [":organism_id" => $organism_id])->fetchObject();
-      $feature_org = chado_query($sql,
-        [":organism_id" => $feature_object->organism_id])->fetchObject();
-      print "ERROR: Mismatch between the organism selected in the expression analysis and the organism of a feature from the expression file.\n
-        Analysis organism: " . $analysis_org->genus . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n
-          Feature organism: " . $feature_org->genus . " " . $feature_org->species . " (" . $feature_org->common_name . ")\n
-            On feature: " . $feature . "\n
-             Please ensure that the organism selected for the expression analysis and the organism for each feature in the expression file are the same.\n";
-      return FALSE;
-    }
-
-    return $feature_object->feature_id;
   }
-}
