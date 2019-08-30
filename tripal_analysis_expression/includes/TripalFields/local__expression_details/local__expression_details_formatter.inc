@@ -48,7 +48,7 @@ class local__expression_details_formatter extends ChadoFieldFormatter
         $row->cvterm_name,
         $row->evidence_code,
         $row->p_value,
-        $row->analysis_name,
+        l($row->analysis_name, 'bio_data/'. chado_get_record_entity_by_table('analysis', $row->analysis_id)),
       ];
     }
 
