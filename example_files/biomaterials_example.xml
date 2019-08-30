@@ -1,6 +1,112 @@
-<BioSampleSet><BioSample accession="art" id="person" submission_date="1986-04-22"><Ids><Id db="BioSample" is_primary="1">art</Id><Id db="EST">art</Id><Id db="SRA">art</Id></Ids><Description>However toward list.</Description><Owner><Name>Rebecca Butler</Name><Address>Unit 8169 Box 9023
-DPO AP 89254-0608</Address></Owner><Attributes><Attribute attribute_name="together" display_name="together" harmonized_name="together">husband</Attribute><Attribute attribute_name="source" display_name="source" harmonized_name="source">single</Attribute><Attribute attribute_name="sense" display_name="sense" harmonized_name="sense">Mr</Attribute><Attribute attribute_name="read" display_name="read" harmonized_name="read">carry</Attribute><Attribute attribute_name="camera" display_name="camera" harmonized_name="camera">enter</Attribute><Attribute attribute_name="relate">30</Attribute></Attributes></BioSample><BioSample accession="international" id="cover" submission_date="1978-10-06"><Ids><Id db="BioSample" is_primary="1">international</Id><Id db="EST">international</Id><Id db="SRA">international</Id></Ids><Description>World economic happen husband foot agreement newspaper.</Description><Owner><Name>Daniel Arnold</Name><Address>800 Berry Lodge
-West Christinaport, NV 03669</Address></Owner><Attributes><Attribute attribute_name="reflect" display_name="reflect" harmonized_name="reflect">pay</Attribute><Attribute attribute_name="still" display_name="still" harmonized_name="still">section</Attribute><Attribute attribute_name="cultural" display_name="cultural" harmonized_name="cultural">movement</Attribute><Attribute attribute_name="face" display_name="face" harmonized_name="face">history</Attribute><Attribute attribute_name="camera" display_name="camera" harmonized_name="camera">goal</Attribute><Attribute attribute_name="service">70</Attribute></Attributes></BioSample><BioSample accession="serious" id="phone" submission_date="1996-11-12"><Ids><Id db="BioSample" is_primary="1">serious</Id><Id db="EST">serious</Id><Id db="SRA">serious</Id></Ids><Description>Top fear room off true exist energy let.</Description><Owner><Name>John Thomas</Name><Address>Unit 8345 Box 5877
-DPO AE 55690-6156</Address></Owner><Attributes><Attribute attribute_name="list" display_name="list" harmonized_name="list">either</Attribute><Attribute attribute_name="seek" display_name="seek" harmonized_name="seek">large</Attribute><Attribute attribute_name="industry" display_name="industry" harmonized_name="industry">ask</Attribute><Attribute attribute_name="whether" display_name="whether" harmonized_name="whether">possible</Attribute><Attribute attribute_name="camera" display_name="camera" harmonized_name="camera">enter</Attribute><Attribute attribute_name="city">75</Attribute></Attributes></BioSample><BioSample accession="rule" id="defense" submission_date="1978-02-22"><Ids><Id db="BioSample" is_primary="1">rule</Id><Id db="EST">rule</Id><Id db="SRA">rule</Id></Ids><Description>Phone task son property.</Description><Owner><Name>Elizabeth Rocha</Name><Address>PSC 9832, Box 7621
-APO AP 31196</Address></Owner><Attributes><Attribute attribute_name="exactly" display_name="exactly" harmonized_name="exactly">painting</Attribute><Attribute attribute_name="from" display_name="from" harmonized_name="from">scientist</Attribute><Attribute attribute_name="score" display_name="score" harmonized_name="score">blood</Attribute><Attribute attribute_name="debate" display_name="debate" harmonized_name="debate">remain</Attribute><Attribute attribute_name="camera" display_name="camera" harmonized_name="camera">goal</Attribute><Attribute attribute_name="listen">25</Attribute></Attributes></BioSample><BioSample accession="pull" id="everybody" submission_date="1995-08-31"><Ids><Id db="BioSample" is_primary="1">pull</Id><Id db="EST">pull</Id><Id db="SRA">pull</Id></Ids><Description>Feeling simple bed that.</Description><Owner><Name>Katherine Stewart</Name><Address>USS Chang
-FPO AE 32488-3518</Address></Owner><Attributes><Attribute attribute_name="war" display_name="war" harmonized_name="war">city</Attribute><Attribute attribute_name="ten" display_name="ten" harmonized_name="ten">guess</Attribute><Attribute attribute_name="they" display_name="they" harmonized_name="they">beyond</Attribute><Attribute attribute_name="quite" display_name="quite" harmonized_name="quite">figure</Attribute><Attribute attribute_name="camera" display_name="camera" harmonized_name="camera">enter</Attribute><Attribute attribute_name="establish">45</Attribute></Attributes></BioSample></BioSampleSet>
+<BioSampleSet>
+    <BioSample accession="art" id="person" submission_date="1986-04-22">
+        <Ids>
+            <Id db="BioSample" is_primary="1">art</Id>
+            <Id db="EST">art</Id>
+            <Id db="SRA">art</Id>
+        </Ids>
+        <Description>However toward list.</Description>
+        <Owner>
+            <Name>Rebecca Butler</Name>
+            <Address>Unit 8169 Box 9023
+                DPO AP 89254-0608
+            </Address>
+        </Owner>
+        <Attributes>
+            <Attribute attribute_name="together" display_name="together" harmonized_name="together">husband</Attribute>
+            <Attribute attribute_name="source" display_name="source" harmonized_name="source">single</Attribute>
+            <Attribute attribute_name="sense" display_name="sense" harmonized_name="sense">Mr</Attribute>
+            <Attribute attribute_name="read" display_name="read" harmonized_name="read">carry</Attribute>
+            <Attribute attribute_name="camera" display_name="camera" harmonized_name="camera">enter</Attribute>
+            <Attribute attribute_name="relate">30</Attribute>
+        </Attributes>
+    </BioSample>
+    <BioSample accession="international" id="cover" submission_date="1978-10-06">
+        <Ids>
+            <Id db="BioSample" is_primary="1">international</Id>
+            <Id db="EST">international</Id>
+            <Id db="SRA">international</Id>
+        </Ids>
+        <Description>World economic happen husband foot agreement newspaper.</Description>
+        <Owner>
+            <Name>Daniel Arnold</Name>
+            <Address>800 Berry Lodge
+                West Christinaport, NV 03669
+            </Address>
+        </Owner>
+        <Attributes>
+            <Attribute attribute_name="reflect" display_name="reflect" harmonized_name="reflect">pay</Attribute>
+            <Attribute attribute_name="still" display_name="still" harmonized_name="still">section</Attribute>
+            <Attribute attribute_name="cultural" display_name="cultural" harmonized_name="cultural">movement</Attribute>
+            <Attribute attribute_name="face" display_name="face" harmonized_name="face">history</Attribute>
+            <Attribute attribute_name="camera" display_name="camera" harmonized_name="camera">goal</Attribute>
+            <Attribute attribute_name="service">70</Attribute>
+        </Attributes>
+    </BioSample>
+    <BioSample accession="serious" id="phone" submission_date="1996-11-12">
+        <Ids>
+            <Id db="BioSample" is_primary="1">serious</Id>
+            <Id db="EST">serious</Id>
+            <Id db="SRA">serious</Id>
+        </Ids>
+        <Description>Top fear room off true exist energy let.</Description>
+        <Owner>
+            <Name>John Thomas</Name>
+            <Address>Unit 8345 Box 5877
+                DPO AE 55690-6156
+            </Address>
+        </Owner>
+        <Attributes>
+            <Attribute attribute_name="list" display_name="list" harmonized_name="list">either</Attribute>
+            <Attribute attribute_name="seek" display_name="seek" harmonized_name="seek">large</Attribute>
+            <Attribute attribute_name="industry" display_name="industry" harmonized_name="industry">ask</Attribute>
+            <Attribute attribute_name="whether" display_name="whether" harmonized_name="whether">possible</Attribute>
+            <Attribute attribute_name="camera" display_name="camera" harmonized_name="camera">enter</Attribute>
+            <Attribute attribute_name="city">75</Attribute>
+        </Attributes>
+    </BioSample>
+    <BioSample accession="rule" id="defense" submission_date="1978-02-22">
+        <Ids>
+            <Id db="BioSample" is_primary="1">rule</Id>
+            <Id db="EST">rule</Id>
+            <Id db="SRA">rule</Id>
+        </Ids>
+        <Description>Phone task son property.</Description>
+        <Owner>
+            <Name>Elizabeth Rocha</Name>
+            <Address>PSC 9832, Box 7621
+                APO AP 31196
+            </Address>
+        </Owner>
+        <Attributes>
+            <Attribute attribute_name="exactly" display_name="exactly" harmonized_name="exactly">painting</Attribute>
+            <Attribute attribute_name="from" display_name="from" harmonized_name="from">scientist</Attribute>
+            <Attribute attribute_name="score" display_name="score" harmonized_name="score">blood</Attribute>
+            <Attribute attribute_name="debate" display_name="debate" harmonized_name="debate">remain</Attribute>
+            <Attribute attribute_name="camera" display_name="camera" harmonized_name="camera">goal</Attribute>
+            <Attribute attribute_name="listen">25</Attribute>
+        </Attributes>
+    </BioSample>
+    <BioSample accession="pull" id="everybody" submission_date="1995-08-31">
+        <Ids>
+            <Id db="BioSample" is_primary="1">pull</Id>
+            <Id db="EST">pull</Id>
+            <Id db="SRA">pull</Id>
+        </Ids>
+        <Description>Feeling simple bed that.</Description>
+        <Owner>
+            <Name>Katherine Stewart</Name>
+            <Address>USS Chang
+                FPO AE 32488-3518
+            </Address>
+        </Owner>
+        <Attributes>
+            <Attribute attribute_name="war" display_name="war" harmonized_name="war">city</Attribute>
+            <Attribute attribute_name="ten" display_name="ten" harmonized_name="ten">guess</Attribute>
+            <Attribute attribute_name="they" display_name="they" harmonized_name="they">beyond</Attribute>
+            <Attribute attribute_name="quite" display_name="quite" harmonized_name="quite">figure</Attribute>
+            <Attribute attribute_name="camera" display_name="camera" harmonized_name="camera">enter</Attribute>
+            <Attribute attribute_name="establish">45</Attribute>
+        </Attributes>
+    </BioSample>
+</BioSampleSet>

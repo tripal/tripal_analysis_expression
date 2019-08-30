@@ -2,3 +2,5 @@
 vendor/
 .env
 vendor/
+sites/default/files/
+node_modules/

@@ -1,4 +1,5 @@
 [![DOI](https://zenodo.org/badge/49081816.svg)](https://zenodo.org/badge/latestdoi/49081816)
+[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors)
 
 
 # Tripal\_analysis\_expression
@@ -317,3 +318,17 @@ There is currently no support for inputting, or displaying, acquisitions, quanti
 
 ### P-Value Loader
 1. [Example csv](example_files/example_pvalue.csv)
+
+
+
+## Contributors
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore -->
+<table><tr><td align="center"><a href="https://github.com/mestato"><img src="https://avatars1.githubusercontent.com/u/508122?v=4" width="100px;" alt="Meg Staton"/><br /><sub><b>Meg Staton</b></sub></a><br /><a href="#fundingFinding-mestato" title="Funding Finding">🔍</a> <a href="#ideas-mestato" title="Ideas, Planning, & Feedback">🤔</a></td><td align="center"><a href="http://www.bradfordcondon.com/"><img src="https://avatars2.githubusercontent.com/u/7063154?v=4" width="100px;" alt="Bradford Condon"/><br /><sub><b>Bradford Condon</b></sub></a><br /><a href="https://github.com/tripal/tripal_analysis_expression/commits?author=bradfordcondon" title="Code">💻</a></td><td align="center"><a href="http://almsaeedstudio.com"><img src="https://avatars2.githubusercontent.com/u/1512664?v=4" width="100px;" alt="Abdullah Almsaeed"/><br /><sub><b>Abdullah Almsaeed</b></sub></a><br /><a href="https://github.com/tripal/tripal_analysis_expression/commits?author=almasaeed2010" title="Code">💻</a></td><td align="center"><a href="https://github.com/jwest60"><img src="https://avatars0.githubusercontent.com/u/32902460?v=4" width="100px;" alt="Joe West"/><br /><sub><b>Joe West</b></sub></a><br /><a href="https://github.com/tripal/tripal_analysis_expression/commits?author=jwest60" title="Code">💻</a></td><td align="center"><a href="https://github.com/MingChen0919"><img src="https://avatars2.githubusercontent.com/u/1262709?v=4" width="100px;" alt="Ming Chen"/><br /><sub><b>Ming Chen</b></sub></a><br /><a href="https://github.com/tripal/tripal_analysis_expression/commits?author=MingChen0919" title="Code">💻</a></td><td align="center"><a href="https://github.com/mboudet"><img src="https://avatars0.githubusercontent.com/u/17642511?v=4" width="100px;" alt="mboudet"/><br /><sub><b>mboudet</b></sub></a><br /><a href="https://github.com/tripal/tripal_analysis_expression/issues?q=author%3Amboudet" title="Bug reports">🐛</a></td><td align="center"><a href="https://github.com/marcsilvaitqb"><img src="https://avatars1.githubusercontent.com/u/47527249?v=4" width="100px;" alt="marcsilvaitqb"/><br /><sub><b>marcsilvaitqb</b></sub></a><br /><a href="https://github.com/tripal/tripal_analysis_expression/issues?q=author%3Amarcsilvaitqb" title="Bug reports">🐛</a></td></tr></table>
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

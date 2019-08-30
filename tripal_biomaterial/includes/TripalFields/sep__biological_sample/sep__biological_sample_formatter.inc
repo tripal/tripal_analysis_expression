@@ -82,7 +82,9 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $base_table = $entity->chado_table;
-    if (empty($items)) {
+
+    if (empty($items) || !$items[0]['value']) {
+      $element[] = ['#markup' => 'There are no linked BioSamples.'];
       return;
     }
 
@@ -119,17 +121,6 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
         $b_name = l($b_name, 'bio_data/' . $id);
       }
 
-      //we dont use contact
-      //      if (isset($biomaterial["contact_id"])) {
-      //        $id = chado_get_record_entity_by_table('contact', $biomaterial["contact_id"]);
-      //        $b_contact = $biomaterial["contact_name"];
-      //
-      //        if ($id) {
-      //          $b_contact = l($biomaterial["contact_id"], 'bio_data/' . $id, ['attributes' => ['target' => '_blank']]);
-      //        }
-      //      }
-
-
       $tissue = $biomaterial['tissue'];
       $treatment = $biomaterial['treatment'];
 
@@ -161,7 +152,7 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
     $output .= theme('pager', [
       'quantity' => 5,
       'element' => $elements,
-      'parameters' => ['tripal_pane' => 'group_biosamples'],
+      'parameters' => ['tripal_pane' => 'gp_Biomaterials'],
     ]);
 
     $element[] = ['#markup' => $output];

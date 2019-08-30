@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * @file
+ */
+
+/**
  * Returns a list of arraydesigns to use in select lists.
  *
  * @return
@@ -25,7 +29,6 @@ function tripal_analysis_expression_get_arraydesign_select_options() {
   return $ad_list;
 }
 
-
 /**
  * Returns a list of protocols to use in select lists.
  *
@@ -38,9 +41,7 @@ function tripal_analysis_expression_get_arraydesign_select_options() {
  *
  * @ingroup tripal_protocol_api
  */
-function tripal_analysis_expression_get_protocol_select_options(
-  $protocol_type
-) {
+function tripal_analysis_expression_get_protocol_select_options($protocol_type) {
   $prot_list = [];
   $prot_list[] = 'Select a protocol';
 
@@ -63,23 +64,27 @@ function tripal_analysis_expression_get_protocol_select_options(
  * This will create the directory if it does not exist.
  *
  * @param $uri
- *  URI to the file.
- * @return string
- *  Returns the file path to the new location of the file.
+ *   URI to the file.
+ *
+ * @return string|boolean
+ *   Returns the file path to the new location of the file.
  */
 function tripal_analysis_expression_cache_file($file_path) {
   $destination = 'public://expression';
   if (!file_prepare_directory($destination, FILE_CREATE_DIRECTORY)) {
-    print ("Could not create directory at $destination, please check your permissions and try again.\n");
-    // return false;
+    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR,
+      "Could not create directory at $destination, please check your permissions and try again.\n",
+      [], ['print' => TRUE]);
+    return FALSE;
   }
 
   $file_name = pathinfo($file_path)['basename'];
   $new_path = $destination . '/' . uniqid() . '_' . $file_name;
 
   if (!copy($file_path, $new_path)) {
-    print ("Could not copy $file_path to $new_path.");
-    return false;
+    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR,
+      "Could not copy $file_path to $new_path.", [], ['print' => TRUE]);
+    return FALSE;
   }
 
   return $new_path;
@@ -90,7 +95,9 @@ function tripal_analysis_expression_cache_file($file_path) {
  *
  * @param $analysis_id
  * @param $file_path
- * @return bool|\DatabaseStatementInterface|int
+ *
+ * @return bool
+ *
  * @throws \Exception
  */
 function tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path) {
@@ -100,25 +107,19 @@ function tripal_analysis_expression_add_file_as_prop($analysis_id, $file_path) {
     'cv_name' => 'local',
   ]);
 
-  // analysis_id in analysisprop must be unique or job will fail
-  $analysis = db_select('chado.analysisprop', 'a')
-    ->fields('a')
-    ->condition('analysis_id', $analysis_id, '=')
-    ->execute()
-    ->fetchAll();
+  $record = ['table' => 'analysis', 'id' => $analysis_id];
+  $property = [
+    'type_id' => $cvterm->cvterm_id,
+    'value' => $file_path,
+  ];
 
-  if ($analysis) {
-    print("$file_path could not be added to the analysisprop table because an analysis with id $analysis_id already exists.\n");
-    return false;
+  $exists = chado_get_property($record, $property);
+  //if this exact file path already exists then dont re-add.
+
+  if (!$exists) {
+    $options = ['update_if_present' => FALSE];
+    $exists = chado_insert_property($record, $property, $options);
   }
 
-  $id = db_insert('chado.analysisprop')
-    ->fields([
-      'analysis_id' => $analysis_id,
-      'type_id' => $cvterm->cvterm_id,
-      'value' => $file_path,
-    ])
-    ->execute();
-
-  return $id ? $id : false;
+  return $exists;
 }

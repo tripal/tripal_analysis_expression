@@ -1,5 +1,5 @@
 {
     "require-dev": {
-        "statonlab/tripal-test-suite": "^1.4"
+        "statonlab/tripal-test-suite": "^1.5.2"
     }
 }
