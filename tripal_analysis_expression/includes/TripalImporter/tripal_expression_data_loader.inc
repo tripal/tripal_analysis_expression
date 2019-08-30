@@ -329,7 +329,6 @@ class tripal_expression_data_loader extends TripalImporter{
    * @see TripalImporter::run()
    */
   public function run() {
-
     //Retrieve arguments
     $arguments = $this->arguments['run_args'];
     $filepath = $this->arguments['files'][0]['file_path'];
@@ -490,10 +489,10 @@ class tripal_expression_data_loader extends TripalImporter{
         while ($file = readdir($dir_handle)) {
           if (preg_match('/(.+)\.' . $fileext . '$/', $file)) {
             $this->logMessage('File !num_file of !total_files: !file', [
-                '!num_file' => $num_file + 1,
-                '!total_files' => $total_files,
-                '!file' => $file,
-              ]);
+              '!num_file' => $num_file + 1,
+              '!total_files' => $total_files,
+              '!file' => $file,
+            ]);
             $new_features = $this->tripal_expression_load_col_file($filepath . '/' . $file,
               $fileext, $arraydesign_id, $organism_id, $analysis_id,
               $contact_id, $assay_id, $acquisition_id, $quantification_id,
@@ -1098,7 +1097,6 @@ AND f.type_id = :type_id', [
      * @ingroup tripal_analysis_expression
      */
 
-    private
     function tripal_expression_find_feature_id(
       $feature,
       $organism_id,
@@ -1165,3 +1163,4 @@ AND f.type_id = :type_id', [
       return $feature_object->feature_id;
     }
   }
+}
