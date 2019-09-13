@@ -289,7 +289,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       }
     }
     else {
-      tripal_set_message("Warning: properties not configured.  Using generic cvterms for all properties.", TRIPAL_WARNING);
+      $this->logMessage("Properties not configured.  Using generic cvterms for all properties.",
+        [], TRIPAL_WARNING);
     }
 
     $insert_cvalues = [];
@@ -344,7 +345,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     // Load biomaterials.
     for ($i = 0; $i < $num_biosamples; $i++) {
-      print "Loading BioSample " . ($i + 1) . " of " . $num_biosamples . "\n";
+      $this->logMessage("Loading BioSample !num of !total",
+        ['!num' => ($i + 1), '!total' => $num_biosamples]);
       $this->add_xml_data($xml->BioSample[$i], $analysis_id, $insert_fields, $insert_cvalues);
     }
   }
@@ -563,7 +565,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     $organism_id = $this->organism_id;
     $analysis_id = $this->analysis_id;
     if (!is_readable($file_path)) {
-      print "ERROR: File is not readable or not present.";
+      $this->logMessage("File is not readable or not present.",
+        [], TRIPAL_ERROR);
       return;
     }
 
@@ -572,7 +575,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     $fileSize = filesize($file_path);
     if ($fileSize == 0) {
-      print("ERROR: File at $file_path is empty. Try again with a new file.\n");
+      $this->logMessage("File at !file_path is empty. Try again with a new file.",
+        ['!file_path' => $file_path], TRIPAL_ERROR);
       return;
     }
 
@@ -604,9 +608,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     fclose($fp);
 
     if ($num_biosamples == 0) {
-      $message = "ERROR: Wrong file format at !path. File must contain a column named 'sample_name'.  
+      $message = "Wrong file format at !path. File must contain a column named 'sample_name'.  
         Please try again with a file that contains at least one column named 'sample_name' in its header line, followed by lines of biosample data.";
-      tripal_report_error('tripal_biomaterial_loader', TRIPAL_ERROR, $message, ['!path' => $file_path], ['print' => TRUE]);
+      $this->logMessage($message, ['!path' => $file_path], TRIPAL_ERROR);
       return;
     }
 
@@ -624,11 +628,11 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     // Make sure there are not duplicate biomaterial headers.
     if (count($header_repeats = array_diff_assoc($headers, array_unique($headers))) > 0) {
 
-      print "ERROR: There are multiple instance of the following " . "header(s) in the biomaterial file:\n";
+      $this->logMessage("There are multiple instance of the following header(s) in the biomaterial file:", [], TRIPAL_ERROR);
       foreach ($header_repeats as $repeat) {
-        print "  " . $repeat . "\n";
+        $this->logMessage("  !repeat", ['!repeat' => $repeat], TRIPAL_ERROR);
       }
-      print "Please make sure there is only one instance of each " . "header in the biomaterial file\n";
+      $this->logMessage("Please make sure there is only one instance of each header in the biomaterial file");
       return;
     }
 
@@ -668,10 +672,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
       $cur_biosample++;
 
-      tripal_report_error('tripal_biomaterial_loader', TRIPAL_NOTICE, 'Loading Biosample !curr of !num', [
+      $this->logMessage('Loading Biosample !curr of !num', [
         '!curr' => $cur_biosample,
         '!num' => $num_biosamples,
-      ], ['print' => TRUE]);
+      ]);
 
       $unique_name = '';
       $description = '';
@@ -810,11 +814,11 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     // Make sure there are not duplicate biomaterials.
     if (count($sample_repeats = array_diff_assoc($biomaterial_names, array_unique($biomaterial_names))) > 0) {
       // If (count($linepart) != count(array_unique($linepart))) {.
-      print "ERROR: There are multiple instance of the following " . "sample_name(s) in the biomaterial file:\n";
+      $this->logMessage("There are multiple instances of the following sample_name(s) in the biomaterial file:", [], TRIPAL_ERROR);
       foreach ($sample_repeats as $repeat) {
-        print "  " . $repeat . "\n";
+        $this->logMessage("  !repeat", ['!repeat' => $repeat], TRIPAL_ERROR);
       }
-      print "Please make sure there is only one instance of each " . "sample_name in the biomaterial file.\n";
+      $this->logMessage("Please make sure there is only one instance of each sample_name in the biomaterial file.", [], TRIPAL_ERROR);
       return;
     }
 
@@ -943,7 +947,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     }
 
     if (count($sample_repeats = array_diff_assoc($biomaterial_names, array_unique($biomaterial_names))) > 0) {
-      $message = "ERROR: There are multiple instance of the following " . "Sample name(s) in the biomaterial file:\n";
+      $message = "There are multiple instance of the following " . "Sample name(s) in the biomaterial file:\n";
       foreach ($sample_repeats as $repeat) {
         $message .= "  " . $repeat . "\n";
       }
@@ -980,7 +984,8 @@ function test_biosample_cvterms_flat(
   $fileSize = filesize($file_path);
   if ($fileSize == 0) {
 
-    tripal_set_message("ERROR: File at $file_path is empty. Try again with a new file.", "warning");
+    $this->logMessage("File at !file_path is empty. Try again with a new file.",
+      ['!file_path' => $file_path], TRIPAL_ERROR);
     return;
   }
   // Figure out CSV vs TSV.
@@ -1015,7 +1020,8 @@ function test_biosample_cvterms_flat(
 
   // Print error message and exit if there's no biosample, or that there's no "sample_name" column in flat file.
   if ($num_biosamples == 0) {
-    tripal_set_message("ERROR: Wrong file format at $file_path. File must contain a column named 'sample_name'.", "warning");
+    $this->logMessage("Wrong file format at !file_path. File must contain a column named 'sample_name'.",
+      ['!file_path' => $file_path], TRIPAL_ERROR);
     return;
   }
 
@@ -1032,7 +1038,8 @@ function test_biosample_cvterms_flat(
 
   // Make sure there are not duplicate biomaterial headers.
   if (count($header_repeats = array_diff_assoc($headers, array_unique($headers))) > 0) {
-    tripal_set_message("ERROR: The header" . $header_repeats[0] . " is present more than once.  Please make sure there is only one instance of each header.");
+    $this->logMessage("The header !header is present more than once.  Please make sure there is only one instance of each header.",
+      ['!header' => $header_repeats[0]], TRIPAL_ERROR);
     return;
   }
 
