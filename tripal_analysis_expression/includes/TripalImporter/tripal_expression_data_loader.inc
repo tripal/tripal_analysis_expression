@@ -683,7 +683,7 @@ AND f.type_id = :type_id', [
     }
 
     if ($num_lines < 2) {
-      $this->logMessage("Error reading file.\n Please ensure that your file is readable and try again.",
+      $this->logMessage("Error reading file. Please ensure that your file is readable and try again.",
         [], TRIPAL_ERROR);
       return;
     }
@@ -1077,90 +1077,90 @@ AND f.type_id = :type_id', [
       fclose($col_fp);
       return $features;
     }
+  }
 
-    /**
-     *
-     * Implements a function that find the find the feature_id from a feature
-     * name.
-     *
-     * @param $feature
-     *  The name of the feature to be found.
-     *
-     * @param $organism_id
-     * The organism to find it in
-     *
-     * @param $feature_uniquenames
-     *
-     * @param $type_id
-     * The type_id of the feature.  Can be Null.
-     *
-     * @ingroup tripal_analysis_expression
-     */
+  /**
+   *
+   * Implements a function that find the find the feature_id from a feature
+   * name.
+   *
+   * @param $feature
+   *  The name of the feature to be found.
+   *
+   * @param $organism_id
+   * The organism to find it in
+   *
+   * @param $feature_uniquenames
+   *
+   * @param $type_id
+   * The type_id of the feature.  Can be Null.
+   *
+   * @ingroup tripal_analysis_expression
+   */
 
-    function tripal_expression_find_feature_id(
-      $feature,
-      $organism_id,
-      $feature_uniquenames,
-      $type_id = NULL
-    ) {
-      $query = db_select('chado.feature', 'f');
-      $query->fields('f', ['organism_id', 'feature_id']);
+  function tripal_expression_find_feature_id(
+    $feature,
+    $organism_id,
+    $feature_uniquenames,
+    $type_id = NULL
+  ) {
+    $query = db_select('chado.feature', 'f');
+    $query->fields('f', ['organism_id', 'feature_id']);
 
-      if ($feature_uniquenames == 'uniq') {
-        $query->condition('f.uniquename', $feature);
-      }
-      else {
-        $query->condition('f.name', $feature);
-      }
+    if ($feature_uniquenames == 'uniq') {
+      $query->condition('f.uniquename', $feature);
+    }
+    else {
+      $query->condition('f.name', $feature);
+    }
 
-      if ($type_id) {
-        $query->condition('f.type_id', $type_id);
-      }
+    if ($type_id) {
+      $query->condition('f.type_id', $type_id);
+    }
 
-      $count = (int) $query->countQuery()->execute()->fetchField();
+    $count = (int) $query->countQuery()->execute()->fetchField();
 
-      if ($count > 1) {
-        $message = "ERROR: More than one feature matches the feature name: !feature.\n
+    if ($count > 1) {
+      $message = "ERROR: More than one feature matches the feature name: !feature.\n
       Please specify a term for the feature type.\n";
-        tripal_report_error('tripal_analysis_expression', TRIPAL_WARNING,
-          $message, ['!feature' => $feature], TRIPAL_ERROR);
-        return FALSE;
-      }
+      tripal_report_error('tripal_analysis_expression', TRIPAL_WARNING,
+        $message, ['!feature' => $feature], TRIPAL_ERROR);
+      return FALSE;
+    }
 
-      if ($count === 0) {
-        tripal_report_error('tripal_analysis_expression', TRIPAL_WARNING,
-          "The feature, " . $feature . ", found in the expression file was not found in the Chado database.
+    if ($count === 0) {
+      tripal_report_error('tripal_analysis_expression', TRIPAL_WARNING,
+        "The feature, " . $feature . ", found in the expression file was not found in the Chado database.
        Please ensure that the feature has been loaded into the database and that the feature name is both unique and correct.");
-        return FALSE;
-      }
+      return FALSE;
+    }
 
-      $feature_object = $query->execute()->fetchObject();
+    $feature_object = $query->execute()->fetchObject();
 
-      if ($feature_object->organism_id != $organism_id) {
-        $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
-        $analysis_org = chado_query($sql,
-          [":organism_id" => $organism_id])->fetchObject();
-        $feature_org = chado_query($sql,
-          [":organism_id" => $feature_object->organism_id])->fetchObject();
-        $analysis_org_sciname = $analysis_org->genus . ' ' . $analysis_org->species;
-        $feature_org_sciname = $feature_org->genus . ' ' . $feature_org->species;
+    if ($feature_object->organism_id != $organism_id) {
+      $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
+      $analysis_org = chado_query($sql,
+        [":organism_id" => $organism_id])->fetchObject();
+      $feature_org = chado_query($sql,
+        [":organism_id" => $feature_object->organism_id])->fetchObject();
+      $analysis_org_sciname = $analysis_org->genus . ' ' . $analysis_org->species;
+      $feature_org_sciname = $feature_org->genus . ' ' . $feature_org->species;
 
-        $this->logMessage("Mismatch between the organism selected in the expression analysis and the organism of a feature from the expression file.\n
+      $this->logMessage("Mismatch between the organism selected in the expression analysis and the organism of a feature from the expression file.\n
         Analysis organism: !analysis_org_sciname (!a_common_name)\n
         Feature organism: !feature_org_sciname (!f_common_name)\n
         On feature: !feature\n
         Please ensure that the organism selected for the expression analysis and the organism for each feature in the expression file are the same.\n",
-          [
-            '!analysis_org_sciname' => $analysis_org_sciname,
-            '!feature_org_sciname' => $feature_org_sciname,
-            '!a_common_name' => $analysis_org->common_name,
-            '!f_common_name' => $feature_org->common_name,
-            '!feature' => $feature,
-          ], TRIPAL_ERROR);
-        return FALSE;
-      }
-
-      return $feature_object->feature_id;
+        [
+          '!analysis_org_sciname' => $analysis_org_sciname,
+          '!feature_org_sciname' => $feature_org_sciname,
+          '!a_common_name' => $analysis_org->common_name,
+          '!f_common_name' => $feature_org->common_name,
+          '!feature' => $feature,
+        ], TRIPAL_ERROR);
+      return FALSE;
     }
+
+    return $feature_object->feature_id;
   }
 }
