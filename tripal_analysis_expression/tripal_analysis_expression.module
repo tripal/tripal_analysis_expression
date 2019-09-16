@@ -35,20 +35,20 @@ function tripal_analysis_expression_permission() {
  *
  * @ingroup tripal_analysis_expression
  */
-function tripal_analysis_expression_help($path, $arg)
-{
+function tripal_analysis_expression_help($path, $arg) {
   switch ($path) {
     // Both of the following cases should display the below HTML.
     case 'admin/tripal/extension/tripal_analysis_expression/help' :
     case 'admin/help#tripal_analysis_expression' :
-      {
-        $ret_val = '<p>'.t('The expression module allows the user to load and display expression information.  It relies on the protocols and biomaterial modules to store the data in Chado.').'</p>';
-        $ret_val .= "<b>".l(t("Expression Loader V3"), "loaders/Chado_Expression_Data_Loader")."</b> - ";
-        $ret_val .= t("The Tripal expression loader.  Data is loaded in matrix or column file format.  Expession data is associated with an analysis and biomaterial, and values are linked to individual features (generally an expression level in a biomaterial)<br><br>");
+    {
+      $ret_val = '<p>' . t('The expression module allows the user to load and display expression information.  It relies on the protocols and biomaterial modules to store the data in Chado.') . '</p>';
+      $ret_val .= "<b>" . l(t("Expression Loader V3"),
+          "loaders/Chado_Expression_Data_Loader") . "</b> - ";
+      $ret_val .= t("The Tripal expression loader.  Data is loaded in matrix or column file format.  Expession data is associated with an analysis and biomaterial, and values are linked to individual features (generally an expression level in a biomaterial)<br><br>");
 
-        return $ret_val;
-        break;
-      }
+      return $ret_val;
+      break;
+    }
   }
 }
 
@@ -63,8 +63,7 @@ function tripal_analysis_expression_help($path, $arg)
  *
  * @ingroup tripal_expression
  */
-function tripal_analysis_expression_menu()
-{
+function tripal_analysis_expression_menu() {
   $items = [];
 
   // Admin configuration group.
@@ -133,14 +132,13 @@ function tripal_analysis_expression_menu()
  * @ingroup tripal_analysis_expression
  *
  */
-function tripal_analysis_expression_theme($existing, $type, $theme, $path)
-{
+function tripal_analysis_expression_theme($existing, $type, $theme, $path) {
   $items = [
     'analysis_expression_plot' => [
       'variables' => [
         'features_count' => 0,
         'biomaterials_count' => 0,
-        'analysis_id' => null,
+        'analysis_id' => NULL,
       ],
       'template' => 'tripal_analysis_expression.analysis',
       'path' => "$path/theme/templates",
@@ -164,8 +162,7 @@ function tripal_analysis_expression_theme($existing, $type, $theme, $path)
  * Define two blocks one for input features
  * the other one for display heatmap
  */
-function tripal_analysis_expression_block_info()
-{
+function tripal_analysis_expression_block_info() {
   // Define two blocks: one for features input form
   // the other one for heatmap display
   $blocks = [];
@@ -193,23 +190,26 @@ function tripal_analysis_expression_block_info()
  *
  * @return string
  */
-function tripal_analysis_expression_generate_feature_map_input_block()
-{
+function tripal_analysis_expression_generate_feature_map_input_block() {
   global $base_url;
 
   $content = '<div class="heatmap-columns">';
   $search_form = drupal_get_form('feature_heatmap_search_form');
-  $content .= '<div class="heatmap-column is-5">'.render($search_form).'</div>';
+  $content .= '<div class="heatmap-column is-5">' . render($search_form) . '</div>';
   $input_textarea = drupal_get_form('feature_heatmap_form');
-  $content .= '<div class="heatmap-column">'.render($input_textarea).'</div>';
+  $content .= '<div class="heatmap-column">' . render($input_textarea) . '</div>';
   $content .= '</div>';
 
-  drupal_add_css(drupal_get_path('module', 'tripal_analysis_expression').'/theme/css/feature_heatmap.css');
+  drupal_add_css(drupal_get_path('module',
+      'tripal_analysis_expression') . '/theme/css/feature_heatmap.css');
   drupal_add_js(['visual_expression_example' => variable_get('tripal_analysis_expression_heatmap_example')],
     ['type' => 'setting']);
-  drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression').'/theme/js/example.js');
-  drupal_add_js(['heatmap_search' => ['base_url' => $base_url]], ['type' => 'setting']);
-  drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression').'/theme/js/heatmap-search.js');
+  drupal_add_js(drupal_get_path('module',
+      'tripal_analysis_expression') . '/theme/js/example.js');
+  drupal_add_js(['heatmap_search' => ['base_url' => $base_url]],
+    ['type' => 'setting']);
+  drupal_add_js(drupal_get_path('module',
+      'tripal_analysis_expression') . '/theme/js/heatmap-search.js');
 
   return $content;
 }
@@ -219,8 +219,7 @@ function tripal_analysis_expression_generate_feature_map_input_block()
  *
  * @throws \Exception
  */
-function tripal_analysis_expression_block_view($delta = '')
-{
+function tripal_analysis_expression_block_view($delta = '') {
 
   $block = [];
   switch ($delta) {
@@ -247,16 +246,16 @@ function tripal_analysis_expression_block_view($delta = '')
  *
  * @throws \Exception
  */
-function tripal_analysis_expression_heatmap_block(&$block)
-{
+function tripal_analysis_expression_heatmap_block(&$block) {
   global $base_url;
 
   $heatmap = (new HeatMapGenerator())->generate();
 
-  if ($heatmap === false) {
+  if ($heatmap === FALSE) {
     $block['content'] = '<p style="color: red">Please enter 2 or more features.</p>';
-  } else {
-    if (! empty($heatmap->data)) {
+  }
+  else {
+    if (!empty($heatmap->data)) {
       $block['subject'] = t('Feature Expression Heatmap');
       $block['content'] = '<strong>Select an analysis to display</strong>
                <div id="select_analysis" style="margin-bottom: 0.5rem"></div>
@@ -268,13 +267,18 @@ function tripal_analysis_expression_heatmap_block(&$block)
                  Download expression data for these features
                </a>';
 
-      drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression').'/theme/js/plotly-latest.min.js');
-      drupal_add_js(['tripal_analysis_expression' => ['data' => $heatmap]], ['type' => 'setting']);
-      drupal_add_js(['tripal_analysis_expression' => ['baseURL' => $base_url]], ['type' => 'setting']);
-      drupal_add_js(drupal_get_path('module', 'tripal_analysis_expression').'/theme/js/heatmap.js');
-    } else {
+      drupal_add_js(drupal_get_path('module',
+          'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
+      drupal_add_js(['tripal_analysis_expression' => ['data' => $heatmap]],
+        ['type' => 'setting']);
+      drupal_add_js(['tripal_analysis_expression' => ['baseURL' => $base_url]],
+        ['type' => 'setting']);
+      drupal_add_js(drupal_get_path('module',
+          'tripal_analysis_expression') . '/theme/js/heatmap.js');
+    }
+    else {
       $block['subject'] = '';
-      if (isset($_GET['heatmap_feature_uniquename']) && ! empty($_GET['heatmap_feature_uniquename'])) {
+      if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
         $block['content'] = t('<p style="color:red; font-weight: bold; margin-top: 20px">
                                 There is no expression data available for the
                                 features you entered.
@@ -284,8 +288,7 @@ function tripal_analysis_expression_heatmap_block(&$block)
   }
 }
 
-function tripal_analysis_expression_entity_delete($entity, $type)
-{
+function tripal_analysis_expression_entity_delete($entity, $type) {
   if ($entity->chado_table == 'analysis') {
 
     $analysis_id = $entity->chado_record->analysis_id;
@@ -293,12 +296,11 @@ function tripal_analysis_expression_entity_delete($entity, $type)
 
     $results = chado_query('
       SELECT feature_cvterm_id
-      FROM { feature_cvtermprop } p
+      FROM {feature_cvtermprop} p
       WHERE p.type_id=:analysis_cvterm_id
-      AND p.value=:analysis_id',
-      [
+      AND p.value=:analysis_id', [
         ':analysis_cvterm_id' => $analysis_cvterm_id,
-        ':analysis_id' => $analysis_id
+        ':analysis_id' => $analysis_id,
       ])->fetchAll();
 
     $feature_cvterm_ids = [];
@@ -307,8 +309,10 @@ function tripal_analysis_expression_entity_delete($entity, $type)
       $feature_cvterm_ids[] = $result->feature_cvterm_id;
     }
 
-    db_delete('chado.feature_cvterm')
-      ->condition('feature_cvterm_id', $feature_cvterm_ids)
-      ->execute();
+    if (!empty($feature_cvterm_ids)) {
+      db_delete('chado.feature_cvterm')
+        ->condition('feature_cvterm_id', $feature_cvterm_ids)
+        ->execute();
+    }
   }
 }
