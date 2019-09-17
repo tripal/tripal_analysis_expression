@@ -28,7 +28,8 @@
 //path should be `tripal/users/ . $users->uid . /tripal_analysis_expression/`
 //
 
-class analysis_expression_data_downloader {
+class analysis_expression_data_downloader{
+
   /**
    * The expression data returned by the mview
    *
@@ -118,10 +119,9 @@ class analysis_expression_data_downloader {
       watchdog('tripal', $message, [], WATCHDOG_ERROR);
       return;
     }
-    $this->outfile = $user_dir . 'expression_data.txt';
+    //$this->outfile = $user_dir . 'expression_data.txt';
     $this->outfile = drupal_tempnam($user_dir, 'expression_data_') . '.csv';
   }
-
 
   /**
    * Retrieves the URL for the downloadable file.
@@ -148,6 +148,9 @@ class analysis_expression_data_downloader {
       $data[$feature][$biomaterial] = $value;
       $biomaterials[$biomaterial] = $biomaterial;
     }
+
+    watchdog('tripal_analysis_expression', $this->outfile . ' ' . count($data),
+      [], WATCHDOG_INFO);
 
     $fh = fopen(drupal_realpath($out_file), "w");
     if (!$fh) {
