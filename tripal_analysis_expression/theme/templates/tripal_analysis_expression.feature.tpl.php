@@ -45,7 +45,9 @@
 
 <figure id="analysis-expression-figure"></figure>
 
-<a href="/tripal/analysis-expression/download?feature_ids=<?php print $variables['feature_id'] ?>&analysis_id=<?php print $variables['default_analysis_id']; ?>"
-   id="expressionDownloadLink">
-    Download expression dataset for this feature
-</a>
+<?php if (user_access('download expression content')) : ?>
+  <a href="/tripal/analysis-expression/download?feature_ids=<?php print $variables['feature_id'] ?>&analysis_id=<?php print $variables['default_analysis_id']; ?>"
+     id="expressionDownloadLink">
+      Download expression dataset for this feature
+  </a>
+<?php endif; ?>
