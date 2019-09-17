@@ -25,7 +25,7 @@ function tripal_analysis_expression_permission() {
       'title' => t('Edit tripal analysis expression settings'),
       'description' => t('Edit tripal analysis expression settings'),
     ],
-    'download content' => [
+    'download expression content' => [
       'title' => t('Download expression content'),
       'description' => t('Allow users to download expression content')
     ]
