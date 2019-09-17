@@ -24,10 +24,6 @@ function tripal_analysis_expression_permission() {
     'administer tripal analysis expression' => [
       'title' => t('Edit tripal analysis expression settings'),
       'description' => t('Edit tripal analysis expression settings'),
-    ],
-    'download expression content' => [
-      'title' => t('Download expression content'),
-      'description' => t('Allow users to download expression content')
     ]
   ];
 }
@@ -107,7 +103,6 @@ function tripal_analysis_expression_menu() {
 
   $items['tripal/analysis-expression/download'] = [
     'title' => '',
-    'access arguments' => ['download content'],
     'page callback' => 'analysis_expression_data_downloader::callback',
     'access callback' => true,
     'type' => MENU_CALLBACK,
