@@ -307,7 +307,8 @@ function tripal_analysis_expression_search_features($field, $value, $support_org
   $organism = isset($_GET['organism']) ? $_GET['organism'] : NULL;
 
   $query = db_select('chado.expression_feature', 'EF');
-  $query->addField('EF', 'feature_uniquename', 'uniquename');
+  $query->join('chado.feature', 'F', 'EF.feature_id = F.feature_id');
+  $query->addField('F', 'name', 'name');
   $query->addField('EF', 'organism_common_name', 'common_name');
   $query->addField('EF', 'accession', 'accession');
   $query->orderBy($field, 'ASC');
@@ -318,7 +319,7 @@ function tripal_analysis_expression_search_features($field, $value, $support_org
   }
 
   if (!empty($organism) && $support_organism) {
-    $query->condition('organism_id', $organism);
+    $query->condition('EF.organism_id', $organism);
   }
 
   $results = $query->execute();
@@ -343,8 +344,8 @@ function feature_heatmap_get_organisms() {
     return drupal_map_assoc(tripal_elasticsearch_get_gene_search_organisms());
   }
 
-  $sql = 'SELECT genus, species, common_name, organism_id
-            FROM {organism} 
+  $sql = 'SELECT genus, species, common_name, O.organism_id
+            FROM {organism} O INNER JOIN {expression_feature} EF ON O.organism_id = EF.organism_id
             ORDER BY genus ASC, species ASC';
 
   $organism_list = chado_query($sql)->fetchAll();

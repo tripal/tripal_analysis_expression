@@ -103,7 +103,7 @@
     },
 
     renderRow: function (row) {
-      var name = row.uniquename;
+      var name = row.name;
 
       var disabled = this.getFeatures().indexOf(name) > -1 ? ' disabled' : '';
 

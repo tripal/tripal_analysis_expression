@@ -132,6 +132,7 @@
       selectorColor.append('option')
           .attr('value', 'Expression value')
           .text('Expression value');
+      this.currentColor = 'Expression value'; 
 
       this.heatMap.map(function (biomaterial) {
         Object.keys(biomaterial.properties).map(function (property_key) {
@@ -341,7 +342,7 @@ var averageStepSize = calculatedWidth/totalSamples
           .attr('x', 0)
           .attr('y', 0)
           .html(function (d) {
-              if (d.key === "spacing_group_for_domain"){
+              if (d.key === "spacing_group_for_domain" || d.key === 'Not set'){
                   return //skip plotting the spacing group
               }
 
