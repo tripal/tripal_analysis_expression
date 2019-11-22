@@ -196,12 +196,62 @@ The "Experimental Design" fields allow a complete description of the experimenta
 The steps for loading p-value data are as follows (detailed instructions can be found further below):
 
 1. Obtain p-value data.
-2. Add the organism associated with the p-value data if it hasn't been added.
-3. Upload all features in the p-value data to the Chado database. To bulk upload features, go to **Tripal->Data Loaders->Chado FASTA Loader** and upload a FASTA file (click here to see an example of [fasta file of transcriptome sequences](http://www.hardwoodgenomics.org/sites/default/files/sequences/sugarMaple022416/Acer_saccharum_022416_transcripts.fasta)). Or upload one feature at a time via **content-> Tripal Content -> Add content**, and select the relevant entity type (such as mRNA).
-4. Load the p-value data.
+2. (Optional) Create an analysis.
+3. Add the organism associated with the p-value data if it hasn't been added.
+4. Upload all features in the p-value data to the Chado database. To bulk upload features, go to **Tripal->Data Loaders->Chado FASTA Loader** and upload a FASTA file (click here to see an example of [fasta file of transcriptome sequences](http://www.hardwoodgenomics.org/sites/default/files/sequences/sugarMaple022416/Acer_saccharum_022416_transcripts.fasta)). Or upload one feature at a time via **content-> Tripal Content -> Add content**, and select the relevant entity type (such as mRNA).
+5. Load the p-value data.
+
+### Obtaining P-Value Data
+
+#### Collecting PValue Data
+
+Your raw data will likely come in a large spreadsheet that looks something like this, but probably with more columns and a lot more rows:
+
+|                                                 | baseMean    | log2FoldChange | lfcSE       | stat        | pvalue   |
+|-------------------------------------------------|-------------|----------------|-------------|-------------|----------|
+| Fraxinus_pennsylvanica_120313_comp62618_c0_seq4 | 2818.699043 | 6.225005757    | 0.341692178 | 18.21816874 | 3.70E-74 |
+| Fraxinus_pennsylvanica_120313_comp57222_c0_seq2 | 1864.947509 | 6.034774942    | 0.346657723 | 17.40845374 | 7.12E-68 |
+| Fraxinus_pennsylvanica_120313_comp41195_c0_seq1 | 791.6553987 | 5.720052743    | 0.33026481  | 17.31959495 | 3.35E-67 |
+
+The pvalue data loader only cares about two columns (order matters): 
+
+1. the column containing the feature names
+2. the column containing the pvalues (not the adjusted values)
+
+Copy the values from these columns (and only the values, we don't care about the headers) into a new sheet. The resulting spreadsheet should contain exactly two columns (feature name first, then pvalue) with no headers. Save the sheet as either a csv or a tsv. The resulting file should be in this format:
+
+```
+FRAEX38873_v2_000000010.1,3.70E-74
+FRAEX38873_v2_000000010.2,0.27
+FRAEX38873_v2_000000020.1,0.39
+FRAEX38873_v2_000000030.1,0.43
+FRAEX38873_v2_000000040.1,0.85
+FRAEX38873_v2_000000050.1,0.24
+FRAEX38873_v2_000000060.1,0.13
+FRAEX38873_v2_000000070.1,0.76
+FRAEX38873_v2_000000080.1,0.88
+FRAEX38873_v2_000000090.1,0.91
+FRAEX38873_v2_000000100.1,0.99
+...
+```
+
+You might also want to record the name of the sheet while you have it up; this will be needed for the experimental factor and evidence code needed in the form.
+
+#### Experimental Factor and Evidence Code
+
+Your experimental factor and your evidence code will be directly tied to the name of the sheet. Here are a few examples of how sheet name ties into experimental factor and evidence code:
+
+| Sheet Name                | Experimental Factor | Evidence Code  |
+|---------------------------|---------------------|----------------|
+| Cold Up                   | response to cold    | up-regulated   |
+| EAB RvS Post-feeding down | response to insect  | down-regulated |
+| Ozone Response            | response to ozone   | related to     |
+
 
 ### Creating the Analysis
-Before loading data, you must create an analysis to associate the data with. As an administrator or a user with permission to create content, navigate to content -> tripal content -> Analysis.
+The analysis does not need to be unique for each set of p-value data. You could skip this step depending on how you organize your site.
+
+As an administrator or a user with permission to create content, navigate to Content -> Tripal Content -> Analysis.
 
 **Note that program name, program version, and source name must be unique as a whole for analysis to be inserted correctly** (click [here](http://gmod.org/wiki/Chado_Companalysis_Module) to read more about the data structure for analysis).
 
