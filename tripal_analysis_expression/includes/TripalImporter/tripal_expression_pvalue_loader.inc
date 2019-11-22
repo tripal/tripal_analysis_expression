@@ -295,13 +295,17 @@ class tripal_expression_pvalue_loader extends TripalImporter {
 
       $type_id = chado_get_cvterm(['name' => $so_term])->cvterm_id;
 
-      $feature_id = $this->get_feature_id($feature_name, $organism_id,
-        $type_id);
+      try {
+        $feature_id = $this->get_feature_id($feature_name, $organism_id,
+          $type_id);
 
-      $data = $this->get_existing_data($feature_id);
+        $data = $this->get_existing_data($feature_id);
 
-      is_object($data) ? $this->updateData($data->feature_cvterm_id,
-        $pvalue) : $this->insertData($feature_id, $pvalue);
+        is_object($data) ? $this->updateData($data->feature_cvterm_id,
+          $pvalue) : $this->insertData($feature_id, $pvalue);
+      } catch (Exception $exception) {
+        $this->logMessage($exception->getMessage());
+      }
     }
 
     fclose($fp);
@@ -538,15 +542,13 @@ class tripal_expression_pvalue_loader extends TripalImporter {
    */
   private function get_feature_id($feature_name, $organism_id, $type_id) {
     $feature = db_query('SELECT f.feature_id FROM {chado.feature} f 
-        WHERE uniquename = :feature_name
-        AND organism_id = :organism_id
-        AND type_id = :type_id', [
+        WHERE f.uniquename = :feature_name
+        AND f.organism_id = :organism_id
+        AND f.type_id = :type_id', [
       ':feature_name' => $feature_name,
       ':organism_id' => $organism_id,
       ':type_id' => $type_id,
     ])->fetchObject();
-
-    dpm($feature);
 
     if (empty($feature)) {
       throw new Exception(t('The feature !feature does not exist in the database for the organism and sequence type provided. Please verify that the feature exists and that the correct organism and sequence type has been provided.',
