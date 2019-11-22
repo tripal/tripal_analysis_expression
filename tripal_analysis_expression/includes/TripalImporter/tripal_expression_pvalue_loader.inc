@@ -3,7 +3,7 @@
 /**
  * @see TripalImporter
  */
-class tripal_expression_pvalue_loader extends TripalImporter{
+class tripal_expression_pvalue_loader extends TripalImporter {
 
   /**
    * The name of this loader.  This name will be presented to the site
