@@ -537,22 +537,22 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    * @throws \Exception
    */
   private function get_feature_id($feature_name, $organism_id, $type_id) {
-    $feature_id = db_query('SELECT f.feature_id FROM {chado.feature} f 
+    $feature = db_query('SELECT f.feature_id FROM {chado.feature} f 
         WHERE uniquename = :feature_name
         AND organism_id = :organism_id
         AND type_id = :type_id', [
       ':feature_name' => $feature_name,
       ':organism_id' => $organism_id,
       ':type_id' => $type_id,
-    ])->fetchField();
+    ])->fetchObject();
 
-    dpm($feature_id);
+    dpm($feature->feature_id);
 
-    if (empty($feature_id)) {
+    if (empty($feature)) {
       throw new Exception(t('The feature !feature does not exist in the database for the organism and sequence type provided. Please verify that the feature exists and that the correct organism and sequence type has been provided.',
         ['!feature' => $feature_name]));
     }
 
-    return $feature_id;
+    return $feature->feature_id;
   }
 }
