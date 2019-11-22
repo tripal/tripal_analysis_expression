@@ -546,7 +546,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
       ':type_id' => $type_id,
     ])->fetchObject();
 
-    dpm($feature->feature_id);
+    dpm($feature);
 
     if (empty($feature)) {
       throw new Exception(t('The feature !feature does not exist in the database for the organism and sequence type provided. Please verify that the feature exists and that the correct organism and sequence type has been provided.',
