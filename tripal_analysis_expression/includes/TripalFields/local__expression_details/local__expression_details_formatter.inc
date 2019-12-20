@@ -45,7 +45,7 @@ class local__expression_details_formatter extends ChadoFieldFormatter
 
     foreach ($pvalue_data as $row) {
       $rows[] = [
-        $row->cvterm_name,
+        l($row->cvterm_name, 'cv/lookup/' . $row->db_name . '/' . $row->accession),
         $row->evidence_code,
         $row->p_value,
         l($row->analysis_name, 'bio_data/'. chado_get_record_entity_by_table('analysis', $row->analysis_id)),

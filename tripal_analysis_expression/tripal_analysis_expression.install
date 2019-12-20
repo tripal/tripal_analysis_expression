@@ -237,42 +237,42 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
     'name' => 'response to ozone',
     'cv_name' => 'GO',
     'db_name' => 'GO',
-  ]);
+  ], ['update_existing' => FALSE]);
 
   chado_insert_cvterm([
     'id' => 'GO:0009408',
     'name' => 'response to heat',
     'cv_name' => 'GO',
     'db_name' => 'GO',
-  ]);
+  ], ['update_existing' => FALSE]);
 
   chado_insert_cvterm([
     'id' => 'GO:0009414',
     'name' => 'response to water deprivation',
     'cv_name' => 'GO',
     'db_name' => 'GO',
-  ]);
+  ], ['update_existing' => FALSE]);
 
   chado_insert_cvterm([
     'id' => 'GO:0009409',
     'name' => 'response to cold',
     'cv_name' => 'GO',
     'db_name' => 'GO',
-  ]);
+  ], ['update_existing' => FALSE]);
 
   chado_insert_cvterm([
     'id' => 'GO:0009611',
     'name' => 'response to wounding',
     'cv_name' => 'GO',
     'db_name' => 'GO',
-  ]);
+  ], ['update_existing' => FALSE]);
 
   chado_insert_cvterm([
     'id' => 'GO:0009625',
     'name' => 'response to insect',
     'cv_name' => 'GO',
     'db_name' => 'GO',
-  ]);
+  ], ['update_existing' => FALSE]);
 }
 
 function tripal_analysis_expression_add_evidence_code_cvterm() {
