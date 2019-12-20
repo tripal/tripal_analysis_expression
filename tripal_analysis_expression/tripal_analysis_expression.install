@@ -238,7 +238,7 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
     'definition' => 'Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a ozone stimulus. [GOC:sm]',
     'cv_name' => 'GO',
     'db_name' => 'GO',
-  ], ['update_existing' => FALSE]);
+  ], ['update_existing' => TRUE]);
 
   chado_insert_cvterm([
     'id' => 'GO:0009408',
@@ -246,7 +246,7 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
     'definition' => 'Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a temperature stimulus. [GOC:hb]',
     'cv_name' => 'GO',
     'db_name' => 'GO',
-  ], ['update_existing' => FALSE]);
+  ], ['update_existing' => TRUE]);
 
   chado_insert_cvterm([
     'id' => 'GO:0009414',
@@ -254,7 +254,7 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
     'definition' => 'Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a water deprivation stimulus, prolonged deprivation of water. [GOC:lr]',
     'cv_name' => 'GO',
     'db_name' => 'GO',
-  ], ['update_existing' => FALSE]);
+  ], ['update_existing' => TRUE]);
 
   chado_insert_cvterm([
     'id' => 'GO:0009409',
@@ -262,7 +262,7 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
     'definition' => 'Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a cold stimulus, a temperature stimulus below the optimal temperature for that organism. [GOC:lr]',
     'cv_name' => 'GO',
     'db_name' => 'GO',
-  ], ['update_existing' => FALSE]);
+  ], ['update_existing' => TRUE]);
 
   chado_insert_cvterm([
     'id' => 'GO:0009611',
@@ -270,7 +270,7 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
     'definition' => 'Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a stimulus indicating damage to the organism. [GOC:go_curators]',
     'cv_name' => 'GO',
     'db_name' => 'GO',
-  ], ['update_existing' => FALSE]);
+  ], ['update_existing' => TRUE]);
 
   chado_insert_cvterm([
     'id' => 'GO:0009625',
@@ -278,7 +278,7 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
     'definition' => 'Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a stimulus from an insect. [GOC:hb]',
     'cv_name' => 'GO',
     'db_name' => 'GO',
-  ], ['update_existing' => FALSE]);
+  ], ['update_existing' => TRUE]);
 }
 
 function tripal_analysis_expression_add_evidence_code_cvterm() {
