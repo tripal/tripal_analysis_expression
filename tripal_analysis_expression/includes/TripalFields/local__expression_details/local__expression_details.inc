@@ -149,8 +149,10 @@ class local__expression_details extends ChadoField{
   JOIN {dbxref} dbx ON dbx.dbxref_id=cv1.dbxref_id
   JOIN {db} db ON db.db_id=dbx.db_id
   WHERE f.organism_id = :organism_id
+  AND f.type_id = :feature_type_id
   GROUP BY fcvt.cvterm_id', [
       ':organism_id' => $organism_id,
+      ':feature_type_id' => $entity->chado_record->type_id->cvterm_id,
       ':evidence_id' => $evidence_code_cvterm_id,
       ':pvalue_id' => $pvalue_cvterm_id,
     ])->fetchAll();
