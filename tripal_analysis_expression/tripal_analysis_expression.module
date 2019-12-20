@@ -73,6 +73,14 @@ function tripal_analysis_expression_menu() {
     'access arguments' => ['administer tripal analysis expression'],
   ];
 
+  $items['admin/tripal/extension/tripal_analysis_expression/feature_counts/%'] = [
+    'title' => 'Feature counts',
+    'description' => 'Administrative pages for the Tripal Expression Analysis module.',
+    'access arguments' => ['access content'],
+    'page callback' => 'tripal_analysis_expression_feature_counts_page',
+    'page arguments' => [5],
+  ];
+
   //KEEP THIS
   // Heatmap settings
   $items['admin/tripal/extension/tripal_analysis_expression/heatmap_settings'] = [
@@ -212,6 +220,38 @@ function tripal_analysis_expression_generate_feature_map_input_block() {
       'tripal_analysis_expression') . '/theme/js/heatmap-search.js');
 
   return $content;
+}
+
+function tripal_analysis_expression_feature_counts_page($cvterm_id) {
+  $features = chado_query('SELECT f.name as feature_name, f.feature_id as feature_id
+    FROM {feature_cvterm} fcvt
+    JOIN {feature} f ON f.feature_id=fcvt.feature_id
+    WHERE fcvt.cvterm_id=:cvterm_id', [
+      ':cvterm_id' => $cvterm_id,
+    ])->fetchAll();
+
+  $cvterm_name = chado_query('SELECT cvt.name FROM {cvterm} cvt WHERE cvt.cvterm_id=:cvterm_id', 
+    [':cvterm_id' => $cvterm_id])->fetchField();
+
+  $rows = [];
+
+  foreach ($features as $feature) {
+    $rows[] = [
+      l($feature->feature_name, 'bio_data/'. chado_get_record_entity_by_table('feature', $feature->feature_id))
+    ];
+  }
+
+  $body = '<p>These are all features that are significantly expressed by the term ' . $cvterm_name . '.</p>';
+
+  drupal_set_title($cvterm_name);
+
+  return [
+    '#type' => 'markup',
+    '#markup' => $body . theme('table', [
+      'header' => ['Feature Name'],
+      'rows' => $rows,
+    ])
+  ];
 }
 
 /**

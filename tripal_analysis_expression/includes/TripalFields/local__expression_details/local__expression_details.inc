@@ -119,7 +119,9 @@ class local__expression_details extends ChadoField{
       'name' => 'evidence code',
     ])->cvterm_id;
 
-    $pvalue_data = chado_query('SELECT cv1.name as cvterm_name, p1.value as evidence_code, p2.value as p_value, a.name as analysis_name, a.analysis_id as analysis_id, dbx.accession as accession, db.name as db_name
+    $organism_id = $entity->chado_record->organism_id->organism_id;
+
+    $pvalue_data = chado_query('SELECT cv1.name as cvterm_name, fcvt.cvterm_id as cvterm_id, p1.value as evidence_code, p2.value as p_value, a.name as analysis_name, a.analysis_id as analysis_id, dbx.accession as accession, db.name as db_name
   FROM {feature_cvterm} fcvt
   JOIN {cvterm} cv1 ON cv1.cvterm_id=fcvt.cvterm_id
   JOIN {cvterm} cv2 ON cv2.name=\'analysis\'
@@ -135,8 +137,33 @@ class local__expression_details extends ChadoField{
       ':pvalue_id' => $pvalue_cvterm_id,
     ])->fetchAll();
 
-    $entity->{$field}['und'][0]['value'] = array_map(function ($item) {
+    $counts = chado_query('SELECT COUNT(f.feature_id), fcvt.cvterm_id as cvterm_id
+  FROM {feature_cvterm} fcvt
+  JOIN {feature} f ON f.feature_id=fcvt.feature_id
+  JOIN {cvterm} cv1 ON cv1.cvterm_id=fcvt.cvterm_id
+  JOIN {cvterm} cv2 ON cv2.name=\'analysis\'
+  JOIN {feature_cvtermprop} p1 ON p1.feature_cvterm_id=fcvt.feature_cvterm_id AND p1.type_id=:evidence_id
+  JOIN {feature_cvtermprop} p2 ON p2.feature_cvterm_id=fcvt.feature_cvterm_id AND p2.type_id=:pvalue_id
+  JOIN {feature_cvtermprop} p3 ON p3.feature_cvterm_id=fcvt.feature_cvterm_id AND p3.type_id=cv2.cvterm_id
+  JOIN {analysis} a ON a.analysis_id=p3.value::INTEGER
+  JOIN {dbxref} dbx ON dbx.dbxref_id=cv1.dbxref_id
+  JOIN {db} db ON db.db_id=dbx.db_id
+  WHERE f.organism_id = :organism_id
+  GROUP BY fcvt.cvterm_id', [
+      ':organism_id' => $organism_id,
+      ':evidence_id' => $evidence_code_cvterm_id,
+      ':pvalue_id' => $pvalue_cvterm_id,
+    ])->fetchAll();
+
+    $counts_indexed = [];
+
+    foreach ($counts as $count) {
+      $counts_indexed[$count->cvterm_id] = $count->count;
+    }
+
+    $entity->{$field}['und'][0]['value'] = array_map(function ($item) use ($counts_indexed) {
       $item->p_value = $item->p_value != NULL ? floatval($item->p_value) : 'N/A';
+      $item->feature_counts = $counts_indexed[$item->cvterm_id];
       return $item;
     }, $pvalue_data);
 
