@@ -15,7 +15,7 @@
       //spacing variables
       this.margin           = {top: 50, bottom: 100, horizontal: 20};
       this.height           = 500;
-      this.barwidth         = 20;
+      this.barwidth         = 12;
       this.scaleSize        = this.barwidth * 4.5; //this is a thumbnail
       // estimate, im not sure of a
       // better way to do it
