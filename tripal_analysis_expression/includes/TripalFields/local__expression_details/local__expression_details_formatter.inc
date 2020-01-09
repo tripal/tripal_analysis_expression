@@ -37,7 +37,7 @@ class local__expression_details_formatter extends ChadoFieldFormatter
 
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display)
   {
-    $header = ['Keyword', 'Evidence Code', 'P-value', 'Analysis'];
+    $header = ['Keyword', 'Expression Relationship', 'P-value', 'Analysis'];
     $field = str_replace('_formatter', '', get_class());
     $variables = $entity->{$field}['und'][0];
     $pvalue_data = $variables['value'];

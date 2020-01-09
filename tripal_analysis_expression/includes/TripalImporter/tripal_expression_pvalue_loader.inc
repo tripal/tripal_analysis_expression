@@ -125,7 +125,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
   public function form($form, &$form_state) {
 
     $form['evidence_code'] = [
-      '#title' => t('Evidence Code'),
+      '#title' => t('Expression Relationship'),
       '#type' => 'select',
       '#description' => t('The evidence code that relates the cvterms.'),
       '#options' => drupal_map_assoc([
@@ -392,7 +392,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
                p1.value AS evidence_code,
                p2.value AS p_value,
                p3.value AS analysis_id
-        FROM {feature_cvtermprop} p1    
+        FROM {feature_cvtermprop} p1
         JOIN {feature_cvtermprop} p2
         ON p2.feature_cvterm_id=p1.feature_cvterm_id
         AND p2.type_id=:pvalue_type_id
@@ -537,7 +537,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    * @throws \Exception
    */
   private function get_feature_id($feature_name, $organism_id, $type_id) {
-    $feature_id = db_query('SELECT f.feature_id FROM {chado.feature} f 
+    $feature_id = db_query('SELECT f.feature_id FROM {chado.feature} f
         WHERE uniquename = :feature_name
         AND organism_id = :organism_id
         AND type_id = :type_id', [

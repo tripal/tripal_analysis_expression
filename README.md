@@ -86,14 +86,14 @@ Click the "Send to:" link. Then select "File" and select "Full XML (text)" as th
 Click [here to see an example XML BioSample file from NCBI](example_files/sm125.xml).
 
 ### Using the Biosample loader
-To upload the file into Chado/Tripal, navigate to:  
+To upload the file into Chado/Tripal, navigate to:
 
 **Tripal->loaders->chado_biosample_loader**
 
 First, provide the path on the server to the biosample file, or use the file uploader. You must select an Organism to associate the biosamples with.  You may also associate the imported biosamples with an analysis, but this is not required.
 
 Press the **Check Biosamples** button to preview your biosample properties.  To take advantage of a controlled vocabulary (CV), you must manually assign each property to a CVterm.  The uploader will list all CV terms matching each property, and provide the CV, database (DB) and accession for the match.
-If a match does not exist for your term, use the CVterm browser to identify an appropriate CVterm in your Tripal site, and rename the property in your input file to match the term.  If no term exists in your database, you should use the EBI ontology lookup serice to identify an appropriate term and insert it manually, or, load the corresponding CV.  
+If a match does not exist for your term, use the CVterm browser to identify an appropriate CVterm in your Tripal site, and rename the property in your input file to match the term.  If no term exists in your database, you should use the EBI ontology lookup serice to identify an appropriate term and insert it manually, or, load the corresponding CV.
 
 > ![The Biosample property configuration tool](example_files/doc_images/biosample_prop_checker.png)
 > Pressing the 'Check Biosamples' button allows you to assign CVterms to every biosample property in your upload.  If there isn't a suitable CVterm, you should rename it in your upload file to match a CVterm in the database and/or insert new CVterms.
@@ -116,7 +116,7 @@ After loading, biosamples must be published to create entities for each biosampl
 
 ### Loading a Single Biosample
 Biosamples may also be loaded one at a time. As an administer or a user with permission to create Tripal content, go to: **Content->Tripal Content -> Add Tripal Content -> Biological Sample**. Available biosamples fields include the following.
-* **Accession** - If the biosample is in a database stored in your Tripal site, the accession can be entered here.  
+* **Accession** - If the biosample is in a database stored in your Tripal site, the accession can be entered here.
 * **Name (must be unique - required)**
 * **Description** - A description of the biosample.
 * **Contact** - The person or organization responsible for collecting the biosample.
@@ -213,7 +213,7 @@ Your raw data will likely come in a large spreadsheet that looks something like 
 | Fraxinus_pennsylvanica_120313_comp57222_c0_seq2 | 1864.947509 | 6.034774942    | 0.346657723 | 17.40845374 | 7.12E-68 |
 | Fraxinus_pennsylvanica_120313_comp41195_c0_seq1 | 791.6553987 | 5.720052743    | 0.33026481  | 17.31959495 | 3.35E-67 |
 
-The pvalue data loader only cares about two columns (order matters): 
+The pvalue data loader only cares about two columns (order matters):
 
 1. the column containing the feature names
 2. the column containing the pvalues (not the adjusted values)
@@ -237,15 +237,15 @@ FRAEX38873_v2_000000100.1,0.99
 
 You might also want to record the name of the sheet while you have it up; this will be needed for the experimental factor and evidence code needed in the form.
 
-#### Experimental Factor and Evidence Code
+#### Experimental Factor and Expression Relationship
 
 Your experimental factor and your evidence code will be directly tied to the name of the sheet. Here are a few examples of how sheet name ties into experimental factor and evidence code:
 
-| Sheet Name                | Experimental Factor | Evidence Code  |
-|---------------------------|---------------------|----------------|
-| Cold Up                   | response to cold    | up-regulated   |
-| EAB RvS Post-feeding down | response to insect  | down-regulated |
-| Ozone Response            | response to ozone   | related to     |
+| Sheet Name                | Experimental Factor | Expression Relationship  |
+|---------------------------|---------------------|--------------------------|
+| Cold Up                   | response to cold    | up-regulated             |
+| EAB RvS Post-feeding down | response to insect  | down-regulated           |
+| Ozone Response            | response to ozone   | related to               |
 
 
 ### Creating the Analysis
@@ -276,13 +276,13 @@ For an example p-value file, click [here](example_files/example_pvalue.csv).
 * **File Upload** - You may upload a file using the loader, or provide a path on the server.
 * **Analysis** - The analysis to associate the expression data with.
 * **Organism (required)** - The organism.
-* **Evidence Code** - Either up-regulated, down-regulated, or related to, depending on the experimental factor
+* **Expression Relationship** - Either up-regulated, down-regulated, or related to, depending on the experimental factor
 * **Experimental Factor** - A cvterm that describes what the p-value is measuring.
 * **Sequence Type** - The sequence ontology term name that describes the features.
 
 # Viewing and Downloading Data
 
-Loaded expression data can be viewed and downloaded by users in three places.  **Feature pages** will gain access to the Expression field (`data__gene_expression_data`).  You can configure the appearance of this field by navigating to `Structure -> Tripal Content Type -> [Feature type (ie, mRNA)]`.  If the expression field is not listed, press the Check for New Fields button in the upper left.  Once the field is attached, navigate to the Manage Display tab, enable the field display, and place it to your liking. 
+Loaded expression data can be viewed and downloaded by users in three places.  **Feature pages** will gain access to the Expression field (`data__gene_expression_data`).  You can configure the appearance of this field by navigating to `Structure -> Tripal Content Type -> [Feature type (ie, mRNA)]`.  If the expression field is not listed, press the Check for New Fields button in the upper left.  Once the field is attached, navigate to the Manage Display tab, enable the field display, and place it to your liking.
 
 
 >![Creating and expression tripal pane for the expression field](example_files/doc_images/expression_pane.png)
@@ -294,7 +294,7 @@ Data downloads are provided for individual features, analyses, and for feature s
 
 ### Using the Feature Expression Data field
 
-The expression field allows users to view all expression data available for a feature.  Because a database might have multiple experiments involving a single feature, data is first organized by *Analysis*.  Users can select analyses using the "Select an Expression Analysis" box which lists all analyses with expression data available.  The plot can be further customized based on the biosample properties.  The "Select a property to group and sort biosamples" select box will allow users to pick a property to organize samples along the X axis.  Users may select *Sample Name* to elect not to group samples by property.  Values may be colored by their expression value (default), or by selecting a different property in the "Select a property to color biosamples " box.  
+The expression field allows users to view all expression data available for a feature.  Because a database might have multiple experiments involving a single feature, data is first organized by *Analysis*.  Users can select analyses using the "Select an Expression Analysis" box which lists all analyses with expression data available.  The plot can be further customized based on the biosample properties.  The "Select a property to group and sort biosamples" select box will allow users to pick a property to organize samples along the X axis.  Users may select *Sample Name* to elect not to group samples by property.  Values may be colored by their expression value (default), or by selecting a different property in the "Select a property to color biosamples " box.
 
 >![The feature expression data field](example_files/doc_images/Expression_grouped_and_colored.png)
 > The Feature Expression Data field allows users to plot expression data according to biosample properties.
@@ -327,7 +327,7 @@ The Heatmap settings administrative page allows you to configure the heatmap sea
 
 ### Quantification Units Administrative page
 
-The units associated with your expression data are stored in Chado associated with the **quantification**.  Units can be stored even if you did not specify a quantification (a generic quantification was used in this case).  
+The units associated with your expression data are stored in Chado associated with the **quantification**.  Units can be stored even if you did not specify a quantification (a generic quantification was used in this case).
 
 You can use the quantification units administrative page to add or edit units on your quantification by Navigating to Tripal -> Extensions -> Protocol -> Quantification Units.  All quantification instances appear in the table at the bottom of the admin page. Click 'Edit' to change the units for an individual quantification.
 
