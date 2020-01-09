@@ -122,8 +122,8 @@ class data__gene_expression_data extends ChadoField{
       $analysis_id = $entity->chado_record_id;
       $features = $this->get_analysis_info($analysis_id);
 
-      $sql = 'SELECT a.value FROM {chado.analysisprop} a 
-                WHERE a.analysis_id = :analysis_id 
+      $sql = 'SELECT a.value FROM {chado.analysisprop} a
+                WHERE a.analysis_id = :analysis_id
                 AND a.type_id = :type_id';
 
       $cvterm_id = tripal_get_cvterm([
@@ -199,21 +199,20 @@ class data__gene_expression_data extends ChadoField{
       foreach ($expressions as $exp) {
         //if this analysis isn't in the array yet, initialize it
         if (!isset($array_to_encode[$exp->analysis_id])) {
-          $analysis_properties = [
+          $array_to_encode[$exp->analysis_id] = [
             "analysis_id" => $exp->analysis_id,
             "analysis_name" => $exp->analysis_name,
             "biomaterials" => [],
           ];
-          $array_to_encode[$exp->analysis_id] = $analysis_properties;
         }
         $has_exp = TRUE;
 
         //Get units in quantificationprop
-        $uni = chado_get_property([
+        $unit_prop = chado_get_property([
           'table' => 'quantification',
           'id' => $exp->quantification_id,
         ], ['type_name' => 'unit_of_measure', 'cv_name' => 'sep']);
-        $uni ? $units = $uni->value : $units = '';
+        $unit_prop ? $units = $unit_prop->value : $units = '';
 
         //Get all properties for biosample/biomaterial
         $values = [
