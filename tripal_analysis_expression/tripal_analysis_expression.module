@@ -19,7 +19,8 @@ require_once 'includes/tripal_analysis_expression.api.inc';
 /**
  * Implements hook_permission().
  */
-function tripal_analysis_expression_permission() {
+function tripal_analysis_expression_permission()
+{
   return [
     'administer tripal analysis expression' => [
       'title' => t('Edit tripal analysis expression settings'),
@@ -35,7 +36,8 @@ function tripal_analysis_expression_permission() {
  *
  * @ingroup tripal_analysis_expression
  */
-function tripal_analysis_expression_help($path, $arg) {
+function tripal_analysis_expression_help($path, $arg)
+{
   switch ($path) {
     // Both of the following cases should display the below HTML.
     case 'admin/tripal/extension/tripal_analysis_expression/help' :
@@ -63,7 +65,8 @@ function tripal_analysis_expression_help($path, $arg) {
  *
  * @ingroup tripal_expression
  */
-function tripal_analysis_expression_menu() {
+function tripal_analysis_expression_menu()
+{
   $items = [];
 
   // Admin configuration group.
@@ -108,7 +111,63 @@ function tripal_analysis_expression_menu() {
     'type' => MENU_CALLBACK,
   ];
 
+  $items['tripal_analysis_expression/pvalue/cvterm/%'] = [
+    'title' => 'Expression Analysis CVterm',
+    'description' => 'P-value CV terms.',
+    'access arguments' => ['access content'],
+    'page arguments' => [3],
+    'page callback' => 'tripal_analysis_expression_cvterm',
+  ];
   return $items;
+}
+
+function tripal_analysis_expression_cvterm($cvterm_id)
+{
+  $cv_term = chado_query('select cv.name as cv_name, cv.definition as cv_definition, db.name as db_name
+                from {chado.cvterm} cv
+                join {chado.dbxref} dbx on dbx.dbxref_id=cv.dbxref_id
+                join {chado.db} db on db.db_id=dbx.db_id
+                where cvterm_id=:cvterm_id',
+    [':cvterm_id' => $cvterm_id])->fetchObject();
+  $rows = [];
+  $rows[] = [
+    [
+      'data' => 'name',
+      'header' => TRUE,
+      'width' => '20%',
+    ],
+            $cv_term->cv_name,
+    ];
+  $rows[] = [
+    [
+      'data' => 'definition',
+      'header' => TRUE,
+      'width' => '20%',
+    ],
+            $cv_term->cv_definition,
+    ];
+  $rows[] = [
+    [
+      'data' => 'vocabulary',
+      'header' => TRUE,
+      'width' => '20%',
+    ],
+    l($cv_term->db_name,'/cv/lookup/'.$cv_term->db_name),
+  ];
+  $table = [
+      'header' => [],
+      'rows' => $rows,
+      'attributes' => [],
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => [],
+      'empty' => [],
+  ];
+  drupal_set_title($cv_term->db_name.': '.$cv_term->cv_name);
+  return [
+    '#type' => 'markup',
+    '#markup' => theme_table($table)
+  ];
 }
 
 /**
@@ -132,7 +191,8 @@ function tripal_analysis_expression_menu() {
  * @ingroup tripal_analysis_expression
  *
  */
-function tripal_analysis_expression_theme($existing, $type, $theme, $path) {
+function tripal_analysis_expression_theme($existing, $type, $theme, $path)
+{
   $items = [
     'analysis_expression_plot' => [
       'variables' => [
@@ -162,7 +222,8 @@ function tripal_analysis_expression_theme($existing, $type, $theme, $path) {
  * Define two blocks one for input features
  * the other one for display heatmap
  */
-function tripal_analysis_expression_block_info() {
+function tripal_analysis_expression_block_info()
+{
   // Define two blocks: one for features input form
   // the other one for heatmap display
   $blocks = [];
@@ -190,7 +251,8 @@ function tripal_analysis_expression_block_info() {
  *
  * @return string
  */
-function tripal_analysis_expression_generate_feature_map_input_block() {
+function tripal_analysis_expression_generate_feature_map_input_block()
+{
   global $base_url;
 
   $content = '<div class="heatmap-columns">';
@@ -219,7 +281,8 @@ function tripal_analysis_expression_generate_feature_map_input_block() {
  *
  * @throws \Exception
  */
-function tripal_analysis_expression_block_view($delta = '') {
+function tripal_analysis_expression_block_view($delta = '')
+{
 
   $block = [];
   switch ($delta) {
@@ -246,15 +309,15 @@ function tripal_analysis_expression_block_view($delta = '') {
  *
  * @throws \Exception
  */
-function tripal_analysis_expression_heatmap_block(&$block) {
+function tripal_analysis_expression_heatmap_block(&$block)
+{
   global $base_url;
 
   $heatmap = (new HeatMapGenerator())->generate();
 
   if ($heatmap === FALSE) {
     $block['content'] = '<p style="color: red">Please enter 2 or more features.</p>';
-  }
-  else {
+  } else {
     if (!empty($heatmap->data)) {
       $block['subject'] = t('Feature Expression Heatmap');
       $block['content'] = '<strong>Select an analysis to display</strong>
@@ -275,8 +338,7 @@ function tripal_analysis_expression_heatmap_block(&$block) {
         ['type' => 'setting']);
       drupal_add_js(drupal_get_path('module',
           'tripal_analysis_expression') . '/theme/js/heatmap.js');
-    }
-    else {
+    } else {
       $block['subject'] = '';
       if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
         $block['content'] = t('<p style="color:red; font-weight: bold; margin-top: 20px">
@@ -288,7 +350,8 @@ function tripal_analysis_expression_heatmap_block(&$block) {
   }
 }
 
-function tripal_analysis_expression_entity_delete($entity, $type) {
+function tripal_analysis_expression_entity_delete($entity, $type)
+{
   if ($entity->chado_table == 'analysis') {
 
     $analysis_id = $entity->chado_record->analysis_id;
@@ -299,9 +362,9 @@ function tripal_analysis_expression_entity_delete($entity, $type) {
       FROM {feature_cvtermprop} p
       WHERE p.type_id=:analysis_cvterm_id
       AND p.value=:analysis_id', [
-        ':analysis_cvterm_id' => $analysis_cvterm_id,
-        ':analysis_id' => $analysis_id,
-      ])->fetchAll();
+      ':analysis_cvterm_id' => $analysis_cvterm_id,
+      ':analysis_id' => $analysis_id,
+    ])->fetchAll();
 
     $feature_cvterm_ids = [];
 
