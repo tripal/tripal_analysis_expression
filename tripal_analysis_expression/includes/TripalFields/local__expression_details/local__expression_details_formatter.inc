@@ -45,7 +45,8 @@ class local__expression_details_formatter extends ChadoFieldFormatter
 
     foreach ($pvalue_data as $row) {
       $rows[] = [
-        $row->cvterm_name,
+        l($row->cvterm_name,'tripal_analysis_expression/pvalue/cvterm/'.$row->cvterm_id),#$cv_term->db_name,'/cv/lookup/'.$cv_term->db_name),
+        #l($row->cvterm_name,'admin/tripal/extension/tripal_analysis_expression/cvterm/%'),
         $row->expression_relationship,
         $row->p_value,
         l($row->analysis_name, 'bio_data/'. chado_get_record_entity_by_table('analysis', $row->analysis_id)),

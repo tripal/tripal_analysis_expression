@@ -3,7 +3,8 @@
 /**
  * @see TripalImporter
  */
-class tripal_expression_pvalue_loader extends TripalImporter{
+class tripal_expression_pvalue_loader extends TripalImporter
+{
 
   /**
    * The name of this loader.  This name will be presented to the site
@@ -122,7 +123,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
   /**
    * @see TripalImporter::form()
    */
-  public function form($form, &$form_state) {
+  public function form($form, &$form_state)
+  {
 
     $form['expression_relationship'] = [
       '#title' => t('Expression Relationship'),
@@ -188,7 +190,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
   /**
    * @see TripalImporter::formValidate()
    */
-  public function formValidate($form, &$form_state) {
+  public function formValidate($form, &$form_state)
+  {
 
     parent::formValidate($form, $form_state);
 
@@ -260,7 +263,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
   /**
    * @see TripalImporter::run()
    */
-  public function run() {
+  public function run()
+  {
     $run_args = $this->arguments['run_args'];
     $file_path = $this->arguments['files']['file_path'];
     if (array_key_exists('file_path', $this->arguments['files'][0])) {
@@ -307,7 +311,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    *
    * @throws \Exception
    */
-  private function parseFile($file_path, $file_ext, $organism_id, $so_term) {
+  private function parseFile($file_path, $file_ext, $organism_id, $so_term)
+  {
     $file_size = filesize($file_path);
     $this->setTotalItems($file_size);
     $this->setItemsHandled(0);
@@ -326,13 +331,18 @@ class tripal_expression_pvalue_loader extends TripalImporter{
 
       $type_id = chado_get_cvterm(['name' => $so_term])->cvterm_id;
 
-      $feature_id = $this->get_feature_id($feature_name, $organism_id,
-        $type_id);
+      try {
+        $feature_id = $this->get_feature_id($feature_name, $organism_id,
+          $type_id);
+        $data = $this->get_existing_data($feature_id);
 
-      $data = $this->get_existing_data($feature_id);
+        is_object($data) ? $this->updateData($data->feature_cvterm_id,
+          $pvalue) : $this->insertData($feature_id, $pvalue);
+      } catch (Exception $exception) {
 
-      is_object($data) ? $this->updateData($data->feature_cvterm_id,
-        $pvalue) : $this->insertData($feature_id, $pvalue);
+      }
+
+
     }
 
     fclose($fp);
@@ -351,13 +361,13 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    *  String containing the path to the file, or false on failure.
    */
 
-  private function findFile($values) {
+  private function findFile($values)
+  {
     if (!empty($values['file_local'])) {
       $file_path = trim($values['file_local']);
 
       return $file_path;
-    }
-    else {
+    } else {
       if (!empty($values['file_upload'])) {
         $fid = trim($values['file_upload']);
         if (!$fid) {
@@ -370,8 +380,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
         $file_path = base_path() . drupal_realpath($file->uri);
 
         return $file_path;
-      }
-      else {
+      } else {
         if (!empty($values['file_upload_existing'])) {
 
           $fid = $values['file_upload_existing'];
@@ -401,7 +410,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    * @return object|NULL
    * @throws \Exception
    */
-  public function get_existing_data($feature_id) {
+  public function get_existing_data($feature_id)
+  {
     $sql = 'SELECT feature_cvterm_id FROM {feature_cvterm} WHERE feature_id=:feature_id AND cvterm_id=:cvterm_id';
 
     $feature_cvterms = chado_query($sql, [
@@ -456,7 +466,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    * @param int $feature_cvterm_id
    * @param int $pvalue
    */
-  private function updateData($feature_cvterm_id, $pvalue) {
+  private function updateData($feature_cvterm_id, $pvalue)
+  {
     db_update('chado.feature_cvtermprop')
       ->fields([
         'value' => $pvalue,
@@ -474,7 +485,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    *
    * @throws \Exception
    */
-  private function insertData($feature_id, $pvalue) {
+  private function insertData($feature_id, $pvalue)
+  {
     $highest_rank = chado_query('SELECT rank FROM {feature_cvterm} WHERE feature_id=:feature_id ORDER BY rank DESC LIMIT 1',
       [':feature_id' => $feature_id])->fetchField();
 
@@ -520,7 +532,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
     $type_id,
     $value,
     $cvalue_id = NULL
-  ) {
+  )
+  {
     $fields = [];
     $fields['feature_cvterm_id'] = $feature_cvterm_id;
     $fields['type_id'] = $type_id;
@@ -547,7 +560,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    *  The id of the inserted feature cvterm.
    * @throws \Exception
    */
-  private function insert_feature_cvterm($feature_id, $rank) {
+  private function insert_feature_cvterm($feature_id, $rank)
+  {
     $feature_cvterm_id = db_insert('chado.feature_cvterm')->fields([
       'feature_id' => $feature_id,
       'cvterm_id' => $this->cvterm_id,
@@ -567,7 +581,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    *  Integer ID of the cvterm.
    * @throws \Exception
    */
-  private function get_feature_id($feature_name, $organism_id, $type_id) {
+  private function get_feature_id($feature_name, $organism_id, $type_id)
+  {
     $feature_id = db_query('SELECT f.feature_id FROM {chado.feature} f
         WHERE uniquename = :feature_name
         AND organism_id = :organism_id
