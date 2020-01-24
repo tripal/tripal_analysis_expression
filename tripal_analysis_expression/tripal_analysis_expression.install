@@ -64,6 +64,8 @@ function tripal_analysis_expression_install() {
   tripal_analysis_expression_add_pvalue_cvterm();
   tripal_analysis_expression_add_evidence_code_cvterm();
   tripal_analysis_expression_add_experimental_factor_cvterms();
+
+  tripal_analysis_expression_add_eco_cvterm();
 }
 
 /**
@@ -289,6 +291,16 @@ function tripal_analysis_expression_add_evidence_code_cvterm() {
   ]);
 }
 
+function tripal_analysis_expression_add_eco_cvterm() {
+  chado_insert_cvterm([
+    'id' => 'ECO:0006068',
+    'name' => 'RNA-sequencing evidence used in manual assertion',
+    'definition' => 'A type of high throughput nucleotide sequencing assay evidence used in a manual assertion based on high-throughput (HT) sequencing of fragmented cDNA molecules. [ECO:MCC]',
+    'cv_name' => 'ECO',
+    'db_name' => 'ECO',
+  ], ['update_existing' => FALSE]);
+}
+
 /**
  * Add heatmap variables.
  */
@@ -332,6 +344,10 @@ function tripal_analysis_expression_update_7300() {
   if (!$cvalue_exists) {
     db_query('ALTER TABLE chado.feature_cvtermprop ADD COLUMN cvalue_id bigint');
   }
+}
+
+function tripal_analysis_expression_update_7302() {
+  tripal_analysis_expression_add_eco_cvterm();
 }
 
 function tripal_analysis_expression_update_7301() {

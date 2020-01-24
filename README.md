@@ -201,6 +201,16 @@ The steps for loading p-value data are as follows (detailed instructions can be 
 4. Upload all features in the p-value data to the Chado database. To bulk upload features, go to **Tripal->Data Loaders->Chado FASTA Loader** and upload a FASTA file (click here to see an example of [fasta file of transcriptome sequences](http://www.hardwoodgenomics.org/sites/default/files/sequences/sugarMaple022416/Acer_saccharum_022416_transcripts.fasta)). Or upload one feature at a time via **content-> Tripal Content -> Add content**, and select the relevant entity type (such as mRNA).
 5. Load the p-value data.
 
+### Installing ECO
+
+[The Evidence & Conclusion Ontology](https://www.ebi.ac.uk/ols/ontologies/eco) contains evidence codes that will get associated with pvalue data uploaded through this module. To install this ontology:
+
+1. Navigate to Admin -> Tripal -> Data Loaders -> Chado Vocabularies -> OBO Vocabulary Loader.
+2. Click "Add A New Ontology OBO Reference".
+3. Enter ECO in the Vocabulary Name field.
+4. Paste [the link to the OBO](https://raw.githubusercontent.com/evidenceontology/evidenceontology/master/eco.obo) in the Remote URL field.
+5. Click the Import OBO File button and run the job.
+
 ### Obtaining P-Value Data
 
 #### Collecting PValue Data
