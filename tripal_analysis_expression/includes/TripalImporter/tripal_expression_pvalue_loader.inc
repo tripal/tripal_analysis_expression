@@ -82,21 +82,21 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    *
    * @var int
    */
-  private $evidence_code;
+  private $expression_relationship;
 
   /**
    * String name of the cvterm associated with the keyword.
    *
    * @var string
    */
-  private $evidence_code_id;
+  private $expression_relationship_id;
 
   /**
    * The type id to be used when inserting the other cvterm as a prop.
    *
    * @var int
    */
-  private $evidence_code_cvterm_id;
+  private $expression_relationship_cvterm_id;
 
   /**
    * The cvterm id for p-value.
@@ -124,10 +124,10 @@ class tripal_expression_pvalue_loader extends TripalImporter{
    */
   public function form($form, &$form_state) {
 
-    $form['evidence_code'] = [
+    $form['expression_relationship'] = [
       '#title' => t('Expression Relationship'),
       '#type' => 'select',
-      '#description' => t('The evidence code that relates the cvterms.'),
+      '#description' => t('The term that relates the cvterms.'),
       '#options' => drupal_map_assoc([
         'up-regulated',
         'down-regulated',
@@ -144,6 +144,24 @@ class tripal_expression_pvalue_loader extends TripalImporter{
           'admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add')),
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/0',
     ];
+
+    $eco = chado_get_cv(['name' => 'eco']);
+
+    if (!$eco) {
+        drupal_set_message('The loader could not find the ECO controlled vocabulary. It is required for this loader. ' .
+          l('Please ensure that it is installed before proceeding.', 'admin/tripal/loaders/chado_vocabs/obo_loader'),
+          'warning');
+    }
+
+    // $autocomplete = $eco ? 'admin/tripal/storage/chado/auto_name/cvterm/' . $eco->cv_id : null;
+
+    // $form['evidence_code'] = [
+    //   '#type' => 'textfield',
+    //   '#title' => t('Evidence Code'),
+    //   '#required' => TRUE,
+    //   '#description' => t('How do we know this relationship is true?'),
+    //   '#autocomplete_path' => $autocomplete,
+    // ];
 
     $form['organism_id'] = [
       '#title' => t('Organism'),
@@ -201,6 +219,19 @@ class tripal_expression_pvalue_loader extends TripalImporter{
       return;
     }
 
+    // if (!chado_get_cv(['name' => 'ECO'])) {
+    //   form_set_error('evidence_code', 'The loader could not find the ECO controlled vocabulary. It is required for this loader. ' .
+    //     l('Please ensure that it is installed before proceeding.', 'admin/tripal/loaders/chado_vocabs/obo_loader'));
+  
+    //   return;
+    // }
+
+    // if (!chado_get_cvterm(['name' => $values['evidence_code']])) {
+    //   form_set_error('evidence_code', 'Cvterm provided does not exist.');
+
+    //   return;
+    // }
+
     $file_path = $this->findFile($values);
     if (!$file_path) {
       form_set_error('file_upload', 'Failed to get file path.');
@@ -242,9 +273,9 @@ class tripal_expression_pvalue_loader extends TripalImporter{
     $cvterm_name = $run_args['keyword'];
     $this->cvterm_id = chado_get_cvterm(['name' => $cvterm_name])->cvterm_id;
 
-    $this->evidence_code = $run_args['evidence_code'];
-    $this->evidence_code_id = chado_get_cvterm(['name' => $this->evidence_code])->cvterm_id;
-    $this->evidence_code_cvterm_id = chado_get_cvterm([
+    $this->expression_relationship = $run_args['expression_relationship'];
+    $this->expression_relationship_id = chado_get_cvterm(['name' => $this->expression_relationship])->cvterm_id;
+    $this->expression_relationship_cvterm_id = chado_get_cvterm([
       'cv_id' => ['name' => 'local'],
       'name' => 'evidence code',
     ])->cvterm_id;
@@ -389,7 +420,7 @@ class tripal_expression_pvalue_loader extends TripalImporter{
 
       $props = chado_query('
         SELECT p1.feature_cvterm_id,
-               p1.value AS evidence_code,
+               p1.value AS expression_relationship,
                p2.value AS p_value,
                p3.value AS analysis_id
         FROM {feature_cvtermprop} p1
@@ -401,11 +432,11 @@ class tripal_expression_pvalue_loader extends TripalImporter{
         AND p3.type_id=:analysis_cvterm_id
         AND p3.value=:analysis_id
         WHERE p1.feature_cvterm_id=:feature_cvterm_id
-        AND p1.type_id=:evidence_code_cvterm_id
-        AND p1.value=:evidence_code', [
+        AND p1.type_id=:expression_relationship_cvterm_id
+        AND p1.value=:expression_relationship', [
         ':feature_cvterm_id' => $feature_cvterm_id,
-        ':evidence_code_cvterm_id' => $this->evidence_code_cvterm_id,
-        ':evidence_code' => $this->evidence_code,
+        ':expression_relationship_cvterm_id' => $this->expression_relationship_cvterm_id,
+        ':expression_relationship' => $this->expression_relationship,
         ':pvalue_type_id' => $this->pvalue_cvterm_id,
         ':analysis_cvterm_id' => $analysis_cvterm_id,
         ':analysis_id' => $this->analysis_id,
@@ -453,8 +484,8 @@ class tripal_expression_pvalue_loader extends TripalImporter{
 
     // evidence code
     $this->insert_feature_cvtermprop($feature_cvterm_id,
-      $this->evidence_code_cvterm_id, $this->evidence_code,
-      $this->evidence_code_id);
+      $this->expression_relationship_cvterm_id, $this->expression_relationship,
+      $this->expression_relationship_id);
     // pvalue
     $this->insert_feature_cvtermprop($feature_cvterm_id,
       $this->pvalue_cvterm_id, $pvalue);

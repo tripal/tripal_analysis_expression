@@ -119,7 +119,7 @@ class local__expression_details extends ChadoField{
       'name' => 'evidence code',
     ])->cvterm_id;
 
-    $pvalue_data = chado_query('SELECT cv1.name as cvterm_name, p1.value as evidence_code, p2.value as p_value, a.name as analysis_name, a.analysis_id as analysis_id
+    $pvalue_data = chado_query('SELECT cv1.name as cvterm_name, p1.value as expression_relationship, p2.value as p_value, a.name as analysis_name, a.analysis_id as analysis_id
   FROM {feature_cvterm} fcvt
   JOIN {cvterm} cv1 ON cv1.cvterm_id=fcvt.cvterm_id
   JOIN {cvterm} cv2 ON cv2.name=\'analysis\'
