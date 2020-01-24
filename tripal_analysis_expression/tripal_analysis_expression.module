@@ -111,17 +111,17 @@ function tripal_analysis_expression_menu()
     'type' => MENU_CALLBACK,
   ];
 
-  $items['tripal_analysis_expression/pvalue/cvterm/%'] = [
+  $items['tripal_analysis_expression/pvalue/cvterm/%/%'] = [
     'title' => 'Expression Analysis CVterm',
     'description' => 'P-value CV terms.',
     'access arguments' => ['access content'],
-    'page arguments' => [3],
+    'page arguments' => [3, 4],
     'page callback' => 'tripal_analysis_expression_cvterm',
   ];
   return $items;
 }
 
-function tripal_analysis_expression_cvterm($cvterm_id)
+function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
 {
   $cv_term = chado_query('select cv.name as cv_name, cv.definition as cv_definition, db.name as db_name
                 from {chado.cvterm} cv
@@ -129,6 +129,11 @@ function tripal_analysis_expression_cvterm($cvterm_id)
                 join {chado.db} db on db.db_id=dbx.db_id
                 where cvterm_id=:cvterm_id',
     [':cvterm_id' => $cvterm_id])->fetchObject();
+  $organism = chado_query('select * from chado.feature where organism_id=:organism_id',
+    [':organism_id' => $organism_id])->fetchObject();
+  $cvterm = chado_query('select * from chado.cvterm where cvterm_id=:cvterm_id',
+    [':cvterm_id' => $cvterm_id])->fetchObject();
+  #$feature_query = chado_query(select f.organism_id as organism_id,)
   $rows = [];
   $rows[] = [
     [
@@ -136,38 +141,83 @@ function tripal_analysis_expression_cvterm($cvterm_id)
       'header' => TRUE,
       'width' => '20%',
     ],
-            $cv_term->cv_name,
-    ];
+    $cv_term->cv_name,
+  ];
   $rows[] = [
     [
       'data' => 'definition',
       'header' => TRUE,
       'width' => '20%',
     ],
-            $cv_term->cv_definition,
-    ];
+    $cv_term->cv_definition,
+  ];
   $rows[] = [
     [
       'data' => 'vocabulary',
       'header' => TRUE,
       'width' => '20%',
     ],
-    l($cv_term->db_name,'/cv/lookup/'.$cv_term->db_name),
+    l($cv_term->db_name, '/cv/lookup/' . $cv_term->db_name),
   ];
   $table = [
-      'header' => [],
-      'rows' => $rows,
-      'attributes' => [],
-      'sticky' => FALSE,
-      'caption' => '',
-      'colgroups' => [],
-      'empty' => [],
+    'header' => [],
+    'rows' => $rows,
+    'attributes' => [],
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => [],
+    'empty' => [],
   ];
-  drupal_set_title($cv_term->db_name.': '.$cv_term->cv_name);
+
+
+  $feature_rows = [];
+  $query = chado_db_select('feature', 'u');
+  $query->join('feature_cvterm', 'fc', 'u.feature_id = fc.feature_id AND fc.cvterm_id = '.$cvterm_id); //'u.type_id = c.cvterm_id'
+  //$query->join('cvterm','c','u.type_id = c.cvterm_id');
+  $query->orderBy('u.feature_id');
+  $query->fields('u', array('name'));
+  //$query->fields('c', ['name']);
+  $query->condition('organism_id', $organism_id, '=');
+
+  $total = $query->countQuery()->execute()->fetchField();
+  $page = pager_default_initialize($total, 5);
+  $query->range($page*5, 5);
+
+  $feature_result = $query->execute();
+  while ($record = $feature_result->fetchAssoc()) {
+    $feature_names[] = [$record['name']];//, $record['c_name']];
+  }
+
+  $feature_table = [
+    'header' => 'test',
+    'rows' => $feature_names,
+    'value' => $feature_names,
+    'pager' => theme('pager', ['quantity', $total]),
+    'attributes' => [],
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => [],
+    'empty' => [],
+  ];
+
+
   return [
     '#type' => 'markup',
-    '#markup' => theme_table($table)
+    '#markup' => theme('table',$table) . theme('table',$feature_table) . $feature_table['pager'],#$content['pager'],
+    //'#markup' => theme_table($table) . theme_table($feature_table) . $feature_table['pager'],
   ];
+/*
+  $content = [];
+  $content['cv_table'] = [
+    '#markup' => theme('table', $table),
+  ];
+  $content['feature_table'] = [
+    '#markup' => theme('table', $feature_table),
+  ];
+  $content['pager']= [
+    '#markup' => theme('pager', ['quantity', $total]),
+  ];
+  return $content;*/
 }
 
 /**
@@ -367,10 +417,9 @@ function tripal_analysis_expression_entity_delete($entity, $type)
     ])->fetchAll();
 
     $feature_cvterm_ids = [];
-
-    foreach ($results as $result) {
-      $feature_cvterm_ids[] = $result->feature_cvterm_id;
-    }
+      foreach ($results as $result) {
+        $feature_cvterm_ids[] = $result->feature_cvterm_id;
+      }
 
     if (!empty($feature_cvterm_ids)) {
       db_delete('chado.feature_cvterm')
