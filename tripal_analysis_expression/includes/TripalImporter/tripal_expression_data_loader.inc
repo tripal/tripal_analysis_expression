@@ -74,8 +74,8 @@ class tripal_expression_data_loader extends TripalImporter{
 
     // Obtain the list of contacts from the chado contact table.
     $sql = 'SELECT
-            contact_id, name
-          FROM {contact}
+            contact_id, name 
+          FROM {contact} 
           ORDER BY name';
     $results = chado_query($sql);
     $contacts = [];
@@ -419,7 +419,24 @@ class tripal_expression_data_loader extends TripalImporter{
    * @ingroup tripal_analysis_expression
    */
 
-  protected function tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $quantificationunits, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples, $seqtype) {
+  protected function tripal_expression_loader(
+    $organism_id,
+    $analysis_id,
+    $contact_id,
+    $arraydesign_id,
+    $assaydate,
+    $acquisitiondate,
+    $quantificationdate,
+    $quantificationunits,
+    $filepath,
+    $fileext,
+    $filetype,
+    $re_start,
+    $re_stop,
+    $feature_uniquenames,
+    $create_biosamples,
+    $seqtype
+  ) {
 
     $seqtype_id = NULL;
     if ($seqtype) {
@@ -495,9 +512,9 @@ class tripal_expression_data_loader extends TripalImporter{
 
         if ($seqtype_id) {
 
-          $query = chado_query('SELECT afanalysisfeature_id FROM {analysisfeature} af
+          $query = chado_query('SELECT afanalysisfeature_id FROM {analysisfeature} af 
 INNER JOIN {feature} f ON f.feature_id = af.feature_id
-WHERE af.analysis_id = :analysis_id
+WHERE af.analysis_id = :analysis_id 
 AND af.feature_id = :feature_id
 AND f.type_id = :type_id', [
             ':analysis_id' => $analysis_id,
@@ -608,7 +625,23 @@ AND f.type_id = :type_id', [
    * @ingroup tripal_analysis_expression
    */
 
-  function tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames, $type_id) {
+  function tripal_expression_load_mat_file(
+    $filepath,
+    $fileext,
+    $arraydesign_id,
+    $organism_id,
+    $analysis_id,
+    $contact_id,
+    $assay_id,
+    $acquisition_id,
+    $quantification_id,
+    $quantificationunits,
+    $re_start,
+    $re_stop,
+    $uniq_name,
+    $feature_uniquenames,
+    $type_id
+  ) {
     $data_ln = 0;
     $mat_fp = fopen($filepath, 'r');
     $num_col = 0;
@@ -779,7 +812,8 @@ AND f.type_id = :type_id', [
             $feature_id = $this->tripal_expression_find_feature_id($linepart[0],
               $organism_id, $feature_uniquenames, $type_id);
             if (!$feature_id) {
-              $this->logMessage("Feature $linepart[0] not found");
+              tripal_report_error('tripal_analysis_expression', TRIPAL_WARNING,
+                "Feature $linepart[0] not found");
               continue;
             }
             $element_id = tripal_expression_element($arraydesign_id,
@@ -800,7 +834,9 @@ AND f.type_id = :type_id', [
                   'feature_id' => $feature_id,
                 ]);
                 if ($analysisfeature == FALSE) {
-                  $this->logMessage("ERROR: Unable to write to analysisfeature table");
+                  tripal_report_error('tripal_analysis_expression',
+                    TRIPAL_ERROR,
+                    "ERROR: Unable to write to analysisfeature table");
                   continue;
                 }
               }
@@ -860,7 +896,22 @@ AND f.type_id = :type_id', [
    * @ingroup tripal_analysis_expression
    */
 
-  function tripal_expression_load_col_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames) {
+  function tripal_expression_load_col_file(
+    $filepath,
+    $fileext,
+    $arraydesign_id,
+    $organism_id,
+    $analysis_id,
+    $contact_id,
+    $assay_id,
+    $acquisition_id,
+    $quantification_id,
+    $quantificationunits,
+    $re_start,
+    $re_stop,
+    $uniq_name,
+    $feature_uniquenames
+  ) {
     $inter = 0;
     $data_ln = 0;
 
@@ -1047,7 +1098,12 @@ AND f.type_id = :type_id', [
    * @ingroup tripal_analysis_expression
    */
 
-  function tripal_expression_find_feature_id($feature, $organism_id, $feature_uniquenames, $type_id = NULL) {
+  function tripal_expression_find_feature_id(
+    $feature,
+    $organism_id,
+    $feature_uniquenames,
+    $type_id = NULL
+  ) {
     $query = db_select('chado.feature', 'f');
     $query->fields('f', ['organism_id', 'feature_id']);
 
@@ -1067,12 +1123,14 @@ AND f.type_id = :type_id', [
     if ($count > 1) {
       $message = "ERROR: More than one feature matches the feature name: !feature.\n
       Please specify a term for the feature type.\n";
-      $this->logMessage(t($message, ['!feature' => $feature]));
+      tripal_report_error('tripal_analysis_expression', TRIPAL_WARNING,
+        $message, ['!feature' => $feature], TRIPAL_ERROR);
       return FALSE;
     }
 
     if ($count === 0) {
-      $this->logMessage("The feature, " . $feature . ", found in the expression file was not found in the Chado database.
+      tripal_report_error('tripal_analysis_expression', TRIPAL_WARNING,
+        "The feature, " . $feature . ", found in the expression file was not found in the Chado database.
        Please ensure that the feature has been loaded into the database and that the feature name is both unique and correct.");
       return FALSE;
     }
