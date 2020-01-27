@@ -128,16 +128,15 @@ function tripal_analysis_expression_menu()
  *  features with p-values. A pager appears when there are greater than
  *  twenty features.
  *
- * @param $cvterm_id
- * @param $organism_id
+ * @param int $cvterm_id cvterm id the user clicked on
+ * @param int $organism_id organism of interest
  *
  * @return array
- * @see \theme() for paramaters instructions
  *
  * @ingroup tripal_analysis_expression
+ * @throws Exception
  *
  */
-
 function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
 {
   // adding upper table which contains name, definition, and vocabulary
@@ -147,6 +146,7 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
                 join {chado.db} db on db.db_id=dbx.db_id
                 where cvterm_id=:cvterm_id',
     [':cvterm_id' => $cvterm_id])->fetchObject();
+
   $rows = [];
   $rows[] = [
     [
@@ -178,17 +178,21 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   ];
 
   // adding table of features
-  $query = chado_db_select('feature', 'u');
-  $query->join('feature_cvterm', 'fc', 'u.feature_id = fc.feature_id AND fc.cvterm_id = :cvtermid',
-                array(':cvtermid' => $cvterm_id));
-  $query->orderBy('u.feature_id');
-  $query->fields('u', array('name'));
+  $query = chado_db_select('feature', 'f');
+  $query->fields('f', array('name'));
+  $query->join('feature_cvterm', 'fc', 'f.feature_id = fc.feature_id AND fc.cvterm_id = :cvtermid',
+    array(':cvtermid' => $cvterm_id));
+  $query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id');
+  $query->join('cvterm', 'cv', 'cv.cvterm_id = fp.type_id');
   $query->condition('organism_id', $organism_id, '=');
-
+  $query->condition('cv.name', 'p-value', '='); //workaround to only select those added by our module
+  $query->orderBy('f.feature_id');
   $total = $query->countQuery()->execute()->fetchField();
+
+
   $page = pager_default_initialize($total, 20);
   $query->range($page * 20, 20);
-
+  $feature_names = [];
   $feature_result = $query->execute();
   while ($record = $feature_result->fetchAssoc()) {
     $feature_names[] = [$record['name']];
@@ -199,7 +203,9 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
     'rows' => $feature_names,
     'pager' => theme('pager', ['quantity', $total]),
   ];
-  drupal_set_title($cv_term->db_name.': '.$cv_term->cv_name);
+
+  drupal_set_title($cv_term->db_name . ': ' . $cv_term->cv_name);
+
   return [
     '#type' => 'markup',
     '#markup' => theme('table', $table) . theme('table', $feature_table) . $feature_table['pager'],
