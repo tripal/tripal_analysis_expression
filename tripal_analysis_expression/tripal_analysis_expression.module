@@ -147,10 +147,6 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
                 join {chado.db} db on db.db_id=dbx.db_id
                 where cvterm_id=:cvterm_id',
     [':cvterm_id' => $cvterm_id])->fetchObject();
-  $organism = chado_query('select * from chado.feature where organism_id=:organism_id',
-    [':organism_id' => $organism_id])->fetchObject();
-  $cvterm = chado_query('select * from chado.cvterm where cvterm_id=:cvterm_id',
-    [':cvterm_id' => $cvterm_id])->fetchObject();
   $rows = [];
   $rows[] = [
     [
@@ -179,16 +175,12 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   $table = [
     'header' => [],
     'rows' => $rows,
-    'attributes' => [],
-    'sticky' => FALSE,
-    'caption' => '',
-    'colgroups' => [],
-    'empty' => [],
   ];
 
   // adding table of features
   $query = chado_db_select('feature', 'u');
-  $query->join('feature_cvterm', 'fc', 'u.feature_id = fc.feature_id AND fc.cvterm_id = ' . $cvterm_id);
+  $query->join('feature_cvterm', 'fc', 'u.feature_id = fc.feature_id AND fc.cvterm_id = :cvtermid',
+                array(':cvtermid' => $cvterm_id));
   $query->orderBy('u.feature_id');
   $query->fields('u', array('name'));
   $query->condition('organism_id', $organism_id, '=');
@@ -207,7 +199,7 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
     'rows' => $feature_names,
     'pager' => theme('pager', ['quantity', $total]),
   ];
-
+  drupal_set_title($cv_term->db_name.': '.$cv_term->cv_name);
   return [
     '#type' => 'markup',
     '#markup' => theme('table', $table) . theme('table', $feature_table) . $feature_table['pager'],
