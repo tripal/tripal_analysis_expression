@@ -179,7 +179,8 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
 
   // adding table of features
   $query = chado_db_select('feature', 'f');
-  $query->fields('f', array('name'));
+  $query->fields('f', array('name')); //feature name
+  $query->fields('fp', array('value')); // p-value
   $query->join('feature_cvterm', 'fc', 'f.feature_id = fc.feature_id AND fc.cvterm_id = :cvtermid',
     array(':cvtermid' => $cvterm_id));
   $query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id');
@@ -188,18 +189,17 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   $query->condition('cv.name', 'p-value', '='); //workaround to only select those added by our module
   $query->orderBy('f.feature_id');
   $total = $query->countQuery()->execute()->fetchField();
-
-
   $page = pager_default_initialize($total, 20);
   $query->range($page * 20, 20);
-  $feature_names = [];
   $feature_result = $query->execute();
+
+  $feature_names = [];
   while ($record = $feature_result->fetchAssoc()) {
-    $feature_names[] = [$record['name']];
+    $feature_names[] = [$record['name'],$record['value']];
   }
 
   $feature_table = [
-    'header' => ['Features'],
+    'header' => ['Features', 'P-value'],
     'rows' => $feature_names,
     'pager' => theme('pager', ['quantity', $total]),
   ];
