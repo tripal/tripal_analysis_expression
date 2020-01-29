@@ -176,12 +176,13 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
     'header' => [],
     'rows' => $rows,
   ];
-  $query = chado_db_select('feature_cvtermprop', 'fcp');
-  $query->fields('fcp', ['type_id']);
-  $query->condition('value', 'up-regulated', '=');
-  $result = $query->execute();
-  $term = $result->fetchAssoc();
-  dpm($term);
+
+  $pvalue_cvterm_id = chado_get_cvterm([ // get type_id of p-values. used in join to cvtermprop
+    'name' => 'p-value',
+  ])->cvterm_id;
+  $evidence_code_cvterm_id = chado_get_cvterm([ // get type_id of expression relationship. used in join to cvtermprop
+    'name' => 'evidence code',
+  ])->cvterm_id;
 
   // adding table of features
   $query = chado_db_select('feature', 'f');
@@ -190,11 +191,11 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   $query->fields('fp2', array('value')); // expression relationship (shares 'value' column in the table feature_cvtermprop)
   $query->fields('fc', array('feature_cvterm_id'));
   $query->join('feature_cvterm', 'fc', 'f.feature_id = fc.feature_id AND fc.cvterm_id = :cvtermid', [':cvtermid' => $cvterm_id]);
-  $query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id');
-  $query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid', [':typeid' => $term['type_id']]);
+  $query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id AND fp.type_id = :typeid', [':typeid' => $pvalue_cvterm_id]);
+  $query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2', [':typeid2' => $evidence_code_cvterm_id]);
   $query->join('cvterm', 'cv', 'cv.cvterm_id = fp.type_id');
   $query->condition('organism_id', $organism_id, '=');
-  $query->condition('cv.name', 'p-value', '='); //workaround to only select those added by our module
+  #$query->condition('cv.name', 'p-value', '='); //workaround to only select those added by our module
   $query->orderBy('f.feature_id');
   $total = $query->countQuery()->execute()->fetchField();
   $page = pager_default_initialize($total, 20);
