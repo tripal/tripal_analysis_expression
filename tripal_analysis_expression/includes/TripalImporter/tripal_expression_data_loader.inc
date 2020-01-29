@@ -16,7 +16,13 @@ class tripal_expression_data_loader extends TripalImporter{
 
   public static $file_types = ['csv', 'tsv', 'txt'];
 
-  public static $upload_description = 'Expression data can be loaded from two format types. Select the column format for files that have two columns - transcript id and expression value. Select the matrix format for files that specify biosample by column and transcript by row. If "Column Format" is selected, the name of the column file will be taken as the biomaterial name. It is recommended to avoid the use of white space in column file names and in biomaterial names.<br>  Please verify the column or file names match the intended biomaterial name in the database.';
+  public static $upload_description = 'Expression data can be loaded from two format types. ' . 
+    'Select the column format for files that have two columns - transcript id and expression ' . 
+    'value. Select the matrix format for files that specify biosample ' .
+    'by column and transcript by row. If "Column Format" is selected, the name of the column ' . 
+    'file will be taken as the biomaterial name. It is recommended to avoid the use of white ' . 
+    'space in column file names and in biomaterial names.<br>  Please verify the column or file ' . 
+    'names match the intended biomaterial name in the database. The uploaded file cannot be a directory.';
 
   public static $upload_title = 'Upload expression data';
 
@@ -244,9 +250,10 @@ class tripal_expression_data_loader extends TripalImporter{
     $form['filetype'] = [
       '#type' => 'radios',
       '#title' => t('Source File Type'),
-      '#description' => t('Data can be loaded from two format types. Select the column format for files that have two columns - transcript id and expression value. Select the matrix format (currently unavailable) for files that specify biosample by column and transcript by row. If "Column Format" is selected, the name of the column file will be taken as the biomaterial name. It is recommended to avoid the use of white space in column file names and in biomaterial names.'),
+      '#description' => t('Data can be loaded from two format types. Select the column format for files that have two columns - transcript id and expression value. Select the matrix format for files that specify biosample by column and transcript by row. If "Column Format" is selected, the name of the column file will be taken as the biomaterial name. It is recommended to avoid the use of white space in column file names and in biomaterial names.'),
       '#options' => [
         'col' => t('Column Format'),
+        'mat' => t('Matrix Format'),
       ],
       '#required' => TRUE,
       '#default_value' => 'col',
@@ -294,6 +301,7 @@ class tripal_expression_data_loader extends TripalImporter{
     $fileext = $form_state['values']['fileext'];
     $re_start = $form_state['values']['re_start'];
     $re_end = $form_state['values']['re_end'];
+    $filepath = $form_state['values']['file_local'];
 
     $seqtype = isset($form_state['values']['seqtype']) ? $form_state['values']['seqtype'] : NULL;
 
@@ -302,6 +310,10 @@ class tripal_expression_data_loader extends TripalImporter{
         'cv_id' => ['name' => 'sequence'],
         'name' => $seqtype,
       ];
+    }
+
+    if (is_dir($filepath)) {
+      form_set_error('file_local', 'The loader cannot process directories at this time. Please upload a regular file.');
     }
 
     $type = chado_get_cvterm($identifier);
@@ -496,7 +508,7 @@ class tripal_expression_data_loader extends TripalImporter{
             $new_features = $this->tripal_expression_load_col_file($filepath . '/' . $file,
               $fileext, $arraydesign_id, $organism_id, $analysis_id,
               $contact_id, $assay_id, $acquisition_id, $quantification_id,
-              $re_start, $re_stop, $uniq_name, $feature_uniquenames);
+              $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames);
             $num_file++;
             $old_features = $features;
             $features = (array_unique(array_merge($old_features,
