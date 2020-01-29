@@ -244,12 +244,12 @@ class tripal_expression_data_loader extends TripalImporter{
     $form['filetype'] = [
       '#type' => 'radios',
       '#title' => t('Source File Type'),
-      '#description' => t('Data can be loaded from two format types. Select the column format for files that have two columns - transcript id and expression value. Select the matrix format for files that specify biosample by column and transcript by row. If "Column Format" is selected, the name of the column file will be taken as the biomaterial name. It is recommended to avoid the use of white space in column file names and in biomaterial names.'),
+      '#description' => t('Data can be loaded from two format types. Select the column format for files that have two columns - transcript id and expression value. Select the matrix format (currently unavailable) for files that specify biosample by column and transcript by row. If "Column Format" is selected, the name of the column file will be taken as the biomaterial name. It is recommended to avoid the use of white space in column file names and in biomaterial names.'),
       '#options' => [
         'col' => t('Column Format'),
-        'mat' => t('Matrix Format'),
       ],
       '#required' => TRUE,
+      '#default_value' => 'col',
     ];
 
     $form['feature_uniquenames'] = [
