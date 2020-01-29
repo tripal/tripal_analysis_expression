@@ -179,11 +179,14 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
 
   // adding table of features
   $query = chado_db_select('feature', 'f');
-  $query->fields('f', array('name', 'feature_id')); //feature name and id for link
-  $query->fields('fp', array('value')); // p-value
+  $query->fields('f', array('name')); //feature name and id for link
+  $query->fields('fp', array('value')); // p-values (shares 'value' column in the table feature_cvtermprop)
+  $query->fields('fp2', array('value')); // expression relationship (shares 'value' column in the table feature_cvtermprop)
+  $query->fields('fc', array('feature_cvterm_id'));
   $query->join('feature_cvterm', 'fc', 'f.feature_id = fc.feature_id AND fc.cvterm_id = :cvtermid',
     array(':cvtermid' => $cvterm_id));
   $query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id');
+  $query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = 3450');
   $query->join('cvterm', 'cv', 'cv.cvterm_id = fp.type_id');
   $query->condition('organism_id', $organism_id, '=');
   $query->condition('cv.name', 'p-value', '='); //workaround to only select those added by our module
@@ -196,13 +199,14 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   $feature_names = [];
   while ($record = $feature_result->fetchAssoc()) {
     $feature_names[] = [
-      l($record['name'], 'bio_data/' . chado_get_record_entity_by_table('feature', $record['feature_id'])),
-      $record['value']
+      l($record['name'], 'bio_data/' . chado_get_record_entity_by_table('feature', $record['ffeature_id'])),
+      $record['value'],
+      $record['fp2_value'] # expression relationship (up- or down-regulated)
     ];
   }
 
   $feature_table = [
-    'header' => ['Features', 'P-value'],
+    'header' => ['Features', 'P-value', 'Expression Relationship'],
     'rows' => $feature_names,
     'pager' => theme('pager', ['quantity', $total]),
   ];
