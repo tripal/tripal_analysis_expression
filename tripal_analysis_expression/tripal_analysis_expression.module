@@ -198,7 +198,7 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   $query = chado_db_select('feature', 'f')
     #->extend('PagerDefault')
     ->extend('TableSort');
-  $query->fields('f', array('name')); //feature name and id for link
+  $query->fields('f', array('name', 'feature_id')); //feature name and id for link
   $query->fields('fp', array('value')); // p-values (shares 'value' column in the table feature_cvtermprop)
   $query->fields('fp2', array('value')); // expression relationship (shares 'value' column in the table feature_cvtermprop)
   $query->fields('fc', array('feature_cvterm_id'));
@@ -216,7 +216,7 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   $feature_names = [];
   while ($record = $feature_result->fetchAssoc()) {
     $feature_names[] = [
-      l($record['name'], 'bio_data/' . chado_get_record_entity_by_table('feature', $record['feature_cvterm_id'])),
+      l($record['name'], 'bio_data/' . chado_get_record_entity_by_table('feature', $record['feature_id'])),
       $record['value'],
       $record['fp2_value'] # expression relationship (up- or down-regulated)
     ];
