@@ -184,8 +184,15 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
     'name' => 'evidence code',
   ])->cvterm_id;
 
+  $header = [
+    ['data' => 'Features', 'sort' => 'ASC'],
+    ['data' => 'P-value', 'sort' => 'ASC'],
+    ['data' => 'Expression Relationship', 'sort' => 'ASC'],
+  ];
   // adding table of features
-  $query = chado_db_select('feature', 'f');
+  $query = chado_db_select('feature', 'f')
+    #->extend('PagerDefault')
+    ->extend('TableSort');
   $query->fields('f', array('name')); //feature name and id for link
   $query->fields('fp', array('value')); // p-values (shares 'value' column in the table feature_cvtermprop)
   $query->fields('fp2', array('value')); // expression relationship (shares 'value' column in the table feature_cvtermprop)
@@ -196,7 +203,8 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   $query->join('cvterm', 'cv', 'cv.cvterm_id = fp.type_id');
   $query->condition('organism_id', $organism_id, '=');
   #$query->condition('cv.name', 'p-value', '='); //workaround to only select those added by our module
-  $query->orderBy('f.feature_id');
+  $query->orderByHeader($header);
+  #$query->orderBy('last_updated', 'DESC');
   $total = $query->countQuery()->execute()->fetchField();
   $page = pager_default_initialize($total, 20);
   $query->range($page * 20, 20);
@@ -205,14 +213,16 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   $feature_names = [];
   while ($record = $feature_result->fetchAssoc()) {
     $feature_names[] = [
-      l($record['name'], 'bio_data/' . chado_get_record_entity_by_table('feature', $record['ffeature_id'])),
+      l($record['name'], 'bio_data/' . chado_get_record_entity_by_table('feature', $record['feature_cvterm_id'])),
       $record['value'],
       $record['fp2_value'] # expression relationship (up- or down-regulated)
     ];
   }
 
   $feature_table = [
-    'header' => ['Features', 'P-value', 'Expression Relationship'],
+    #'header' => ['Features', 'P-value', 'Expression Relationship'],
+    'header' => $header,
+    'sort' => 'ASC',
     'rows' => $feature_names,
     'pager' => theme('pager', ['quantity', $total]),
   ];
