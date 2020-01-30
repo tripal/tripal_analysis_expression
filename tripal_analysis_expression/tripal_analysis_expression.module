@@ -177,6 +177,11 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
     'rows' => $rows,
   ];
 
+  $organism = chado_get_organism([
+    'organism_id' => $organism_id,
+  ]);
+  $scientific_name = $organism->genus . " " . $organism->species;
+
   $pvalue_cvterm_id = chado_get_cvterm([ // get type_id of p-values. used in join to cvtermprop
     'name' => 'p-value',
   ])->cvterm_id;
@@ -185,9 +190,9 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   ])->cvterm_id;
 
   $header = [
-    ['data' => 'Features', 'sort' => 'ASC'],
-    ['data' => 'P-value', 'sort' => 'ASC'],
-    ['data' => 'Expression Relationship', 'sort' => 'ASC'],
+    ['data' => 'Features', 'field' => 'f.name', 'sort' => 'ASC'],
+    ['data' => 'P-value', 'field' => 'fp.value', 'sort' => 'ASC'],
+    ['data' => 'Expression Relationship', 'field' => 'fp2.value', 'sort' => 'ASC'],
   ];
   // adding table of features
   $query = chado_db_select('feature', 'f')
@@ -202,9 +207,7 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   $query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2', [':typeid2' => $evidence_code_cvterm_id]);
   $query->join('cvterm', 'cv', 'cv.cvterm_id = fp.type_id');
   $query->condition('organism_id', $organism_id, '=');
-  #$query->condition('cv.name', 'p-value', '='); //workaround to only select those added by our module
   $query->orderByHeader($header);
-  #$query->orderBy('last_updated', 'DESC');
   $total = $query->countQuery()->execute()->fetchField();
   $page = pager_default_initialize($total, 20);
   $query->range($page * 20, 20);
@@ -220,7 +223,6 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   }
 
   $feature_table = [
-    #'header' => ['Features', 'P-value', 'Expression Relationship'],
     'header' => $header,
     'sort' => 'ASC',
     'rows' => $feature_names,
@@ -228,10 +230,9 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   ];
 
   drupal_set_title($cv_term->db_name . ': ' . $cv_term->cv_name);
-
   return [
     '#type' => 'markup',
-    '#markup' => theme('table', $table) . theme('table', $feature_table) . $feature_table['pager'],
+    '#markup' => theme('table', $table) . "The following is a list of " . $scientific_name . "'s features that express " . $cv_term->cv_name . "." . theme('table', $feature_table) . $feature_table['pager'],
   ];
 }
 
