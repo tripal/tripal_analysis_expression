@@ -172,7 +172,7 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
     ],
     l($cv_term->db_name, '/cv/lookup/' . $cv_term->db_name),
   ];
-  $table = [
+  $table = [ // upper table on page, printing cvterm name, definition, and vocabulary
     'header' => [],
     'rows' => $rows,
   ];
@@ -180,7 +180,7 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   $organism = chado_get_organism([
     'organism_id' => $organism_id,
   ]);
-  $scientific_name = $organism->genus . " " . $organism->species;
+  $scientific_name = $organism->genus . " " . $organism->species; // name print between tables
 
   $pvalue_cvterm_id = chado_get_cvterm([ // get type_id of p-values. used in join to cvtermprop
     'name' => 'p-value',
@@ -229,10 +229,15 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
     'pager' => theme('pager', ['quantity', $total]),
   ];
 
+  // format output
+  $content = theme('table', $table);          // upper table including cvterm name, definition, and vocabulary
+  $content .= "The following is a list of " . $scientific_name . "'s features that express " . $cv_term->cv_name . ".";
+  $content .= theme('table', $feature_table); // table of features, p-values, and expression relationship
+  $content .= $feature_table['pager'];              // pager
   drupal_set_title($cv_term->db_name . ': ' . $cv_term->cv_name);
   return [
     '#type' => 'markup',
-    '#markup' => theme('table', $table) . "The following is a list of " . $scientific_name . "'s features that express " . $cv_term->cv_name . "." . theme('table', $feature_table) . $feature_table['pager'],
+    '#markup' =>  $content,
   ];
 }
 
