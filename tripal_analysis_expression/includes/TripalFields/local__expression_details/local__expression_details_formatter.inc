@@ -37,7 +37,7 @@ class local__expression_details_formatter extends ChadoFieldFormatter
 
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display)
   {
-    $header = ['Keyword', 'Expression Relationship', 'P-value', 'Analysis'];
+    $header = ['Keyword', 'Expression Relationship', 'P-value', 'Analysis', 'Evidence Code'];
     $field = str_replace('_formatter', '', get_class());
     $variables = $entity->{$field}['und'][0];
     $pvalue_data = $variables['value'];
@@ -50,6 +50,7 @@ class local__expression_details_formatter extends ChadoFieldFormatter
         $row->evidence_code,
         $row->p_value,
         l($row->analysis_name, 'bio_data/' . chado_get_record_entity_by_table('analysis', $row->analysis_id)),
+        l('RNA-sequencing evidence used in manual assertion', '/cv/lookup/ECO/0006068'),
       ];
     }
     $element[0] = [

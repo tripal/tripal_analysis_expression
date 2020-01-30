@@ -63,6 +63,9 @@ function tripal_analysis_expression_install() {
   // Add pvalue cvterms
   tripal_analysis_expression_add_pvalue_cvterm();
   tripal_analysis_expression_add_evidence_code_cvterm();
+  tripal_analysis_expression_add_experimental_factor_cvterms();
+
+  tripal_analysis_expression_add_eco_cvterm();
 }
 
 /**
@@ -234,6 +237,7 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
   chado_insert_cvterm([
     'id' => 'GO:0010193',
     'name' => 'response to ozone',
+    'definition' => 'Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a ozone stimulus. [GOC:sm]',
     'cv_name' => 'GO',
     'db_name' => 'GO',
   ]);
@@ -241,6 +245,7 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
   chado_insert_cvterm([
     'id' => 'GO:0009408',
     'name' => 'response to heat',
+    'definition' => 'Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a temperature stimulus. [GOC:hb]',
     'cv_name' => 'GO',
     'db_name' => 'GO',
   ]);
@@ -248,6 +253,7 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
   chado_insert_cvterm([
     'id' => 'GO:0009414',
     'name' => 'response to water deprivation',
+    'definition' => 'Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a water deprivation stimulus, prolonged deprivation of water. [GOC:lr]',
     'cv_name' => 'GO',
     'db_name' => 'GO',
   ]);
@@ -255,6 +261,7 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
   chado_insert_cvterm([
     'id' => 'GO:0009409',
     'name' => 'response to cold',
+    'definition' => 'Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a cold stimulus, a temperature stimulus below the optimal temperature for that organism. [GOC:lr]',
     'cv_name' => 'GO',
     'db_name' => 'GO',
   ]);
@@ -262,6 +269,7 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
   chado_insert_cvterm([
     'id' => 'GO:0009611',
     'name' => 'response to wounding',
+    'definition' => 'Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a stimulus indicating damage to the organism. [GOC:go_curators]',
     'cv_name' => 'GO',
     'db_name' => 'GO',
   ]);
@@ -269,6 +277,7 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
   chado_insert_cvterm([
     'id' => 'GO:0009625',
     'name' => 'response to insect',
+    'definition' => 'Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a stimulus from an insect. [GOC:hb]',
     'cv_name' => 'GO',
     'db_name' => 'GO',
   ]);
@@ -280,6 +289,16 @@ function tripal_analysis_expression_add_evidence_code_cvterm() {
     'name' => 'evidence code',
     'cv_name' => 'local',
   ]);
+}
+
+function tripal_analysis_expression_add_eco_cvterm() {
+  chado_insert_cvterm([
+    'id' => 'ECO:0006068',
+    'name' => 'RNA-sequencing evidence used in manual assertion',
+    'definition' => 'A type of high throughput nucleotide sequencing assay evidence used in a manual assertion based on high-throughput (HT) sequencing of fragmented cDNA molecules. [ECO:MCC]',
+    'cv_name' => 'ECO',
+    'db_name' => 'ECO',
+  ], ['update_existing' => FALSE]);
 }
 
 /**
@@ -325,6 +344,10 @@ function tripal_analysis_expression_update_7300() {
   if (!$cvalue_exists) {
     db_query('ALTER TABLE chado.feature_cvtermprop ADD COLUMN cvalue_id bigint');
   }
+}
+
+function tripal_analysis_expression_update_7302() {
+  tripal_analysis_expression_add_eco_cvterm();
 }
 
 function tripal_analysis_expression_update_7301() {
