@@ -111,24 +111,42 @@ function tripal_analysis_expression_menu()
     'type' => MENU_CALLBACK,
   ];
 
-  $items['tripal_analysis_expression/pvalue/cvterm/%'] = [
+  $items['tripal_analysis_expression/pvalue/cvterm/%/%'] = [
     'title' => 'Expression Analysis CVterm',
     'description' => 'P-value CV terms.',
     'access arguments' => ['access content'],
-    'page arguments' => [3],
+    'page arguments' => [3, 4],
     'page callback' => 'tripal_analysis_expression_cvterm',
   ];
   return $items;
 }
 
-function tripal_analysis_expression_cvterm($cvterm_id)
+/**
+ *  This function creates two tables on a custom page, linked to from
+ *  the keyword on the significant expression page. The first table lists
+ *  CVterm name, definition, and vocabulary, and the second lists associated
+ *  features with p-values. A pager appears when there are greater than
+ *  twenty features.
+ *
+ * @param int $cvterm_id cvterm id the user clicked on
+ * @param int $organism_id organism of interest
+ *
+ * @return array
+ *
+ * @ingroup tripal_analysis_expression
+ * @throws Exception
+ *
+ */
+function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
 {
+  // adding upper table which contains name, definition, and vocabulary
   $cv_term = chado_query('select cv.name as cv_name, cv.definition as cv_definition, db.name as db_name
                 from {chado.cvterm} cv
                 join {chado.dbxref} dbx on dbx.dbxref_id=cv.dbxref_id
                 join {chado.db} db on db.db_id=dbx.db_id
                 where cvterm_id=:cvterm_id',
     [':cvterm_id' => $cvterm_id])->fetchObject();
+
   $rows = [];
   $rows[] = [
     [
@@ -136,37 +154,90 @@ function tripal_analysis_expression_cvterm($cvterm_id)
       'header' => TRUE,
       'width' => '20%',
     ],
-            $cv_term->cv_name,
-    ];
+    $cv_term->cv_name,
+  ];
   $rows[] = [
     [
       'data' => 'definition',
       'header' => TRUE,
       'width' => '20%',
     ],
-            $cv_term->cv_definition,
-    ];
+    $cv_term->cv_definition,
+  ];
   $rows[] = [
     [
       'data' => 'vocabulary',
       'header' => TRUE,
       'width' => '20%',
     ],
-    l($cv_term->db_name,'/cv/lookup/'.$cv_term->db_name),
+    l($cv_term->db_name, '/cv/lookup/' . $cv_term->db_name),
   ];
-  $table = [
-      'header' => [],
-      'rows' => $rows,
-      'attributes' => [],
-      'sticky' => FALSE,
-      'caption' => '',
-      'colgroups' => [],
-      'empty' => [],
+  $table = [ // upper table on page, printing cvterm name, definition, and vocabulary
+    'header' => [],
+    'rows' => $rows,
   ];
-  drupal_set_title($cv_term->db_name.': '.$cv_term->cv_name);
+
+  $organism = chado_get_organism([
+    'organism_id' => $organism_id,
+  ]);
+  $scientific_name = $organism->genus . " " . $organism->species; // name print between tables
+
+  $pvalue_cvterm_id = chado_get_cvterm([ // get type_id of p-values. used in join to cvtermprop
+    'name' => 'p-value',
+  ])->cvterm_id;
+  $evidence_code_cvterm_id = chado_get_cvterm([ // get type_id of expression relationship. used in join to cvtermprop
+    'name' => 'evidence code',
+  ])->cvterm_id;
+
+  $header = [
+    ['data' => 'Features', 'field' => 'f.name', 'sort' => 'ASC'],
+    ['data' => 'P-value', 'field' => 'fp.value', 'sort' => 'ASC'],
+    ['data' => 'Expression Relationship', 'field' => 'fp2.value', 'sort' => 'ASC'],
+  ];
+  // adding table of features
+  $query = chado_db_select('feature', 'f')
+    #->extend('PagerDefault')
+    ->extend('TableSort');
+  $query->fields('f', array('name')); //feature name and id for link
+  $query->fields('fp', array('value')); // p-values (shares 'value' column in the table feature_cvtermprop)
+  $query->fields('fp2', array('value')); // expression relationship (shares 'value' column in the table feature_cvtermprop)
+  $query->fields('fc', array('feature_cvterm_id'));
+  $query->join('feature_cvterm', 'fc', 'f.feature_id = fc.feature_id AND fc.cvterm_id = :cvtermid', [':cvtermid' => $cvterm_id]);
+  $query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id AND fp.type_id = :typeid', [':typeid' => $pvalue_cvterm_id]);
+  $query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2', [':typeid2' => $evidence_code_cvterm_id]);
+  $query->join('cvterm', 'cv', 'cv.cvterm_id = fp.type_id');
+  $query->condition('organism_id', $organism_id, '=');
+  $query->orderByHeader($header);
+  $total = $query->countQuery()->execute()->fetchField();
+  $page = pager_default_initialize($total, 20);
+  $query->range($page * 20, 20);
+  $feature_result = $query->execute();
+
+  $feature_names = [];
+  while ($record = $feature_result->fetchAssoc()) {
+    $feature_names[] = [
+      l($record['name'], 'bio_data/' . chado_get_record_entity_by_table('feature', $record['feature_cvterm_id'])),
+      $record['value'],
+      $record['fp2_value'] # expression relationship (up- or down-regulated)
+    ];
+  }
+
+  $feature_table = [
+    'header' => $header,
+    'sort' => 'ASC',
+    'rows' => $feature_names,
+    'pager' => theme('pager', ['quantity', $total]),
+  ];
+
+  // format output
+  $content = theme('table', $table);          // upper table including cvterm name, definition, and vocabulary
+  $content .= "The following is a list of " . $scientific_name . "'s features that express " . $cv_term->cv_name . ".";
+  $content .= theme('table', $feature_table); // table of features, p-values, and expression relationship
+  $content .= $feature_table['pager'];              // pager
+  drupal_set_title($cv_term->db_name . ': ' . $cv_term->cv_name);
   return [
     '#type' => 'markup',
-    '#markup' => theme_table($table)
+    '#markup' =>  $content,
   ];
 }
 
@@ -367,7 +438,6 @@ function tripal_analysis_expression_entity_delete($entity, $type)
     ])->fetchAll();
 
     $feature_cvterm_ids = [];
-
     foreach ($results as $result) {
       $feature_cvterm_ids[] = $result->feature_cvterm_id;
     }
