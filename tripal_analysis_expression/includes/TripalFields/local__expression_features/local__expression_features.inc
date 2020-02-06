@@ -124,9 +124,8 @@ class local__expression_features extends ChadoField
     $header = ['Feature Name', 'Keyword', 'Relationship', 'P-value'];
     $rows = [];
     $query = chado_db_select('analysis', 'a');
-    #$analysis_id = $entity->chado_record->analysis_id;
+    $analysis_id = $entity->chado_record->analysis_id;
     $query->fields('f', array('name')); //feature name and id for link
-    #$query->condition('analysis_id', $analysis_id, '=');
     $query->fields('fp', array('value')); // p-values (shares 'value' column in the table feature_cvtermprop)
     $query->fields('fp2', array('value')); // expression relationship (shares 'value' column in the table feature_cvtermprop)
     $query->fields('cv', array('name'));
@@ -136,6 +135,7 @@ class local__expression_features extends ChadoField
     $query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id AND fp.type_id = :typeid', [':typeid' => $pvalue_cvterm_id]);
     $query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2', [':typeid2' => $evidence_code_cvterm_id]);
     $query->join('cvterm', 'cv', 'fc.cvterm_id = cv.cvterm_id');
+    $query->condition('a.analysis_id', $analysis_id, '=');
     $result = $query->execute();
 
     while ($record = $result->fetchAssoc()) {

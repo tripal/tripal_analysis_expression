@@ -40,7 +40,8 @@ class local__expression_features_formatter extends ChadoFieldFormatter
   {
     $rows = $items[0]['value'];
     if ($rows == []) {
-      $rows = 'No features exist.';
+      $element[0] = ['#markup' => 'No feature found'];
+      return $element;
     }
 
     $element[0] =
