@@ -46,12 +46,6 @@ class local__expression_features_formatter extends ChadoFieldFormatter
       'cv_id' => ['name' => 'local'],
       'name' => 'evidence code',
     ])->cvterm_id;
-    $header = [
-      ['data' => 'Feature Name', 'field' => 'f.name'],
-      ['data' => 'Keyword', 'field' => 'cv.name'],
-      ['data' => 'Relationship', 'field' => 'fp2.value'],
-      ['data' => 'P-value', 'field' => 'fp.value'],
-    ];
 
     $query = chado_db_select('analysis', 'a');
     $analysis_id = $entity->chado_record->analysis_id;
@@ -71,6 +65,7 @@ class local__expression_features_formatter extends ChadoFieldFormatter
     $query->range($page * 10, 10);
     $result = $query->execute();
 
+    $header = ['Feature Name', 'Keyword', 'Relationship', 'P-value'];
     $rows = [];
     while ($record = $result->fetchAssoc()) {
       $rows[] = [$record['name'], $record['cv_name'], $record['fp2_value'], $record['value']];
