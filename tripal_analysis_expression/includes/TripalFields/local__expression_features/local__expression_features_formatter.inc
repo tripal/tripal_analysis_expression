@@ -39,19 +39,21 @@ class local__expression_features_formatter extends ChadoFieldFormatter
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display)
   {
     $rows = $items[0]['value'];
-    if ($rows == []) {
-      $element[0] = ['#markup' => 'No feature found'];
-      return $element;
-    }
+    $header = $items[0]['header'];
+    $pager = $items[0]['pager'];
+    $pager = $this->ajaxifyPager($pager, $entity);
+
+    $table = theme('table',
+      [
+        "header" => $header,
+        "rows" => $rows,
+      ]);
+
 
     $element[0] =
       [
         "#type" => "markup",
-        "#markup" => theme('table',
-          [
-            "header" => $items[0]['header'],
-            "rows" => $rows,
-          ])
+        "#markup" => $table . $pager,
       ];
   }
 

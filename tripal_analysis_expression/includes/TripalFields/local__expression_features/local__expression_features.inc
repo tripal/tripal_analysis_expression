@@ -122,13 +122,19 @@ class local__expression_features extends ChadoField
       'name' => 'evidence code',
     ])->cvterm_id;
     $header = ['Feature Name', 'Keyword', 'Relationship', 'P-value'];
+    $header = [
+      ['data' => 'Feature Name', 'field' => 'f.name', 'sort' => 'ASC'],
+      ['data' => 'Keyword', 'field' => 'cv.name', 'sort' => 'ASC'],
+      ['data' => 'Relationship', 'field' => 'fp2.value', 'sort' => 'ASC'],
+      ['data' => 'P-value', 'field' => 'fp.value', 'sort' => 'ASC'],
+    ];
     $rows = [];
     $query = chado_db_select('analysis', 'a');
     $analysis_id = $entity->chado_record->analysis_id;
     $query->fields('f', array('name')); //feature name and id for link
     $query->fields('fp', array('value')); // p-values (shares 'value' column in the table feature_cvtermprop)
     $query->fields('fp2', array('value')); // expression relationship (shares 'value' column in the table feature_cvtermprop)
-    $query->fields('cv', array('name'));
+    $query->fields('cv', array('name')); // Keyword
     $query->join('analysisfeature', 'af', 'a.analysis_id = af.analysis_id');
     $query->join('feature', 'f', 'f.feature_id = af.feature_id');
     $query->join('feature_cvterm', 'fc', 'f.feature_id = fc.feature_id');
@@ -136,15 +142,31 @@ class local__expression_features extends ChadoField
     $query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2', [':typeid2' => $evidence_code_cvterm_id]);
     $query->join('cvterm', 'cv', 'fc.cvterm_id = cv.cvterm_id');
     $query->condition('a.analysis_id', $analysis_id, '=');
+
+    #$query->orderByHeader($header);
+    $total = $query->countQuery()->execute()->fetchField();
+    $page = pager_default_initialize($total, 10);
+    $query->range($page * 10, 10);
     $result = $query->execute();
 
     while ($record = $result->fetchAssoc()) {
       $rows[] = [$record['name'], $record['cv_name'], $record['fp2_value'], $record['value']];
     }
 
+
+    #$total = count($rows);
+    $total_pages = (int) ($total / 10) + 1;
+    $pelement = 0;
+    $current_page = pager_default_initialize($total, 10, $pelement);
+
+    $pager = theme('pager', ['quantity', $total]);
+
     $entity->local__expression_features['und'][0] = [
       'value' => $rows,
-      'header' => $header
+      'header' => $header,
+      #'total' => $total,
+      'pager' => $pager,
+      #'query' => $query,
     ];
   }
 
