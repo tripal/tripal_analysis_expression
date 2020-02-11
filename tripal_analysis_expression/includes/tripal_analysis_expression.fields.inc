@@ -89,6 +89,29 @@ function tripal_analysis_expression_bundle_fields_info($entity_type, $bundle)
     ];
   }
 
+
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'analysis')) {
+    // First add my term.
+    tripal_insert_cvterm(array(
+      'id' => 'local:12345',
+      'name' => 'expression_features',
+      'cv_name' => 'local',
+      'definition' => 'Table of expression features.',
+    ));
+
+    // Then describe the field defined by that term.
+    $field_name = 'local__expression_features';
+    $field_type = 'local__expression_features';
+    $fields[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
   return $fields;
 }
 
@@ -154,7 +177,7 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
     ];
 
     $field_name = 'local__expression_details';
-    $instances[$field_name] =  [
+    $instances[$field_name] = [
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
@@ -216,5 +239,38 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
     ];
   }
 
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'analysis')) {
+    $field_name = 'local__expression_features';
+    $field_type = 'local__expression_features';
+    $instances[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Expression Features',
+      'description' => 'Table of expression features.',
+      'required' => FALSE,
+      'settings' => array(
+        'term_vocabulary' => 'local',
+        'term_name' => 'expression_features',
+        'term_accession' => '12345',
+        'auto_attach' => FALSE,
+        'chado_table' => $bundle->data_table,
+        'chado_column' => 'organism_id',
+        'base_table' => $bundle->data_table,
+      ),
+      'widget' => array(
+        'type' => 'local__expression_features_widget',
+        'settings' => array(),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'local__expression_features_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+
+  }
   return $instances;
 }
