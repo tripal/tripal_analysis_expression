@@ -46,11 +46,12 @@ class local__expression_features_formatter extends ChadoFieldFormatter
       'cv_id' => ['name' => 'local'],
       'name' => 'evidence code',
     ])->cvterm_id;
+    $analysis_id = $entity->chado_record->analysis_id;
 
     $query = chado_db_select('analysis', 'a');
-    $analysis_id = $entity->chado_record->analysis_id;
-    $query->fields('f', array('name')); //feature name and id for link
+    $query->fields('f', array('name', 'feature_id', 'organism_id')); //feature name and id for link
     $query->fields('fp', array('value')); // p-values (shares 'value' column in the table feature_cvtermprop)
+    $query->fields('fc', array('cvterm_id'));
     $query->fields('fp2', array('value')); // expression relationship (shares 'value' column in the table feature_cvtermprop)
     $query->fields('cv', array('name')); // Keyword
     $query->join('analysisfeature', 'af', 'a.analysis_id = af.analysis_id');
@@ -68,7 +69,12 @@ class local__expression_features_formatter extends ChadoFieldFormatter
     $header = ['Feature Name', 'Keyword', 'Relationship', 'P-value'];
     $rows = [];
     while ($record = $result->fetchAssoc()) {
-      $rows[] = [$record['name'], $record['cv_name'], $record['fp2_value'], $record['value']];
+      $rows[] = [
+        l($record['name'], 'bio_data/' . chado_get_record_entity_by_table('feature', $record['feature_id'])),
+        l($record['cv_name'], 'tripal_analysis_expression/pvalue/cvterm/' . $record['cvterm_id'] . '/' . $record['organism_id']),
+        $record['fp2_value'],
+        $record['value']
+      ];
     }
 
     $pager = theme('pager', ['quantity', $total]);
@@ -86,6 +92,15 @@ class local__expression_features_formatter extends ChadoFieldFormatter
         "#type" => "markup",
         "#markup" => $table . $pager,
       ];
+  }
+
+  protected function ajaxifyPager($pager, $entity)
+  {
+    $field_id = 'tripal-entity-' . $entity->id . '--' . $this->field['field_name'];
+    $pager = preg_replace('/href="\/.+\?page=(.+?)"/', 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'' . $field_id . '\', \'$1\')"', $pager);
+    $pager = preg_replace('/href="\/.+"/', 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'' . $field_id . '\', 0)"', $pager);
+    $pager = '<img src="/' . drupal_get_path('module', 'tripal') . '/theme/images/ajax-loader.gif" id="' . $field_id . '-spinner" class="tripal-field-ajax-spinner">' . $pager;
+    return $pager;
   }
 
   /**

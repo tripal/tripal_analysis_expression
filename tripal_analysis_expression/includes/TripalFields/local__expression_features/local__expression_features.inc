@@ -115,6 +115,7 @@ class local__expression_features extends ChadoField
     // additional data to be used in the display, you should add it here.
 
     $entity->local__expression_features['und'][0] = ['value' => [true]];
+
   }
 
 
