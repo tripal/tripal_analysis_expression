@@ -17,8 +17,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
   public static $file_types = ['xml', 'tsv', 'csv'];
 
-  public static $upload_description = "Please upload an NCBI BioSample file.  This can be in XML with an .xml extension, or flat file format with a .tsv or .csv extension.<br><br> If loading a CSV/TSV flat file, the first line must be the column name.  The only field that is required to create a biosample is the name (column: sample_name). It is recommended that a description (column: description), biomaterial provider (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column 
-    titles not associated with a cvterm below.  <br>This loader will create dbxref records for the following 
+  public static $upload_description = "Please upload an NCBI BioSample file.  This can be in XML with an .xml extension, or flat file format with a .tsv or .csv extension.<br><br> If loading a CSV/TSV flat file, the first line must be the column name.  The only field that is required to create a biosample is the name (column: sample_name). It is recommended that a description (column: description), biomaterial provider (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column
+    titles not associated with a cvterm below.  <br>This loader will create dbxref records for the following
     column headers if present: biosample_accession, bioproject_accession, and sra_accession. Other accessions should
     be uploaded using a bulk loader template. ";
 
@@ -608,7 +608,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     fclose($fp);
 
     if ($num_biosamples == 0) {
-      $message = "Wrong file format at !path. File must contain a column named 'sample_name'.  
+      $message = "Wrong file format at !path. File must contain a column named 'sample_name'.
         Please try again with a file that contains at least one column named 'sample_name' in its header line, followed by lines of biosample data.";
       $this->logMessage($message, ['!path' => $file_path], TRIPAL_ERROR);
       return;
@@ -984,8 +984,8 @@ function test_biosample_cvterms_flat(
   $fileSize = filesize($file_path);
   if ($fileSize == 0) {
 
-    $this->logMessage("File at !file_path is empty. Try again with a new file.",
-      ['!file_path' => $file_path], TRIPAL_ERROR);
+    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR, "File at !file_path is empty. Try again with a new file.",
+      ['!file_path' => $file_path]);
     return;
   }
   // Figure out CSV vs TSV.
@@ -1020,8 +1020,8 @@ function test_biosample_cvterms_flat(
 
   // Print error message and exit if there's no biosample, or that there's no "sample_name" column in flat file.
   if ($num_biosamples == 0) {
-    $this->logMessage("Wrong file format at !file_path. File must contain a column named 'sample_name'.",
-      ['!file_path' => $file_path], TRIPAL_ERROR);
+    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR, "Wrong file format at !file_path. File must contain a column named 'sample_name'.",
+      ['!file_path' => $file_path]);
     return;
   }
 
@@ -1038,8 +1038,8 @@ function test_biosample_cvterms_flat(
 
   // Make sure there are not duplicate biomaterial headers.
   if (count($header_repeats = array_diff_assoc($headers, array_unique($headers))) > 0) {
-    $this->logMessage("The header !header is present more than once.  Please make sure there is only one instance of each header.",
-      ['!header' => $header_repeats[0]], TRIPAL_ERROR);
+    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR, "The header !header is present more than once.  Please make sure there is only one instance of each header.",
+      ['!header' => $header_repeats[0]]);
     return;
   }
 
