@@ -118,6 +118,16 @@ function tripal_analysis_expression_menu()
     'page arguments' => [3, 4],
     'page callback' => 'tripal_analysis_expression_cvterm',
   ];
+
+
+  $items['tripal_analysis_expression/search'] = [
+    'title' => 'Search Features by CVterm',
+    'description' => 'Search Features by CVterm.',
+    'access arguments' => ['access content'],
+    #'page arguments' => [1],
+    'page callback' => 'tripal_analysis_expression_search',
+    'type' => MENU_CALLBACK,
+  ];
   return $items;
 }
 
@@ -137,6 +147,82 @@ function tripal_analysis_expression_menu()
  * @throws Exception
  *
  */
+
+function tripal_analysis_expression_search()
+{
+  $arr = drupal_get_form('expression_search_form');
+
+  #if (isset($searchQuery) == false) {
+  $searchQuery = $arr['keyword']['#value'];
+  #}
+  dpm($searchQuery);
+  dpm($arr);
+  $perPage = 5;
+  #if (isset($rows) == false) { // this block only runs if search box not empty
+  $query = chado_db_select('cvterm', 'cv');
+  $query->fields('f', ['name']); //feature name and id for link
+  $query->join('feature_cvterm', 'fc', 'cv.cvterm_id = fc.cvterm_id');
+  $query->join('feature', 'f', 'fc.feature_id = f.feature_id');
+  $query->condition('cv.name', $searchQuery, '=');
+  $total = $query->countQuery()->execute()->fetchField();
+  $page = pager_default_initialize($total, $perPage);
+  $query->range($page * $perPage, $perPage);
+  $result = $query->execute();
+
+  $rows = [];
+  while ($record = $result->fetchAssoc()) {
+    $rows[] = [
+      $record['name'],
+    ];
+  }
+  $feature_table = [
+    'header' => ['Feature Name'],
+    'sort' => 'ASC',
+    'rows' => $rows,
+    'pager' => theme('pager', ['quantity', $total]),
+  ];
+  #}
+
+  $output = drupal_render($arr); // displays search box and button
+  if (isset($rows) == true) {
+    # $currentPage = pager_default_initialize(count($rows), $perPage); // initialize the pager
+    # #$pager = $this->ajaxifyPager($pager, $entity);
+    # $chunks = array_chunk($rows, $perPage, TRUE); // splits list into page sized chunks. +1 accounts for the header
+    # $pager = theme('pager', ['quantity', $total]);
+    $output .= theme('table', $feature_table); #theme('table', array('header' => $header, 'rows' => $chunks[$currentPage])); // displays table
+    $output .= $feature_table['pager']; #$pager;#theme('pager', array('quantity',count($rows))); // displays shows pager
+
+  }
+  return $output;
+}
+
+function expression_search_form($form, &$form_state)
+{
+  $form['keyword'] = [
+    '#type' => 'textfield',
+    '#title' => t('Experimental Factor'),
+    '#required' => TRUE,
+    '#description' => t('What is this gene responding to (e.g. heat, drought, ozone)? If the controlled vocabulary term does not show up, please ' . l('create it first.',
+        'admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add')),
+    '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/0',
+  ];
+  // submit button
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Search CVterm',
+    '#name' => 'submit_button',
+  );
+  return $form;
+}
+
+function expression_search_form_submit($form, &$form_state)
+{
+  // set the provided filter value in the storage
+  $form_state['storage']['keyword'] = $form_state['values']['keyword'];
+  // show the form again.
+  $form_state['rebuild'] = TRUE;
+}
+
 function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
 {
   // adding upper table which contains name, definition, and vocabulary
@@ -237,7 +323,7 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   drupal_set_title($cv_term->db_name . ': ' . $cv_term->cv_name);
   return [
     '#type' => 'markup',
-    '#markup' =>  $content,
+    '#markup' => $content,
   ];
 }
 
