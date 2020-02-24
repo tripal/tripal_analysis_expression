@@ -16,12 +16,12 @@ class tripal_expression_data_loader extends TripalImporter{
 
   public static $file_types = ['csv', 'tsv', 'txt'];
 
-  public static $upload_description = 'Expression data can be loaded from two format types. ' . 
-    'Select the column format for files that have two columns - transcript id and expression ' . 
+  public static $upload_description = 'Expression data can be loaded from two format types. ' .
+    'Select the column format for files that have two columns - transcript id and expression ' .
     'value. Select the matrix format for files that specify biosample ' .
-    'by column and transcript by row. If "Column Format" is selected, the name of the column ' . 
-    'file will be taken as the biomaterial name. It is recommended to avoid the use of white ' . 
-    'space in column file names and in biomaterial names.<br>  Please verify the column or file ' . 
+    'by column and transcript by row. If "Column Format" is selected, the name of the column ' .
+    'file will be taken as the biomaterial name. It is recommended to avoid the use of white ' .
+    'space in column file names and in biomaterial names.<br>  Please verify the column or file ' .
     'names match the intended biomaterial name in the database. The uploaded file cannot be a directory.';
 
   public static $upload_title = 'Upload expression data';
@@ -80,8 +80,8 @@ class tripal_expression_data_loader extends TripalImporter{
 
     // Obtain the list of contacts from the chado contact table.
     $sql = 'SELECT
-            contact_id, name 
-          FROM {contact} 
+            contact_id, name
+          FROM {contact}
           ORDER BY name';
     $results = chado_query($sql);
     $contacts = [];
@@ -524,9 +524,9 @@ class tripal_expression_data_loader extends TripalImporter{
 
         if ($seqtype_id) {
 
-          $query = chado_query('SELECT afanalysisfeature_id FROM {analysisfeature} af 
+          $query = chado_query('SELECT afanalysisfeature_id FROM {analysisfeature} af
 INNER JOIN {feature} f ON f.feature_id = af.feature_id
-WHERE af.analysis_id = :analysis_id 
+WHERE af.analysis_id = :analysis_id
 AND af.feature_id = :feature_id
 AND f.type_id = :type_id', [
             ':analysis_id' => $analysis_id,
