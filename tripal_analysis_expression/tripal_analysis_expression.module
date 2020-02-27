@@ -120,11 +120,10 @@ function tripal_analysis_expression_menu()
   ];
 
 
-  $items['tripal_analysis_expression/search'] = [
+  $items['tripal_analysis_expression/search_cvterm'] = [
     'title' => 'Search Features by CVterm',
     'description' => 'Search Features by CVterm.',
     'access arguments' => ['access content'],
-    #'page arguments' => [1],
     'page callback' => 'tripal_analysis_expression_search',
     'type' => MENU_CALLBACK,
   ];
@@ -168,10 +167,10 @@ function tripal_analysis_expression_search_query($search, $perPage)
 
 function tripal_analysis_expression_search()
 {
-  // run query 
+  // run query
   $arr = drupal_get_form('expression_search_form');
   $searchQuery = $arr['keyword']['#value'];
-  $result_array = tripal_analysis_expression_search_query($searchQuery,5);
+  $result_array = tripal_analysis_expression_search_query($searchQuery,10);
   $result = $result_array[0];
   $total = $result_array[1];
 
