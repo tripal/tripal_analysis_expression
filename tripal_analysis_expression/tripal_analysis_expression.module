@@ -124,7 +124,7 @@ function tripal_analysis_expression_menu()
     'title' => 'Search Features by CVterm',
     'description' => 'Search Features by CVterm.',
     'access arguments' => ['access content'],
-    'page callback' => 'tripal_analysis_expression_search',
+    'page callback' => 'tripal_analysis_expression_feature_search_by_cvterm_page',
     'type' => MENU_CALLBACK,
   ];
   return $items;
@@ -150,14 +150,15 @@ function tripal_analysis_expression_menu()
 /**
  * Implements hook_schema().
  */
-function tripal_analysis_expression_search_query($search, $perPage)
+function tripal_analysis_expression_feature_search_query($search, $perPage)
 {
-  $searchQuery = $search;
   $query = chado_db_select('cvterm', 'cv');
-  $query->fields('f', ['name']);
+  $query->fields('f', ['name', 'feature_id', 'organism_id']);
+  $query->fields('cv', ['name']);
+  $query->fields('fc', ['cvterm_id', 'feature_id']);
   $query->join('feature_cvterm', 'fc', 'cv.cvterm_id = fc.cvterm_id');
   $query->join('feature', 'f', 'fc.feature_id = f.feature_id');
-  $query->condition('cv.name', $searchQuery, '=');
+  $query->condition('cv.name', '%' . db_like($search) . '%', 'LIKE');
   $total = $query->countQuery()->execute()->fetchField();
   $page = pager_default_initialize($total, $perPage);
   $query->range($page * $perPage, $perPage);
@@ -165,12 +166,12 @@ function tripal_analysis_expression_search_query($search, $perPage)
   return [$result, $total];
 }
 
-function tripal_analysis_expression_search()
+function tripal_analysis_expression_feature_search_by_cvterm_page()
 {
   // run query
   $arr = drupal_get_form('expression_search_form');
   $searchQuery = $arr['keyword']['#value'];
-  $result_array = tripal_analysis_expression_search_query($searchQuery,10);
+  $result_array = tripal_analysis_expression_feature_search_query($searchQuery,10);
   $result = $result_array[0];
   $total = $result_array[1];
 
@@ -178,11 +179,12 @@ function tripal_analysis_expression_search()
   $rows = [];
   while ($record = $result->fetchAssoc()) {
     $rows[] = [
-      $record['name'],
+      l($record['name'], 'bio_data/' . chado_get_record_entity_by_table('feature', $record['feature_id'])),
+      l($record['cv_name'], 'tripal_analysis_expression/pvalue/cvterm/' . $record['cvterm_id'] . '/' . $record['organism_id']),
     ];
   }
   $feature_table = [
-    'header' => ['Feature Name'],
+    'header' => ['Feature Name', 'CV term'],
     'sort' => 'ASC',
     'rows' => $rows,
     'pager' => theme('pager', ['quantity', $total]),
@@ -203,8 +205,7 @@ function expression_search_form($form, &$form_state)
     '#type' => 'textfield',
     '#title' => t('Experimental Factor'),
     '#required' => TRUE,
-    '#description' => t('What is this gene responding to (e.g. heat, drought, ozone)? If the controlled vocabulary term does not show up, please ' . l('create it first.',
-        'admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add')),
+    '#description' => t('What is this gene responding to (e.g. heat, drought, ozone)?'),
     '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/0',
     '#default_value' => $_GET['keyword'] ?? '',
   ];
