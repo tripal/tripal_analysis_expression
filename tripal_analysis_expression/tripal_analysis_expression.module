@@ -119,7 +119,6 @@ function tripal_analysis_expression_menu()
     'page callback' => 'tripal_analysis_expression_cvterm',
   ];
 
-
   $items['tripal_analysis_expression/search_cvterm'] = [
     'title' => 'Search Features by CVterm',
     'description' => 'Search Features by CVterm.',
@@ -127,6 +126,7 @@ function tripal_analysis_expression_menu()
     'page callback' => 'tripal_analysis_expression_feature_search_by_cvterm_page',
     'type' => MENU_CALLBACK,
   ];
+
   return $items;
 }
 
@@ -344,7 +344,7 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   drupal_set_title($cv_term->db_name . ': ' . $cv_term->cv_name);
   return [
     '#type' => 'markup',
-    '#markup' => $content,
+    '#markup' =>  $content,
   ];
 }
 
