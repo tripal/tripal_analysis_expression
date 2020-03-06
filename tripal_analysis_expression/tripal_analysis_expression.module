@@ -118,6 +118,15 @@ function tripal_analysis_expression_menu()
     'page arguments' => [3, 4],
     'page callback' => 'tripal_analysis_expression_cvterm',
   ];
+
+  $items['tripal_analysis_expression/search_cvterm'] = [
+    'title' => 'Search Features by CVterm',
+    'description' => 'Search Features by CVterm.',
+    'access arguments' => ['access content'],
+    'page callback' => 'tripal_analysis_expression_feature_search_by_cvterm_page',
+    'type' => MENU_CALLBACK,
+  ];
+
   return $items;
 }
 
@@ -137,6 +146,100 @@ function tripal_analysis_expression_menu()
  * @throws Exception
  *
  */
+
+/**
+ * Implements hook_schema().
+ */
+function tripal_analysis_expression_feature_search_query($search, $perPage)
+{
+  $pvalue_cvterm_id = chado_get_cvterm([ // get type_id of p-values. used in join to cvtermprop
+    'name' => 'p-value',
+  ])->cvterm_id;
+  $evidence_code_cvterm_id = chado_get_cvterm([ // get type_id of expression relationship. used in join to cvtermprop
+    'name' => 'evidence code',
+  ])->cvterm_id;
+  $query = chado_db_select('cvterm', 'cv');
+  $query->fields('f', ['name', 'feature_id', 'organism_id']);
+  $query->fields('fp', ['value']); // p-values (shares 'value' column in the table feature_cvtermprop)
+  $query->fields('fp2', ['value']); // expression relationship (shares 'value' column in the table feature_cvtermprop)
+  $query->fields('cv', ['name']);
+  $query->fields('fc', ['cvterm_id', 'feature_id']);
+  $query->join('feature_cvterm', 'fc', 'cv.cvterm_id = fc.cvterm_id');
+  $query->join('feature', 'f', 'fc.feature_id = f.feature_id');
+  $query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id AND fp.type_id = :typeid', [':typeid' => $pvalue_cvterm_id]);
+  $query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2', [':typeid2' => $evidence_code_cvterm_id]);
+  $query->condition('cv.name', '%' . db_like($search) . '%', 'LIKE');
+
+  $total = $query->countQuery()->execute()->fetchField();
+  $page = pager_default_initialize($total, $perPage);
+  $query->range($page * $perPage, $perPage);
+  $result = $query->execute();
+  return [$result, $total];
+}
+
+function tripal_analysis_expression_feature_search_by_cvterm_page()
+{
+  // run query
+  $arr = drupal_get_form('expression_search_form');
+  $searchQuery = $arr['keyword']['#value'];
+  $result_array = tripal_analysis_expression_feature_search_query($searchQuery, 10);
+  $result = $result_array[0];
+  $total = $result_array[1];
+
+  // build table
+  $rows = [];
+  while ($record = $result->fetchAssoc()) {
+    $rows[] = [
+      l($record['name'], 'bio_data/' . chado_get_record_entity_by_table('feature', $record['feature_id'])),
+      l($record['cv_name'], 'tripal_analysis_expression/pvalue/cvterm/' . $record['cvterm_id'] . '/' . $record['organism_id']),
+      $record['value'],
+      $record['fp2_value'],
+    ];
+  }
+  $feature_table = [
+    'header' => ['Feature Name', 'CV term', 'P-value', 'Relationship'],
+    'sort' => 'ASC',
+    'rows' => $rows,
+    'pager' => theme('pager', ['quantity', $total]),
+  ];
+
+  // format output
+  $output = drupal_render($arr); // displays search box and button
+  if (isset($rows) == true) {
+    $output .= theme('table', $feature_table);
+    $output .= $feature_table['pager'];
+  }
+  return $output;
+}
+
+function expression_search_form($form, &$form_state)
+{
+  $form['keyword'] = [
+    '#type' => 'textfield',
+    '#title' => t('Experimental Factor'),
+    '#required' => TRUE,
+    '#description' => t('What is this gene responding to (e.g. heat, drought, ozone)?'),
+    '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/0',
+    '#default_value' => $_GET['keyword'] ?? '',
+  ];
+  // submit button
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Search CVterm',
+    '#name' => 'submit_button',
+  );
+  $form['#method'] = 'get';
+  return $form;
+}
+
+function expression_search_form_submit($form, &$form_state)
+{
+  // set the provided filter value in the storage
+  $form_state['storage']['keyword'] = $form_state['values']['keyword'];
+  // show the form again.
+  $form_state['rebuild'] = TRUE;
+}
+
 function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
 {
   // adding upper table which contains name, definition, and vocabulary
@@ -206,6 +309,10 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
   $query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id AND fp.type_id = :typeid', [':typeid' => $pvalue_cvterm_id]);
   $query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2', [':typeid2' => $evidence_code_cvterm_id]);
   $query->join('cvterm', 'cv', 'cv.cvterm_id = fp.type_id');
+
+  #$query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id AND fp.type_id = :typeid', [':typeid' => $pvalue_cvterm_id]);
+  #$query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2', [':typeid2' => $evidence_code_cvterm_id]);
+
   $query->condition('organism_id', $organism_id, '=');
   $query->orderByHeader($header);
   $total = $query->countQuery()->execute()->fetchField();
