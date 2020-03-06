@@ -47,7 +47,7 @@ class local__expression_details_formatter extends ChadoFieldFormatter
     foreach ($pvalue_data as $row) {
       $rows[] = [ # features that have the cvterm and are related to that organism
         l($row->cvterm_name, 'tripal_analysis_expression/pvalue/cvterm/' . $row->cvterm_id . '/' . $organism_id),
-        $row->evidence_code,
+        $row->evidence_code ?? '',
         $row->p_value,
         l($row->analysis_name, 'bio_data/' . chado_get_record_entity_by_table('analysis', $row->analysis_id)),
         l('RNA-sequencing evidence used in manual assertion', '/cv/lookup/ECO/0006068'),
