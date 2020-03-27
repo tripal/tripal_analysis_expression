@@ -127,6 +127,14 @@ function tripal_analysis_expression_menu()
     'type' => MENU_CALLBACK,
   ];
 
+  $items['tripal_analysis_expression/listpvalue'] = [
+    'title' => 'List P-values',
+    'description' => 'List associated p-values.',
+    'access arguments' => ['access content'],
+    'page callback' => 'tripal_analysis_expression_list_pvalue',
+    'type' => MENU_CALLBACK,
+  ];
+
   return $items;
 }
 
@@ -150,6 +158,7 @@ function tripal_analysis_expression_menu()
 /**
  * Implements hook_schema().
  */
+
 function tripal_analysis_expression_feature_search_query($search, $perPage)
 {
   $pvalue_cvterm_id = chado_get_cvterm([ // get type_id of p-values. used in join to cvtermprop

@@ -93,7 +93,7 @@ function tripal_analysis_expression_bundle_fields_info($entity_type, $bundle)
   if (isset($bundle->data_table) AND ($bundle->data_table == 'analysis') AND ($bundle->term->name == 'Gene expression profiling')) {
     // First add my term.
     tripal_insert_cvterm(array(
-      'id' => 'local:12345',
+      'id' => 'local:93944',
       'name' => 'expression_features',
       'cv_name' => 'local',
       'definition' => 'Table of expression features.',
@@ -102,6 +102,29 @@ function tripal_analysis_expression_bundle_fields_info($entity_type, $bundle)
     // Then describe the field defined by that term.
     $field_name = 'local__expression_features';
     $field_type = 'local__expression_features';
+    $fields[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
+
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'analysis')) {
+    // First add my term.
+    tripal_insert_cvterm(array(
+      'id' => 'local:pvalue_keyword',
+      'name' => 'expression_search',
+      'cv_name' => 'local',
+      'definition' => 'List of p-value keywords used in annotating individual features.',
+    ));
+
+    // Then describe the field defined by that term.
+    $field_name = 'local__expression_search';
+    $field_type = 'local__expression_search';
     $fields[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
@@ -252,7 +275,7 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
       'settings' => array(
         'term_vocabulary' => 'local',
         'term_name' => 'expression_features',
-        'term_accession' => '12345',
+        'term_accession' => '93944',
         'auto_attach' => FALSE,
         'chado_table' => $bundle->data_table,
         'chado_column' => 'organism_id',
@@ -266,6 +289,40 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
         'default' => array(
           'label' => 'hidden',
           'type' => 'local__expression_features_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+
+  }
+
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'analysis')) {
+    $field_name = 'local__expression_search';
+    $field_type = 'local__expression_search';
+    $instances[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Analysis Keywords',
+      'description' => 'List of p-value keywords used in annotating individual features.',
+      'required' => FALSE,
+      'settings' => array(
+        'term_vocabulary' => 'local',
+        'term_name' => 'expression_search',
+        'term_accession' => 'pvalue_keyword',
+        'auto_attach' => TRUE,
+        'chado_table' => $bundle->data_table,
+        'chado_column' => 'organism_id',
+        'base_table' => $bundle->data_table,
+      ),
+      'widget' => array(
+        'type' => 'local__expression_search_widget',
+        'settings' => array(),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'local__expression_search_formatter',
           'settings' => array(),
         ),
       ),
