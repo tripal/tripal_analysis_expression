@@ -38,8 +38,6 @@ class local__expression_search_formatter extends ChadoFieldFormatter
 
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display)
   {
-    $settings = $display['settings'];
-
     $pvalue_cvterm_id = chado_get_cvterm([
       'cv_id' => ['name' => 'OBI'],
       'name' => 'p-value',
@@ -54,33 +52,26 @@ class local__expression_search_formatter extends ChadoFieldFormatter
     $query->distinct();
     $query->fields('f', ['organism_id']); //feature name and id for
     $query->fields('fc', ['cvterm_id']);
-    $query->fields('cv', ['name', 'cv_id']); // Keyword
+    $query->fields('ct', ['name']); // Keyword
     $query->join('analysisfeature', 'af', 'a.analysis_id = af.analysis_id');
     $query->join('feature', 'f', 'f.feature_id = af.feature_id');
     $query->join('feature_cvterm', 'fc', 'f.feature_id = fc.feature_id');
     $query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id AND fp.type_id = :typeid', [':typeid' => $pvalue_cvterm_id]);
     $query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2', [':typeid2' => $evidence_code_cvterm_id]);
-    $query->join('cvterm', 'cv', 'fc.cvterm_id = cv.cvterm_id');
+    $query->join('cvterm', 'ct', 'fc.cvterm_id = ct.cvterm_id');
     #$query->addExpression('COUNT(*)', 'count');
     #$query->condition('a.analysis_id', $analysis_id, '='); // commented out for testing so I have multiple CVterms
     $total = $query->countQuery()->execute()->fetchField();
     $page = pager_default_initialize($total, 10);
     $query->range($page * 10, 10);
 
-    $result = $query->execute();
-    while ($record = $result->fetchAssoc()) {
-      $cvterms[] = ['cv_id' => $record['cv_id'], 'name' => $record['name']];
-    }
+    $cvterms = $query->execute()->fetchAll();
 
-    dpm($cvterms); // need list of CVterms to pass, but only gets first ten due to pager setup
-    $cvterm_count = $this->getCount($cvterms);
-
-    $result = $query->execute();
-    while ($record = $result->fetchAssoc()) {
-      #dpm($record);
+    $cvterm_count = $this->getCount($cvterms, $analysis_id);
+    foreach ($cvterms as $record) {
       $rows[] = [
-        l($record['name'], 'tripal_analysis_expression/pvalue/cvterm/' . $record['cvterm_id'] . '/' . $record['organism_id']),
-        $cvterm_count[$record['cv_id']]['count']
+        l($record->name, 'tripal_analysis_expression/pvalue/cvterm/' . $record->cvterm_id . '/' . $record->organism_id),
+        $cvterm_count[$record->cvterm_id]->count ?? 0,
       ];
     }
 
@@ -120,30 +111,28 @@ class local__expression_search_formatter extends ChadoFieldFormatter
    *
    **/
 
-  protected function getCount($cvterms)
+  protected function getCount($cvterms, $analysis_id)
   {
     $cvterm_ids = [];
     $indexed_cvterms = [];
     foreach ($cvterms as $cvterm) {
-      $cvterm_ids[] = $cvterm['cv_id'];
-      $indexed_cvterms[$cvterm['cv_id']] = $cvterm;
+      $cvterm_ids[] = $cvterm->cvterm_id;
+      $indexed_cvterms[$cvterm->cvterm_id] = $cvterm;
     }
 
-    $count_query = db_select('chado.cv', 'c');
-    $count_query->condition('c.cv_id', $cvterm_ids, 'IN');
+    $count_query = db_select('chado.feature_cvterm', 'fc');
     $count_query->addExpression('COUNT(*)', 'count');
-    $count_query->fields('c', ['cv_id']);
-    $count_query->groupBy('cv_id');
+    $count_query->join('chado.analysisfeature', 'af', 'fc.feature_id = af.feature_id');
+    $count_query->condition('fc.cvterm_id', $cvterm_ids, 'IN');
+    $count_query->condition('af.analysis_id', $analysis_id);
+    $count_query->fields('fc', ['cvterm_id']);
+    $count_query->groupBy('fc.cvterm_id');
     $result = $count_query->execute();
-    $count_record = [];
 
-    while ($record = $result->fetchAssoc()) {
-      $count_record[] = $record;
+    while ($record = $result->fetchObject()) {
+      $indexed_cvterms[$record->cvterm_id]->count = $record->count;
     }
 
-    foreach ($count_record as $count) {
-      $indexed_cvterms[$count['cv_id']]['count'] = $count['count'];
-    }
     return $indexed_cvterms;
   }
 
