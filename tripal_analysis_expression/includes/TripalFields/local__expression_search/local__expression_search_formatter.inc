@@ -59,26 +59,19 @@ class local__expression_search_formatter extends ChadoFieldFormatter
     $query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id AND fp.type_id = :typeid', [':typeid' => $pvalue_cvterm_id]);
     $query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2', [':typeid2' => $evidence_code_cvterm_id]);
     $query->join('cvterm', 'ct', 'fc.cvterm_id = ct.cvterm_id');
-    #$query->addExpression('COUNT(*)', 'count');
-    #$query->condition('a.analysis_id', $analysis_id, '='); // commented out for testing so I have multiple CVterms
+    $query->condition('a.analysis_id', $analysis_id, '='); // commented out for testing so I have multiple CVterms
     $total = $query->countQuery()->execute()->fetchField();
     $page = pager_default_initialize($total, 10);
     $query->range($page * 10, 10);
-
     $cvterms = $query->execute()->fetchAll();
 
     $cvterm_count = $this->getCount($cvterms, $analysis_id);
     foreach ($cvterms as $record) {
       $rows[] = [
         l($record->name, 'tripal_analysis_expression/pvalue/cvterm/' . $record->cvterm_id . '/' . $record->organism_id),
-        $cvterm_count[$record->cvterm_id]->count ?? 0,
+        isset($cvterm_count[$record->cvterm_id]) ? $cvterm_count[$record->cvterm_id]->count : 0,
       ];
     }
-
-    #foreach ($cvterm_count as $count) {
-    #  $cvterm_count[$record['cvterm_id']]['count'];
-    #  $indexed_authors[$count['author_id']]['books_count'] = $count['count'];
-    #}
 
     $pager = theme('pager', ['quantity', $total]);
     $pager = $this->ajaxifyPager($pager, $entity);
@@ -136,18 +129,6 @@ class local__expression_search_formatter extends ChadoFieldFormatter
     return $indexed_cvterms;
   }
 
-  // Loop through results to associate each cvterm with its count
-  // End result will be [(cvterm_id, name, cvterm_count)]
-  /*
-   *
-  // Eager load
-  $author_count = "select author_id, count(*) from book where author_id in $author_ids group by author_id"
-
-  foreach($author_count as $count) {
-    $indexed_authors[$count['author_id]][books_count] = $count['count']
-  }
-
-   */
   public function settingsSummary($view_mode)
   {
     return '';
