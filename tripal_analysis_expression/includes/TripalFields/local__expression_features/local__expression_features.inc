@@ -71,7 +71,7 @@ class local__expression_features extends ChadoField
     // The name of the term.
     'term_name' => 'expression_features',
     // The unique ID (i.e. accession) of the term.
-    'term_accession' => '12345',
+    'term_accession' => 'expression_features',
     // Set to TRUE if the site admin is not allowed to change the term
     // type, otherwise the admin can change the term mapped to a field.
     'term_fixed' => FALSE,
