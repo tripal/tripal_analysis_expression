@@ -65,6 +65,14 @@ class local__expression_search_formatter extends ChadoFieldFormatter
     $query->range($page * 10, 10);
     $cvterms = $query->execute()->fetchAll();
 
+    $description = "View all keywords associated with p-values in this analysis, and the number of features with this keyword.";
+
+    if(empty($cvterms)) {
+      return $element[0] = [
+        '#markup' => "<div>$description</div><div class=\"text-muted mt-2\">No keywords found for this analysis.</div>"
+      ];
+    }
+
     $cvterm_count = $this->getCount($cvterms, $analysis_id);
     foreach ($cvterms as $record) {
       $rows[] = [
@@ -90,7 +98,6 @@ class local__expression_search_formatter extends ChadoFieldFormatter
           'pager' => $pager,
         ]);
 
-      $description = "View all keywords associated with p-values in this analysis, and the number of features with this keyword.";
       $element[0] =
         [
           "#type" => "markup",
