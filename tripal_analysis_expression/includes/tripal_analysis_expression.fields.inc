@@ -93,7 +93,7 @@ function tripal_analysis_expression_bundle_fields_info($entity_type, $bundle)
   if (isset($bundle->data_table) AND ($bundle->data_table == 'analysis') AND ($bundle->term->name == 'Gene expression profiling')) {
     // First add my term.
     tripal_insert_cvterm(array(
-      'id' => 'local:local__expression_features',
+      'id' => 'local:expression_features',
       'name' => 'expression_features',
       'cv_name' => 'local',
       'definition' => 'Table of expression features.',
