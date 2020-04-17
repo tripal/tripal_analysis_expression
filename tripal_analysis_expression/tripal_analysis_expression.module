@@ -347,7 +347,7 @@ function tripal_analysis_expression_cvterm($cvterm_id, $organism_id)
 
   // format output
   $content = theme('table', $table);          // upper table including cvterm name, definition, and vocabulary
-  $content .= "The following is a list of " . $scientific_name . "'s features that express " . $cv_term->cv_name . ".";
+  $content .= "The following is a list of " . $scientific_name . "'s features that are associated with " . $cv_term->cv_name . ".";
   $content .= theme('table', $feature_table); // table of features, p-values, and expression relationship
   $content .= $feature_table['pager'];              // pager
   drupal_set_title($cv_term->db_name . ': ' . $cv_term->cv_name);

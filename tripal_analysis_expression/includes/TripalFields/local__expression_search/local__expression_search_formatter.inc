@@ -85,7 +85,7 @@ class local__expression_search_formatter extends ChadoFieldFormatter
     } else {
       $table = theme('table',
         [
-          "header" => ['Keyword', 'Count'],
+          "header" => ['Keyword', 'Gene Count'],
           "rows" => $rows,
           'pager' => $pager,
         ]);
