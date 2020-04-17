@@ -275,7 +275,7 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
       'settings' => array(
         'term_vocabulary' => 'local',
         'term_name' => 'expression_features',
-        'term_accession' => '93944',
+        'term_accession' => 'expression_features',
         'auto_attach' => FALSE,
         'chado_table' => $bundle->data_table,
         'chado_column' => 'organism_id',
