@@ -7,7 +7,7 @@
  * Display:
  * Configuration:
  */
-class sep__biological_sample_formatter extends ChadoFieldFormatter {
+class sep__biological_sample_formatter extends ChadoFieldFormatter{
 
   // The default label for this field.
   public static $default_label = 'Biomaterials Browser';
@@ -73,7 +73,7 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
    * @param $entity_type
    * @param $entity
    * @param $langcode
-   * @param $items
+   * @param $data_items
    * @param $display
    *
    * @return void
@@ -83,13 +83,13 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $base_table = $entity->chado_table;
 
-    if (empty($items) || !$items[0]['value']) {
+    if (empty($items) || !($count = $items[0]['value'])) {
       $element[] = ['#markup' => 'There are no linked BioSamples.'];
       return;
     }
 
-    $elements = 1;
-    $num_per_page = 10;
+    $per_page = 10;
+    $page = pager_default_initialize($count, $per_page);
 
     $headers = [
       'Name',
@@ -98,23 +98,31 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
       'Description',
     ];
 
-
     $rows = [];
 
-    foreach ($items as $item) {
+    if ($entity->chado_table === 'analysis') {
+      $data_items = $this->loadAnalysis($entity, $page * $per_page, $per_page);
+    }
+    elseif ($entity->chado_table === 'organism') {
+      $data_items = $this->loadOrganism($entity, $page * $per_page, $per_page);
+    }
+    else {
+      return;
+    }
+
+    foreach ($data_items as $item) {
 
       $b_contact = NULL;
       $tissue = NULL;
       $treatment = NULL;
       $description = NULL;
 
-      $biomaterial = $item['value'];
-      if(empty($biomaterial)) {
-        return null;
+      $biomaterial = $item;
+      if (empty($biomaterial)) {
+        return NULL;
       }
 
       $b_name = $biomaterial["name"];
-      $record = $biomaterial["record_id"];
       $id = $biomaterial["entity_id"];
 
       if ($id) {
@@ -140,22 +148,183 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter {
 
       $rows[] = $row;
     }
-    $current_page = pager_default_initialize(count($rows), $num_per_page, 1);
-    $chunks = array_chunk($rows, $num_per_page, TRUE);
 
     $output = theme('table', [
       'header' => $headers,
-      'rows' => $chunks[$current_page],
+      'rows' => $rows,
       'attributes' => ['class' => ['table-layout-fixed']],
     ]);
 
-    $output .= theme('pager', [
-      'quantity' => 5,
-      'element' => $elements,
-      'parameters' => ['tripal_pane' => 'gp_Biomaterials'],
-    ]);
+    $pager = theme('pager', ['quantity', $count]);
+    $output .= $this->ajaxifyPager($pager, $entity);
 
     $element[] = ['#markup' => $output];
+  }
+
+  /**
+   * Load data for analysis pages.
+   *
+   * @param $entity
+   *
+   * @return mixed
+   */
+  protected function loadAnalysis(&$entity, $offset, $limit) {
+    $field = get_class();
+    $entity->{$field}['und'] = [];
+    $analysis_id = $entity->chado_record_id;
+
+    $sql = 'SELECT B.biomaterial_id, B.name, B.description
+              FROM {biomaterial} B
+              JOIN {assay_biomaterial} AB ON B.biomaterial_id = AB.biomaterial_id
+              JOIN {assay} A ON A.assay_id = AB.assay_id
+              JOIN {acquisition} AQ ON AQ.assay_id = A.assay_id
+              JOIN {quantification} Q ON Q.acquisition_id = AQ.acquisition_id
+              JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
+              WHERE AN.analysis_id=:analysis_id
+              ORDER BY B.name ASC
+              OFFSET :offset
+              LIMIT :limit';
+
+    $results = chado_query($sql, [
+      ":analysis_id" => $analysis_id,
+      ':offset' => $offset,
+      ':limit' => $limit,
+    ])->fetchAll();
+
+    if (!$results) {
+      return [];
+    }
+
+    $rows = [];
+    if ($results) {
+      $i = 0;
+      foreach ($results as $biomaterial) {
+
+        $b_record_id = $biomaterial->biomaterial_id;
+
+        $values = [
+          'biomaterial_id' => $b_record_id,
+        ];
+
+        $biomat_full = chado_generate_var("biomaterial", $values);
+        $expanded = chado_expand_var($biomat_full, 'table', 'biomaterialprop');
+        $properties = $expanded->biomaterialprop;
+
+        $treatment = NULL;
+        $tissue = NULL;
+
+        if (!empty($properties)) {
+          foreach ($properties as $property) {
+            $name = strtolower($property->type_id->name);
+            if ($name == "tissue") {
+              $tissue = $property->value;
+            }
+            if ($name == "treatment") {
+              $treatment = $property->value;
+            }
+          }
+        }
+
+        $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial",
+          $b_record_id);
+
+        $value = [
+          'name' => $biomaterial->name,
+          'record_id' => $b_record_id,
+          'entity_id' => $biomaterial_entity_id,
+          'description' => $biomaterial->description,
+          'tissue' => $tissue,
+          'treatment' => $treatment,
+        ];
+
+        $rows[] = $value;
+
+        $i++;
+      }
+    }
+
+    return $rows;
+  }
+
+  /**
+   * Load data for organism pages.
+   *
+   * @param $entity
+   * @param int $offset
+   *
+   * @return mixed
+   * @throws \Exception
+   */
+  protected function loadOrganism($entity, $offset, $per_page) {
+    $field = get_class();
+    $entity->{$field}['und'] = [];
+    $organism_id = $entity->chado_record_id;
+
+    $sql = 'SELECT B.biomaterial_id, B.name, B.description
+            FROM {biomaterial} B
+            WHERE B.taxon_id = :organism_id
+            ORDER BY B.name ASC
+            OFFSET :offset
+            LIMIT :limit';
+
+    $results = chado_query($sql, [
+      ":organism_id" => $organism_id,
+      ":offset" => $offset,
+      ':limit' => $per_page,
+    ])->fetchAll();
+
+    if (!$results) {
+      return [];
+    }
+
+    $i = 0;
+    $rows = [];
+    foreach ($results as $biomaterial) {
+      $b_record_id = $biomaterial->biomaterial_id;
+
+      $values = [
+        'biomaterial_id' => $b_record_id,
+      ];
+
+      $biomat_full = chado_generate_var("biomaterial", $values);
+      $expanded = chado_expand_var($biomat_full, 'table', 'biomaterialprop');
+      $properties = $expanded->biomaterialprop;
+
+      $treatment = NULL;
+      $tissue = NULL;
+
+      if ($properties) {
+        foreach ($properties as $property) {
+          if (property_exists($property,
+              'type_id') && property_exists($property->type_id, 'name')) {
+            $name = strtolower($property->type_id->name);
+            if ($name == "tissue") {
+              $tissue = $property->value;
+            }
+            if ($name == "treatment") {
+              $treatment = $property->value;
+            }
+          }
+        }
+      }
+
+      $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial",
+        $b_record_id);
+      $value = [
+        'name' => $biomaterial->name,
+        'record_id' => $b_record_id,
+        'entity_id' => $biomaterial_entity_id,
+        'description' => $biomaterial->description,
+        'tissue' => $tissue,
+        'treatment' => $treatment,
+      ];
+
+      $rows[] = $value;
+
+      $i++;
+    }
+
+    return $rows;
   }
 
   /**

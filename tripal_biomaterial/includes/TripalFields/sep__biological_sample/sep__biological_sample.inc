@@ -120,11 +120,11 @@ class sep__biological_sample extends ChadoField{
    */
   public function load($entity) {
     if ($entity->chado_table == 'analysis') {
-      $this->load_for_analysis($entity);
+      $this->analysisCount($entity);
     }
 
     if ($entity->chado_table == 'organism') {
-      $this->load_for_organism($entity);
+      $this->organismCount($entity);
     }
   }
 
@@ -133,14 +133,14 @@ class sep__biological_sample extends ChadoField{
    *
    * @param $entity
    *
-   * @return mixed
+   * @return void
    */
-  protected function load_for_analysis(&$entity) {
+  protected function analysisCount(&$entity) {
     $field = get_class();
     $entity->{$field}['und'] = [];
     $analysis_id = $entity->chado_record_id;
 
-    $sql = 'SELECT B.biomaterial_id, B.name, B.description
+    $sql = 'SELECT COUNT(*) as count
               FROM {biomaterial} B
               JOIN {assay_biomaterial} AB ON B.biomaterial_id = AB.biomaterial_id
               JOIN {assay} A ON A.assay_id = AB.assay_id
@@ -149,57 +149,12 @@ class sep__biological_sample extends ChadoField{
               JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
               WHERE AN.analysis_id=:analysis_id';
 
-    $results = chado_query($sql, [":analysis_id" => $analysis_id])->fetchAll();
+    $count = (int) chado_query($sql,
+      [":analysis_id" => $analysis_id])->fetchField(0);
 
-    if (!$results) {
-      return;
+    if ($count > 0) {
+      $entity->{$field}['und'][0]['value'] = $count;
     }
-
-    if ($results) {
-      $i = 0;
-      foreach ($results as $biomaterial) {
-
-        $b_record_id = $biomaterial->biomaterial_id;
-
-        $values = [
-          'biomaterial_id' => $b_record_id,
-        ];
-
-        $biomat_full = chado_generate_var("biomaterial", $values);
-        $expanded = chado_expand_var($biomat_full, 'table', 'biomaterialprop');
-        $properties = $expanded->biomaterialprop;
-
-        $treatment = NULL;
-        $tissue = NULL;
-
-        foreach ($properties as $property) {
-          $name = strtolower($property->type_id->name);
-          if ($name == "tissue") {
-            $tissue = $property->value;
-          }
-          if ($name == "treatment") {
-            $treatment = $property->value;
-          }
-        }
-        $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial",
-          $b_record_id);
-
-        $value = [
-          'name' => $biomaterial->name,
-          'record_id' => $b_record_id,
-          'entity_id' => $biomaterial_entity_id,
-          'description' => $biomaterial->description,
-          'tissue' => $tissue,
-          'treatment' => $treatment,
-        ];
-
-        $entity->{$field}['und'][$i]['value'] = $value;
-
-        $i++;
-      }
-    }
-
-    return $entity;
   }
 
   /**
@@ -210,67 +165,19 @@ class sep__biological_sample extends ChadoField{
    * @return mixed
    * @throws \Exception
    */
-  protected function load_for_organism(&$entity) {
+  protected function organismCount(&$entity) {
     $field = get_class();
     $entity->{$field}['und'] = [];
     $organism_id = $entity->chado_record_id;
 
-    $sql = 'SELECT B.biomaterial_id, B.name, B.description
+    $sql = 'SELECT COUNT(*)
             FROM {biomaterial} B
             WHERE B.taxon_id = :organism_id';
 
-    $results = chado_query($sql, [":organism_id" => $organism_id])->fetchAll();
-
-    if (!$results) {
-      return;
+    $count = (int) chado_query($sql,
+      [":organism_id" => $organism_id])->fetchField(0);
+    if ($count > 0) {
+      $entity->{$field}['und'][0]['value'] = $count;
     }
-
-    $i = 0;
-    foreach ($results as $biomaterial) {
-      $b_record_id = $biomaterial->biomaterial_id;
-
-      $values = [
-        'biomaterial_id' => $b_record_id,
-      ];
-
-      $biomat_full = chado_generate_var("biomaterial", $values);
-      $expanded = chado_expand_var($biomat_full, 'table', 'biomaterialprop');
-      $properties = $expanded->biomaterialprop;
-
-      $treatment = NULL;
-      $tissue = NULL;
-
-      if ($properties) {
-        foreach ($properties as $property) {
-          if (property_exists($property,
-              'type_id') && property_exists($property->type_id, 'name')) {
-            $name = strtolower($property->type_id->name);
-            if ($name == "tissue") {
-              $tissue = $property->value;
-            }
-            if ($name == "treatment") {
-              $treatment = $property->value;
-            }
-          }
-        }
-      }
-
-      $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial",
-        $b_record_id);
-      $value = [
-        'name' => $biomaterial->name,
-        'record_id' => $b_record_id,
-        'entity_id' => $biomaterial_entity_id,
-        'description' => $biomaterial->description,
-        'tissue' => $tissue,
-        'treatment' => $treatment,
-      ];
-
-      $entity->{$field}['und'][$i]['value'] = $value;
-
-      $i++;
-    }
-
-    return $entity;
   }
 }
