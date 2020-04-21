@@ -63,6 +63,7 @@ class analysis_expression_data_downloader {
    * @throws \Exception
    */
   public static function callback() {
+    return '';
     $downloader = new static();
     $downloader->load();
     $downloader->create();
@@ -142,11 +143,8 @@ class analysis_expression_data_downloader {
 
     // Loop through data. Need to build array with structure
     foreach ($this->expression_data as $result) {
-      $feature = $result->feature_uniquename;
-      $biomaterial = $result->biomaterial_name;
-      $value = $result->signal;
-      $data[$feature][$biomaterial] = $value;
-      $biomaterials[$biomaterial] = $biomaterial;
+      $data[$result->feature_uniquename][$result->biomaterial_name] = $result->signal;
+      $biomaterials[$result->biomaterial_name] = $result->biomaterial_name;
     }
 
     $fh = fopen(drupal_realpath($out_file), "w");

@@ -78,6 +78,7 @@
      * @param {Object} object this
      */
     initiateDownload: function (e, object) {
+      return
       e.preventDefault();
       var src    = $(this).attr('href');
       var iframe = $('<iframe />', {
