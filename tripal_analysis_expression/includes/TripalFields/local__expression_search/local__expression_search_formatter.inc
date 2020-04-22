@@ -63,6 +63,9 @@ class local__expression_search_formatter extends ChadoFieldFormatter{
       ':analysis_id' => $analysis_id,
     ])->fetchAll();
 
+    $organism_query = "SELECT * FROM chado.analysis_organism WHERE analysis_id=:id";
+    $organism = db_query($organism_query, [':id' => $analysis_id])->fetchObject();
+
     //$query = chado_db_select('analysis', 'a');
     //$query->distinct();
     //$query->fields('f', ['organism_id']); //feature name and id for
@@ -95,8 +98,8 @@ class local__expression_search_formatter extends ChadoFieldFormatter{
     //$cvterm_count = $this->getCount($cvterms, $analysis_id);
     foreach ($cvterms as $record) {
       $rows[] = [
-        l($record->name,
-          'tripal_analysis_expression/pvalue/cvterm/' . $record->cvterm_id),
+        $organism ? l($record->name,
+          'tripal_analysis_expression/pvalue/cvterm/' . $record->cvterm_id . '/' . $organism->organism_id) : $record->name,
         $record->count,
         //isset($cvterm_count[$record->cvterm_id]) ? $cvterm_count[$record->cvterm_id]->count : 0,
       ];
@@ -119,7 +122,7 @@ class local__expression_search_formatter extends ChadoFieldFormatter{
 
       $element[0] = [
         "#type" => "markup",
-        "#markup" => $description . $table ,//. $pager,
+        "#markup" => $description . $table,//. $pager,
       ];
     }
   }
