@@ -28,13 +28,14 @@
 //path should be `tripal/users/ . $users->uid . /tripal_analysis_expression/`
 //
 
-class analysis_expression_data_downloader {
+class analysis_expression_data_downloader{
+
   /**
    * The expression data returned by the mview
    *
    * @var array
    */
-  protected $expression_data = [];
+  public $expression_data = [];
 
   /**
    * The output file URI.
@@ -63,13 +64,11 @@ class analysis_expression_data_downloader {
    * @throws \Exception
    */
   public static function callback() {
-    return '';
     $downloader = new static();
     $downloader->load();
     $downloader->create();
     $downloader->write();
     $downloader->serve();
-    // alert drupal file is done!
   }
 
   /**
@@ -103,9 +102,7 @@ class analysis_expression_data_downloader {
       $keys = [":analysis_id" => $analysis_id];
     }
 
-    $expression_data = chado_query($sql, $keys)->fetchAll();
-
-    $this->expression_data = $expression_data;
+    $this->expression_data = chado_query($sql, $keys)->fetchAll();
   }
 
   /**
@@ -119,16 +116,43 @@ class analysis_expression_data_downloader {
       watchdog('tripal', $message, [], WATCHDOG_ERROR);
       return;
     }
-    $this->outfile = $user_dir . 'expression_data.txt';
-    $this->outfile = drupal_tempnam($user_dir, 'expression_data_') . '.csv';
+    $this->outfile = $user_dir . '/expression_data_' . uniqid() . '.csv';
   }
-
 
   /**
    * Retrieves the URL for the downloadable file.
    */
   public function serve() {
-    file_transfer($this->outfile, ['Content-Type' => 'text/csv; utf-8']);
+    $uri = $this->outfile;
+    $headers = ['Content-Type' => 'text/csv; utf-8'];
+    if (ob_get_level()) {
+      ob_end_clean();
+    }
+
+    foreach ($headers as $name => $value) {
+      drupal_add_http_header($name, $value);
+    }
+    drupal_send_headers();
+    $scheme = file_uri_scheme($uri);
+    // Transfer file in 1024 byte chunks to save memory usage.
+    if ($scheme && file_stream_wrapper_valid_scheme($scheme) && $fd = fopen($uri,
+        'rb')) {
+      while (!feof($fd)) {
+        print fread($fd, 1024);
+      }
+      fclose($fd);
+    }
+    else {
+      drupal_not_found();
+    }
+
+    try {
+      @unlink(drupal_realpath($this->outfile));
+    } catch (Exception $exception) {
+      tripal_log($exception->getMessage());
+    }
+
+    drupal_exit();
   }
 
   /**
