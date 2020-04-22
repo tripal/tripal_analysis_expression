@@ -7,27 +7,25 @@
  * Display:
  * Configuration:
  */
-class local__expression_search_formatter extends ChadoFieldFormatter
-{
+class local__expression_search_formatter extends ChadoFieldFormatter{
 
   // The default label for this field.
   public static $default_label = 'Analysis Keywords';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('local__expression_search');
+  public static $field_types = ['local__expression_search'];
 
   // The list of default settings for this formatter.
-  public static $default_settings = array(
+  public static $default_settings = [
     'setting1' => 'default_value',
-  );
+  ];
 
   /**
    * @see ChadoFieldFormatter::settingsForm()
    *
    **/
 
-  public function settingsForm($view_mode, $form, &$form_state)
-  {
+  public function settingsForm($view_mode, $form, &$form_state) {
 
   }
 
@@ -36,8 +34,7 @@ class local__expression_search_formatter extends ChadoFieldFormatter
    *
    **/
 
-  public function view(&$element, $entity_type, $entity, $langcode, $items, $display)
-  {
+  public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $pvalue_cvterm_id = chado_get_cvterm([
       'cv_id' => ['name' => 'OBI'],
       'name' => 'p-value',
@@ -48,61 +45,82 @@ class local__expression_search_formatter extends ChadoFieldFormatter
     ])->cvterm_id;
     $analysis_id = $entity->chado_record->analysis_id;
 
-    $query = chado_db_select('analysis', 'a');
-    $query->distinct();
-    $query->fields('f', ['organism_id']); //feature name and id for
-    $query->fields('fc', ['cvterm_id']);
-    $query->fields('ct', ['name']); // Keyword
-    $query->join('analysisfeature', 'af', 'a.analysis_id = af.analysis_id');
-    $query->join('feature', 'f', 'f.feature_id = af.feature_id');
-    $query->join('feature_cvterm', 'fc', 'f.feature_id = fc.feature_id');
-    $query->join('feature_cvtermprop', 'fp', 'fc.feature_cvterm_id = fp.feature_cvterm_id AND fp.type_id = :typeid', [':typeid' => $pvalue_cvterm_id]);
-    $query->join('feature_cvtermprop', 'fp2', 'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2', [':typeid2' => $evidence_code_cvterm_id]);
-    $query->join('cvterm', 'ct', 'fc.cvterm_id = ct.cvterm_id');
-    $query->condition('a.analysis_id', $analysis_id, '='); // commented out for testing so I have multiple CVterms
-    $total = $query->countQuery()->execute()->fetchField();
-    $page = pager_default_initialize($total, 10);
-    $query->range($page * 10, 10);
-    $cvterms = $query->execute()->fetchAll();
+    $sql = "
+    SELECT ct.cvterm_id, ct.name, COUNT(f.feature_id) as count FROM chado.analysis a
+    INNER JOIN chado.analysisfeature af ON a.analysis_id = af.analysis_id
+    INNER JOIN chado.feature f ON f.feature_id = af.feature_id
+    INNER JOIN chado.feature_cvterm fc ON f.feature_id = fc.feature_id
+    INNER JOIN chado.feature_cvtermprop fp ON fc.feature_cvterm_id = fp.feature_cvterm_id AND fp.type_id = :typeid
+    INNER JOIN chado.feature_cvtermprop fp2 ON fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2
+    INNER JOIN chado.cvterm ct ON fc.cvterm_id = ct.cvterm_id
+    WHERE a.analysis_id = :analysis_id
+    GROUP BY ct.cvterm_id
+    ";
+
+    $cvterms = db_query($sql, [
+      ':typeid' => $pvalue_cvterm_id,
+      ':typeid2' => $evidence_code_cvterm_id,
+      ':analysis_id' => $analysis_id,
+    ])->fetchAll();
+
+    //$query = chado_db_select('analysis', 'a');
+    //$query->distinct();
+    //$query->fields('f', ['organism_id']); //feature name and id for
+    //$query->fields('fc', ['cvterm_id']);
+    //$query->fields('ct', ['name']); // Keyword
+    //$query->join('analysisfeature', 'af', 'a.analysis_id = af.analysis_id');
+    //$query->join('feature', 'f', 'f.feature_id = af.feature_id');
+    //$query->join('feature_cvterm', 'fc', 'f.feature_id = fc.feature_id');
+    //$query->join('feature_cvtermprop', 'fp',
+    //  'fc.feature_cvterm_id = fp.feature_cvterm_id AND fp.type_id = :typeid',
+    //  [':typeid' => $pvalue_cvterm_id]);
+    //$query->join('feature_cvtermprop', 'fp2',
+    //  'fp.feature_cvterm_id = fp2.feature_cvterm_id AND fp2.type_id = :typeid2',
+    //  [':typeid2' => $evidence_code_cvterm_id]);
+    //$query->join('cvterm', 'ct', 'fc.cvterm_id = ct.cvterm_id');
+    //$query->condition('a.analysis_id', $analysis_id, '=');
+    //$total = $query->countQuery()->execute()->fetchField();
+    //$page = pager_default_initialize($total, 10);
+    //$query->range($page * 10, 10);
+    //$cvterms = $query->execute()->fetchAll();
 
     $description = "View all keywords associated with p-values in this analysis, and the number of features with this keyword.";
 
-    if(empty($cvterms)) {
+    if (empty($cvterms)) {
       return $element[0] = [
-        '#markup' => "<div>$description</div><div class=\"text-muted mt-2\">No keywords found for this analysis.</div>"
+        '#markup' => "<div>$description</div><div class=\"text-muted mt-2\">No keywords found for this analysis.</div>",
       ];
     }
 
-    $cvterm_count = $this->getCount($cvterms, $analysis_id);
+    //$cvterm_count = $this->getCount($cvterms, $analysis_id);
     foreach ($cvterms as $record) {
       $rows[] = [
-        l($record->name, 'tripal_analysis_expression/pvalue/cvterm/' . $record->cvterm_id . '/' . $record->organism_id),
-        isset($cvterm_count[$record->cvterm_id]) ? $cvterm_count[$record->cvterm_id]->count : 0,
+        l($record->name,
+          'tripal_analysis_expression/pvalue/cvterm/' . $record->cvterm_id),
+        $record->count,
+        //isset($cvterm_count[$record->cvterm_id]) ? $cvterm_count[$record->cvterm_id]->count : 0,
       ];
     }
 
-    $pager = theme('pager', ['quantity', $total]);
-    $pager = $this->ajaxifyPager($pager, $entity);
+    //$pager = theme('pager', ['quantity', $total]);
+    //$pager = $this->ajaxifyPager($pager, $entity);
 
     if ($rows == []) {
-      $element[0] =
-        [
-          "#type" => "markup",
-          "#markup" => "There are no keywords associated with p-values in this analysis.",
-        ];
-    } else {
-      $table = theme('table',
-        [
-          "header" => ['Keyword', 'Gene Count'],
-          "rows" => $rows,
-          'pager' => $pager,
-        ]);
+      $element[0] = [
+        "#type" => "markup",
+        "#markup" => "There are no keywords associated with p-values in this analysis.",
+      ];
+    }
+    else {
+      $table = theme('table', [
+        "header" => ['Keyword', 'Gene Count'],
+        "rows" => $rows,
+      ]);
 
-      $element[0] =
-        [
-          "#type" => "markup",
-          "#markup" => $description . $table . $pager,
-        ];
+      $element[0] = [
+        "#type" => "markup",
+        "#markup" => $description . $table ,//. $pager,
+      ];
     }
   }
 
@@ -111,8 +129,7 @@ class local__expression_search_formatter extends ChadoFieldFormatter
    *
    **/
 
-  protected function getCount($cvterms, $analysis_id)
-  {
+  protected function getCount($cvterms, $analysis_id) {
     $cvterm_ids = [];
     $indexed_cvterms = [];
     foreach ($cvterms as $cvterm) {
@@ -122,7 +139,8 @@ class local__expression_search_formatter extends ChadoFieldFormatter
 
     $count_query = db_select('chado.feature_cvterm', 'fc');
     $count_query->addExpression('COUNT(*)', 'count');
-    $count_query->join('chado.analysisfeature', 'af', 'fc.feature_id = af.feature_id');
+    $count_query->join('chado.analysisfeature', 'af',
+      'fc.feature_id = af.feature_id');
     $count_query->condition('fc.cvterm_id', $cvterm_ids, 'IN');
     $count_query->condition('af.analysis_id', $analysis_id);
     $count_query->fields('fc', ['cvterm_id']);
@@ -136,9 +154,7 @@ class local__expression_search_formatter extends ChadoFieldFormatter
     return $indexed_cvterms;
   }
 
-  public function settingsSummary($view_mode)
-  {
+  public function settingsSummary($view_mode) {
     return '';
   }
-
 }
