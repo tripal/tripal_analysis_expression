@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @class
  * Purpose:
@@ -7,7 +6,7 @@
  * Data:
  * Assumptions:
  */
-class local__expression_details extends ChadoField{
+class local__expression_analysis extends ChadoField {
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -18,16 +17,16 @@ class local__expression_details extends ChadoField{
   // --------------------------------------------------------------------------
 
   // The default label for this field.
-  public static $default_label = 'Pvalue Annotation';
+  public static $default_label = 'Gene Expression';
 
   // The default description for this field.
-  public static $default_description = 'Evidence-based annotation with p-values';
+  public static $default_description = 'Lists gene expression analyses.';
 
   // The default widget for this field.
-  public static $default_widget = 'local__expression_details_widget';
+  public static $default_widget = 'local__expression_analysis_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'local__expression_details_formatter';
+  public static $default_formatter = 'local__expression_analysis_formatter';
 
   // The module that manages this field.
   // If no module manages the field (IE it's added via libraries)
@@ -39,23 +38,23 @@ class local__expression_details extends ChadoField{
   // Drupal will automatically change these settings for all fields.
   // Once instances exist for a field type then these settings cannot be
   // changed.
-  public static $default_settings = [
+  public static $default_settings = array(
     'storage' => 'field_chado_storage',
-    // It is expected that all fields set a 'value' in the load() function.
-    // In many cases, the value may be an associative array of key/value pairs.
-    // In order for Tripal to provide context for all data, the keys should
-    // be a controlled vocabulary term (e.g. rdfs:type). Keys in the load()
-    // function that are supported by the query() function should be
-    // listed here.
-    'searchable_keys' => [],
-  ];
+     // It is expected that all fields set a 'value' in the load() function.
+     // In many cases, the value may be an associative array of key/value pairs.
+     // In order for Tripal to provide context for all data, the keys should
+     // be a controlled vocabulary term (e.g. rdfs:type). Keys in the load()
+     // function that are supported by the query() function should be
+     // listed here.
+     'searchable_keys' => array(),
+  );
 
   // Indicates the download formats for this field.  The list must be the
   // name of a child class of the TripalFieldDownloader.
-  public static $download_formatters = [
-    'TripalTabDownloader',
-    'TripalCSVDownloader',
-  ];
+  public static $download_formatters = array(
+     'TripalTabDownloader',
+     'TripalCSVDownloader',
+  );
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -64,13 +63,13 @@ class local__expression_details extends ChadoField{
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings = [
+  public static $default_instance_settings = array(
     // The DATABASE name, as it appears in chado.db.  This also builds the link-out url.  In most cases this will simply be the CV name.  In some cases (EDAM) this will be the SUBONTOLOGY.
     'term_vocabulary' => 'local',
     // The name of the term.
-    'term_name' => 'expression_details',
+    'term_name' => 'expression_analysis',
     // The unique ID (i.e. accession) of the term.
-    'term_accession' => 'expression_details',
+    'term_accession' => '50002',
     // Set to TRUE if the site admin is not allowed to change the term
     // type, otherwise the admin can change the term mapped to a field.
     'term_fixed' => FALSE,
@@ -81,12 +80,12 @@ class local__expression_details extends ChadoField{
     // attached asynchronously.
     'auto_attach' => FALSE,
     // The table in Chado that the instance maps to.
-    // 'chado_table' => 'feature',
+    // 'chado_table' => '',
     // The column of the table in Chado where the value of the field comes from.
-    // 'chado_column' => 'feature_id',
+    // 'chado_column' => '',
     // The base table.
-    // 'base_table' => 'feature',
-  ];
+    // 'base_table' => '',
+  );
 
   // A boolean specifying that users should not be allowed to create
   // fields and instances of this field type through the UI. Such
@@ -100,78 +99,55 @@ class local__expression_details extends ChadoField{
   // the user but otherwise provides no data.
   public static $no_data = FALSE;
 
-  /**
-   * @see ChadoField::load()
-   *
-   **/
+   /**
+    * @see ChadoField::load()
+    *
+    **/
 
   public function load($entity) {
-    $field = get_class();
-    $feature_id = $entity->chado_record->feature_id;
 
-    $pvalue_cvterm_id = chado_get_cvterm([
-      'cv_id' => ['name' => 'OBI'],
-      'name' => 'p-value',
-    ])->cvterm_id;
-
-    $evidence_code_cvterm_id = chado_get_cvterm([
-      'cv_id' => ['name' => 'local'],
-      'name' => 'evidence code',
-    ])->cvterm_id;
-
-    $pvalue_data = chado_query('SELECT cv1.name as cvterm_name, cv1.cvterm_id as cvterm_id, p1.value as expression_relationship, p2.value as p_value, a.name as analysis_name, a.analysis_id as analysis_id
-  FROM {feature_cvterm} fcvt
-  JOIN {cvterm} cv1 ON cv1.cvterm_id=fcvt.cvterm_id
-  JOIN {cvterm} cv2 ON cv2.name=\'analysis\'
-  JOIN {feature_cvtermprop} p1 ON p1.feature_cvterm_id=fcvt.feature_cvterm_id AND p1.type_id=:evidence_id
-  JOIN {feature_cvtermprop} p2 ON p2.feature_cvterm_id=fcvt.feature_cvterm_id AND p2.type_id=:pvalue_id
-  JOIN {feature_cvtermprop} p3 ON p3.feature_cvterm_id=fcvt.feature_cvterm_id AND p3.type_id=cv2.cvterm_id
-  JOIN {analysis} a ON a.analysis_id=p3.value::INTEGER
-  WHERE fcvt.feature_id = :feature_id', [
-      ':feature_id' => $feature_id,
-      ':evidence_id' => $evidence_code_cvterm_id,
-      ':pvalue_id' => $pvalue_cvterm_id,
-    ])->fetchAll();
-
-    $entity->{$field}['und'][0]['value'] = array_map(function ($item) {
-      $item->p_value = $item->p_value != NULL ? floatval($item->p_value) : 'N/A';
-      return $item;
-    }, $pvalue_data);
-
-    return $entity;
+    // ChadoFields automatically load the chado column specified in the
+    // default settings above. If that is all you need then you don't even
+    // need to implement this function. However, if you need to add any
+    // additional data to be used in the display, you should add it here.
+    $entity->local__expression_features['und'][0] = ['value' => [true]];
   }
 
-  /**
-   * @see ChadoField::query()
-   *
-   **/
+
+
+    /**
+    * @see ChadoField::query()
+    *
+    **/
 
   public function query($query, $condition) {
   }
 
-  /**
-   * @see ChadoField::queryOrder()
-   *
-   **/
+    /**
+    * @see ChadoField::queryOrder()
+    *
+    **/
 
   public function queryOrder($query, $order) {
   }
 
-  /**
-   * @see ChadoField::elementInfo()
-   *
-   **/
+
+    /**
+    * @see ChadoField::elementInfo()
+    *
+    **/
 
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    return [
-      $field_term => [
-        'operations' => ['eq', 'ne', 'contains', 'starts'],
+    return array(
+      $field_term => array(
+        'operations' => array('eq', 'ne', 'contains', 'starts'),
         'sortable' => TRUE,
         'searchable' => TRUE,
-      ],
-    ];
+      ),
+    );
   }
+
 }
 
 

@@ -82,11 +82,11 @@ class local__expression_features extends ChadoField
     // attached asynchronously.
     'auto_attach' => FALSE,
     // The table in Chado that the instance maps to.
-    'chado_table' => '',
+    // 'chado_table' => '',
     // The column of the table in Chado where the value of the field comes from.
-    'chado_column' => '',
+    // 'chado_column' => '',
     // The base table.
-    'base_table' => '',
+    // 'base_table' => '',
   );
 
   // A boolean specifying that users should not be allowed to create

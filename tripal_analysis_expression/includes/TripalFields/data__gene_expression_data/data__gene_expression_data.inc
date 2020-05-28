@@ -72,11 +72,11 @@ class data__gene_expression_data extends ChadoField{
     // attached asynchronously.
     'auto_attach' => FALSE,
     // The table in Chado that the instance maps to.
-    'chado_table' => 'feature',
+    // 'chado_table' => 'feature',
     // The column of the table in Chado where the value of the field comes from.
-    'chado_column' => 'feature_id',
+    // 'chado_column' => 'feature_id',
     // The base table.
-    'base_table' => 'feature',
+    // 'base_table' => 'feature',
   ];
 
   // A boolean specifying that users should not be allowed to create
