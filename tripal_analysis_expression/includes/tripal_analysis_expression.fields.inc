@@ -135,6 +135,29 @@ function tripal_analysis_expression_bundle_fields_info($entity_type, $bundle)
       ),
     );
   }
+
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'organism')) {
+    // First add my term.
+    tripal_insert_cvterm(array(
+      'id' => 'local:50002',
+      'name' => 'expression_analysis',
+      'cv_name' => 'gene_expression',
+      'definition' => 'Lists gene expression analyses.',
+    ));
+
+    // Then describe the field defined by that term.
+    $field_name = 'local__expression_analysis';
+    $field_type = 'local__expression_analysis';
+    $fields[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
   return $fields;
 }
 
@@ -182,9 +205,9 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
         'term_name' => 'gene_expression_data',
         'term_accession' => '2603',
         'auto_attach' => true,
-        'chado_table' => $bundle->data_table,
-        'chado_column' => 'feature_id',
-        'base_table' => $bundle->data_table,
+        // 'chado_table' => $bundle->data_table,
+        // 'chado_column' => 'feature_id',
+        // 'base_table' => $bundle->data_table,
       ],
       'widget' => [
         'type' => 'data__gene_expression_data_widget',
@@ -212,9 +235,9 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
         'term_name' => 'expression_details',
         'term_accession' => 'expression_details',
         'auto_attach' => FALSE,
-        'chado_table' => $bundle->data_table,
-        'chado_column' => 'organism_id',
-        'base_table' => $bundle->data_table,
+        // 'chado_table' => $bundle->data_table,
+        // 'chado_column' => 'organism_id',
+        // 'base_table' => $bundle->data_table,
       ],
       'widget' => [
         'type' => 'local__expression_details_widget',
@@ -244,9 +267,9 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
         'term_name' => 'gene_expression_data',
         'term_accession' => '2603',
         'auto_attach' => true,
-        'chado_table' => $bundle->data_table,
-        'chado_column' => 'analysis_id',
-        'base_table' => $bundle->data_table,
+        // 'chado_table' => $bundle->data_table,
+        // 'chado_column' => 'analysis_id',
+        // 'base_table' => $bundle->data_table,
       ],
       'widget' => [
         'type' => 'data__gene_expression_data_widget',
@@ -277,9 +300,9 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
         'term_name' => 'expression_features',
         'term_accession' => 'expression_features',
         'auto_attach' => FALSE,
-        'chado_table' => $bundle->data_table,
-        'chado_column' => 'organism_id',
-        'base_table' => $bundle->data_table,
+        // 'chado_table' => $bundle->data_table,
+        // 'chado_column' => 'organism_id',
+        // 'base_table' => $bundle->data_table,
       ),
       'widget' => array(
         'type' => 'local__expression_features_widget',
@@ -311,9 +334,9 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
         'term_name' => 'expression_search',
         'term_accession' => 'pvalue_keyword',
         'auto_attach' => TRUE,
-        'chado_table' => $bundle->data_table,
-        'chado_column' => 'organism_id',
-        'base_table' => $bundle->data_table,
+        // 'chado_table' => $bundle->data_table,
+        // 'chado_column' => 'organism_id',
+        // 'base_table' => $bundle->data_table,
       ),
       'widget' => array(
         'type' => 'local__expression_search_widget',
@@ -323,6 +346,40 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
         'default' => array(
           'label' => 'hidden',
           'type' => 'local__expression_search_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+
+  }
+
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'organism')) {
+    $field_name = 'local__expression_analysis';
+    $field_type = 'local__expression_analysis';
+    $instances[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Gene Expression',
+      'description' => 'Lists gene expression analyses.',
+      'required' => FALSE,
+      'settings' => array(
+        'term_vocabulary' => 'local',
+        'term_name' => 'expression_analysis',
+        'term_accession' => '50002',
+        'auto_attach' => FALSE,
+        // 'chado_table' => $bundle->data_table,
+        // 'chado_column' => 'organism_id',
+        // 'base_table' => $bundle->data_table,
+      ),
+      'widget' => array(
+        'type' => 'local__expression_analysis_widget',
+        'settings' => array(),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'local__expression_analysis_formatter',
           'settings' => array(),
         ),
       ),
