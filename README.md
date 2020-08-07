@@ -110,6 +110,29 @@ Click here to see an example of a [CSV file](example_files/exampleCSV.csv) and a
 >![Biosample File Loader](example_files/doc_images/biosample_flat_loader.png)
 > The Biosample loader can accept a server path, or, you can use the Tripal file uploader to directly upload files to the server.
 
+If there are multiple sequencing runs associated with the same biosample that should be treated as independent biosamples, the XML loader will not work (it creates only one record). To get around this, follow these instructions:
+
+1) Go to NCBI (https://www.ncbi.nlm.nih.gov/) and search for a specific organism ( make sure SRA is selected)
+![image](https://user-images.githubusercontent.com/43583505/87337226-21c69600-c511-11ea-9d6f-498662604627.png)
+
+
+2) Narrow down search by selecting:
+              a)  Proper source, DNA or RNA (on the left side)
+              b)  Proper organism on the left side 
+              c)  Platform, most likely illumina 
+              d)  Any others, as needed
+![image](https://user-images.githubusercontent.com/43583505/87336644-29d20600-c510-11ea-8c00-d87588a12e56.png)
+
+3) Select: Send to, then Run Selector 
+
+![image](https://user-images.githubusercontent.com/43583505/87336786-669dfd00-c510-11ea-8171-86c83e3ce253.png)
+
+4) Click metadata to download the csv flie 
+  
+![image](https://user-images.githubusercontent.com/43583505/87336991-b7adf100-c510-11ea-963a-4caabee6a2e2.png)
+
+
+
 ### Publishing Biosamples to the Biological Sample Content Type
 
 After loading, biosamples must be published to create entities for each biosample content type. As an administrator or user with correct permissions, navigate to **Content->Tripal Content->Publish Tripal Content**. Select the biological sample type to publish, apply any optional filtering, and press Publish.
@@ -276,6 +299,7 @@ As an administrator or a user with permission to create content, navigate to Con
 * **Source Version**
 * **Source URI**
 * **Time Executed (required)**
+
 
 #### P-value data loader
 
