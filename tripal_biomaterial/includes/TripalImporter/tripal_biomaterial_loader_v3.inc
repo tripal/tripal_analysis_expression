@@ -739,7 +739,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           'biomaterial_id' => $biomaterial_id,
           'dbxref_id' => $dbxref_id,
         ];
-
         $record = chado_select_record('biomaterial_dbxref', ['biomaterial_id'], $values);
 
         if (empty($record)) {
@@ -781,8 +780,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         }
         else {
           $cv_name = "biomaterial_property";
-          if ($insert_fields[$name]) {
-            $cv_name = $insert_fields[$name];
+          if ($insert_fields[$name]->cvt_name) {
+            $cv_name = $insert_fields[$name]->cvt_name;
           }
           // If the key exists in insert_fields array, the user chose a CV for this term, so we won't insert, but insert property with correct CV.
           $record = [
@@ -837,18 +836,18 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     $file_path = NULL;
 
-    if (isset($values['file_local'])) {
+    if (!empty($values['file_local'])) {
       $file_path = trim($values['file_local']);
     }
-    if (isset($form_state['values']['file_upload'])) {
-      $fid = trim($values['file_upload'][0]);
+    if (!empty($values['file_upload'])) {
+      $fid = trim($values['file_upload']);
       if (!empty($fid)) {
         $file = file_load($fid);
         $file_path = base_path() . drupal_realpath($file->uri);
       }
     }
 
-    if (isset($values['file_upload_existing'])) {
+    if (!empty($values['file_upload_existing'])) {
       $fid = $values['file_upload_existing'];
       if (!empty($fid)) {
         $file = file_load($fid);
@@ -984,8 +983,9 @@ function test_biosample_cvterms_flat(
   $fileSize = filesize($file_path);
   if ($fileSize == 0) {
 
-    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR, "File at !file_path is empty. Try again with a new file.",
-      ['!file_path' => $file_path]);
+   error_log("File at !file_path is empty. Try again with a new file. file_path: $file_path", 0);
+   #$this->logMessage("File at !file_path is empty. Try again with a new file.",
+   #   ['!file_path' => $file_path], TRIPAL_ERROR);
     return;
   }
   // Figure out CSV vs TSV.
@@ -1020,14 +1020,17 @@ function test_biosample_cvterms_flat(
 
   // Print error message and exit if there's no biosample, or that there's no "sample_name" column in flat file.
   if ($num_biosamples == 0) {
-    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR, "Wrong file format at !file_path. File must contain a column named 'sample_name'.",
-      ['!file_path' => $file_path]);
+    error_log("Wrong file format at !file_path. File must contain a column named 'sample_name'. $file_path", 0);
+    #$this->logMessage("Wrong file format at !file_path. File must contain a column named 'sample_name'.",
+    #  ['!file_path' => $file_path], TRIPAL_ERROR);
     return;
   }
 
   // Get the file pointer.
   $fp = fopen($file_path, "r");
+  $nLineHeader = 0;
   while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
+    $nLineHeader++;
     foreach ($line as $field) {
       if (preg_match("/(sample_name)/", $field)) {
         break 2;
@@ -1038,11 +1041,12 @@ function test_biosample_cvterms_flat(
 
   // Make sure there are not duplicate biomaterial headers.
   if (count($header_repeats = array_diff_assoc($headers, array_unique($headers))) > 0) {
-    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR, "The header !header is present more than once.  Please make sure there is only one instance of each header.",
-      ['!header' => $header_repeats[0]]);
+    $this->logMessage("The header !header is present more than once.  Please make sure there is only one instance of each header.",
+      ['!header' => $header_repeats[0]], TRIPAL_ERROR);
     return;
   }
 
+  $attribute_list["values"] = [];
   for ($i = 0; $i < count($headers); $i++) {
     $header = trim(str_replace("*", "", $headers[$i]));
     if (in_array($header, [
@@ -1056,13 +1060,20 @@ function test_biosample_cvterms_flat(
     ])) {
     }
     else {
-      $attribute_list[]["attributes"] = $header;
-
-      // TODO: this is where the flat file loader would support checking the cvalues as well.
-      $attribute_list[]["values"] = NULL;
-
+      $attribute_list["attributes"][$header] = $header;
     }
   }
+
+  // Fill the values into the attribute_list array from lines in the file. Starting from the next line after the header
+  $tmpNumLine = 0;
+  while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
+    $tmpNumLine++;
+    if($tmpNumLine > $nLineHeader){
+      $attribute_list["values"] = array_merge($attribute_list["values"], $line);
+    }
+  }
+  $attribute_list["values"] = array_unique($attribute_list["values"]);
+
   return ($attribute_list);
 }
 
