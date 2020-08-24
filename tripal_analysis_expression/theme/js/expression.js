@@ -537,12 +537,10 @@
         .style('z-index', 999999)
 
       bars.on('mouseover', function (d, i) {
-        var bar = d3.event.target
-        $(bar).css('opacity', .8)
+        d3.select(this).style('opacity', .5)
       })
         .on('mouseout', function () {
-          var bar = d3.event.target
-          $(bar).css('opacity', 1)
+          d3.select(this).style('opacity', 1)
         })
         .on('click', function (d) {
           var propTable = _that.buildPropertyTooltipTable(d)
