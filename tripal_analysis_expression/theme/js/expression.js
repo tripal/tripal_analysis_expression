@@ -539,13 +539,6 @@
 
       bars
         .on('mouseover', function (d, i) {
-          d3.select(this).style('opacity', .5).style('pointer-events', 'visible')
-        })
-        .on('mouseout', function () {
-          d3.select(this).style('opacity', 1)
-        })
-        .on('click', function (d) {
-          console.log(d)
           var propTable = _that.buildPropertyTooltipTable(d)
           divTooltip.transition()
             .duration(200)
@@ -559,6 +552,15 @@
             + propTable)
             .style('left', ($(this).offset().left - 260) + 'px')
             .style('top', ((d3.event.pageY - (200)) + 'px'))
+        })
+        .on('mouseout', function () {
+          d3.select(this).style('opacity', 1)
+          $(divTooltip[0]).once('mouseout', function () {
+            divTooltip.transition()
+              .duration(500)
+              .style('opacity', 0)
+              .style('display', 'none')
+          })
         })
 
       $(document).on('click', function (e) {
