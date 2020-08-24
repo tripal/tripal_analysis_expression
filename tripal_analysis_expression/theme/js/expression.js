@@ -393,74 +393,36 @@
 
 
       // propertyGroups.call(d3.behavior.drag()
-      //   .origin(function (d, i) {  // define the start drag as the middle of the group
-      //     // this should match the transformation used when assigning the
-      //     // group
-      //     return {x: _that.translationXOffset(d.position, x0)}
-      //   })
-      //   .on('dragstart', function (d, i) {
-      //     // track the position of the selected group in the dragging object
-      //     dragging[d.key] = _that.translationXOffset(d.position, x0)
-      //     var sel         = d3.select(this)
-      //     sel.moveToFront()
-      //   })
-      //   .on('drag', function (d, i) {// track current drag location
-      //     dragging[d.key] = d3.event.x
-      //
-      //     nested.sort(function (a, b) {
-      //       return position(a, a.position, x0) - position(b, b.position, x0)
-      //     })
-      //
-      //
-      //     ///rebuild the domain
-      //     //TODO:  This is very not - DRY, copied from initial domain set.
-      //     // should be factored out.
-      //
-      //     var rangeMapper   = {}
-      //     var lengthTracker = 0 //keep track of where we are on the scale
-      //
-      //     nested.map(function (d, i) {
-      //
-      //       var groupSize = d.values.length * averageStepSize
-      //       //   var location = lengthTracker + groupSize/2 //set the location
-      //       // to the middle of its group var location = lengthTracker +
-      //       // groupSize/2 //set the location to the middle of its group
-      //       var location = lengthTracker //set the location to the start of its
-      //       // group
-      //
-      //       rangeMapper[d.key]    = location
-      //       lengthTracker += groupSize
-      //       nested[i]['position'] = i
-      //     })
-      //
-      //
-      //     x0 = d3.scale.linear()
-      //       .rangeRound(nested.map(function (d) {
-      //         return rangeMapper[d.key]
-      //       }))
-      //
-      //     // Set the domains based on the nested data
-      //     x0.domain(nested.map(function (d, i) {
-      //       return i
-      //     }))
-      //
-      //     propertyGroups.attr('transform', function (d) {
-      //
-      //       return 'translate(' + position(d, d.position, x0) + ', 0)'
-      //     })
-      //   })
-      //   .on('dragend', function (d, i) {
-      //     delete dragging[d.key]
-      //     transition(d3.select(this)).attr('transform', function (d) {
-      //       return 'translate(' + _that.translationXOffset(d.position, x0) + ',0)'
-      //     })
-      //
-      //     // propertyGroups.selectAll()
-      //     //     .attr('transform', function (d, i ) {
-      //     //       return 'translate(' + _that.translationXOffset(d.position,
-      //     // x0) + ',0)'; });
-      //   }),
-      // )
+      //   .origin(function (d, i) {  // define the start drag as the middle of
+      // the group // this should match the transformation used when assigning
+      // the // group return {x: _that.translationXOffset(d.position, x0)} })
+      // .on('dragstart', function (d, i) { // track the position of the
+      // selected group in the dragging object dragging[d.key] =
+      // _that.translationXOffset(d.position, x0) var sel         =
+      // d3.select(this) sel.moveToFront() }) .on('drag', function (d, i) {//
+      // track current drag location dragging[d.key] = d3.event.x
+      // nested.sort(function (a, b) { return position(a, a.position, x0) -
+      // position(b, b.position, x0) })   ///rebuild the domain //TODO:  This
+      // is very not - DRY, copied from initial domain set. // should be
+      // factored out.  var rangeMapper   = {} var lengthTracker = 0 //keep
+      // track of where we are on the scale  nested.map(function (d, i) {  var
+      // groupSize = d.values.length * averageStepSize //   var location =
+      // lengthTracker + groupSize/2 //set the location // to the middle of its
+      // group var location = lengthTracker + // groupSize/2 //set the location
+      // to the middle of its group var location = lengthTracker //set the
+      // location to the start of its // group  rangeMapper[d.key]    =
+      // location lengthTracker += groupSize nested[i]['position'] = i })   x0
+      // = d3.scale.linear() .rangeRound(nested.map(function (d) { return
+      // rangeMapper[d.key] }))  // Set the domains based on the nested data
+      // x0.domain(nested.map(function (d, i) { return i }))
+      // propertyGroups.attr('transform', function (d) {  return 'translate(' +
+      // position(d, d.position, x0) + ', 0)' }) }) .on('dragend', function (d,
+      // i) { delete dragging[d.key]
+      // transition(d3.select(this)).attr('transform', function (d) { return
+      // 'translate(' + _that.translationXOffset(d.position, x0) + ',0)' })  //
+      // propertyGroups.selectAll() //     .attr('transform', function (d, i )
+      // { //       return 'translate(' + _that.translationXOffset(d.position,
+      // // x0) + ',0)'; }); }), )
 
       //plot the actual bars!!
 
@@ -538,6 +500,25 @@
         .style('transition', 'opacity .25s linear')
         .style('z-index', 999999)
 
+      var initialTooltip = d3
+        .select('body')
+        .append('div')
+        .attr('class', 'toolTip')
+        .attr('id', 'chart-tooltip')
+        .style('position', 'absolute')
+        .style('max-width', '100px')
+        .style('padding', '10px')
+        .style('font-size', '12px')
+        .style('font-family', 'Helvetica, Roboto, sans-serif')
+        .style('background', 'rgba(255, 255, 255, .9)')
+        .style('border', '1px solid rgba(0,0,0,.3)')
+        .style('border-radius', '5px')
+        .style('display', 'none')
+        .style('opacity', 0)
+        .style('transition', 'opacity .25s linear')
+        .style('z-index', 999999)
+        .html('Click for More Info')
+
       bars
         .on('mouseover', function (d, i) {
           d3.select(this).style('opacity', .5)
@@ -551,17 +532,27 @@
             .style('left', ($(this).offset().left - 260) + 'px')
             .style('top', ((d3.event.pageY - (200)) + 'px'))
 
-          // divTooltip.transition()
-          //   .duration(200)
-          //   .style('opacity', 1)
-          //   .style('display', 'block')
+
+          initialTooltip.transition()
+            .duration(200)
+            .style('opacity', 1)
+            .style('display', 'block')
 
           this.hoveredBar = d.node
         }).on('mouseout', function (d) {
         this.hoveredBar = null
+        initialTooltip.transition()
+          .duration(200)
+          .style('opacity', 0)
+          .style('display', 'none')
         d3.select(this).style('opacity', 1)
-      }).on('click', function() {
+      }).on('click', function () {
         console.log('clicked')
+        initialTooltip.transition()
+          .duration(200)
+          .style('opacity', 0)
+          .style('display', 'none')
+
         divTooltip.transition()
           .duration(200)
           .style('opacity', 1)
@@ -575,7 +566,7 @@
         }
 
         divTooltip.transition()
-          .duration(500)
+          .duration(200)
           .style('opacity', 0)
           .style('display', 'none')
       })
