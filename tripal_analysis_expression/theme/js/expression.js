@@ -540,7 +540,6 @@
           .style('opacity', 1)
           .style('display', 'block')
 
-        console.log(divTooltip)
 
         divTooltip.html(
           '<strong>Biosample:</strong> ' + d.name + '<br/>' +
@@ -548,7 +547,7 @@
           '<strong>Description: </strong><br/>' + d.description + '<br/>'
           + propTable)
           .style('left', ($(this).offset().left - 260) + 'px')
-          .style('top',((d3.event.pageY - 200) + 'px'))
+          .style('top',((d3.event.pageY - divTooltip[0].outerHeight) + 'px'))
       })
         .on('mouseout', function (d) {
           divTooltip.transition()
