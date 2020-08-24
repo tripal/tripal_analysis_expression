@@ -517,39 +517,60 @@
 
 //Add the tool tip
 
-      var divTooltip = d3
-        .select('body')
-        .append('div')
-        .attr('class', 'toolTip')
+      // var divTooltip = d3
+      //   .select('body')
+      //   .append('div')
+      //   .attr('class', 'toolTip')
+      //   .attr('id', 'chart-tooltip')
+      //   .style('position', 'absolute')
+      //   .style('max-width', '250px')
+      //   .style('padding', '10px')
+      //   .style('font-size', '12px')
+      //   .style('font-family', 'Helvetica, Roboto, sans-serif')
+      //   .style('background', 'rgba(255, 255, 255, .9)')
+      //   .style('border', '1px solid rgba(0,0,0,.3)')
+      //   .style('border-radius', '5px')
+      //   .style('pointer-events', 'none')
+      //   .style('display', 'none')
+      //   .style('opacity', 0)
+      //   .style('transition', 'opacity .25s linear')
+      //   .style('z-index', 9999999999)
+
+      var divTooltip = $('<div />')
+        .addClass('toolTip')
         .attr('id', 'chart-tooltip')
-        .style('position', 'absolute')
-        .style('max-width', '250px')
-        .style('padding', '10px')
-        .style('font-size', '12px')
-        .style('font-family', 'Helvetica, Roboto, sans-serif')
-        .style('background', 'rgba(255, 255, 255, .9)')
-        .style('border', '1px solid rgba(0,0,0,.3)')
-        .style('border-radius', '5px')
-        .style('pointer-events', 'none')
-        .style('display', 'none')
-        .style('opacity', 0)
-        .style('transition', 'opacity .25s linear')
-        .style('z-index', 9999999999)
+        .css('position', 'absolute')
+        .css('max-width', '250px')
+        .css('padding', '10px')
+        .css('font-size', '12px')
+        .css('font-family', 'Helvetica, Roboto, sans-serif')
+        .css('background', 'rgba(255, 255, 255, .9)')
+        .css('border', '1px solid rgba(0,0,0,.3)')
+        .css('border-radius', '5px')
+        .css('pointer-events', 'none')
+        .css('display', 'none')
+        .css('opacity', 0)
+        .css('transition', 'opacity .25s linear')
+        .css('z-index', 9999999999)
+
+      $('body').append(divTooltip)
 
       bars.on('mouseover', function (d) {
         var propTable = _that.buildPropertyTooltipTable(d)
-        divTooltip.transition()
-          .duration(200)
-          .style('opacity', 1)
-          .style('display', 'block')
+        // divTooltip.transition()
+        //   .duration(200)
+        //   .style('opacity', 1)
+        //   .style('display', 'block')
 
         divTooltip.html(
-          '<strong>Biosample:</strong> <a href="/bio_data/'+d.node+'">' + d.name + '</a><br/>' +
+          '<strong>Biosample:</strong> <a href="/bio_data/' + d.node + '">' + d.name + '</a><br/>' +
           '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
           '<strong>Description: </strong><br/>' + d.description + '<br/>'
           + propTable)
           .style('left', ($(this).offset().left - 260) + 'px')
           .style('top', ((d3.event.pageY - (200)) + 'px'))
+
+        divTooltip.fadeIn()
 
         let pos = d3.event.pageY
         setTimeout(function () {
@@ -564,10 +585,12 @@
           return
         }
 
-        divTooltip.transition()
-          .duration(500)
-          .style('opacity', 0)
-          .style('display', 'none')
+        divTooltip.fadeOut()
+
+        // divTooltip.transition()
+        //   .duration(500)
+        //   .style('opacity', 0)
+        //   .style('display', 'none')
       })
 
       this.buildLegend(color, calculatedWidth, margin, height)
