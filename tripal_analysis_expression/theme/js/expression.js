@@ -506,7 +506,7 @@
         .attr('class', 'toolTip')
         .attr('id', 'chart-tooltip')
         .style('position', 'absolute')
-        .style('max-width', '100px')
+        .style('width', '100px')
         .style('padding', '10px')
         .style('font-size', '12px')
         .style('font-family', 'Helvetica, Roboto, sans-serif')
@@ -522,20 +522,9 @@
       bars
         .on('mouseover', function (d, i) {
           d3.select(this).style('opacity', .5)
-          var propTable = _that.buildPropertyTooltipTable(d)
-
-          divTooltip.html(
-            '<strong>Biosample:</strong> <a href="/bio_data/' + d.node + '">' + d.name + '</a><br/>' +
-            '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
-            '<strong>Description: </strong><br/>' + d.description + '<br/>'
-            + propTable)
-            .style('left', ($(this).offset().left - 260) + 'px')
-            .style('top', ((d3.event.pageY - (200)) + 'px'))
-
           initialTooltip
             .style('left', ($(this).offset().left - 260) + 'px')
             .style('top', ((d3.event.pageY - (200)) + 'px'))
-
 
           initialTooltip.transition()
             .duration(200)
@@ -550,13 +539,21 @@
           .style('opacity', 0)
           .style('display', 'none')
         d3.select(this).style('opacity', 1)
-      }).on('click', function () {
-        console.log('clicked')
+      }).on('click', function (d) {
         initialTooltip.transition()
           .duration(200)
           .style('opacity', 0)
           .style('display', 'none')
 
+        var propTable = _that.buildPropertyTooltipTable(d)
+
+        divTooltip.html(
+          '<strong>Biosample:</strong> <a href="/bio_data/' + d.node + '">' + d.name + '</a><br/>' +
+          '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
+          '<strong>Description: </strong><br/>' + d.description + '<br/>'
+          + propTable)
+          .style('left', ($(this).offset().left - 260) + 'px')
+          .style('top', ((d3.event.pageY - (200)) + 'px'))
         divTooltip.transition()
           .duration(200)
           .style('opacity', 1)
