@@ -534,7 +534,7 @@
         .style('display', 'none')
         .style('opacity', 0)
         .style('transition', 'opacity .25s linear')
-        .style('z-index', 999999)
+        .style('z-index', 9999999999)
 
       bars.on('mouseover', function (d) {
         var propTable = _that.buildPropertyTooltipTable(d)
@@ -544,7 +544,7 @@
           .style('display', 'block')
 
         divTooltip.html(
-          '<strong>Biosample:</strong> <a href="/bio_data/'+d.node+'" onclick="alert(\'clicked\')">' + d.name + '</a><br/>' +
+          '<strong>Biosample:</strong> <a href="/bio_data/'+d.node+'">' + d.name + '</a><br/>' +
           '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
           '<strong>Description: </strong><br/>' + d.description + '<br/>'
           + propTable)
