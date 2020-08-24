@@ -524,7 +524,7 @@
           d3.select(this).style('opacity', .5)
           initialTooltip
             .style('left', ($(this).offset().left - 100) + 'px')
-            .style('top', ((d3.event.pageY - (100)) + 'px'))
+            .style('top', ((d3.event.pageY - (80)) + 'px'))
 
           initialTooltip.transition()
             .duration(200)
