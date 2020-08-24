@@ -548,10 +548,11 @@
           .style('left', ($(this).offset().left - 260) + 'px')
           .style('top', ((d3.event.pageY - (200)) + 'px'))
 
+        let pos = d3.event.pageY
         setTimeout(function() {
           var height = divTooltip[0].outerHeight / 2
-            divTooltip.style('top', ((d3.event.pageY - height) + 'px'))
-        })
+            divTooltip.style('top', ((pos - height) + 'px'))
+        }, 200)
         console.log(divTooltip[0])
       })
 
