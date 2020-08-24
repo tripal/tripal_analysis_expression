@@ -554,14 +554,15 @@
             .style('top', ((d3.event.pageY - (200)) + 'px'))
         })
         .on('mouseout', function () {
-          d3.select(this).style('opacity', 1)
-          $(divTooltip[0]).once('mouseout', function () {
-            divTooltip.transition()
-              .duration(500)
-              .style('opacity', 0)
-              .style('display', 'none')
-          })
         })
+
+      divTooltip.on('mouseout', function() {
+        console.log('out')
+        divTooltip.transition()
+          .duration(500)
+          .style('opacity', 0)
+          .style('display', 'none')
+      })
 
       $(document).on('click', function (e) {
         if ($(e.target).parents('#chart-tooltip').length || $(e.target).attr('id') === 'chart-tooltip') {
