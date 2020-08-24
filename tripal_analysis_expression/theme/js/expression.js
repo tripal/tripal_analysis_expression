@@ -540,14 +540,13 @@
           .style('opacity', 1)
           .style('display', 'block')
 
-
         divTooltip.html(
           '<strong>Biosample:</strong> ' + d.name + '<br/>' +
           '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
           '<strong>Description: </strong><br/>' + d.description + '<br/>'
           + propTable)
           .style('left', ($(this).offset().left - 260) + 'px')
-          .style('top',((d3.event.pageY - divTooltip[0].outerHeight) + 'px'))
+          .style('top', ((d3.event.pageY - (divTooltip[0].innerHeight / 2)) + 'px'))
       })
         .on('mouseout', function (d) {
           divTooltip.transition()
