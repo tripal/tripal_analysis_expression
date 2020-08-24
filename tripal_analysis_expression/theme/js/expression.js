@@ -517,8 +517,11 @@
 
 //Add the tool tip
 
-      var divTooltip = d3.select('body').append('div')
+      var divTooltip = d3
+        .select('body')
+        .append('div')
         .attr('class', 'toolTip')
+        .attr('id', 'chart-tooltip')
         .style('position', 'absolute')
         .style('max-width', '250px')
         .style('padding', '10px')
@@ -556,11 +559,7 @@
       })
 
       $(document).on('click', function (e) {
-        if (e.target && e.target.contains(divTooltip[0])) {
-          return
-        }
-
-        if (e.target && e.target === divTooltip[0]) {
+        if ($(this).parents('#chart-tooltip') || $(this).attr('id') === 'chart-tooltip') {
           return
         }
 
