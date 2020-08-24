@@ -523,8 +523,8 @@
         .on('mouseover', function (d, i) {
           d3.select(this).style('opacity', .5)
           initialTooltip
-            .style('left', ($(this).offset().left - 20) + 'px')
-            .style('top', ((d3.event.pageY - (20)) + 'px'))
+            .style('left', ($(this).offset().left - 50) + 'px')
+            .style('top', ((d3.event.pageY - (50)) + 'px'))
 
           initialTooltip.transition()
             .duration(200)
