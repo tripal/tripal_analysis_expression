@@ -549,7 +549,7 @@
         .css('border-radius', '5px')
         .css('pointer-events', 'none')
         .css('display', 'none')
-        .css('opacity', 0)
+        // .css('opacity', 0)
         .css('transition', 'opacity .25s linear')
         .css('z-index', 9999999999)
 
