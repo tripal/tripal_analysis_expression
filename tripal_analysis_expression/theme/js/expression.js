@@ -571,6 +571,7 @@
           .css('top', ((d3.event.pageY - (200)) + 'px'))
 
         divTooltip.fadeIn()
+        console.log(divTooltip)
 
         let pos = d3.event.pageY
         setTimeout(function () {
