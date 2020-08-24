@@ -4,6 +4,7 @@
     attach: function (context, settings) {
       // Define variables
       this.activeBar        = null
+      this.hoveredBar       = null
       this.heatMapRaw       = JSON.parse(settings.heatMapRaw)
       this.selectedAnalysis = settings.selectedAnalysis
       this.feature_id       = settings.feature_id
@@ -539,11 +540,8 @@
 
       bars
         .on('mouseover', function (d, i) {
+          d3.select(this).style('pointer-events', 'auto')
           var propTable = _that.buildPropertyTooltipTable(d)
-          divTooltip.transition()
-            .duration(200)
-            .style('opacity', 1)
-            .style('display', 'block')
 
           divTooltip.html(
             '<strong>Biosample:</strong> <a href="/bio_data/' + d.node + '">' + d.name + '</a><br/>' +
@@ -552,9 +550,25 @@
             + propTable)
             .style('left', ($(this).offset().left - 260) + 'px')
             .style('top', ((d3.event.pageY - (200)) + 'px'))
-        })
+
+          // divTooltip.transition()
+          //   .duration(200)
+          //   .style('opacity', 1)
+          //   .style('display', 'block')
+
+          this.hoveredBar = d.node
+        }).on('mouseout', function (d) {
+        this.hoveredBar = null
+      }).on('click', function() {
+        console.log('clicked')
+        divTooltip.transition()
+          .duration(200)
+          .style('opacity', 1)
+          .style('display', 'block')
+      })
 
       $(document).on('click', function (e) {
+
         if ($(e.target).parents('#chart-tooltip').length || $(e.target).attr('id') === 'chart-tooltip') {
           return
         }
