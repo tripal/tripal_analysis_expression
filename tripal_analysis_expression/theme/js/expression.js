@@ -577,7 +577,10 @@
       })
 
       $(document).on('figure.scroll', function() {
-        console.log('scrolling')
+        divTooltip.transition()
+          .duration(200)
+          .style('opacity', 0)
+          .style('display', 'none')
       })
 
       this.buildLegend(color, calculatedWidth, margin, height)
