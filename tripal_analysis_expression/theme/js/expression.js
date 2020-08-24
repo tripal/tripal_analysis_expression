@@ -567,15 +567,15 @@
           '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
           '<strong>Description: </strong><br/>' + d.description + '<br/>'
           + propTable)
-          .style('left', ($(this).offset().left - 260) + 'px')
-          .style('top', ((d3.event.pageY - (200)) + 'px'))
+          .css('left', ($(this).offset().left - 260) + 'px')
+          .css('top', ((d3.event.pageY - (200)) + 'px'))
 
         divTooltip.fadeIn()
 
         let pos = d3.event.pageY
         setTimeout(function () {
           var height = divTooltip[0].outerHeight / 2
-          divTooltip.style('top', ((pos - height) + 'px'))
+          divTooltip.css('top', ((pos - height) + 'px'))
         }, 200)
       })
 
