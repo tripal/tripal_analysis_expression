@@ -226,6 +226,11 @@ class data__gene_expression_data extends ChadoField{
         if (!$properties) {
           $properties = [];
         }
+
+        if (is_object($properties)) {
+          $properties = [];
+        }
+
         foreach ($properties as $prop) {
           //get the prop name and value
           // $property_cvterm_id = $prop->type_id->cvterm_id;
@@ -345,4 +350,5 @@ class data__gene_expression_data extends ChadoField{
     $output = ["features" => $features, "biomaterials" => $biomaterials];
     return ($output);
   }
+
 }
