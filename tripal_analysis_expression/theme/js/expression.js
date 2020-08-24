@@ -548,12 +548,14 @@
           .style('left', ($(this).offset().left - 260) + 'px')
           .style('top', ((d3.event.pageY - (200)) + 'px'))
       })
-        .on('mouseout', function (d) {
-          divTooltip.transition()
-            .duration(500)
-            .style('opacity', 0)
-            .style('display', 'none')
-        })
+
+      document.on('mouseout', function (d) {
+        console.log(divTooltip)
+        divTooltip.transition()
+          .duration(500)
+          .style('opacity', 0)
+          .style('display', 'none')
+      })
 
       this.buildLegend(color, calculatedWidth, margin, height)
 
