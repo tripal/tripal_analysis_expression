@@ -223,11 +223,11 @@ class data__gene_expression_data extends ChadoField{
         $properties = $result->biomaterialprop;
         $propstore = [];
 
-        if (!$properties) {
+        if (is_object($properties)) {
           $properties = [];
         }
 
-        if (is_object($properties)) {
+        if (!$properties) {
           $properties = [];
         }
 
