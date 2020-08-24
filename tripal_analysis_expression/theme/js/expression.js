@@ -554,10 +554,12 @@
           + propTable)
           .style('left', ($(this).offset().left - 260) + 'px')
           .style('top', ((d3.event.pageY - (200)) + 'px'))
-        divTooltip.transition()
-          .duration(200)
-          .style('opacity', 1)
-          .style('display', 'block')
+        setTimeout(function() {
+          divTooltip.transition()
+            .duration(200)
+            .style('opacity', 1)
+            .style('display', 'block')
+        }, 500)
       })
 
       $(document).on('click', function (e) {
