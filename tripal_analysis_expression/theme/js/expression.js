@@ -549,15 +549,21 @@
           .style('top', ((d3.event.pageY - (200)) + 'px'))
 
         let pos = d3.event.pageY
-        setTimeout(function() {
+        setTimeout(function () {
           var height = divTooltip[0].outerHeight / 2
-            divTooltip.style('top', ((pos - height) + 'px'))
+          divTooltip.style('top', ((pos - height) + 'px'))
         }, 200)
-        console.log(divTooltip[0])
       })
 
-      $(document).on('click', function (d) {
-        console.log(divTooltip)
+      $(document).on('click', function (e) {
+        if (e.target && e.target.contains(divTooltip[0])) {
+          return
+        }
+
+        if (e.target && e.target === divTooltip[0]) {
+          return
+        }
+
         divTooltip.transition()
           .duration(500)
           .style('opacity', 0)
