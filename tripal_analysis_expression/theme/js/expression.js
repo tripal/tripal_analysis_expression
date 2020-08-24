@@ -544,7 +544,7 @@
           .style('display', 'block')
 
         divTooltip.html(
-          '<strong>Biosample:</strong> <a href="/bio_data/'+d.node+'">' + d.name + '</a><br/>' +
+          '<strong>Biosample:</strong> <a href="/bio_data/'+d.node+'" onclick="alert(\'clicked\')">' + d.name + '</a><br/>' +
           '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
           '<strong>Description: </strong><br/>' + d.description + '<br/>'
           + propTable)
