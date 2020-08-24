@@ -536,7 +536,8 @@
         .style('transition', 'opacity .25s linear')
         .style('z-index', 999999)
 
-      bars.on('mouseover', function (d) {
+      bars.on('mouseover', function (d, i) {
+        console.log(d, i)
         var propTable = _that.buildPropertyTooltipTable(d)
         divTooltip.transition()
           .duration(200)
