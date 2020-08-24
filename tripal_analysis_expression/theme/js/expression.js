@@ -538,7 +538,7 @@
 
       bars.on('mouseover', function (d, i) {
         var bar = d3.event.target
-        bar.style('opacity', .8)
+        $(bar).css('opacity', .8)
         var propTable = _that.buildPropertyTooltipTable(d)
         divTooltip.transition()
           .duration(200)
@@ -555,7 +555,7 @@
       })
         .on('mouseout', function () {
           var bar = d3.event.target
-          bar.style('opacity', 1)
+          $(bar).css('opacity', 1)
         })
 
       $(document).on('click', function (e) {
