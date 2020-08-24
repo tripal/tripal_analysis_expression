@@ -3,6 +3,7 @@
   Drupal.behaviors.expression = {
     attach: function (context, settings) {
       // Define variables
+      this.activeBar        = null
       this.heatMapRaw       = JSON.parse(settings.heatMapRaw)
       this.selectedAnalysis = settings.selectedAnalysis
       this.feature_id       = settings.feature_id
@@ -530,7 +531,6 @@
         .style('background', 'rgba(255, 255, 255, .9)')
         .style('border', '1px solid rgba(0,0,0,.3)')
         .style('border-radius', '5px')
-        // .style('pointer-events', 'none')
         .style('display', 'none')
         .style('opacity', 0)
         .style('transition', 'opacity .25s linear')
@@ -544,18 +544,12 @@
           .style('display', 'block')
 
         divTooltip.html(
-          '<strong>Biosample:</strong> <a href="/bio_data/'+d.node+'">' + d.name + '</a><br/>' +
+          '<strong>Biosample:</strong> <a href="/bio_data/' + d.node + '">' + d.name + '</a><br/>' +
           '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
           '<strong>Description: </strong><br/>' + d.description + '<br/>'
           + propTable)
           .style('left', ($(this).offset().left - 260) + 'px')
           .style('top', ((d3.event.pageY - (200)) + 'px'))
-
-        let pos = d3.event.pageY
-        setTimeout(function () {
-          var height = divTooltip[0].outerHeight / 2
-          divTooltip.style('top', ((pos - height) + 'px'))
-        }, 200)
       })
 
       $(document).on('click', function (e) {
