@@ -318,7 +318,7 @@
         .style('overflow', 'auto')
         .style('max-width', '100%')
         .on('scroll', function() {
-          console.log('scrolling')
+          $(document).trigger($.Event('figure.scroll'))
         })
 
       var svg = d3.select('figure')
@@ -574,6 +574,10 @@
           .duration(200)
           .style('opacity', 0)
           .style('display', 'none')
+      })
+
+      $(document).on('figure.scroll', function() {
+        console.log('scrolling')
       })
 
       this.buildLegend(color, calculatedWidth, margin, height)
