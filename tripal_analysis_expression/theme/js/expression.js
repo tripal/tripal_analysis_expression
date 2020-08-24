@@ -541,7 +541,7 @@
           d3.select(this).style('opacity', .5).style('pointer-events', 'visible')
         })
         .on('mouseout', function () {
-          d3.select(this).style('opacity', 1).style('pointer-events', 'none')
+          d3.select(this).style('opacity', 1)
         })
         .on('click', function (d) {
           console.log(d)
