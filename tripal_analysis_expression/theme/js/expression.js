@@ -548,7 +548,7 @@
           '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
           '<strong>Description: </strong><br/>' + d.description + '<br/>'
           + propTable)
-          .style('left', ($(this).offset().left - 260) + 'px')
+          .style('left', ($(this).offset().left - 200) + 'px')
           .style('top', ((d3.event.pageY - (200)) + 'px'))
       })
 
