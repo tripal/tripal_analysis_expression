@@ -549,7 +549,7 @@
           .style('top', ((d3.event.pageY - (200)) + 'px'))
       })
 
-      document.on('mouseout', function (d) {
+      $(document).on('click', function (d) {
         console.log(divTooltip)
         divTooltip.transition()
           .duration(500)
