@@ -540,7 +540,7 @@
 
       bars
         .on('mouseover', function (d, i) {
-          d3.select(this).style('pointer-events', 'auto')
+          d3.select(this).style('opacity', .5)
           var propTable = _that.buildPropertyTooltipTable(d)
 
           divTooltip.html(
@@ -559,6 +559,7 @@
           this.hoveredBar = d.node
         }).on('mouseout', function (d) {
         this.hoveredBar = null
+        d3.select(this).style('opacity', 1)
       }).on('click', function() {
         console.log('clicked')
         divTooltip.transition()
