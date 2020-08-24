@@ -536,13 +536,15 @@
         .style('transition', 'opacity .25s linear')
         .style('z-index', 999999)
 
-      bars.on('mouseover', function (d, i) {
-        d3.select(this).style('opacity', .5)
-      })
+      bars
+        .on('mouseover', function (d, i) {
+          d3.select(this).style('opacity', .5).style('pointer-events', 'visible')
+        })
         .on('mouseout', function () {
-          d3.select(this).style('opacity', 1)
+          d3.select(this).style('opacity', 1).style('pointer-events', 'none')
         })
         .on('click', function (d) {
+          console.log(d)
           var propTable = _that.buildPropertyTooltipTable(d)
           divTooltip.transition()
             .duration(200)
