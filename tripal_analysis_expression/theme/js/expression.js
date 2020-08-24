@@ -525,14 +525,18 @@
       bars
         .on('mouseover', function (d, i) {
           d3.select(this).style('opacity', .5)
+
+
           initialTooltip
             .style('left', ($(this).offset().left - 50) + 'px')
             .style('top', ((d3.event.pageY - (80)) + 'px'))
 
-          initialTooltip.transition()
-            .duration(200)
-            .style('opacity', 1)
-            .style('display', 'block')
+          if (this.activeBar !== d.node) {
+            initialTooltip.transition()
+              .duration(200)
+              .style('opacity', 1)
+              .style('display', 'block')
+          }
         }).on('mouseout', function (d) {
         initialTooltip.transition()
           .duration(200)
@@ -575,6 +579,7 @@
         if ($(e.target).parents('#chart-tooltip').length || $(e.target).attr('id') === 'chart-tooltip') {
           return
         }
+        this.activeBar = null
 
         divTooltip.transition()
           .duration(200)
