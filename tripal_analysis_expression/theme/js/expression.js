@@ -532,9 +532,9 @@
             .style('left', ($(this).offset().left - 260) + 'px')
             .style('top', ((d3.event.pageY - (200)) + 'px'))
 
-          var coordinates = d3.mouse(this)
-          initialTooltip.style('left', coordinates[0])
-            .style('top', coordinates[1])
+          initialTooltip
+            .style('left', ($(this).offset().left - 260) + 'px')
+            .style('top', ((d3.event.pageY - (200)) + 'px'))
 
 
           initialTooltip.transition()
