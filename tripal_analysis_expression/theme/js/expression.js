@@ -553,16 +553,6 @@
             .style('left', ($(this).offset().left - 260) + 'px')
             .style('top', ((d3.event.pageY - (200)) + 'px'))
         })
-        .on('mouseout', function () {
-        })
-
-      divTooltip.on('mouseout', function() {
-        console.log('out')
-        divTooltip.transition()
-          .duration(500)
-          .style('opacity', 0)
-          .style('display', 'none')
-      })
 
       $(document).on('click', function (e) {
         if ($(e.target).parents('#chart-tooltip').length || $(e.target).attr('id') === 'chart-tooltip') {
