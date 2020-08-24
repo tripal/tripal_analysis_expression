@@ -533,10 +533,7 @@
             .duration(200)
             .style('opacity', 1)
             .style('display', 'block')
-
-          this.hoveredBar = d.node
         }).on('mouseout', function (d) {
-        this.hoveredBar = null
         initialTooltip.transition()
           .duration(200)
           .style('opacity', 0)
