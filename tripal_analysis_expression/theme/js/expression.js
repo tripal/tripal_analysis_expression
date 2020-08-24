@@ -537,7 +537,7 @@
         .style('z-index', 999999)
 
       bars.on('mouseover', function (d, i) {
-        console.log(d, i)
+        console.log(d, i, d3.event.target)
         var propTable = _that.buildPropertyTooltipTable(d)
         divTooltip.transition()
           .duration(200)
