@@ -547,6 +547,12 @@
           + propTable)
           .style('left', ($(this).offset().left - 260) + 'px')
           .style('top', ((d3.event.pageY - (200)) + 'px'))
+
+        setTimeout(function() {
+          var height = divTooltip[0].outerHeight / 2
+            divTooltip.style('top', ((d3.event.pageY - height) + 'px'))
+        })
+        console.log(divTooltip[0])
       })
 
       $(document).on('click', function (d) {
