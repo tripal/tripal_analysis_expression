@@ -317,7 +317,7 @@
       d3.select('figure')
         .style('overflow', 'auto')
         .style('max-width', '100%')
-        .on('scroll', function() {
+        .on('scroll', function () {
           $(document).trigger($.Event('figure.scroll'))
         })
 
@@ -543,6 +543,15 @@
           .style('display', 'none')
         d3.select(this).style('opacity', 1)
       }).on('click', function (d) {
+        if (this.activeBar === d.node) {
+          divTooltip.transition()
+            .duration(200)
+            .style('opacity', 0)
+            .style('display', 'none')
+          this.activeBar = null
+          return
+        }
+        this.activeBar = d.node
         initialTooltip.transition()
           .duration(200)
           .style('opacity', 0)
@@ -557,7 +566,7 @@
           + propTable)
           .style('left', ($(this).offset().left - 260) + 'px')
           .style('top', ((d3.event.pageY - (200)) + 'px'))
-        setTimeout(function() {
+        setTimeout(function () {
           divTooltip.transition()
             .duration(200)
             .style('opacity', 1)
@@ -576,7 +585,7 @@
           .style('display', 'none')
       })
 
-      $(document).on('figure.scroll', function() {
+      $(document).on('figure.scroll', function () {
         divTooltip.transition()
           .duration(200)
           .style('opacity', 0)
