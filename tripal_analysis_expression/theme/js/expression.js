@@ -539,23 +539,25 @@
       bars.on('mouseover', function (d, i) {
         var bar = d3.event.target
         $(bar).css('opacity', .8)
-        var propTable = _that.buildPropertyTooltipTable(d)
-        // divTooltip.transition()
-        //   .duration(200)
-        //   .style('opacity', 1)
-        //   .style('display', 'block')
-
-        divTooltip.html(
-          '<strong>Biosample:</strong> <a href="/bio_data/' + d.node + '">' + d.name + '</a><br/>' +
-          '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
-          '<strong>Description: </strong><br/>' + d.description + '<br/>'
-          + propTable)
-          .style('left', ($(this).offset().left - 260) + 'px')
-          .style('top', ((d3.event.pageY - (200)) + 'px'))
       })
         .on('mouseout', function () {
           var bar = d3.event.target
           $(bar).css('opacity', 1)
+        })
+        .on('click', function (d) {
+          var propTable = _that.buildPropertyTooltipTable(d)
+          divTooltip.transition()
+            .duration(200)
+            .style('opacity', 1)
+            .style('display', 'block')
+
+          divTooltip.html(
+            '<strong>Biosample:</strong> <a href="/bio_data/' + d.node + '">' + d.name + '</a><br/>' +
+            '<strong>Expression: </strong>' + d.intensity + ' ' + d.units + '<br/>' +
+            '<strong>Description: </strong><br/>' + d.description + '<br/>'
+            + propTable)
+            .style('left', ($(this).offset().left - 260) + 'px')
+            .style('top', ((d3.event.pageY - (200)) + 'px'))
         })
 
       $(document).on('click', function (e) {
