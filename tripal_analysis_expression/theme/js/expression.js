@@ -537,7 +537,8 @@
         .style('z-index', 999999)
 
       bars.on('mouseover', function (d, i) {
-        console.log(d, i, d3.event.target)
+        var bar = d3.event.target
+        bar.style('opacity', .8)
         var propTable = _that.buildPropertyTooltipTable(d)
         divTooltip.transition()
           .duration(200)
@@ -552,6 +553,10 @@
           .style('left', ($(this).offset().left - 200) + 'px')
           .style('top', ((d3.event.pageY - (200)) + 'px'))
       })
+        .on('mouseout', function () {
+          var bar = d3.event.target
+          bar.style('opacity', 1)
+        })
 
       $(document).on('click', function (e) {
         if ($(e.target).parents('#chart-tooltip').length || $(e.target).attr('id') === 'chart-tooltip') {
