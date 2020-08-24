@@ -559,8 +559,7 @@
       })
 
       $(document).on('click', function (e) {
-        console.log($(this), $(this).parents('#chart-tooltip'), $(this).attr('id') === 'chart-tooltip')
-        if ($(this).parents('#chart-tooltip') || $(this).attr('id') === 'chart-tooltip') {
+        if ($(this).parents('#chart-tooltip').length || $(this).attr('id') === 'chart-tooltip') {
           return
         }
 
