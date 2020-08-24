@@ -559,7 +559,7 @@
             .duration(200)
             .style('opacity', 1)
             .style('display', 'block')
-        }, 500)
+        }, 200)
       })
 
       $(document).on('click', function (e) {
