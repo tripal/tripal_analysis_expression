@@ -392,75 +392,75 @@
       })
 
 
-      propertyGroups.call(d3.behavior.drag()
-        .origin(function (d, i) {  // define the start drag as the middle of the group
-          // this should match the transformation used when assigning the
-          // group
-          return {x: _that.translationXOffset(d.position, x0)}
-        })
-        .on('dragstart', function (d, i) {
-          // track the position of the selected group in the dragging object
-          dragging[d.key] = _that.translationXOffset(d.position, x0)
-          var sel         = d3.select(this)
-          sel.moveToFront()
-        })
-        .on('drag', function (d, i) {// track current drag location
-          dragging[d.key] = d3.event.x
-
-          nested.sort(function (a, b) {
-            return position(a, a.position, x0) - position(b, b.position, x0)
-          })
-
-
-          ///rebuild the domain
-          //TODO:  This is very not - DRY, copied from initial domain set.
-          // should be factored out.
-
-          var rangeMapper   = {}
-          var lengthTracker = 0 //keep track of where we are on the scale
-
-          nested.map(function (d, i) {
-
-            var groupSize = d.values.length * averageStepSize
-            //   var location = lengthTracker + groupSize/2 //set the location
-            // to the middle of its group var location = lengthTracker +
-            // groupSize/2 //set the location to the middle of its group
-            var location = lengthTracker //set the location to the start of its
-            // group
-
-            rangeMapper[d.key]    = location
-            lengthTracker += groupSize
-            nested[i]['position'] = i
-          })
-
-
-          x0 = d3.scale.linear()
-            .rangeRound(nested.map(function (d) {
-              return rangeMapper[d.key]
-            }))
-
-          // Set the domains based on the nested data
-          x0.domain(nested.map(function (d, i) {
-            return i
-          }))
-
-          propertyGroups.attr('transform', function (d) {
-
-            return 'translate(' + position(d, d.position, x0) + ', 0)'
-          })
-        })
-        .on('dragend', function (d, i) {
-          delete dragging[d.key]
-          transition(d3.select(this)).attr('transform', function (d) {
-            return 'translate(' + _that.translationXOffset(d.position, x0) + ',0)'
-          })
-
-          // propertyGroups.selectAll()
-          //     .attr('transform', function (d, i ) {
-          //       return 'translate(' + _that.translationXOffset(d.position,
-          // x0) + ',0)'; });
-        }),
-      )
+      // propertyGroups.call(d3.behavior.drag()
+      //   .origin(function (d, i) {  // define the start drag as the middle of the group
+      //     // this should match the transformation used when assigning the
+      //     // group
+      //     return {x: _that.translationXOffset(d.position, x0)}
+      //   })
+      //   .on('dragstart', function (d, i) {
+      //     // track the position of the selected group in the dragging object
+      //     dragging[d.key] = _that.translationXOffset(d.position, x0)
+      //     var sel         = d3.select(this)
+      //     sel.moveToFront()
+      //   })
+      //   .on('drag', function (d, i) {// track current drag location
+      //     dragging[d.key] = d3.event.x
+      //
+      //     nested.sort(function (a, b) {
+      //       return position(a, a.position, x0) - position(b, b.position, x0)
+      //     })
+      //
+      //
+      //     ///rebuild the domain
+      //     //TODO:  This is very not - DRY, copied from initial domain set.
+      //     // should be factored out.
+      //
+      //     var rangeMapper   = {}
+      //     var lengthTracker = 0 //keep track of where we are on the scale
+      //
+      //     nested.map(function (d, i) {
+      //
+      //       var groupSize = d.values.length * averageStepSize
+      //       //   var location = lengthTracker + groupSize/2 //set the location
+      //       // to the middle of its group var location = lengthTracker +
+      //       // groupSize/2 //set the location to the middle of its group
+      //       var location = lengthTracker //set the location to the start of its
+      //       // group
+      //
+      //       rangeMapper[d.key]    = location
+      //       lengthTracker += groupSize
+      //       nested[i]['position'] = i
+      //     })
+      //
+      //
+      //     x0 = d3.scale.linear()
+      //       .rangeRound(nested.map(function (d) {
+      //         return rangeMapper[d.key]
+      //       }))
+      //
+      //     // Set the domains based on the nested data
+      //     x0.domain(nested.map(function (d, i) {
+      //       return i
+      //     }))
+      //
+      //     propertyGroups.attr('transform', function (d) {
+      //
+      //       return 'translate(' + position(d, d.position, x0) + ', 0)'
+      //     })
+      //   })
+      //   .on('dragend', function (d, i) {
+      //     delete dragging[d.key]
+      //     transition(d3.select(this)).attr('transform', function (d) {
+      //       return 'translate(' + _that.translationXOffset(d.position, x0) + ',0)'
+      //     })
+      //
+      //     // propertyGroups.selectAll()
+      //     //     .attr('transform', function (d, i ) {
+      //     //       return 'translate(' + _that.translationXOffset(d.position,
+      //     // x0) + ',0)'; });
+      //   }),
+      // )
 
       //plot the actual bars!!
 
