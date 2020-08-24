@@ -547,7 +547,7 @@
         .css('background', 'rgba(255, 255, 255, .9)')
         .css('border', '1px solid rgba(0,0,0,.3)')
         .css('border-radius', '5px')
-        .css('pointer-events', 'none')
+        // .css('pointer-events', 'none')
         .css('display', 'none')
         // .css('opacity', 0)
         .css('transition', 'opacity .25s linear')
