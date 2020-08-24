@@ -553,7 +553,7 @@
         .css('transition', 'opacity .25s linear')
         .css('z-index', 9999999999)
 
-      $('body').append(divTooltip)
+      $('body').prepend(divTooltip)
 
       bars.on('mouseover', function (d) {
         var propTable = _that.buildPropertyTooltipTable(d)
