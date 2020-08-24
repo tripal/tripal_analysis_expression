@@ -317,6 +317,9 @@
       d3.select('figure')
         .style('overflow', 'auto')
         .style('max-width', '100%')
+        .on('scroll', function() {
+          console.log('scrolling')
+        })
 
       var svg = d3.select('figure')
         .append('chart')
