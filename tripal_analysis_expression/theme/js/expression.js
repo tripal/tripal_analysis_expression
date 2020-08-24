@@ -350,15 +350,16 @@
       propertyGroups.append('g')
         .attr()
         .append('rect')
-        .style('fill', 'black')
-        .attr('y', height - (margin.bottom - 1))
+        .style('fill', '#444')
+        .style('border-radius', '3px')
+        .attr('y', height - (margin.bottom - 2))
         .attr('x', barwidth / 2)
         .attr('width', function (d) {
           var length = d.values.length * (barwidth + barSpacing) - barwidth * 1.5
           return length > barwidth ? length : 1
 
         })
-        .attr('height', 1)
+        .attr('height', 2)
 
 
       var text = propertyGroups.append('text')
