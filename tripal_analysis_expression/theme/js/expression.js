@@ -558,6 +558,10 @@
         }, 200)
       })
 
+      divTooltip.on('click', function() {
+        console.log('clciked')
+      })
+
       $(document).on('click', function (e) {
         if ($(this).parents('#chart-tooltip').length || $(this).attr('id') === 'chart-tooltip') {
           return
