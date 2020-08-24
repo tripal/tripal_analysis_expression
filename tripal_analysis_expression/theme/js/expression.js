@@ -532,6 +532,7 @@
         .style('opacity', 0)
         .style('transition', 'opacity .25s linear')
         .style('z-index', 999999)
+
       bars.on('mouseover', function (d) {
         var propTable = _that.buildPropertyTooltipTable(d)
         divTooltip.transition()
@@ -545,7 +546,7 @@
           '<strong>Description: </strong><br/>' + d.description + '<br/>'
           + propTable)
           .style('left', ($(this).offset().left - 260) + 'px')
-          .style('top', (d3.event.pageY - (y(d.intensity)) + 'px'))
+          .style('top',(d3.event.pageY + 'px'))
       })
         .on('mouseout', function (d) {
           divTooltip.transition()
