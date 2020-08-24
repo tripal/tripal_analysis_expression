@@ -213,6 +213,10 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter{
         $treatment = NULL;
         $tissue = NULL;
 
+        if (is_object($properties)) {
+          $properties = [$properties];
+        }
+
         if (!empty($properties)) {
           foreach ($properties as $property) {
             $name = strtolower($property->type_id->name);
@@ -290,6 +294,10 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter{
       $expanded = chado_expand_var($biomat_full, 'table', 'biomaterialprop');
       $properties = $expanded->biomaterialprop;
 
+      if (is_object($properties)) {
+        $properties = [$properties];
+      }
+
       $treatment = NULL;
       $tissue = NULL;
 
@@ -357,4 +365,5 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter{
   public function settingsSummary($view_mode) {
     return '';
   }
+
 }
