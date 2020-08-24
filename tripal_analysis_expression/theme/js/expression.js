@@ -546,7 +546,7 @@
           '<strong>Description: </strong><br/>' + d.description + '<br/>'
           + propTable)
           .style('left', ($(this).offset().left - 260) + 'px')
-          .style('bottom',((d3.event.pageY - 200) + 'px'))
+          .style('bottom',((d3.event.pageY) + 'px'))
       })
         .on('mouseout', function (d) {
           divTooltip.transition()
