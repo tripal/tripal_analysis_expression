@@ -503,8 +503,8 @@
       var initialTooltip = d3
         .select('body')
         .append('div')
-        .attr('class', 'toolTip')
-        .attr('id', 'chart-tooltip')
+        .attr('class', 'init-tooltip')
+        .attr('id', 'init-tooltip')
         .style('position', 'absolute')
         .style('width', '100px')
         .style('padding', '10px')
