@@ -110,9 +110,9 @@ class analysis_expression_data_downloader{
    */
   public function create() {
     // Make sure the user directory exists
-    $user_dir = 'public://expression_download';
+    $user_dir = tripal_get_files_dir('tripal_analysis_expression_download');
     if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
-      $message = 'Could not access the directory on the server for storing this file.';
+      $message = 'Could not access the directory '.$user_dir.' for storing this file.';
       watchdog('tripal', $message, [], WATCHDOG_ERROR);
       return;
     }
