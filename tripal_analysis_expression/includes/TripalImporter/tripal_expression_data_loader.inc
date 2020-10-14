@@ -12,9 +12,9 @@ class tripal_expression_data_loader extends TripalImporter{
 
   public static $machine_name = 'Chado_Expression_Data_Loader';
 
-  public static $description = 'Import expression data.  Requires an analaysis and biomaterial.';
+  public static $description = 'Import expression data.  Requires an analysis and biomaterial.';
 
-  public static $file_types = ['tsv', 'txt'];
+  public static $file_types = ['csv', 'tsv', 'txt'];
 
   public static $upload_description = 'Expression data can be loaded from two format types. ' .
     'Select the column format for files that have two columns - transcript id and expression ' .
