@@ -35,7 +35,7 @@ class tripal_expression_pvalue_loader extends TripalImporter
    *
    * @var array
    */
-  public static $file_types = ['csv', 'tsv'];
+  public static $file_types = ['csv', 'tsv', 'txt'];  // txt will be handled as tsv
 
   /**
    * Provides information to the user about the file upload.  Typically this
@@ -143,7 +143,8 @@ class tripal_expression_pvalue_loader extends TripalImporter
       '#title' => t('Experimental Factor'),
       '#required' => TRUE,
       '#description' => t('What is this gene responding to (e.g. heat, drought, ozone)? If the controlled vocabulary term does not show up, please ' . l('create it first.',
-          'admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add')),
+          'admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add') .
+          ' Prefix with CV if necessary e.g. cv_name|cvterm_name'),
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/0',
     ];
 
@@ -180,7 +181,8 @@ class tripal_expression_pvalue_loader extends TripalImporter
       '#type' => 'textfield',
       '#title' => t('Sequence Type'),
       '#required' => TRUE,
-      '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the features (e.g. gene, mRNA, polypeptide, etc...)'),
+      '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the features (e.g. gene, mRNA, polypeptide, etc...)' .
+        ' Prefix with CV if necessary e.g. cv_name|cvterm_name'),
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/' . $so_id,
     ];
 
@@ -210,14 +212,13 @@ class tripal_expression_pvalue_loader extends TripalImporter
       }
       if (is_dir($values['file_local'])) {
         form_set_error('file_local',
-          'File provided is a directory. Please upload a .csv file.');
+          'File provided is a directory. Please upload a .csv or .tsv file.');
 
         return;
       }
     }
-
     if (!chado_get_cvterm(['name' => $values['keyword']])) {
-      form_set_error('keyword', 'Cvterm provided does not exist.');
+      form_set_error('keyword', 'Provided cvterm "'.$values['keyword'].'" does not exist or is ambiguous.');
 
       return;
     }
@@ -242,6 +243,16 @@ class tripal_expression_pvalue_loader extends TripalImporter
       return;
     }
 
+    // determine type of file, csv, tsv, or txt and validate it
+    $file_info = pathinfo($file_path);
+    $file_ext = $file_info['extension'];
+    if (!in_array($file_ext, self::$file_types)) {
+      form_set_error('file_local',
+        'File provided must have one of the following extensions: .'.implode(' .', self::$file_types));
+
+     return;
+    }
+
     $fp = fopen($file_path, 'r');
 
     if (!$fp) {
@@ -250,9 +261,11 @@ class tripal_expression_pvalue_loader extends TripalImporter
       return;
     }
 
-    if (count(fgetcsv($fp, 0, ',')) != 2) {
+    $delimiter = $file_ext == 'csv' ? ',' : "\t";
+    $ncolumns = count(fgetcsv($fp, 0, $delimiter));
+    if ($ncolumns != 2) {
       form_set_error('file_upload',
-        'File provided contains incorrect number of columns. This importer requires that the uploaded file contain exactly two columns containing the feature name and the pvalue.');
+        'File provided contains incorrect number of columns ('.$ncolumns.'). This importer requires that the uploaded file contain exactly two columns containing the feature name and the pvalue.');
 
       return;
     }
@@ -276,6 +289,10 @@ class tripal_expression_pvalue_loader extends TripalImporter
 
     $cvterm_name = $run_args['keyword'];
     $this->cvterm_id = chado_get_cvterm(['name' => $cvterm_name])->cvterm_id;
+    if (!$this->cvterm_id) {
+      throw new Exception(t('The CV term "!cvterm_name" was not found. Please add this term',
+        ['!cvterm_name' => $cvterm_name]));
+    }
 
     $this->expression_relationship = $run_args['expression_relationship'];
     $this->expression_relationship_id = chado_get_cvterm(['name' => $this->expression_relationship])->cvterm_id;
@@ -283,8 +300,16 @@ class tripal_expression_pvalue_loader extends TripalImporter
       'cv_id' => ['name' => 'local'],
       'name' => 'evidence code',
     ])->cvterm_id;
+    if (!$this->expression_relationship_cvterm_id) {
+      throw new Exception(t('The CV term "evidence code" was not found in the CV "local". Please add this term',
+        []));
+    }
 
     $this->analysis_cvterm_id = chado_get_cvterm(['name' => 'analysis'])->cvterm_id;
+    if (!$this->analysis_cvterm_id) {
+      throw new Exception(t('The CV term "analysis" was not found. Please add this term',
+        []));
+    }
     $this->analysis_id = $run_args['analysis_id'];
 
     $organism_id = $run_args['organism_id'];
@@ -294,8 +319,16 @@ class tripal_expression_pvalue_loader extends TripalImporter
       'cv_id' => ['name' => 'OBI'],
       'name' => 'p-value',
     ])->cvterm_id;
+    if (!$this->pvalue_cvterm_id) {
+      throw new Exception(t('The CV term "p-value" was not found in the CV "OBI". Please add this term',
+        []));
+    }
 
     $this->pub_id = chado_query('SELECT pub_id FROM {pub} WHERE title IS NULL ORDER BY pub_id ASC limit 1')->fetchField();
+    if (!$this->pub_id) {
+      throw new Exception(t('The NULL placeholder publication was not found. Please add this publication entry',
+        []));
+    }
 
     $this->parseFile($file_path, $file_ext, $organism_id, $so_term);
   }
@@ -305,7 +338,7 @@ class tripal_expression_pvalue_loader extends TripalImporter
    *
    * @param string $file_path
    * @param string $file_ext
-   *  Either tsv or csv, determines delimiter for fgetcsv.
+   *  Either csv, tsv, or txt, determines delimiter for fgetcsv.
    * @param $cvterm_id
    *  The cvterm from the first word of the filename.
    *
@@ -329,7 +362,25 @@ class tripal_expression_pvalue_loader extends TripalImporter
       $bytes_read += drupal_strlen($pvalue);
       $this->setItemsHandled($bytes_read);
 
-      $type_id = chado_get_cvterm(['name' => $so_term])->cvterm_id;
+      // term can be prefixed with cv name and pipe separator e.g. cv_name|cvterm_name
+      if (strpos('|', $so_term)) {
+        $tmp = explode('|', $so_term, 2);
+        $cvname = trim($tmp[0]);
+        $termname = trim($tmp[1]);
+        $cv = chado_get_cv(['name' => $cvname]);
+        if (!$cv) {
+          throw new Exception(t('The controlled vocabulary "$cvname" does not exist.', []));
+        }
+        $term = chado_get_cvterm(['name' => $termname, 'cv_id' => $cv->cv_id]);
+      } else {
+        $termname = $so_term;
+        $term = chado_get_cvterm(['name' => $termname]);
+      }
+      if (!$term) {
+        throw new Exception(t('The controlled vocabulary term "$termname" does not exist or is ambiguous.', []));
+      }
+      $type_id = $term->cvterm_id;
+      
 
       try {
         $feature_id = $this->get_feature_id($feature_name, $organism_id,
@@ -339,7 +390,8 @@ class tripal_expression_pvalue_loader extends TripalImporter
         is_object($data) ? $this->updateData($data->feature_cvterm_id,
           $pvalue) : $this->insertData($feature_id, $pvalue);
       } catch (Exception $exception) {
-
+        throw new Exception(t('Error adding Pvalue to feature_id !feature_id. !exception',
+          ['!feature_id' => $feature_id, '!exception' => $exception]));
       }
 
 

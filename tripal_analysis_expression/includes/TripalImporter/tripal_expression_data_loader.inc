@@ -379,7 +379,7 @@ class tripal_expression_data_loader extends TripalImporter{
   }
 
   /**
-   * Implements the function that will called as a tripal job
+   * Implements the function that will be called as a tripal job
    *  to load expression data.
    *
    * @param $organism_id
@@ -419,7 +419,7 @@ class tripal_expression_data_loader extends TripalImporter{
    *  The file extension of the expression files to be loaded.
    *
    * @param $filetype
-   *  The file type can either by mat for matrix or col for column.
+   *  The file type can be either mat for matrix or col for column.
    *
    * @param $create_biosamples
    * Allow creation of new biosamples.  Defaults to false: we want users to
@@ -703,7 +703,7 @@ AND f.type_id = :type_id', [
     // Make sure there not duplicate feature names.
     if (count($feature_repeats = array_diff_assoc($feature_array,
         array_unique($feature_array))) > 0) {
-      $this->logMessage('There are multiple instance of the following feature(s) in the expression file:');
+      $this->logMessage('There are multiple instances of the following feature(s) in the expression file:');
       foreach ($feature_repeats as $repeat) {
         $this->logMessage("  !repeat", ['!repeat' => $repeat], TRIPAL_ERROR);
       }
@@ -731,13 +731,11 @@ AND f.type_id = :type_id', [
 
     // Loop through every line in a file.
 
-    $this->logMessage("Loading complete: 0%. Memory: !memory_usage bytes. \r",
+    $this->logMessage("Loading progress: 0%. Memory: !memory_usage bytes. \r",
       ['!memory_usage' => number_format(memory_get_usage())]);
+    $time_start = microtime(TRUE);
 
     for ($j = 0; $j < $num_lines and $line = fgets($mat_fp); $j++) {
-
-      //i moved this here since $timestart is only used in the print below, but unsure of its purpose- BC
-      $time_start = microtime(TRUE);
 
       if ($j % $load_limit == 0) {
         $set_fp = ftell($mat_fp);
@@ -745,7 +743,7 @@ AND f.type_id = :type_id', [
         $time_end = microtime(TRUE);
         if ($j != 0) {
           $this->logMessage('!lps lines per second',
-            ['!lps' => $load_limit / ($time_end - $time_start)]);
+            ['!lps' => sprintf('%0.2f', $load_limit / ($time_end - $time_start))]);
         }
         $mat_fp = fopen($filepath, 'r');
         fseek($mat_fp, $set_fp);
@@ -778,7 +776,7 @@ AND f.type_id = :type_id', [
           // Make sure there not duplicate biomaterial names.
           if (count($bio_repeats = array_diff_assoc($linepart,
               array_unique($linepart))) > 0) {
-            $this->logMessage('There are multiple instance of the following biomaterial(s) in the expression file:');
+            $this->logMessage('There are multiple instances of the following biomaterial(s) in the expression file:');
             foreach ($bio_repeats as $repeat) {
               $this->logMessage('!repeat', ['!repeat' => $repeat]);
             }
@@ -794,7 +792,7 @@ AND f.type_id = :type_id', [
 
           // Make sure that there are enough expression columns.
           if ($num_col != ($num_biomaterials + 1)) {
-            $this->logMessage("Expression data in the data section of the matrix format must have a feature name followed by tab separated expression values. The number of expression values for each feature must equal the number of biomaterials in the matrix file header. Example matrix format:\n" . "  <feature name>       <expression value>	<expression value> ...");
+            $this->logMessage("Expression data in the data section of the matrix format must have a feature name followed by tab separated expression values. The number of expression values for each feature must equal the number of biomaterials in the matrix file header. Example matrix format:\n" . "  <feature name>	<expression value>	<expression value> ...");
             if (count($linepart) > 0) {
               $this->logMessage("Loader failed on the following line:\n !line\n. Expected !expected_columns columns but only found !actual_columns column(s).",
                 [
@@ -812,7 +810,7 @@ AND f.type_id = :type_id', [
 
           if ($cur_feature % $int_length == 0) {
             $percent = sprintf("%.2f", ($cur_feature / $num_features) * 100);
-            $this->logMessage("Loading complete: !percent%. Memory: !memory_usage bytes. \r",
+            $this->logMessage("Loading progress: !percent%. Memory: !memory_usage bytes. \r",
               [
                 '!percent' => $percent,
                 '!memory_usage' => number_format(memory_get_usage()),
@@ -947,7 +945,7 @@ AND f.type_id = :type_id', [
       if (preg_match('/' . $re_stop . '/', $line) and $re_stop) {
         $data_ln = 0;
       }
-      // Grab data lines. Ingore the header.
+      // Grab data lines. Ignore the header.
       if ($data_ln == 1 or !$re_start) {
         if ($col_head == 0) {
           $num_features++;
@@ -997,7 +995,7 @@ AND f.type_id = :type_id', [
       $er_id = 0;
       $af_id = 0;
 
-      $this->logMessage("Loading complete: 0%. Memory: !memory_usage bytes. \r",
+      $this->logMessage("Loading progress: 0%. Memory: !memory_usage bytes. \r",
         ['!memory_usage' => number_format(memory_get_usage())]);
 
       $col_fp = fopen($filepath, 'r');
@@ -1010,7 +1008,7 @@ AND f.type_id = :type_id', [
           $inter++;
           if ($inter % $int_length == 0) {
             $percent = sprintf("%.2f", ($inter / $num_features) * 100);
-            $this->logMessage("Loading complete: !percent%. Memory: !memory_usage bytes. \r",
+            $this->logMessage("Loading progress: !percent%. Memory: !memory_usage bytes. \r",
               [
                 '!percent' => $percent,
                 '!memory_usage' => number_format(memory_get_usage()),
@@ -1150,13 +1148,8 @@ AND f.type_id = :type_id', [
     $feature_object = $query->execute()->fetchObject();
 
     if ($feature_object->organism_id != $organism_id) {
-      $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
-      $analysis_org = chado_query($sql,
-        [":organism_id" => $organism_id])->fetchObject();
-      $feature_org = chado_query($sql,
-        [":organism_id" => $feature_object->organism_id])->fetchObject();
-      $analysis_org_sciname = $analysis_org->genus . ' ' . $analysis_org->species;
-      $feature_org_sciname = $feature_org->genus . ' ' . $feature_org->species;
+      $analysis_org_sciname = chado_get_organism_scientific_name(chado_get_organism(['organism_id' => $organism_id], []));
+      $feature_org_sciname = chado_get_organism_scientific_name(chado_get_organism(['organism_id' => $feature_object->organism_id], []));
 
       $this->logMessage("Mismatch between the organism selected in the expression analysis and the organism of a feature from the expression file.\n
         Analysis organism: !analysis_org_sciname (!a_common_name)\n

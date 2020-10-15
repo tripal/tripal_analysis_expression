@@ -228,7 +228,7 @@ function expression_create_biomaterial_structure($biomaterial, $organism_id, $an
         'id' => 'sep:00056',
         'name' => 'unit_of_measure',
         'cv_name' => 'sep',
-        'definition' => 'A unit of measure is a quantity which is a standard of measurement for some dimension. For example, the Meter is a Unit O fMeasure for the dimension of length, as is the Inch. There is no intrinsic property of a UnitOfMeasure that makes it primitive or fundamental; rather, a system of units (e.g. Systeme International Unit) defines a set of orthogonal dimensions and assigns units for each. [ SUMO:unit of measure ]',
+        'definition' => 'A unit of measure is a quantity which is a standard of measurement for some dimension. For example, the Meter is a Unit Of Measure for the dimension of length, as is the Inch. There is no intrinsic property of a UnitOfMeasure that makes it primitive or fundamental; rather, a system of units (e.g. Systeme International Unit) defines a set of orthogonal dimensions and assigns units for each. [ SUMO:unit of measure ]',
       ])->cvterm_id;
     }
 
@@ -602,12 +602,18 @@ function tripal_biomaterial_create_biomaterial($biomaterial, $analysis_id, $orga
     if ($biomaterial_result->taxon_id && $warnings) {
       print("WARNING: Biomaterial with sample_name of '$biomaterial' alreay exists in the database. Overwriting database entries for $biomaterial...\n");
       if ($biomaterial_result->taxon_id and $biomaterial_result->taxon_id != $organism_id) {
-        $sql = "SELECT common_name, genus, species FROM {organism} WHERE organism_id = :organism_id";
-        $analysis_org = chado_query($sql,
-          [":organism_id" => $organism_id])->fetchObject();
-        $biomaterial_org = chado_query($sql,
-          [":organism_id" => $biomaterial_result->taxon_id])->fetchObject();
-        print "ERROR: Mismatch between the organism selected in the loader " . "and the organism of a biomaterial in the Chado database.\n" . "  Organism selected by loader: " . $analysis_org->genus . " " . $analysis_org->species . " (" . $analysis_org->common_name . ")\n" . "  Biomaterial organism: " . $biomaterial_org->genus . " " . $biomaterial_org->species . " (" . $biomaterial_org->common_name . ")\n" . "  On biomaterial: " . $biomaterial . "\n" . "Please ensure that the organism selected by the loader " . "and the organism for each biomaterial in the file to be loaded " . "are the same. If these organisms should not be the same, " . "delete the offending biomaterial in Chado or change the name of " . "the biomaterial to another unique name.\n";
+        $analysis_taxon = chado_get_organism_scientific_name(chado_get_organism(['organism_id' => $organism_id], []));
+        $biomaterial_taxon = chado_get_organism_scientific_name(chado_get_organism(['organism_id' => $biomaterial_result->taxon_id], []));
+        print "ERROR: Mismatch between the organism selected in the loader " .
+          "and the organism of a biomaterial in the Chado database.\n" .
+          "  Organism selected by loader: " . $analysistaxon . "\n" .
+          "  Biomaterial organism: " . $biomaterial_taxon . "\n" .
+          "  On biomaterial: " . $biomaterial . "\n" .
+          "Please ensure that the organism selected by the loader " .
+          "and the organism for each biomaterial in the file to be loaded " .
+          "are the same. If these organisms should not be the same, " .
+          "delete the offending biomaterial in Chado or change the name of " .
+          "the biomaterial to another unique name.\n";
         exit;
       }
     }

@@ -131,7 +131,7 @@ function feature_heatmap_form($form, &$form_state) {
     ],
   ];
 
-  // Escaped get value if it exists
+  // Escape get value if it exists
   if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
     $form['heatmap_feature_uniquename']['#value'] = $_GET['heatmap_feature_uniquename'];
   }
@@ -343,19 +343,22 @@ function feature_heatmap_get_organisms() {
     return drupal_map_assoc(tripal_elasticsearch_get_gene_search_organisms());
   }
 
-  $sql = 'SELECT genus, species, common_name, organism_id
-            FROM {organism} 
-            ORDER BY genus ASC, species ASC';
+  $sql = 'SELECT * FROM {organism} ORDER BY genus ASC, species ASC';
 
   $organism_list = chado_query($sql)->fetchAll();
 
   $organisms = [];
   foreach ($organism_list as $organism) {
-    $organisms[$organism->organism_id] = "$organism->genus $organism->species";
+    $organisms[$organism->organism_id] = chado_get_organism_scientific_name($organism);
     if (!empty($organism->common_name)) {
       $organisms[$organism->organism_id] .= " ($organism->common_name)";
     }
   }
+
+  // if the site uses the chado infraspecific nomenclature, organisms will not be fully
+  // alphabetically sorted by subspecies names, but we can't include in the SQL easily
+  // because the columns may not be present, so sort the list again by scientific name
+  natcasesort($organisms);
 
   return $organisms;
 }
