@@ -262,7 +262,7 @@ function tripal_analysis_expression_bundle_instances_info($entity_type, $bundle)
     ];
   }
 
-  if (isset($bundle->data_table) AND ($bundle->data_table == 'analysis')) {
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'analysis') AND ($bundle->term->name == 'Gene expression profiling')) {
     $field_name = 'local__expression_features';
     $field_type = 'local__expression_features';
     $instances[$field_name] = array(
