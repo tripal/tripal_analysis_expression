@@ -593,7 +593,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     $fp = fopen($file_path, "r");
     while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
       foreach ($line as $field) {
-        if (preg_match("/(sample_name)/", $field)) {
+        if (preg_match("/(sample[_\s]name)/i", $field)) {
           break 2;
         }
       }
@@ -615,7 +615,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
       foreach ($line as $field) {
-        if (preg_match("/(sample_name)/", $field)) {
+        if (preg_match("/(sample[_\s]name)/i", $field)) {
           break 2;
         }
       }
@@ -639,7 +639,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     $acc_headers = [];
 
     for ($i = 0; $i < count($headers); $i++) {
-      $header = trim(str_replace("*", "", $headers[$i]));
+      $header = preg_replace('/[^\w]/', '_', strtolower($headers[$i]));
+      //$header = trim(str_replace("*", "", $headers[$i]));
       if ($header == 'sample_name') {
         $biomaterial_headers['sample_name'] = $i;
       }
@@ -1051,14 +1052,17 @@ function test_biosample_cvterms_flat(
     return;
   }
 
-  $attribute_list["values"] = [];
+  // Get the column headers that need CVterms. We will exclude those
+  // that we already know the terms for.
+  $attribute_list["attributes"] = [];
   for ($i = 0; $i < count($headers); $i++) {
-    $header = trim(str_replace("*", "", $headers[$i]));
+    $header = preg_replace('/[^\w]/', '_', strtolower($headers[$i]));
+    //$header = trim(str_replace("*", "", $headers[$i]));
     if (in_array($header, [
       'sample_name',
       'organism',
       'description',
-      ' biomaterial_provider',
+      'biomaterial_provider',
       'biomaterial_accession',
       'sra_accession',
       'bioproject_accession',
@@ -1070,14 +1074,17 @@ function test_biosample_cvterms_flat(
   }
 
   // Fill the values into the attribute_list array from lines in the file. Starting from the next line after the header
-  $tmpNumLine = 0;
-  while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
-    $tmpNumLine++;
-    if($tmpNumLine > $nLineHeader){
-      $attribute_list["values"] = array_merge($attribute_list["values"], $line);
-    }
-  }
-  $attribute_list["values"] = array_unique($attribute_list["values"]);
+//  TODO: the following code adds every value of every column as a potential term
+// which from aN NCBI SRA file that overruns the page!
+//   $attribute_list["values"] = [];
+//   $tmpNumLine = 0;
+//   while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
+//     $tmpNumLine++;
+//     if($tmpNumLine > $nLineHeader){
+//       $attribute_list["values"] = array_merge($attribute_list["values"], $line);
+//     }
+//   }
+//   $attribute_list["values"] = array_unique($attribute_list["values"]);
 
   return ($attribute_list);
 }
