@@ -93,9 +93,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     if ((isset($form_state['values']['file_local'])) || isset($form_state['values']['file_upload']) || isset($form_state['values']['file_upload_existing'])) {
       $file_path = $this->findFile($form_state['values']);
 
-      $extension = explode('.', $file_path);
-      $extension = $extension[count($extension) - 1];
-      $file_type = $extension;
+      $file_type = pathinfo($file_path, PATHINFO_EXTENSION);
       $organism_id = $form_state['values']['organism_id'];
       $analysis_id = $form_state['values']['analysis_id'];
       $link = variable_get('website_base_url') . "admin/tripal/loaders/chado_cv/cvterm/add.";
@@ -108,8 +106,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       else {
         $terms_to_check = test_biosample_cvterms_flat($file_path);
       }
-      $fields = $terms_to_check["attributes"];
-      $property_values = $terms_to_check["values"];
+      if ($terms_to_check) {
+        $fields = $terms_to_check["attributes"];
+        $property_values = $terms_to_check["values"];
+      }
     }
 
     $form['cvterms'] = [
@@ -307,12 +307,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     }
 
     if (array_key_exists('file_remote', $this->arguments['files'][0])) {
-      $extension = explode('.', $this->arguments['files'][0]['file_remote']);
-      $extension = $extension[count($extension) - 1];
+      $extension = pathinfo($this->arguments['files'][0]['file_remote'], PATHINFO_EXTENSION);
     }
     else {
-      $extension = explode('.', $file_path);
-      $extension = $extension[count($extension) - 1];
+      $extension = pathinfo($file_path, PATHINFO_EXTENSION);
     }
 
     if ($extension == "xml") {
@@ -580,8 +578,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       return;
     }
 
-    $extension = explode('.', $file_path);
-    $extension = $extension[count($extension) - 1];
+    $extension = pathinfo($file_path, PATHINFO_EXTENSION);
 
     // Defaults are for csv unless tsv selected.
     $separator = ",";
@@ -982,15 +979,17 @@ function test_biosample_cvterms_flat(
   // Check if the file given is empty.
   $fileSize = filesize($file_path);
   if ($fileSize == 0) {
-
-   error_log("File at !file_path is empty. Try again with a new file. file_path: $file_path", 0);
+    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR,
+        "File at !file_path is empty. Try again with a new file. file_path: !file_path",
+        ['!file_path' => $file_path],
+        ['drupal_set_message' => TRUE]);
    #$this->logMessage("File at !file_path is empty. Try again with a new file.",
    #   ['!file_path' => $file_path], TRIPAL_ERROR);
     return;
   }
+
   // Figure out CSV vs TSV.
-  $extension = explode('.', $file_path);
-  $extension = $extension[count($extension) - 1];
+  $extension = pathinfo($file_path, PATHINFO_EXTENSION);
 
   if ($extension == "tsv") {
     $separator = "\t";
@@ -1006,7 +1005,7 @@ function test_biosample_cvterms_flat(
   $fp = fopen($file_path, "r");
   while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
     foreach ($line as $field) {
-      if (preg_match("/(sample_name)/", $field)) {
+      if (preg_match("/(sample[_\s]name)/i", $field)) {
         break 2;
       }
     }
@@ -1020,11 +1019,15 @@ function test_biosample_cvterms_flat(
 
   // Print error message and exit if there's no biosample, or that there's no "sample_name" column in flat file.
   if ($num_biosamples == 0) {
-    error_log("Wrong file format at !file_path. File must contain a column named 'sample_name'. $file_path", 0);
     #$this->logMessage("Wrong file format at !file_path. File must contain a column named 'sample_name'.",
     #  ['!file_path' => $file_path], TRIPAL_ERROR);
+    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR,
+        "Wrong file format of !file_path. The file must contain a column named 'sample_name'",
+        ['!file_path' =>  pathinfo($file_path, PATHINFO_FILENAME)],
+        ['drupal_set_message' => TRUE]);
     return;
   }
+
 
   // Get the file pointer.
   $fp = fopen($file_path, "r");
@@ -1032,7 +1035,7 @@ function test_biosample_cvterms_flat(
   while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
     $nLineHeader++;
     foreach ($line as $field) {
-      if (preg_match("/(sample_name)/", $field)) {
+      if (preg_match("/(sample[_\s]name)/i", $field)) {
         break 2;
       }
     }
@@ -1041,8 +1044,10 @@ function test_biosample_cvterms_flat(
 
   // Make sure there are not duplicate biomaterial headers.
   if (count($header_repeats = array_diff_assoc($headers, array_unique($headers))) > 0) {
-    $this->logMessage("The header !header is present more than once.  Please make sure there is only one instance of each header.",
-      ['!header' => $header_repeats[0]], TRIPAL_ERROR);
+    tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR,
+      "The header !header is present more than once.  Please make sure there is only one instance of each header.",
+      ['!header' => $header_repeats[0]],
+      ['drupal_set_message' => TRUE]);
     return;
   }
 
