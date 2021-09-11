@@ -39,6 +39,7 @@ function tripal_biomaterial_install() {
 
   tripal_biomaterial_add_cvs();
   tripal_biomaterial_add_cvterms();
+  tripal_biomaterial_update_prop_terms();
 
   // Make sure the  biomaterial, table is  set
   // as base tables. This allows the tables to be used as base tables in
@@ -61,6 +62,13 @@ function tripal_biomaterial_add_cvs() {
   // CVs for the biomaterial content type.
   tripal_insert_cv('biomaterial_property', 'Contains property terms for biomaterials.');
   tripal_insert_cv('biomaterial_relationship', 'Contains types of relationships between biomaterials.');
+  tripal_insert_cv('NCBI Biosample Attributes', 'Attributes describe a BioSample using structured attribute name:value pairs, for example, tissue:liver. BioSample maintains a list of recognized attributes which participate in one or more BioSample packages. In addition to recognized attributes, submitters may provide any number of custom attributes to fully describe a sample.');
+  tripal_insert_db([
+    'name' => 'NCBI_BioSample',
+    'description' => 'This database provides, in XML format, the listing of attribute names for biosmaples housed in NCBI.',
+    'url' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes',
+    'urlprefix' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes#'
+  ]);
 }
 
 /**
@@ -120,45 +128,39 @@ function tripal_biomaterial_add_cvterms() {
     'name' => 'sample_name',
     'def' => 'Sample Name is a name that you choose for the sample. It can have any format, but we suggest that you make it concise, unique and consistent within your lab, and as informative as possible. Every Sample Name from a single Submitter must be unique.',
     'cv_name' => 'biomaterial_property',
-    'db_name' => 'tripal',
+    'db_name' => 'local',
   ]);
 
   tripal_insert_cvterm([
     'name' => 'sample_title',
     'def' => 'Title of the sample.',
     'cv_name' => 'biomaterial_property',
-    'db_name' => 'tripal',
+    'db_name' => 'local',
   ]);
 
   tripal_insert_cvterm([
     'name' => 'bioproject_accession',
-    'def' => 'The accession number of the BioProject(s) to which the BioSample belongs. If the BioSample belongs to more than one BioProject, enter multiple bioproject_accession columns. A valid BioProject accession has prefix PRJN, PRJE or PRJD, e.g., PRJNA12345.',
+    'def' => 'The accession number of the NCBI BioProject to which the BioSample
+      belongs.  A valid BioProject accession has prefix PRJN, PRJE or PRJD, e.g., PRJNA12345.',
     'cv_name' => 'biomaterial_property',
-    'db_name' => 'tripal',
+    'db_name' => 'local',
+  ]);
+
+  tripal_insert_cvterm([
+    'name' => 'biosample_accession',
+    'def' => 'The accession number of the NCBI Biosample.',
+    'cv_name' => 'biomaterial_property',
+    'db_name' => 'local',
   ]);
 
   tripal_insert_cvterm([
     'name' => 'organism',
     'def' => 'The most descriptive organism name for this sample (to the species, if relevant).',
     'cv_name' => 'biomaterial_property',
-    'db_name' => 'tripal',
+    'db_name' => 'local',
   ]);
-
-  // We use NCBI biosample attributes as to fill the biomaterialprop cv table.
-  // These attributes can be accessed at the following url.
-  $url = "http://www.ncbi.nlm.nih.gov/biosample/docs/attributes/?format=xml";
-  $xml_str = file_get_contents($url);
-  $xml_obj = simplexml_load_string($xml_str);
-
-  foreach ($xml_obj->Attribute as $attribute) {
-    tripal_insert_cvterm([
-      'name' => $attribute->HarmonizedName,
-      'def' => $attribute->Description,
-      'cv_name' => 'biomaterial_property',
-      'db_name' => 'tripal',
-    ]);
-  }
 }
+
 
 /**
  * Implements hook_uninstall().
@@ -206,5 +208,64 @@ function tripal_biomaterial_update_7301() {
   if (!chado_column_exists('biomaterialprop', 'cvalue_id')) {
     chado_query("ALTER TABLE {biomaterialprop} ADD COLUMN cvalue_id bigint");
     chado_query("ALTER TABLE {biomaterialprop} ADD CONSTRAINT biomaterialprop_cvalue_id_fkey FOREIGN KEY (cvalue_id) REFERENCES {cvterm} (cvterm_id) ON DELETE SET NULL;");
+  }
+}
+
+/**
+ * Adds the NCBI biomaterial database and adds the terms to it.  Also moves
+ * terms from the tripal vocabulary into local.
+ */
+function tripal_biomaterial_update_7302() {
+  try {
+    // Add the new CV and DB records
+    tripal_insert_cv('NCBI Biosample Attributes', 'Attributes describe a BioSample using structured attribute name:value pairs, for example, tissue:liver. BioSample maintains a list of recognized attributes which participate in one or more BioSample packages. In addition to recognized attributes, submitters may provide any number of custom attributes to fully describe a sample.');
+    tripal_insert_db([
+      'name' => 'NCBI_BioSample',
+      'description' => 'This database provides, in XML format, the listing of attribute names for biosmaples housed in NCBI.',
+      'url' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes',
+      'urlprefix' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes#'
+    ]);
+
+    // Create new dbxref's for the biomaterial property t erms and
+    // swap out the dbxref_id for the terms in the cv table to use these.
+    $local_db = new ChadoRecord('db');
+    $local_db->setValues(['name' => 'local']);
+    $local_db->find();
+
+    $biomprop_cv = new ChadoRecord('cv');
+    $biomprop_cv->setValues(['name' => 'biomaterial_property']);
+    $biomprop_cv->find();
+
+    // Iterate through each of the terms and swap the dbxrefs.
+    $names = ['organism', 'sample_name', 'sample_title', 'bioproject_accession'];
+    foreach ($names as $name) {
+
+
+      $dbxref = new ChadoRecord('dbxref');
+      $dbxref->setValues([
+        'accession' => $name,
+        'db_id' => $local_db->getID(),
+      ]);
+      if (!$dbxref->find()) {
+        $dbxref->insert();
+      }
+
+      $cvterm = new ChadoRecord('cvterm');
+      $cvterm->setValues([
+        'name' => $name,
+        'cv_id' => $biomprop_cv->getID(),
+      ]);
+      if ($cvterm->find()) {
+        $cvterm->setValue('dbxref_id', $dbxref->getID());
+        $cvterm->update();
+      }
+    }
+
+    tripal_biomaterial_update_prop_terms();
+
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }

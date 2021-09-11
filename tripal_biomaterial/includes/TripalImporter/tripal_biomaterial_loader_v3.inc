@@ -17,142 +17,549 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
   public static $file_types = ['xml', 'tsv', 'csv'];
 
-  public static $upload_description = "Please upload an NCBI BioSample file.  This can be in XML with an .xml extension, or flat file format with a .tsv or .csv extension.<br><br> If loading a CSV/TSV flat file, the first line must be the column name.  The only field that is required to create a biosample is the name (column: sample_name). It is recommended that a description (column: description), biomaterial provider (column: biomaterial_provider), accession (column: biomaterial_accession), treatment (column: treatment), and tissue (column: tissue) also be provided. A biomaterialprop cvterm type will be created for column
-    titles not associated with a cvterm below.  <br>This loader will create dbxref records for the following
-    column headers if present: biosample_accession, bioproject_accession, and sra_accession. Other accessions should
-    be uploaded using a bulk loader template. ";
+  public static $upload_description = "Please upload an NCBI BioSample file.  This
+    can be in XML with an .xml extension, or flat file format with a .tsv or .csv
+    extension.<br><br> If loading a CSV/TSV flat file, the first line must be the
+    column name.  The only field that is required to create a biosample is the name
+    (column: sample_name). It is recommended that a description (column: description),
+    biomaterial provider (column: biomaterial_provider), accession (column: biomaterial_accession),
+    treatment (column: treatment), and tissue (column: tissue) also be provided.
+.  <br>This loader will create dbxref records for the following
+    column headers if present: biosample_accession, bioproject_accession, and
+    sra_accession. Other accessions should be uploaded using a bulk loader template. ";
 
   public static $upload_title = 'Import new Biosamples/Biomaterials';
 
-  public static $use_analysis = TRUE;
-
-  public static $require_analysis = FALSE;
-
   public static $button_text = 'Import Biosamples';
 
+  public static $use_button = FALSE;
+
   public static $methods = [
-    // Allow the user to upload a file to the server.
-    'file_upload' => TRUE,
-    // Allow the user to provide the path on the Tripal server for the file.
-    'file_local' => TRUE,
-    /**
-     * Allow the user to provide a remote URL for the file.
-     */
+    'file_upload' => FALSE,
+    'file_local' => FALSE,
     'file_remote' => FALSE,
   ];
 
-  public static $file_required = TRUE;
+  public static $file_required = FALSE;
+
+  public static $use_analysis = FALSE;
+  public static $require_analysis = FALSE;
+
+  private $file_path = NULL;
+  private $file_extension = '';
+  private $flat_parsing = [
+    "tsv" => [
+      "separator" => "\t",
+      "enclosure" => "\0",
+    ],
+    "csv" => [
+      "separator" => ",",
+      "enclosure" => '"',
+    ]
+  ];
 
 
-  /**
-   * Organism associated with biomaterial.
-   *
-   * @var int
-   */
-  private static $organism_id;
-
-  /**
-   * Analysis associated with the biomaterial.
-   *
-   * @var int
-   */
-  private static $analysis_id;
+  // This arrays is meant to help map column headers in the CSV/TSV files
+  // provided by NCBI to the BioSample attributes or to map to other
+  // terms.
+  private $default_terms = [
+    'biosample' => [
+      'term' => 'local:biosample_accession',
+      'type' => 'annotation',
+    ],
+    'sample_name' => [
+      'term' => 'local:sample_name',
+      'type' => 'annotation',
+    ],
+    'sample_title' => [
+      'term' => 'local:sample_title',
+      'type' => 'annotation',
+    ],
+    'organism' => [
+      'term' => 'OBI:0100026',
+      'type' => 'annotation',
+    ],
+    'geo_accession__exp_' => [
+      'term' => 'NCBI_BioSample:geo_loc_exposure',
+      'type' => 'annotation'
+    ]
+  ];
 
   /**
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
+    if (array_key_exists('triggering_element', $form_state) and
+        $form_state['triggering_element']['#type'] == 'submit' and
+        ($form_state['triggering_element']['#value'] == 'Next Step' or
+    $form_state['triggering_element']['#value'] == 'Previous Step')) {
+      $form_state['storage']['current_step'] = $form_state['triggering_element']['#name'];
+    }
+
+    $current_step = 'step1';
+    if (array_key_exists('storage', $form_state)) {
+      $current_step = $form_state['storage']['current_step'];
+    }
+
+    // Based on the current stage, return the correct form.
+    switch ($current_step) {
+      case 'step1':
+        $form = $this->formStep1($form, $form_state);
+        break;
+      case 'step2':
+        $form = $this->formStep2($form, $form_state);
+        break;
+      case 'step3':
+        $form = $this->formStep3($form, $form_state);
+        break;
+    }
+
+    return $form;
+
+  }
+
+  /**
+   * Step1 form elements.
+   */
+  private function formStep1($form, &$form_state) {
+    global $user;
+
+    $class = get_called_class();
+
+    // Now to add the file + description based on our class.
+    $form['file'] = [
+      '#type' => 'fieldset',
+      '#title' => t($class::$upload_title),
+      '#description' => t($class::$upload_description),
+    ];
+
+    $existing_files = tripal_get_user_uploads($user->uid, $class::$file_types);
+    $fids = [];
+    if (count($existing_files) > 0) {
+      $fids = [0 => '--Select a file--'];
+      foreach ($existing_files as $fid => $file) {
+        $fids[$fid] = $file->filename . ' (' . tripal_format_bytes($file->filesize) . ') ';
+      }
+    }
+    $form['file']['file_upload_existing'] = [
+      '#type' => 'select',
+      '#title' => t('Existing Files'),
+      '#description' => t('You may select a file that is already uploaded.'),
+      '#options' => $fids,
+    ];
+
+    $form['file']['file_upload'] = [
+      '#type' => 'html5_file',
+      '#title' => '',
+      '#description' => 'Remember to click the "Upload" button below to send ' .
+      'your file to the server.  This interface is capable of uploading very ' .
+      'large files.  If you are disconnected you can return, reload the file and it ' .
+      'will resume where it left off.  Once the file is uploaded the "Upload ' .
+      'Progress" will indicate "Complete".  If the file is already present on the server ' .
+      'then the status will quickly update to "Complete".',
+      '#usage_type' => 'tripal_importer',
+      '#usage_id' => 0,
+      '#allowed_types' => $class::$file_types,
+      '#cardinality' => $class::$cardinality,
+    ];
+
+    $form['file']['file_local'] = [
+      '#title' => t('Server path'),
+      '#type' => 'textfield',
+      '#maxlength' => 5120,
+      '#description' => t('If the file is local to the Tripal server please provide the full path here.'),
+    ];
+
+    $analyses = chado_get_analysis_select_options(FALSE);
+    $form['analysis_id'] = [
+      '#title' => t('Analysis'),
+      '#type' => t('select'),
+      '#description' => t('Choose the analysis to which the uploaded data will be associated. ' .
+          'Why specify an analysis for a data load?  All data comes from some place, even if ' .
+          'downloaded from a website. By specifying analysis details for all data imports it ' .
+          'provides provenance and helps end user to reproduce the data set if needed. At ' .
+          'a minimum it indicates the source of the data.'),
+      '#required' => FALSE,
+      '#options' => $analyses,
+    ];
+
 
     $organisms = chado_get_organism_select_options(FALSE);
-
     $form['organism_id'] = [
       '#title' => t('Organism'),
       '#type' => t('select'),
       '#required' => TRUE,
       '#default_value' => 0,
-      '#description' => t('The organism from which the biosamples were collected.  Each upload must consist of samples from the same organism.'),
+      '#description' => t('The organism from which the biosamples were
+         collected.  Each upload must consist of samples from the same organism.'),
       '#options' => $organisms,
-
     ];
 
-    $form['biomaterial_cvterm_validator'] = [
-      '#type' => 'button',
-      '#value' => t('Check Biosamples'),
-      '#ajax' => [
-        'callback' => 'cvterm_validator_callback',
-        'wrapper' => 'cvterm_configuration_div',
-      ],
-      '#submit' => ['cvterm_validator_callback_submit'],
-    ];
 
-    $fields = [];
-    $property_values = [];
-
-    $description = t('After submitting uploading your file(s) and clicking the Check Biosamples button, you can configure individual cvterms for your biomaterial properties here.');
-
-    if ((isset($form_state['values']['file_local'])) || isset($form_state['values']['file_upload']) || isset($form_state['values']['file_upload_existing'])) {
-      $file_path = $this->findFile($form_state['values']);
-
-      $file_type = pathinfo($file_path, PATHINFO_EXTENSION);
-      $organism_id = $form_state['values']['organism_id'];
-      $analysis_id = $form_state['values']['analysis_id'];
-      $link = variable_get('website_base_url') . "admin/tripal/loaders/chado_cv/cvterm/add.";
-      $description = t('This section will allow you to check the CVterms associated with your biomaterial.  Ideally, each property should get the term for type and value from a Controlled Vocabulary (CV).  Alternatively you can create ad hoc terms in the biomaterialprop CV.  If the CVterm does not exist in a suitable CV, you can insert terms <a href = "' . $link . '"> using the Tripal CVterm loader.</a>');
-
-      $terms_to_check = NULL;
-      if ($file_type == 'xml') {
-        $terms_to_check = $this->parse_xml_biomaterial_file($file_path, $organism_id, $analysis_id);
-      }
-      else {
-        $terms_to_check = test_biosample_cvterms_flat($file_path);
-      }
-      if ($terms_to_check) {
-        $fields = $terms_to_check["attributes"];
-        $property_values = $terms_to_check["values"];
-      }
-    }
-
-    $form['cvterms'] = [
-      '#type' => 'fieldset',
-      '#prefix' => '<div id="cvterm_configuration_div">',
-      '#suffix' => '</div>',
-    ];
-
-    $form['cvterms']['cvterm_configuration'] = [
-      '#type' => 'fieldset',
-      '#title' => t('CVterm Field Configuration'),
-      '#description' => $description,
-
-      '#tree' => TRUE,
-    ];
-
-    $description = t('This section will allow you to check the CVterms associated with your biomaterial property <b>values</b>.  FOr example, if your property was "color", the property value might be "red".</a>');
-
-    $form['cvterms']['cvalue_configuration'] = [
-      '#type' => 'fieldset',
-      '#title' => t('CVterm Value Configuration'),
-      '#description' => $description,
-      '#tree' => TRUE,
-    ];
-
-    // Build the property cvterm and cvalue portion of the form.
-    foreach ($fields as $field) {
-      if (is_string($field)){
-        $field = [$field];
-      }
-
-      $form = $this->build_term_form_item($form, $field, "cvterm_configuration");
-    }
-
-    foreach ($property_values as $property_value) {
-      if (is_string($property_value)){
-        $property_value = [$property_value];
-      }
-      $form = $this->build_term_form_item($form, $property_value, "cvalue_configuration");
-    }
+    $form['next_step'] = array(
+      '#type' => 'submit',
+      '#name' => 'step2',
+      '#value' => 'Next Step',
+      '#weight' => 100,
+    );
 
     return $form;
   }
+
+  /**
+   *
+   */
+  private function formStep2($form, &$form_state) {
+//     $form['biomaterial_cvterm_validator'] = [
+//       '#type' => 'button',
+//       '#value' => t('Check Biosamples'),
+//       '#ajax' => [
+//         'callback' => 'cvterm_validator_callback',
+//         'wrapper' => 'cvterm_configuration_div',
+//       ],
+//       '#submit' => ['cvterm_validator_callback_submit'],
+//     ];
+
+    $form['attributes'] = [
+      '#type' => 'item',
+      '#title' => 'Instructions',
+      '#markup' => t('All attributes from the input file for the biomaterial
+         must be associated with a controlled
+         vocabulary term. Use the form below to make the association.
+         If an appropriate term exists and is not present you can add one
+         !here.  You can find terms at the !EBI. If you cannot
+         find an appropriate term, you can add one to the "local" vocabulary.
+         However, best practice is to use existing terms if possible.
+         If you leave any attribute without an association, then the property
+         will be excluded and will not be visible to end-users.',
+          [
+            '!here' => l('here', 'http://localhost/admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add', ['attributes' => ['target' => '_blank']]),
+            '!EBI' => l('EBI Ontology Lookup Service' ,'https://www.ebi.ac.uk/ols/index', ['attributes' => ['target' => '_blank']])
+          ]) .
+         '<p><i>Note:</i> Any attributes that do not get assigned a term
+      will not be imported with the biomaterial</p>',
+      '#weight' => -100,
+    ];
+
+    if ($this->file_extension != 'xml') {
+      drupal_set_message(t('If you are importing a CSV from NCBI\'s SRA Run
+        selector it will have attributes specific to a sequencing run that may not apply
+        to the biomaterial.  Be sure not to set terms for run-specific attributes
+        for a biomaterial.'), 'warning');
+    }
+
+    // For Ajax triggered form elements we don't want the fieldset to close
+    // so we need to know the delta value of the triggering parent to
+    // keep the fieldset open.
+    $triggered_parent = NULL;
+    if ($form_state['triggering_element']['#type'] == 'button' and
+        $form_state['triggering_element']['#value'] == 'Lookup Term') {
+      $triggered_parent = $form_state['triggering_element']['#parents'][0];
+      $triggered_parent = preg_replace('/select_button/', '', $triggered_parent);
+    }
+
+
+    $this->findFile($form_state);
+    $attributes = $this->getAttributes();
+    $delta = 0;
+    $has_sample_name = FALSE;
+    foreach ($attributes as $attr_name) {
+
+      // NCBI has changed the headers so to support consistency make
+      // them all lower case with underscores separating non alphanumeric
+      // characters
+      $attr_name_adj = preg_replace('/[^\w]/', '_', strtolower($attr_name));
+
+      if ($attr_name_adj == 'sample_name') {
+        $has_sample_name = TRUE;
+      }
+
+      $default_term_name = '';
+      $default_data_type = 0;
+      $term_id = '';
+      $term = NULL;
+
+      // Get the value from the form state
+      if (array_key_exists('values', $form_state) and array_key_exists('data_class' . $delta, $form_state['values'])) {
+        $default_data_type = $form_state['values']['term_match' . $delta]['data_class' . $delta];
+      }
+      // Get the default value for this attribute if the the form is being
+      // reloaded due to an error.
+      else if ($form_state['triggering_element']['#type'] == 'submit' and
+               $form_state['triggering_element']['#name'] == 'step3' and
+               $form_state['triggering_element']['#value'] == 'Next Step') {
+        // Do nothing, we can't get the $form_state['input'] from the API.
+      }
+      // Get the default value for this attribute if the form is being
+      // reloaded by returning from step 3.
+      elseif ($form_state['triggering_element']['#type'] == 'submit' and
+              $form_state['triggering_element']['#name'] == 'step2' and
+              $form_state['triggering_element']['#value'] == 'Previous Step') {
+          if (array_key_exists('biomaterial_key.' . $attr_name_adj . '.id', $form_state['storage'])) {
+            $default_data_type = $form_state['storage']['biomaterial_key.' . $attr_name_adj . '.class'];
+            $default_term_id = $form_state['storage']['biomaterial_key.' . $attr_name_adj . '.id'];
+          $default_term = chado_get_cvterm(['cvterm_id' => $default_term_id]);
+          $default_term_name = $default_term->name;
+        }
+      }
+      // Get the default value for the attribute if this is being reloaded
+      // from an AJAX submit for the lookup form.
+      elseif ($form_state['triggering_element']['#type'] == 'button' and
+              $form_state['triggering_element']['#value'] == 'Lookup Term') {
+        // Do nothing, let the API handle it.
+      }
+      // If we can't set the default value from a form resubmit then
+      // we'll try the global drupal variable that has some defaults.
+      else {
+        // First see if the term is found in the NCBI biosample vocab.
+        $term_id = 'NCBI_BioSample:' . $attr_name_adj;
+        $term = chado_get_cvterm(['id' => $term_id]);
+        if ($term) {
+          $default_term_name = $term->name;
+        }
+        elseif (array_key_exists($attr_name_adj, $this->default_terms)) {
+          $default_data_type = $this->default_terms[$attr_name_adj]['type'];
+          $term_id = $this->default_terms[$attr_name_adj]['term'];
+          $term = chado_get_cvterm(['id' => $term_id]);
+          if ($term) {
+            $default_term_name = $term->name;
+          }
+        }
+      }
+
+      $title = $attr_name;
+      if ($term) {
+        $title .= ' -- ' . $term_id;
+      }
+
+      // Add the lookup fieldset to the form.
+      tripal_get_term_lookup_form($form, $form_state, $default_term_name,
+          $title, '', FALSE,  '', $delta,
+          'tripal_biomaterial_loader_form_ajax_callback');
+
+      // Make sure the correct item is checked.
+      if ($term) {
+        $term_element_name = 'term-' . $term->cvterm_id . '-' . $delta;
+        $form['term_match' . $delta]['terms_list' . $delta][$term_element_name]['#default_value'] = TRUE;
+      }
+
+      // Add a few more items to the fieldset.
+      $form['term_match' . $delta]['data_class' . $delta] = [
+        '#type' => 'select',
+        '#options' => [
+          0 => 'Use defaults',
+          'quantitative' => 'Numerical',
+          'ordinal' => 'Numeric ordinal (coded categorical)',
+          'annotation' => 'Text: annotation text (not filterable)',
+          'categorical' => 'Text: categorical variable name',
+        ],
+        '#description' => t('We need to know the type of
+           data for each attribute because elements with numerical or categorical
+           are stored differently. This loader will do its best to determine the type but
+           you can specify the type here if needed.'),
+        '#default_value' => $default_data_type,
+      ];
+
+      // Make the form element collapsed.
+      $form['term_match' . $delta]['#collapsible'] = TRUE;
+      if ($triggered_parent !== "$delta") {
+        $form['term_match' . $delta]['#collapsed'] = TRUE;
+      }
+      $delta++;
+    }
+
+    if (!$has_sample_name) {
+      drupal_set_message(t('The attribute with the sample name could not be
+        identified in the input file. If a sample name is not provided the
+        loader cannot continue. Please set at least one attribute below to
+        use the "local:sample_name" term.'), 'error');
+    }
+
+    $form['next_step'] = array(
+      '#type' => 'submit',
+      '#name' => 'step3',
+      '#value' => 'Next Step',
+      '#weight' => 100,
+    );
+
+    return $form;
+  }
+
+  /**
+   *
+   */
+  private function formStep3($form, &$form_state) {
+    $form['next_step'] = array(
+      '#type' => 'submit',
+      '#name' => 'done',
+      '#value' => 'Submit',
+      '#weight' => 100,
+    );
+    return $form;
+  }
+
+  /**
+   * See TripalImporter::formValidate()
+   */
+  public function formValidate($form, &$form_state) {
+    $forward = TRUE;
+
+    // If the submit was clicked, iterate the stage.
+    $next_step = 'step1';
+    if ($form_state['triggering_element']['#type'] == 'submit') {
+      $next_step = $form_state['triggering_element']['#name'];
+    }
+
+    if (array_key_exists('triggering_element', $form_state) and
+        $form_state['triggering_element']['#type'] == 'submit') {
+          if ($form_state['triggering_element']['#value'] == 'Previous Step') {
+            $forward = FALSE;
+          }
+          $next_step = $form_state['triggering_element']['#name'];
+        }
+
+        if ($next_step == 'step2') {
+          $form_state['rebuild'] = TRUE;
+          if ($forward) {
+            $this->formValidateStep1($form, $form_state);
+          }
+        }
+        if ($next_step == 'step3') {
+          $form_state['rebuild'] = TRUE;
+          if ($forward) {
+            $this->formValidateStep2($form, $form_state);
+          }
+        }
+        if ($next_step == 'done') {
+          $this->formValidateStep3($form, $form_state);
+        }
+  }
+
+  /**
+   *
+   */
+  private function formValidateStep1($form, &$form_state) {
+
+    $file_local = NULL;
+    $file_upload = NULL;
+    $file_existing = NULL;
+    $organism_id = $form_state['values']['organism_id'];
+    $analysis_id = $form_state['values']['analysis_id'];
+
+    // Get the form values for the file.
+    $file_local = trim($form_state['values']['file_local']);
+    if ($file_local) {
+      // check to see if the file is located local to Drupal
+      $file_local = trim($file_local);
+      $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $file_local;
+      if (!file_exists($dfile)) {
+        // if not local to Drupal, the file must be someplace else, just use
+        // the full path provided
+        $dfile = $file_local;
+      }
+      if (!file_exists($dfile)) {
+        form_set_error('file_local', t("Cannot find the file on the system. Check that the file exists or that the web server has permissions to read the file."));
+      }
+    }
+
+    $file_upload = trim($form_state['values']['file_upload']);
+    $file_existing = trim($form_state['values']['file_upload_existing']);
+
+    // The user must provide at least an uploaded file or a local file path.
+    if (!$file_upload and !$file_local and !$file_existing) {
+      form_set_error('', t("You must provide a file."));
+    }
+
+    // Check if the file given is empty.
+    $this->findFile($form_state);
+    $fileSize = filesize($this->file_path);
+    if ($fileSize == 0) {
+      form_set_error('', t("The provided file is empty"));
+    }
+
+    // Put the values from this step of the form into storage.
+    $form_state['storage']['file_local'] = $file_local;
+    $form_state['storage']['file_upload'] = $file_upload;
+    $form_state['storage']['file_upload_existing'] = $file_existing;
+    $form_state['storage']['organism_id'] = $organism_id;
+    $form_state['storage']['analysis_id'] = $analysis_id;
+  }
+
+  /**
+   *
+   */
+  private function formValidateStep2($form, &$form_state) {
+    $delta = 0;
+    $this->findFile($form_state);
+    $attributes = $this->getAttributes();
+    foreach ($this->$attributes as $attr_name) {
+      $selected_term = tripal_get_term_lookup_form_result($form, $form_state,'',$delta);
+      if ($selected_term) {
+        $cvterm_id = $selected_term[0]->cvterm_id;
+        $form_state['storage']['biomaterial_key.' . $attr_name . '.id'] = $cvterm_id;
+      }
+      else {
+        $form_state['storage']['biomaterial_key.' . $attr_name . '.id'] = NULL;
+      }
+      $form_state['storage']['biomaterial_key.' . $attr_name . '.class'] = $form_state['values']['data_class' . $delta];
+      $delta++;
+    }
+  }
+  /**
+   *
+   */
+  private function formValidateStep3($form, &$form_state) {
+    // Put all of the values in storage back into the values array for
+    // job submission.
+    $this->findFile($form_state);
+    $attributes = $this->getAttributes();
+    $delta = 0;
+    foreach ($this->$attributes as $attr_name) {
+      if (array_key_exists('biomaterial_key.' . $attr_name . '.id', $form_state['storage'])) {
+        $form_state['values']['biomaterial_key.' . $attr_name . '.id'] = $form_state['storage']['biomaterial_key.' . $attr_name . '.id'];
+      }
+      if (array_key_exists('biomaterial_key.' . $attr_name . '.class', $form_state['storage'])) {
+        $form_state['values']['biomaterial_key.' . $attr_name . '.class'] = $form_state['storage']['biomaterial_key.' . $attr_name . '.class'];
+      }
+      if (array_key_exists('biomaterial_key.' . $attr_name . '.missing', $form_state['storage'])) {
+        $form_state['values']['biomaterial_key.' . $attr_name . '.missing'] = $form_state['storage']['biomaterial_key.' . $attr_name . '.missing'];
+      }
+      $delta++;
+    }
+    $form_state['values']['biomaterial_file_local'] = $form_state['storage']['file_local'];
+    $form_state['values']['biomaterial_file_upload'] = $form_state['storage']['file_upload'];
+    $form_state['values']['biomaterial_file_upload_existing'] = $form_state['storage']['file_upload_existing'];
+    $form_state['values']['organism_id'] = $form_state['storage']['organism_id'];
+    $form_state['values']['analysis_id'] = $form_state['storage']['analysis_id'];
+  }
+
+  private function getAttributes() {
+    if ($this->file_extension == 'xml') {
+      return $this->getXMLAttributes();
+    }
+    else {
+      return $this->getCSVAttributes();
+    }
+  }
+
+  private function getXMLAttributes() {
+
+  }
+
+  private function getCSVAttributes() {
+
+    // Open the file and get the first line. It should be the header line.
+    $attributes = [];
+    $separator = $this->flat_parsing[$this->file_extension]['separator'];
+    $enclosure = $this->flat_parsing[$this->file_extension]['enclosure'];
+    $fp = fopen($this->file_path, "r");
+    if ($fp) {
+      $attributes = fgetcsv($fp, 0, $separator, $enclosure);
+    }
+    return $attributes;
+
+  }
+
 
   /**
    * Builds the property to term mapping form area.  Reused for cvterms and
@@ -670,7 +1077,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     while ($line = fgetcsv($fp, 0, $separator, $enclosure)) {
       $cur_biosample++;
 
-      $this->logMessage('Loading Biosample !curr of !num', [
+      $this->logMessage('Loading Biosample !name, !curr of !num', [
+        '!name' => $line[$biomaterial_headers['sample_name']],
         '!curr' => $cur_biosample,
         '!num' => $num_biosamples,
       ]);
@@ -830,18 +1238,23 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
    *
    * @return null|string
    */
-  private function findFile($values) {
-
-    $file_path = NULL;
+  private function findFile($form_state) {
+    if (array_key_exists('values', $form_state) and
+        array_key_exists('file_local', $form_state['values'])) {
+      $values = $form_state['values'];
+    }
+    else {
+      $values = $form_state['storage'];
+    }
 
     if (!empty($values['file_local'])) {
-      $file_path = trim($values['file_local']);
+      $this->file_path = trim($values['file_local']);
     }
     if (!empty($values['file_upload'])) {
       $fid = trim($values['file_upload']);
       if (!empty($fid)) {
         $file = file_load($fid);
-        $file_path = base_path() . drupal_realpath($file->uri);
+        $this->file_path = base_path() . drupal_realpath($file->uri);
       }
     }
 
@@ -849,10 +1262,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $fid = $values['file_upload_existing'];
       if (!empty($fid)) {
         $file = file_load($fid);
-        $file_path = base_path() . drupal_realpath($file->uri);
+        $this->file_path = base_path() . drupal_realpath($file->uri);
       }
     }
-    return $file_path;
+
+    if ($this->file_path) {
+      $this->file_extension = pathinfo($this->file_path, PATHINFO_EXTENSION);
+    }
   }
 
   /**
@@ -1100,4 +1516,17 @@ function test_biosample_cvterms_flat(
 function cvterm_validator_callback(&$form, &$form_state) {
 
   return $form['cvterms'];
+}
+
+
+/**
+ * Implements an AJAX callback for the tripal_chado_vocab_select_term_form.
+ *
+ * @ingroup tripal_terms_api
+ */
+function tripal_biomaterial_loader_form_ajax_callback($form, $form_state) {
+  $ajax_wrapper_id = $form_state['triggering_element']['#ajax']['wrapper'];
+
+  $delta = $form_state['storage'][$ajax_wrapper_id]['term_match_delta'];
+  return $form['term_match' . $delta];
 }
