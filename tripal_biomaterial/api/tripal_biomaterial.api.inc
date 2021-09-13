@@ -785,9 +785,9 @@ function tripal_biomaterial_update_prop_terms() {
   foreach ($xml_obj->Attribute as $attribute) {
     tripal_insert_cvterm([
       'name' => $attribute->HarmonizedName,
-      'def' => $attribute->Description,
+      'definition' => $attribute->Description,
       'cv_name' => 'NCBI Biosample Attributes',
-      'db_name' => 'NCBI_BioSample',
+      'db_name' => 'NCBI_BioSample_Terms',
     ]);
   }
 }
