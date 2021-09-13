@@ -336,15 +336,11 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
    *
    */
   private function formStep2($form, &$form_state) {
-//     $form['biomaterial_cvterm_validator'] = [
-//       '#type' => 'button',
-//       '#value' => t('Check Biosamples'),
-//       '#ajax' => [
-//         'callback' => 'cvterm_validator_callback',
-//         'wrapper' => 'cvterm_configuration_div',
-//       ],
-//       '#submit' => ['cvterm_validator_callback_submit'],
-//     ];
+
+    $this->setFilePath($form_state);
+    $this->openFile();
+    $this->setAttributes();
+    $this->closeFile();
 
     $form['attributes'] = [
       '#type' => 'item',
@@ -383,12 +379,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $triggered_parent = $form_state['triggering_element']['#parents'][0];
       $triggered_parent = preg_replace('/select_button/', '', $triggered_parent);
     }
+    dpm($this->attributes);
 
-
-    $this->setFilePath($form_state);
-    $this->openFile();
-    $this->setAttributes();
-    $this->closeFile();
     $delta = 0;
     $has_sample_name = FALSE;
     foreach ($this->attributes as $attr_name => $attr_name_adj) {
@@ -1473,6 +1465,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
         if (strcmp($this->file->name, 'BioSample') == 0) {
           $sample = $this->parseXMLBioSample();
+          dpm($sample);
           $num_biosamples++;
         }
 
@@ -1506,12 +1499,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         }
       }
       // If we're at the </BioSample> element then we're done.
-      elseif ($this->graphml->nodeType == XMLReader::END_ELEMENT) {
-        if (strcmp($this->graphml->name, 'BioSample') == 0) {
+      elseif ($this->file->nodeType == XMLReader::END_ELEMENT) {
+        if (strcmp($this->file->name, 'BioSample') == 0) {
           break;
         }
       }
     }
+    return $sample;
   }
   /**
    *
@@ -1521,7 +1515,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       if ($this->file->nodeType == XMLReader::ELEMENT) {
         if (strcmp($this->file->name, 'Id') == 0) {
           $db = $this->file->getAttribute('db');
-          $accession = $this->value;
+          $this->file->read();
+          $accession = $this->file->value;
           switch ($db) {
             case 'GEO':
               $db = 'NCBI GEO';
@@ -1545,8 +1540,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       }
       // If we're at the </Ids> element then we're done.
-      elseif ($this->graphml->nodeType == XMLReader::END_ELEMENT) {
-        if (strcmp($this->graphml->name, 'Ids') == 0) {
+      elseif ($this->file->nodeType == XMLReader::END_ELEMENT) {
+        if (strcmp($this->file->name, 'Ids') == 0) {
           break;
         }
       }
@@ -1568,8 +1563,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       }
       // If we're at the </Description> element then we're done.
-      elseif ($this->graphml->nodeType == XMLReader::END_ELEMENT) {
-        if (strcmp($this->graphml->name, 'Description') == 0) {
+      elseif ($this->file->nodeType == XMLReader::END_ELEMENT) {
+        if (strcmp($this->file->name, 'Description') == 0) {
           break;
         }
       }
@@ -1586,8 +1581,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       }
       // If we're at the </Contact> element then we're done.
-      elseif ($this->graphml->nodeType == XMLReader::END_ELEMENT) {
-        if (strcmp($this->graphml->name, 'Contact') == 0) {
+      elseif ($this->file->nodeType == XMLReader::END_ELEMENT) {
+        if (strcmp($this->file->name, 'Contact') == 0) {
           break;
         }
       }
@@ -1604,8 +1599,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
       }
       // If we're at the </Owner> element then we're done.
-      elseif ($this->graphml->nodeType == XMLReader::END_ELEMENT) {
-        if (strcmp($this->graphml->name, 'Owner') == 0) {
+      elseif ($this->file->nodeType == XMLReader::END_ELEMENT) {
+        if (strcmp($this->file->name, 'Owner') == 0) {
           break;
         }
       }
@@ -1619,36 +1614,25 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     while ($this->file->read()) {
       if ($this->file->nodeType == XMLReader::ELEMENT) {
 
+        if (strcmp($this->file->name, 'Attribute') == 0) {
+          $attr_name = $this->file->getAttribute('attribute_name');
+          $this->file->read();
+          $value = $this->file->value;
 
+          $this->attributes[$attr_name] = $attr_name;
+          $this->$default_terms[$attr_name] = [
+            'term' => 'NCBI_BioSample_Terms:' . $attr_name,
+          ];
+        }
       }
       // If we're at the </Attributes> element then we're done.
-      elseif ($this->graphml->nodeType == XMLReader::END_ELEMENT) {
-        if (strcmp($this->graphml->name, 'Attributes') == 0) {
+      elseif ($this->file->nodeType == XMLReader::END_ELEMENT) {
+        if (strcmp($this->file->name, 'Attributes') == 0) {
           break;
         }
       }
     }
   }
-
-  /**
-   *
-   */
-  private function parseXMLAttribute(&$sample){
-    while ($this->file->read()) {
-      if ($this->file->nodeType == XMLReader::ELEMENT) {
-
-
-      }
-      // If we're at the </Attribute> element then we're done.
-      elseif ($this->graphml->nodeType == XMLReader::END_ELEMENT) {
-        if (strcmp($this->graphml->name, 'Attribute') == 0) {
-          break;
-        }
-      }
-    }
-  }
-
-
 
   /**
    * @param $file_path
