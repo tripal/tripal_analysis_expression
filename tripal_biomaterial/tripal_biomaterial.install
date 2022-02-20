@@ -293,6 +293,7 @@ function tripal_biomaterial_update_7302() {
   try {
 
     // Add additional cvterms.
+    tripal_biomaterial_add_cvs();
     tripal_biomaterial_add_dbs();
     tripal_biomaterial_add_cvterms();
 

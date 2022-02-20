@@ -379,7 +379,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $triggered_parent = $form_state['triggering_element']['#parents'][0];
       $triggered_parent = preg_replace('/select_button/', '', $triggered_parent);
     }
-    dpm($this->attributes);
 
     $delta = 0;
     $has_sample_name = FALSE;
@@ -637,6 +636,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     $fileSize = filesize($this->file_path);
     if ($fileSize == 0) {
       form_set_error('', t("The provided file is empty"));
+    }
+
+    if (!$organism_id) {
+      form_set_error('organism_id', t("The organism field is required."));
     }
 
     // Put the values from this step of the form into storage.
@@ -1465,7 +1468,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
         if (strcmp($this->file->name, 'BioSample') == 0) {
           $sample = $this->parseXMLBioSample();
-          dpm($sample);
           $num_biosamples++;
         }
 
@@ -1520,6 +1522,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           switch ($db) {
             case 'GEO':
               $db = 'NCBI GEO';
+              // The NCBI SRA Run selector will list the GEO name as the
+              // sample name.
+              $this->attributes['sample_name'] = 'sample_name';
               break;
             case 'SRA':
               $db = 'NCBI SRA';
@@ -1620,9 +1625,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           $value = $this->file->value;
 
           $this->attributes[$attr_name] = $attr_name;
-          $this->$default_terms[$attr_name] = [
-            'term' => 'NCBI_BioSample_Terms:' . $attr_name,
-          ];
         }
       }
       // If we're at the </Attributes> element then we're done.
