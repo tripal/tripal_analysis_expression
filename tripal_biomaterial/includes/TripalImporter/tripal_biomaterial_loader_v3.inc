@@ -19,14 +19,27 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
   public static $upload_description = "Please upload an NCBI BioSample file.  This
     can be in XML with an .xml extension, or flat file format with a .tsv or .csv
-    extension.<br><br> If loading a CSV/TSV flat file, the first line must be the
-    column name.  The only field that is required to create a biosample is the name
-    (column: sample_name). It is recommended that a description (column: description),
-    biomaterial provider (column: biomaterial_provider), accession (column: biomaterial_accession),
-    treatment (column: treatment), and tissue (column: tissue) also be provided.
-.  <br>This loader will create dbxref records for the following
-    column headers if present: biosample_accession, bioproject_accession, and
-    sra_accession. Other accessions should be uploaded using a bulk loader template. ";
+    extension.<br><br> 
+    If loading a CSV/TSV flat file, the first line must contain the
+    column names.  The only column that is required is the sample name
+    (provided as 'sample_name'). The following other fields are recognized by the the loader:
+    <ul>
+      <li>'description': a human-readable description for the sample</li>
+      <li>'biomaterial_provider': the name of an individual, group or institution responsible for the sample</li>
+      <li>'tissue': the name of the sample tissue</li>
+      <li>'treatment': the name of the treatment applied to the sample</li>
+    </ul>    
+    <br>You may include any other column headers. This loader will allow you to associate any column header 
+    with appropriate controlled vocabulary terms that are already in the database.  Also, this loader will create database cross reference (i.e., dbxref) records for the following
+    column headers if present: 
+    <ul>
+      <li>'biosample_accession': links to the NCBI BioSample accession</li> 
+      <li>'bioproject': links to the NCBI BioProject accession</li>
+      <li>'sra_study': links to the NCBI SRA Study accession</li>
+      <li>'run': links to the NCBI SRA Run accession</li>
+      <li>'geo_accession__exp': links to the NCBI GEO Experiment accession</li>
+      <li>'experiment': links to the NCBI SRA Experiment accession</li>
+    </ul>";
 
   public static $upload_title = 'Import new Biosamples/Biomaterials';
 
@@ -74,11 +87,19 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       'term' => 'local:ncbi_biosample_accession',
       'type' => 'annotation',
     ],
+    'ncbi_biosample_accession' => [
+      'term' => 'local:ncbi_biosample_accession',
+      'type' => 'annotation',      
+    ],
     'biomaterial_accession' => [
       'term' => 'local:ncbi_biosample_accession',
       'type' => 'annotation',
     ],
     'bioproject' => [
+      'term' => 'local:ncbi_bioproject_accession',
+      'type' => 'annotation',
+    ],
+    'bioproject_id' => [
       'term' => 'local:ncbi_bioproject_accession',
       'type' => 'annotation',
     ],
@@ -113,8 +134,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
   ];
 
   /**
-   * These terms are cross reference attribtues for the biosmaple.
-   * Do not list here cross-references for bioprojects, biosamples, etc as
+   * These terms are cross reference attribtues for the biosample.
+   * Do not list here cross-references for bioprojects, etc as
    * those should be properties and not a cross reference for the biosample.
    * The key is the vocabulary term mapped to an attribute in the input file
    * and the value is the database name to which the accession belongs.
@@ -122,7 +143,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
   private $xref_terms = [
     'local:biosample_accession' => 'NCBI BioSample',
     'local:ncbi_biosample_accession' => 'NCBI BioSample',
-    'data:1147' => 'NCBI GEO',
   ];
 
   /**
@@ -740,11 +760,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
    *
    */
   private function closeFile(){
-    if ($this->file_extension == 'xml') {
-      $this->file->close();
-    }
-    else {
-      fclose($this->file);
+    if ($this->file) {
+      if ($this->file_extension == 'xml') {
+        $this->file->close();
+      }
+      else {
+        fclose($this->file);
+      }
     }
   }
 
@@ -1007,38 +1029,38 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       // Create the cache file for storing parsed GFF entries.
       $this->openCacheFile();
 
-      $this->logMessage("Step  1 of 11: Caching input file...                             ");
+      $this->logMessage("Step  1 of 10: Caching input file...                             ");
       $this->parseFile();
 
       $this->logMessage("               Found !num_elements samples                       ",
           ['!num_elements' => number_format(count(array_keys($this->samples)))]);
 
-      $this->logMessage("Step  2 of 11: Find existing samples...                          ");
+      $this->logMessage("Step  2 of 10: Find existing samples...                          ");
       $this->findSamples();
 
-      $this->logMessage("Step  3 of 26: Clear attributes of existing samples...           ");
+      $this->logMessage("Step  3 of 10: Clear attributes of existing samples...           ");
       $this->deleteSampleData();
 
-      $this->logMessage("Step  3 of 11: Insert samples...                                 ");
+      $this->logMessage("Step  3 of 10: Insert samples...                                 ");
       $this->insertSamples();
 
-      $this->logMessage("Step  5 of 11: Find sample IDs...                                ");
+      $this->logMessage("Step  5 of 10: Find sample IDs...                                ");
       $this->findSamples();
 
-      $this->logMessage("Step  6 of 11: Insert sample properties...                       ");
+      $this->logMessage("Step  6 of 10: Insert sample properties...                       ");
       $this->insertSampleProps();
 
-      $this->logMessage("Step  7 of 26: Get cross references...                           ");
+      $this->logMessage("Step  7 of 10: Get cross references...                           ");
       $this->prepXRefDBs();
       $this->findDbxrefs();
 
-      $this->logMessage("Step  8 of 26: Insert new cross references...                    ");
+      $this->logMessage("Step  8 of 10: Insert new cross references...                    ");
       $this->insertDbxrefs();
 
-      $this->logMessage("Step  9 of 26: Get new cross references IDs...                   ");
+      $this->logMessage("Step  9 of 10: Get new cross references IDs...                   ");
       $this->findDbxrefs();
 
-      $this->logMessage("Step 10 of 26: Insert sample cross references...                 ");
+      $this->logMessage("Step 10 of 10: Insert sample cross references...                 ");
       $this->insertSampleDbxrefs();
 
     }
@@ -1154,11 +1176,11 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       $total++;
       $i++;
 
-      // Iterate through all of the properties of this feature.
+      // Iterate through all of the properties of this sample.
       foreach ($sample as $key => $value) {
         if (array_key_exists($key, $this->terms) and preg_match('/:/', $key)) {
 
-          // Don't save the following terms as they are saved elsewhere..
+          // Don't save the following terms as they are saved elsewhere.
           if (in_array($key, $skip_attrs)) {
             continue;
           }
@@ -1522,15 +1544,13 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           switch ($db) {
             case 'GEO':
               $db = 'NCBI GEO';
-              // The NCBI SRA Run selector will list the GEO name as the
-              // sample name.
-              $this->attributes['sample_name'] = 'sample_name';
               break;
             case 'SRA':
               $db = 'NCBI SRA';
               break;
             case 'BioSample':
               $db = 'NCBI BioSample';
+              $this->attributes['sample_name'] = 'sample_name';
               break;
             default:
               // TODO: what to do.
@@ -2157,7 +2177,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       }
       if (array_key_exists('biomaterial_file_upload', $arguments) and
           $arguments['biomaterial_file_upload']) {
-        $file = file_load($arguments['grapml_file_upload']);
+        $file = file_load($arguments['biomaterial_file_upload']);
         $this->file_path =  drupal_realpath($file->uri);
       }
       if (array_key_exists('biomaterial_file_local', $arguments) and
@@ -2197,7 +2217,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
     if ($this->file_path) {
       $this->file_extension = pathinfo($this->file_path, PATHINFO_EXTENSION);
-    }
+    }   
 
   }
 
