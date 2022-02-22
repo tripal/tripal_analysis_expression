@@ -1641,11 +1641,25 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
         if (strcmp($this->file->name, 'Attribute') == 0) {
           $attr_name = $this->file->getAttribute('attribute_name');
+          
+          // NCBI has changed the headers so to support consistency make
+          // them all lower case with underscores separating non alphanumeric
+          // characters
+          $adj_attr_name = preg_replace('/[^\w]/', '_', strtolower($attr_name));          
+          $this->attributes[$attr_name] = $adj_attr_name;
+
+          // Get the value.
           $this->file->read();
           $value = $this->file->value;
-
-          $sample[$attr_name] = $value;
-          $this->attributes[$attr_name] = $attr_name;
+          
+          // Add to the sample array the value but with the proper CVterm t key.
+          $arg_key = 'biomaterial_key.' . $adj_attr_name . '.id';
+          if (array_key_exists($arg_key, $this->arguments['run_args']) and
+              $this->arguments['run_args'][$arg_key]) {
+            $term = $this->terms[$adj_attr_name];
+            $term_id = $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession;
+            $sample[$term_id] = $value;
+          }
         }
       }
       // If we're at the </Attributes> element then we're done.
