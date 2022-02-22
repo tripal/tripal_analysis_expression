@@ -217,7 +217,15 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
   /**
    * Caches the processed feature from a GFF3 file
    */
-  private function cacheSample($name, $sample) {
+  private function cacheSample($sample) {
+    $name = '';
+    if (array_key_exists('local:sample_name', $sample)) {
+      $name = $sample['local:sample_name'];
+    }
+    if (array_key_exists('NCBI_BioSample_Terms:sample_name', $sample)) {
+      $name = $sample['NCBI_BioSample_Terms:sample_name'];
+    }
+    
     // Make sure we're at the end of the file.
     fseek($this->cache_file, 0, SEEK_END);
 
@@ -746,7 +754,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
   /**
    *
    */
-  private function openFile() {
+  private function openFile() {   
     if ($this->file_extension == 'xml') {
       $this->file = new XMLReader();
       $this->file->open($this->file_path);
@@ -1024,12 +1032,14 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     $this->openFile();
     $this->setAttributes();
     $this->setTerms();
+    $this->closeFile();
 
     try {
       // Create the cache file for storing parsed GFF entries.
       $this->openCacheFile();
 
       $this->logMessage("Step  1 of 10: Caching input file...                             ");
+      $this->openFile();
       $this->parseFile();
 
       $this->logMessage("               Found !num_elements samples                       ",
@@ -1415,9 +1425,9 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
   /**
    *
    */
-  private function parseFile() {
-    if ($this->extension == "xml") {
-      $this->parseXML();
+  private function parseFile() {   
+    if ($this->file_extension == "xml") {
+      $this->parseXMLBioSampleSet();
     }
     else {
       $this->parseCSV();
@@ -1466,16 +1476,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         }
       }
 
-      $sample_name = '';
-      if (array_key_exists('local:sample_name', $sample)) {
-        $sample_name = $sample['local:sample_name'];
-        unset($sample['local_samle_name']);
-      }
-      if (array_key_exists('NCBI_BioSample_Terms:sample_name', $sample)) {
-        $sample_name = $sample['NCBI_BioSample_Terms:sample_name'];
-        unset($sample['local_samle_name']);
-      }
-      $this->cacheSample($sample_name, $sample);
+      $this->cacheSample($sample);
     }
   }
 
@@ -1490,12 +1491,10 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
         if (strcmp($this->file->name, 'BioSample') == 0) {
           $sample = $this->parseXMLBioSample();
+          if (!$quick) {           
+            $this->cacheSample($sample);
+          }
           $num_biosamples++;
-        }
-
-        // Skip the other biosamples if this is a quick parse.
-        if ($quick == TRUE and $num_biosamples > 0) {
-          return;
         }
       }
     }
@@ -1528,7 +1527,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           break;
         }
       }
-    }
+    }    
     return $sample;
   }
   /**
@@ -1551,6 +1550,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
             case 'BioSample':
               $db = 'NCBI BioSample';
               $this->attributes['sample_name'] = 'sample_name';
+              $sample['NCBI_BioSample_Terms:sample_name'] = $accession;               
               break;
             default:
               // TODO: what to do.
@@ -1644,6 +1644,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           $this->file->read();
           $value = $this->file->value;
 
+          $sample[$attr_name] = $value;
           $this->attributes[$attr_name] = $attr_name;
         }
       }
@@ -2171,7 +2172,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     if (!$form_state) {
       $arguments = $this->arguments['run_args'];
       if (array_key_exists('biomaterial_file_upload_existing', $arguments) and
-          $arguments['biomaterial_file_upload_existing']) {
+          $arguments['biomaterial_file_upload_existing']) {           
         $file = file_load($arguments['biomaterial_file_upload_existing']);
         $this->file_path = drupal_realpath($file->uri);
       }
@@ -2182,7 +2183,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       }
       if (array_key_exists('biomaterial_file_local', $arguments) and
           $arguments['biomaterial_file_local']) {
-            $this->file_path = $arguments['biomaterial_file_local'];
+        $this->file_path = $arguments['biomaterial_file_local'];
       }
     }
     // Set the file info if this loader is running via the job creation form.
@@ -2218,109 +2219,6 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     if ($this->file_path) {
       $this->file_extension = pathinfo($this->file_path, PATHINFO_EXTENSION);
     }   
-
-  }
-
-
-  /**
-   *
-   */
-  private function parse_xml_biomaterial_file($file_path) {
-
-    $xml = $this->read_xml_file($file_path);
-
-    if (!$xml) {
-      return;
-    }
-
-    $num_biosamples = count($xml->BioSample);
-    $biomaterial_names = [];
-
-    // Make sure there are no duplicate biomaterials.
-    for ($i = 0; $i < $num_biosamples; $i++) {
-      $biomaterial_names[] = $xml->BioSample[$i]->Ids->Id[1];
-    }
-
-    $attribute_list = [];
-
-    foreach ($xml->BioSample as $biosample) {
-
-      // Dont get confused here-> we actually look for a node called "attributes" with child node "attribute".
-      $attributes = $biosample->Attributes->Attribute;
-      foreach ($attributes as $key => $attribute_object) {
-
-        $attribute_name_index = (string) $attribute_object->attributes()->attribute_name;
-
-        // The list of attribute names, ie "name = tissue", "display_name = Tissue".
-        $attributes = $attribute_object->attributes();
-        // The string value ie "leaf".
-        $property_value = $attribute_object->__toString();
-        $this_attribute = [];
-
-        foreach ($attributes as $property_sub_name => $property_sub_value) {
-
-          $value_string = (string) $property_sub_value;
-
-          // The attribute has multiple names: machine readable, human readable.  let's pass all of them to our tool so that any and all matches are found.
-          $this_attribute[$property_sub_name] = $value_string;
-        }
-
-        $attribute_list["attributes"][$attribute_name_index] = $this_attribute;
-        $attribute_list["values"][] = $property_value;
-      }
-    }
-
-    return $attribute_list;
-  }
-
-  /**
-   * Reads the XML file and raises any errors for initial parsing.
-   *
-   * @param $file
-   *
-   * @return null|\SimpleXMLElement
-   */
-  private function read_xml_file($file) {
-    $xml_raw = file_get_contents($file);
-
-    if (!$xml_raw) {
-      $this->logMessage('Unable to read XML file.', [], TRIPAL_ERROR);
-    }
-    $xml = simplexml_load_string($xml_raw);
-
-    if (!$xml) {
-      $message = "Error reading xml.\n";
-      foreach (libxml_get_errors() as $error) {
-        $message .= $error;
-      }
-      $this->logMessage($message, [], TRIPAL_ERROR);
-      return NULL;
-    }
-
-    if (!$xml->BioSample) {
-      $this->logMessage("XML must contain a BioSample tag.  Check your XML file and try again.", [], TRIPAL_ERROR);
-      return NULL;
-    }
-
-    // Make sure there are not duplicate biomaterials.
-    $biomaterial_names = [];
-    for ($i = 0; $i < count($xml->Biosample); $i++) {
-      $Ids = $xml->BioSample[$i]->Ids;
-      $biomaterial_name = $this->find_primary_ID($Ids);
-      $biomaterial_names[] = $biomaterial_name;
-    }
-
-    if (count($sample_repeats = array_diff_assoc($biomaterial_names, array_unique($biomaterial_names))) > 0) {
-      $message = "There are multiple instance of the following " . "Sample name(s) in the biomaterial file:\n";
-      foreach ($sample_repeats as $repeat) {
-        $message .= "  " . $repeat . "\n";
-      }
-      $message .= "Please make sure there is only one instance of each Sample name in the biomaterial file.\n";
-      $this->logMessage($message, [], TRIPAL_ERROR);
-      return NULL;
-    }
-
-    return $xml;
 
   }
 }
