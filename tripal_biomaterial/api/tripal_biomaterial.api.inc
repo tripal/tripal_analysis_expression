@@ -105,8 +105,13 @@ function tripal_expression_element($arraydesign_id, $feature_id) {
  * @ingroup tripal_analysis_expression
  */
 
-function tripal_expression_elementresult($element_id, $quantification_id, $signal) {
+function tripal_expression_elementresult($element_id, $quantification_id, $signal, $missing_value = '') {
+  
   if (empty($element_id) || !$element_id) {
+    return NULL;
+  }
+  
+  if ($missing_value and $signal == $missing_value) {
     return NULL;
   }
 
