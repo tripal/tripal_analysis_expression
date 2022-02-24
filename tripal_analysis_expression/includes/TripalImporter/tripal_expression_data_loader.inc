@@ -1372,7 +1372,8 @@ class tripal_expression_data_loader extends TripalImporter {
     $num_batches = (int) ($num_values / $batch_size) + 1;
     
     $this->setItemsHandled(0);
-    $this->setTotalItems($num_values);
+    $this->setInterval(1);
+    $this->setTotalItems($num_batches);
     
     $init_sql = "
       INSERT INTO {elementresult}
@@ -1393,15 +1394,10 @@ class tripal_expression_data_loader extends TripalImporter {
       for ($v = 0; $v < count($this->sample_order); $v++) {
         $total++;
         $i++;    
-        $skip = FALSE;       
         
         // The feature may be missing in some column-based input files
         // and if so, won't have an entry in the values array.
-        if (!array_key_exists($v, $values)) {
-          $skip = TRUE;
-        }               
-        
-        if (!$skip) {
+        if (array_key_exists($v, $values)) {
           
           // Get the sample name and the value for this sample.
           $sample_name = $this->sample_order[$v];          
@@ -1417,13 +1413,13 @@ class tripal_expression_data_loader extends TripalImporter {
         }
                
         // If we've reached the size of the batch then let's do the insert.
-        if ($i = $batch_size or $total == $num_values) {
+        if ($i == $batch_size or $total == $num_values) {
           if (count($args) > 0) {
             $sql = rtrim($sql, ",\n");
             $sql = $init_sql . $sql;
             chado_query($sql, $args);
           }
-          $this->setItemsHandled($total);
+          $this->setItemsHandled($batch_num);
           $batch_num++;
           
           // Now reset all of the varables for the next batch.
