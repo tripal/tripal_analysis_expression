@@ -1372,7 +1372,6 @@ class tripal_expression_data_loader extends TripalImporter {
     $num_batches = (int) ($num_values / $batch_size) + 1;
     
     $this->setItemsHandled(0);
-    $this->setInterval(1);
     $this->setTotalItems($num_batches);
     
     $init_sql = "
@@ -1580,7 +1579,7 @@ class tripal_expression_data_loader extends TripalImporter {
       'name' => 'Not provided',
     ]);
     if ($channel->find() == 0) {
-      $channel->setValue('description', 'Caution: This is a generic channel created by the expression module. This channel may be a dependency for an expression analysis. Delete with caution.');
+      $channel->setValue('definition', 'Caution: This is a generic channel created by the expression module. This channel may be a dependency for an expression analysis. Delete with caution.');
       $channel->insert();
     }
     
