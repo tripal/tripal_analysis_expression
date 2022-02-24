@@ -460,14 +460,14 @@ class tripal_expression_data_loader extends TripalImporter {
         }
         $feature_name = array_shift($values);
         if (!array_key_exists($feature_name, $this->features)) {
-          $feature = [
-            'name' => $feature_name,
-            'findex' => [$fh_index => $findex],
-          ];
+          $feature = [];
+          $feature['name'] = $feature_name;
+          $feature['findex'] = [];
+          $feature['findex'][$fh_index] = $findex;
           $this->features[$feature_name] = $feature;
         }
         else {
-          $this->features[$feature_name][$fh_index] = $findex;
+          $this->features[$feature_name]['findex'][$fh_index] = $findex;
         }
       }            
     }    
@@ -1343,6 +1343,7 @@ class tripal_expression_data_loader extends TripalImporter {
     $batch_num = 1;
     $sql = '';
     $args = [];
+    $value = NULL;
     foreach ($this->features as $name => $feature) {  
       
       // Now iterate through the values and add the items to be inserted.
@@ -1350,28 +1351,27 @@ class tripal_expression_data_loader extends TripalImporter {
       for ($v = 0; $v < count($this->sample_order); $v++) {
         $total++;
         $i++;    
-        $skip = FALSE;
+        $skip = FALSE;       
         
         // The feature may be missing in some column-based input files
         // and if so, won't have an entry in the values array.
         if (!array_key_exists($v, $values)) {
           $skip = TRUE;
-        }
-        
-        // Get the sample name and the value for this sample.
-        $sample_name = $this->sample_order[$v];
-        $value = $values[$v];
-        
-        // Check to see if the value is okay for inserting (i.e. is not missing).
-        if (!$this->checkValue($value)) {
-          $skip = TRUE;
-        }
+        }               
         
         if (!$skip) {
-          $sql .= "(:element_id_$i, :quantification_id_$i, :signal_$i),\n";
-          $args[":element_id_$i"] = $feature['element_id'];
-          $args[":quantification_id_$i"] = $this->samples[$sample_name]['quantification_id'];
-          $args[":signal_$i"] = $value;
+          
+          // Get the sample name and the value for this sample.
+          $sample_name = $this->sample_order[$v];          
+          $value = $values[$v];
+                    
+          // Check to see if the value is okay for inserting (i.e. is not missing).
+          if ($this->checkValue($value)) {
+            $sql .= "(:element_id_$i, :quantification_id_$i, :signal_$i),\n";
+            $args[":element_id_$i"] = $feature['element_id'];
+            $args[":quantification_id_$i"] = $this->samples[$sample_name]['quantification_id'];
+            $args[":signal_$i"] = $value;
+          }
         }
                
         // If we've reached the size of the batch then let's do the insert.
