@@ -39,20 +39,24 @@ class tripal_expression_data_loader extends TripalImporter {
   ];
 
   public static $file_required = TRUE;
+  
+  /**
+   * Indicates the number of files that can be uploaded. 0 means unlimited.
+   */
   public static $cardinality = 0;
     
   /**
-   * The organism ChadoRecord object that corresponds to the $organism_id value.
+   * The ChadoRecord object that corresponds to the organism.
    */
   private $organism = NULL;
   
   /**
-   * The arraaydesign ChadoRecord object.
+   * The ChadoRecord object that corresponds to the arraydesign..
    */
   private $ararydesign = NULL;
     
   /**
-   * The analysis ChadoRecord object that corresponds to the $analysis_id value.
+   * The ChadoRecord object that corresponds to the $analysis.
    */
   private $analysis = NULL;
   
@@ -70,6 +74,44 @@ class tripal_expression_data_loader extends TripalImporter {
    * The associative array for holding information about the features..
    */
   private $features = [];
+  
+  
+  /**
+   * The string used to indicate a missing value.
+   */
+  private $missing_value = NULL;
+  
+  /**
+   * The feature type (e.g., gene, mRNA, etc.)
+   */
+  private $seqtype = NULL;
+  
+  /**
+   * Indicates the column in the feature table to use to match 
+   * features: name, or uniquename. 
+   */
+  private $seqname = NULL;
+  
+  
+  /**
+   * The name of the quantification units, e.g., FPKM, RPKM, etc.
+   */
+  private $quantificationunits = NULL;
+  
+  /**
+   * The type of file: 'col' (for column files) or 'mat' (for matrix file)
+   */
+  private $filetype = NULL;
+  
+  /**
+   * The file delimiter: comma or tab.
+   */
+  private $delim = NULL;
+  
+  /**
+   * The flag indicating if BioMaterials should be created.
+   */
+  private $create_biomaterials = NULL;
   
   /**
    * @see TripalImporter::form()
