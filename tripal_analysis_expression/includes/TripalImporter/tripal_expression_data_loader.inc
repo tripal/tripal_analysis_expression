@@ -1227,7 +1227,7 @@ class tripal_expression_data_loader extends TripalImporter {
       $arraydesign->setValues([
         'manufacturer_id' => $manufacturer->getID(),
         'platformtype_id' => $platform_type->getID(),
-        'name' => 'Note provdied',
+        'name' => 'Not provided',
         'description' => 'Caution: This is a generic arraydesign created by the expression module. This arraydesign may be a dependency for an expression analysis. Delete with caution.',
       ]);
       $arraydesign->insert();
