@@ -8,7 +8,6 @@
       this.heatMapRaw       = JSON.parse(settings.heatMapRaw)
       this.selectedAnalysis = settings.selectedAnalysis
       this.feature_id       = settings.feature_id
-      this.heatMapTotal     = ''
       this.heatMap          = []
       this.currentSorting   = $('#propertySortMenu').find(':selected').text()
       this.currentColor     = $('#propertyColorMenu').find(':selected').text()
@@ -35,7 +34,7 @@
     attachEventListeners: function () {
       $('#show-non-zero-only').on('click', this.nonZero.bind(this))
       $('#reset-expression-plot').on('click', this.expNormal.bind(this))
-      $('#analyses-dropdown').on('change', this.analysisChanged.bind(this))
+      //$('.analyses-dropdown').on('change', this.analysisChanged.bind(this))
       $(window).on('resize', this.expNormal.bind(this))
       $(document).on('tripal_ds_pane_expanded', this.expNormal.bind(this))
 
@@ -119,10 +118,8 @@
      * Normalize
      */
     expNormal: function () {
-      this.heatMapTotal     = this.heatMapRaw
       // Get samples associated with selected analysis
-      this.selectedAnalysis = d3.select('#analyses-dropdown').property('value')
-      this.heatMap          = this.heatMapTotal[this.selectedAnalysis].biomaterials
+      this.heatMap          = this.heatMapRaw.biomaterials
       this.buildPropertySelect()
       d3.selectAll('chart').remove()
       this.drawPlot()

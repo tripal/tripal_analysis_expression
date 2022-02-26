@@ -55,141 +55,87 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
   public function settingsForm($view_mode, $form, &$form_state) {
 
   }
+  
+  /**
+   *
+   */
+  protected function buildAnalysisViewer($entity) {
+    $field = 'data__gene_expression_data';
+    $variables = $entity->{$field}['und'][0];
+    
+    if (!isset($variables["features"])) {
+      return NULL;
+    }
+    
+    $analysis_id = $entity->chado_record_id;
+    $feature_ids = $variables["features"]["features"];
+    $biomaterials = $variables["features"]["biomaterials"];
+    $file = $variables['file'];
+    
+    if (empty($feature_ids)) {
+      return NULL;
+    }
+    
+    return [
+      '#type' => 'markup',
+      '#markup' => theme('analysis_expression_plot', [
+        'analysis_id' => $analysis_id,
+        'biomaterials_count' => count($biomaterials),
+        'features_count' => count($feature_ids),
+        'file' => $file,
+      ]),
+    ];
+  }
+  
+  /**
+   * 
+   */
+  protected function buildFeatureViewer($entity) {
+    $record = $entity->chado_record;
+    $feature_id = $record->feature_id;
+    
+    // Load the necessary JS and CSS files.
+    $js_path = url(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js', array('absolute' => TRUE));
+    $css_path = url(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css', array('absolute' => TRUE));
+    drupal_add_js('https://cdn.plot.ly/plotly-2.3.0.min.js');
+    drupal_add_js('https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js');
+    drupal_add_js($js_path . '/expression.js');
+    drupal_add_css($css_path . '/expression.css');
+    
+    // Get the form for specifying the network to view.
+    $viewer_form = drupal_get_form('tripal_analysis_expression_feature_viewer_form', 
+        $feature_id);
+    $content = drupal_render($viewer_form);
+    $content .= '<figure id="analysis-expression-figure"></figure>';
+        
+    // Return the page.
+    return [
+      '#type' => 'markup',
+      '#markup' => $content,
+    ];
+
+  }
 
   /**
-   *  Provides the display for a field
-   *
-   * This function corresponds to the hook_field_formatter_view()
-   * function of the Drupal Field API.
-   *
-   *  This function provides the display for a field when it is viewed on
-   *  the web page.  The content returned by the formatter should only include
-   *  what is present in the $items[$delta]['values] array. This way, the
-   *  contents that are displayed on the page, via webservices and downloaded
-   *  into a CSV file will always be identical.  The view need not show all
-   *  of the data in the 'values' array.
-   *
-   * @param $element
-   * @param $entity_type
-   * @param $entity
-   * @param $langcode
-   * @param $items
-   * @param $display
-   *
-   * @throws \Exception
-   * @return void
-   *    An element array compatible with that returned by the
-   *    hook_field_formatter_view() function.
+   *  Provides the display for a field 
    */
-  public function view(
-    &$element,
-    $entity_type,
-    $entity,
-    $langcode,
-    $items,
-    $display
-  ) {
-    if ($entity->chado_table === "analysis") {
-      $field = 'data__gene_expression_data';
-      $variables = $entity->{$field}['und'][0];
-
-      if (!isset($variables["features"])) {
-        return NULL;
-      }
-
-      $analysis_id = $entity->chado_record_id;
-      $feature_ids = $variables["features"]["features"];
-      $biomaterials = $variables["features"]["biomaterials"];
-      $file = $variables['file'];
-
-      if (empty($feature_ids)) {
-        return NULL;
-      }
-
-      $element[] = [
-        '#type' => 'markup',
-        '#markup' => theme('analysis_expression_plot', [
-          'analysis_id' => $analysis_id,
-          'biomaterials_count' => count($biomaterials),
-          'features_count' => count($feature_ids),
-          'file' => $file,
-        ]),
-      ];
+  public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
+    if (count($items) == 0) {
+      return;
+    }
+    
+    $field_table = $this->instance['settings']['chado_table'];    
+    if ($field_table === "analysis") {
+      $element[0] = $this->buildAnalysisViewer($entity);
     }
 
     if ($entity->chado_table === "feature") {
-      $field = 'data__gene_expression_data';
-      $variables = $entity->{$field}['und'][0];
-      tripal_add_d3js(); // tripal uses d3 v3 not v4
-      $feature_id = $entity->chado_record_id;
-
-      if (!$variables['has_exp'] && $variables['json_exp']) {
-        return NULL;
-      }
-      elseif ($variables['json_exp']) {
-        $default_analysis = $variables['analyses'][0]->analysis_id; // starting analysis for download link
-        $hide_biomaterial_labels = $variables['hide_biomaterial_labels'];
-        $json_exp = $variables['json_exp'];
-        $limit_label_length = $variables['limit_label_length'];
-        $expression_display = $variables['expression_display'];
-        $biomaterial_display_width = $variables['biomaterial_display_width'];
-
-        drupal_add_css(drupal_get_path('module',
-            'tripal_analysis_expression') . '/theme/css/expression.css');
-        drupal_add_js([
-          'heatMapRaw' => $json_exp,
-          'maxLength' => $limit_label_length,
-          'showLabels' => $hide_biomaterial_labels,
-          'col' => $expression_display,
-          'colWidth' => $biomaterial_display_width,
-          'selectedAnalysis' => $default_analysis,
-          'feature_id' => $feature_id,
-        ], 'setting');
-        drupal_add_js(drupal_get_path('module',
-            'tripal_analysis_expression') . '/theme/js/expression.js');
-
-        $content = theme('feature_expression_plot', [
-          'analyses' => $variables['analyses'],
-          'default_analysis_id' => $default_analysis,
-          'feature_id' => $feature_id,
-        ]);
-      }
-      else {
-        return NULL;
-      }
-
-      $element[] = [
-        '#type' => 'markup',
-        '#markup' => $content,
-      ];
+      $element[0] = $this->buildFeatureViewer($entity);
     }
   }
 
   /**
    * Provides a summary of the formatter settings.
-   *
-   * This function corresponds to the hook_field_formatter_settings_summary()
-   * function of the Drupal Field API.
-   *
-   * On the 'Manage Display' page of the content type administration page,
-   * fields are allowed to provide a settings form.  This settings form can
-   * be used to allow the site admin to define how the field should be
-   * formatted.  The settings are then available for the formatter()
-   * function of this class.  This function provides a text-based description
-   * of the settings for the site developer to see.  It appears on the manage
-   * display page inline with the field.  A field must always return a
-   * value in this function if the settings form gear button is to appear.
-   *
-   * See the hook_field_formatter_settings_summary() function for more
-   * information.
-   *
-   * @param $field
-   * @param $instance
-   * @param $view_mode
-   *
-   * @return string
-   *   A string that provides a very brief summary of the field settings
-   *   to the user.
    */
   public function settingsSummary($view_mode) {
     return '';
