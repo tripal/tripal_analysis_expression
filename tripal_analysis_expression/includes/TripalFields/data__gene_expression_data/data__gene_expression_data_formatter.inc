@@ -97,7 +97,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
     // Load the necessary JS and CSS files.
     $js_path = url(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/js', array('absolute' => TRUE));
     $css_path = url(drupal_get_path('module', 'tripal_analysis_expression') . '/theme/css', array('absolute' => TRUE));
-    drupal_add_js('https://cdn.plot.ly/plotly-2.3.0.min.js');
+    //drupal_add_js('https://cdn.plot.ly/plotly-2.3.0.min.js');
     drupal_add_js('https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js');
     drupal_add_js($js_path . '/expression.js');
     drupal_add_css($css_path . '/expression.css');

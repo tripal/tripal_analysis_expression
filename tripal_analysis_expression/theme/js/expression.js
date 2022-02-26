@@ -6,40 +6,42 @@
       this.activeBar        = null
       this.hoveredBar       = null
       this.heatMapRaw       = JSON.parse(settings.heatMapRaw)
-      this.selectedAnalysis = settings.selectedAnalysis
+      this.selectedAnalysis = settings.analysis_id
       this.feature_id       = settings.feature_id
+      this.num_samples      = settings.num_samples
       this.heatMap          = []
-      this.currentSorting   = $('#propertySortMenu').find(':selected').text()
-      this.currentColor     = $('#propertyColorMenu').find(':selected').text()
+      this.allprops         = JSON.parse(settings.allprops)
+      this.currentSorting   = $('.expression-viewer-order-by').find(':selected').text()
+      this.currentColor     = $('.expression-viewer-color-by').find(':selected').text()
       this.downloadMessage  = $('<span />')
-      this.downloadLink     = $('#expressionDownloadLink')
-      //spacing variables
+      this.downloadLink     = $('#expressionDownloadLink')      
+      // Spacing variables
       this.margin           = {top: 50, bottom: 100, horizontal: 20}
-      this.height           = 500
-      this.barwidth         = 12
+      this.height           = 400
+      this.barwidth         = Math.min(12, 12 * (20 / this.heatMapRaw.biomaterials.length))
       this.scaleSize        = this.barwidth * 4.5 //this is a thumbnail
       // estimate, im not sure of a
       // better way to do it
-      this.barSpacing = this.barwidth / 2
+      this.barSpacing       = this.barwidth / 2
 
-
+      
       // Activate plot
-      this.expNormal()
-      this.attachEventListeners()
+      if (this.num_samples > 0) {
+      	this.expNormal()
+      	this.attachEventListeners()
+      }      
     },
 
     /**
      * Attach events to all of our elements here.
      */
     attachEventListeners: function () {
-      $('#show-non-zero-only').on('click', this.nonZero.bind(this))
-      $('#reset-expression-plot').on('click', this.expNormal.bind(this))
-      //$('.analyses-dropdown').on('change', this.analysisChanged.bind(this))
+      $('.expression-viewer-exclude-zero').on('click', this.toggleZero.bind(this))
       $(window).on('resize', this.expNormal.bind(this))
       $(document).on('tripal_ds_pane_expanded', this.expNormal.bind(this))
 
       // If the selector changes, rebuild the figure
-      $(document).on('change', '#propertySortMenu', function (e) {
+      $(document).on('change', '.expression-viewer-order-by', function (e) {
         this._handleSortMenuChange(e)
       }.bind(this))
       setTimeout(function () {
@@ -47,8 +49,8 @@
       }.bind(this), 500)
 
       // If the selector changes, rebuild the figure
-      $(document).on('change', '#propertyColorMenu', function (e) {
-        this.currentColor = e.target.value
+      $(document).on('change', '.expression-viewer-color-by', function (e) {
+        this.currentColor = $(e.target).find(':selected').text()
         d3.selectAll('chart').remove()
         this.drawPlot()
       }.bind(this))
@@ -67,7 +69,7 @@
      * @private
      */
     _handleSortMenuChange: function (e) {
-      this.currentSorting = $('#propertySortMenu').val()
+      this.currentSorting = $('.expression-viewer-order-by').find(':selected').text()
       d3.selectAll('chart').remove()
       this.drawPlot()
     },
@@ -89,102 +91,34 @@
       })
       $('body').append(iframe)
       object.downloadMessage.html(' Generating file. Download will start automatically...')
-    },
-
-    /**
-     * updates the download link when an analysis has been selected.
-     */
-    analysisChanged: function (e) {
-      this.selectedAnalysis = e.target.value
-      this.expNormal()
-
-      // Change the link address
-      var link = '/tripal/analysis-expression/download?feature_ids=' + this.feature_id + '&analysis_id=' + this.selectedAnalysis
-      $('#expressionDownloadLink').attr('href', link)
-    },
+    },    
 
     /**
      * This function will remove biomaterials that have a value of 0.
      */
-    nonZero: function () {
-      this.heatMap = this.heatMap.filter(function (d) {
-        return d.intensity > 0
-      })
-      d3.selectAll('chart').remove()
-      this.drawPlot()
-    },
+    toggleZero: function () {
+	  if ($('.expression-viewer-exclude-zero').is(":checked")){
+	    this.heatMap = this.heatMap.filter(function (d) {
+	      return d.intensity > 0
+	    })
+	    d3.selectAll('chart').remove()
+	    this.drawPlot()
+	  }
+	  else {
+		this.expNormal()
+	  }
+    },       
 
     /**
      * Normalize
      */
     expNormal: function () {
       // Get samples associated with selected analysis
-      this.heatMap          = this.heatMapRaw.biomaterials
-      this.buildPropertySelect()
-      d3.selectAll('chart').remove()
+      this.heatMap = this.heatMapRaw.biomaterials
+      d3.selectAll('chart').remove()    
       this.drawPlot()
     },
-
-    /**
-     * Append the Property selectors.  Sort is for what property to group by,
-     * color is for what property to color by.
-     */
-    buildPropertySelect: function () {
-      var $sortMenu         = $('#propertySortMenu')
-      var $colorMenu        = $('#propertyColorMenu')
-      // Remove the old selectors and store values
-      var previousValueSort = $sortMenu.find(':selected').text()
-      d3.selectAll('#propertySortDiv').selectAll('select').remove()
-      var previousValueColor = $colorMenu.find(':selected').text()
-      d3.selectAll('#propertyColorDiv').selectAll('select').remove()
-
-      // Build list of properties for this analysis
-      var selectorSort  = d3.select('#propertySortDiv').append('select').attr('id', 'propertySortMenu')
-      var selectorColor = d3.select('#propertyColorDiv').append('select').attr('id', 'propertyColorMenu')
-
-      // First add "expression value" as default for color
-      selectorColor.append('option')
-        .attr('value', 'Expression value')
-        .text('Expression value')
-
-      this.heatMap.map(function (biomaterial) {
-        Object.keys(biomaterial.properties).map(function (property_key) {
-          // Determine if this property is already in our selector
-          var exists = $('#propertySortDiv option')
-            .filter(function (i, o) {
-              return o.value === property_key
-            })
-            .length > 0
-
-          if (!exists) { //append it to both selector lists
-            selectorSort.append('option')
-              .attr('value', function () {
-                return property_key
-              })
-              .text(function () {
-                return property_key
-              })
-            selectorColor.append('option')
-              .attr('value', function () {
-                return property_key
-              })
-              .text(function () {
-                return property_key
-              })
-          }
-
-        })
-      })
-
-      $colorMenu.val('Expression value')
-
-      if (previousValueSort) {
-        $sortMenu.val(previousValueSort)
-      }
-      if (previousValueColor) {
-        $colorMenu.val(previousValueColor)
-      }
-    },
+    
 
     drawPlot: function () {
       var _that = this
@@ -648,7 +582,7 @@
      * @param height
      */
     buildLegend: function (colorScale, width, margin, height) {
-      this.currentColor = $('#propertyColorMenu').find(':selected').text()
+      this.currentColor = $('.expression-viewer-color-by').find(':selected').text()
       d3.select('chart').selectAll('legend').remove()
 
       var legend = {}
@@ -788,10 +722,10 @@
      */
     buildPropertyValuesDomain: function (color) {
       if (color === 'color') {
-        this.currentSortingProperty = $('#propertyColorMenu').find(':selected').text()
+        this.currentSortingProperty = $('.expression-viewer-color-by').find(':selected').text()
       }
       else {
-        this.currentSortingProperty = $('#propertySortMenu').find(':selected').text()
+        this.currentSortingProperty = $('.expression-viewer-order-by').find(':selected').text()
       }
 
       var list = []

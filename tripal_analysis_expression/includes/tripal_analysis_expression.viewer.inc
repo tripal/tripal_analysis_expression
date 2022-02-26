@@ -7,6 +7,14 @@ function tripal_analysis_expression_feature_viewer_form($form, &$form_state,
     $feature_id = NULL) {  
       
   global $user;
+  
+  $hide_expression = variable_get('chado_feature_expression_hide_expression');
+  $hide_biomaterial_labels = variable_get('chado_feature_expression_hide_biomaterial_labels');
+  $limit_label_length = trim(variable_get('chado_feature_expression_limit_label_length'));
+  $expression_display = variable_get('chado_feature_expression_expression_display');
+  $biomaterial_display_width = variable_get('chado_feature_expression_biomaterial_display_width');
+  $min_num_biomaterials = variable_get('chado_feature_expression_min_num_biomaterials');
+  
       
   // Set default form values.
   $analysis_id = 0;
@@ -17,13 +25,23 @@ function tripal_analysis_expression_feature_viewer_form($form, &$form_state,
     
   // Default settings to return.
   $settings = [
-    'heatMapRaw' => json_encode(['biomaterials' => []]),
-    'maxLength' => 0,
-    'showLabels' => 0,
-    'col' => 0,
-    'colWidth' => 0,
-    'selectedAnalysis' => $analysis_id,
-    'feature_id' => $feature_id
+    'analysis_id' => $analysis_id,
+    'feature_id' => $feature_id,
+    'allprops' => json_encode([]),
+    'heatMapRaw' => json_encode([
+      'biomaterials' => [
+        [
+          'intensity' => [],
+          'properties' => []          
+        ]
+      ],
+    ]),
+    'maxLength' => $limit_label_length,
+    'showLabels' => $hide_biomaterial_labels,
+    'col' => $expression_display,
+    'colWidth' => $biomaterial_display_width,
+    'allprops' => json_encode([]),
+    'num_samples' => 0,
   ];
   
   // Start the form wrapper for AJAX.
@@ -82,33 +100,50 @@ function tripal_analysis_expression_feature_viewer_form($form, &$form_state,
   ];
   
   if ($analysis_id) {
-  
-    $form['property-sort-div'] = [
-      '#type' => 'markup',
-      '#markup' => '<p id="propertySortDiv"><strong>Select a property to group and sort biological samples</strong></p>',
+    
+    // Add these data values to the JSON so that the viewer can work.
+    $data = tripal_analysis_expression_feature_viewer_get_data($feature_id,
+        $analysis_id, $analyses[$analysis_id]);
+    $settings = [
+      'heatMapRaw' => $data['json_exp'],
+      'maxLength' => $limit_label_length,
+      'showLabels' => $hide_biomaterial_labels,
+      'col' => $expression_display,
+      'colWidth' => $biomaterial_display_width,      
+      'analysis_id' => $analysis_id,
+      'feature_id' => $feature_id,      
+      'allprops' => json_encode($data['allprops']),
+      'num_samples' => $data['num_samples']
     ];
     
-    $form['property-color-div'] = [
-      '#type' => 'markup',
-      '#markup' => '<p id="propertyColorDiv"><strong>Select a property to color biological samples</strong></p>',
+    $biosample_props = $data['allprops'];
+    $form['property_sort'] = [
+      '#type' => 'select',
+      '#title' => 'Order By',
+      '#attributes' => ['class' => ['expression-viewer-order-by']],
+      '#description' => 'Select a property to group and sort samples',
+      '#options' => $biosample_props,
     ];
-    
+    $form['property_color'] = [
+      '#type' => 'select',
+      '#title' => 'Color By',
+      '#attributes' => ['class' => ['expression-viewer-color-by']],
+      '#description' => 'Select a property to color samples',
+      '#options' => $biosample_props,
+    ];
+    $form['shown_non_zero'] = [
+      '#type' => 'checkbox',
+      '#title' => 'Exclude zero values',
+      '#attributes' => ['class' => ['expression-viewer-exclude-zero']],
+    ];
+        
     $form['instructions'] = [
       '#type' => 'markup',
-      '#markup' => '<p>Hover the mouse over a column in the graph to view more 
-        information about that biological sample. You can click and drag to 
-        rearrange groups along the x-axis. You can also click and drag to move 
+      '#markup' => '<p>Hover the mouse over a column in the graph to view more
+        information about that biological sample. You can click and drag to
+        rearrange groups along the x-axis. You can also click and drag to move
         the legend.</p>'
-    ];
-    
-    $form['checks'] = [
-      '#type' => 'markup',
-      '#markup' => '
-        <p>
-          <a href="javascript:;" id="show-non-zero-only">Only Non-Zero Values</a> |
-          <a href="javascript:;" id="reset-expression-plot">Reset</a>
-        </p>',
-    ];    
+    ];  
     
     $form['download'] = [
       '#type' => 'markup',
@@ -116,19 +151,6 @@ function tripal_analysis_expression_feature_viewer_form($form, &$form_state,
         <a href="/tripal/analysis-expression/download?feature_ids=' . $feature_id . '&analysis_id=' . $analysis_id .'" id="expressionDownloadLink">
          Download expression dataset for this feature
       </a>'
-    ];
-
-    // Add these data values to the JSON so that the viewer can work.
-    $data = tripal_analysis_expression_feature_viewer_get_data($feature_id, 
-        $analysis_id, $analyses[$analysis_id]);
-    $settings = [
-      'heatMapRaw' => $data['json_exp'],
-      'maxLength' => $data['limit_label_length'],
-      'showLabels' => $data['hide_biomaterial_labels'],
-      'col' => $data['expression_display'],
-      'colWidth' => $data['biomaterial_display_width'],
-      'selectedAnalysis' => $analysis_id,
-      'feature_id' => $feature_id      
     ];
   }
   
@@ -152,14 +174,8 @@ function tripal_analysis_expression_feature_viewer_form_ajax_callback($form, $fo
  */
 function tripal_analysis_expression_feature_viewer_get_data($feature_id, $analysis_id, $analysis_name) {
    
-  $hide_expression = variable_get('chado_feature_expression_hide_expression');
-  $hide_biomaterial_labels = variable_get('chado_feature_expression_hide_biomaterial_labels');
-  $limit_label_length = trim(variable_get('chado_feature_expression_limit_label_length'));
-  $expression_display = variable_get('chado_feature_expression_expression_display');
-  $biomaterial_display_width = variable_get('chado_feature_expression_biomaterial_display_width');
-  $min_num_biomaterials = variable_get('chado_feature_expression_min_num_biomaterials');
-  
   $has_exp = FALSE;
+  $unit_cvterm = chado_get_cvterm(['id' => 'sep:00056']);
   
   $sql = "
     SELECT 
@@ -173,93 +189,73 @@ function tripal_analysis_expression_feature_viewer_get_data($feature_id, $analys
       INNER JOIN {assay} A ON A.assay_id = AQ.assay_id
       INNER JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
       INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
-      INNER JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
-    WHERE F.feature_id = :feature_id and AN.analysis_id = :analysis_id
-      ORDER BY AN.analysis_id 
+      INNER JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id 
+    WHERE F.feature_id = :feature_id and AN.analysis_id = :analysis_id         
+    ORDER BY AN.analysis_id 
   ";
-  $results = chado_query($sql, [":feature_id" => $feature_id, ":analysis_id" => $analysis_id]);
-  $array_to_encode = [
-    "analysis_id" => $analysis_id,
-    "analysis_name" => $analysis_name,
-    "biomaterials" => [],
+  $args =[
+    ":feature_id" => $feature_id, 
+    ":analysis_id" => $analysis_id,
   ];
+  $results = chado_query($sql, $args);
     
+  $signals = [];
+  $biomaterials = [];
+  $units = [];
+  $properties = [];
+  $allprops = [];
+  $allprops["Biosample Name"] = 1;
+  
   while($exp = $results->fetchObject()) {
     $has_exp = TRUE;
-    
-    //Get units in quantificationprop
-    $unit_prop = chado_get_property([
-      'table' => 'quantification',
-      'id' => $exp->quantification_id,
-    ], ['type_name' => 'unit_of_measure', 'cv_name' => 'sep']);
-    $unit_prop ? $units = $unit_prop->value : $units = '';
-    
-    //Get all properties for biosample/biomaterial
-    $values = [
-      'biomaterial_id' => $exp->biomaterial_id,
+   
+    $signals[$exp->biomaterial_id] = $exp->signal;
+    $biomaterials[$exp->biomaterial_id] = [
+      'name' => $exp->name,
+      'description' => $exp->description,
     ];
-    $biomat_object = chado_generate_var('biomaterial', $values);
-    $result = chado_expand_var($biomat_object, 'table', 'biomaterialprop');
-    $properties = $result->biomaterialprop;
-    $propstore = [];
-    
-    if (is_object($properties)) {
-      $properties = [];
+    $properties[$exp->biomaterial_id] = [];    
+  }
+  
+  // Get the biosample properties.
+  $sql = "
+    SELECT BP.biomaterial_id, CVT.name, BP.value
+    FROM {biomaterialprop} BP
+      INNER JOIN {cvterm} CVT on CVT.cvterm_id = BP.type_id
+    WHERE BP.biomaterial_id IN (:biomaterial_ids)
+    ORDER by biomaterial_id, name
+  ";
+  $args = [':biomaterial_ids' => array_keys($biomaterials)];
+  $results = chado_query($sql, $args);
+  while ($property = $results->fetchObject()) {
+    $properties[$property->biomaterial_id]["Biosample Name"] = $biomaterials[$property->biomaterial_id]['name'];    
+    if ($property->value) {
+      $prop_name = ucfirst($property->name);
+      $properties[$property->biomaterial_id][$prop_name] = $property->value;
+      $allprops[$prop_name] = 1;    
     }
+  }
+  $allprops = array_keys($allprops);   
+  
+  // create the array expected by the JS script
+  $data = [];
+  foreach ($biomaterials as $biomaterial_id => $info) {
+    $node_present = chado_get_record_entity_by_table('biomaterial', $biomaterial_id);
     
-    if (!$properties) {
-      $properties = [];
-    }
-    
-    foreach ($properties as $prop) {
-      //get the prop name and value
-      // $property_cvterm_id = $prop->type_id->cvterm_id;
-      // $property_cv_id = $prop->type_id->cv_id;
-      if ((isset($prop->value))) { //for some reason we have stuff coming back that is not properties.  this will filter them.
-        $property_name = $prop->type_id->name;
-        $property_value = $prop->value;
-        $propstore[$property_name] = $property_value;
-      }
-    }
-    
-    $node_present = chado_get_record_entity_by_table('biomaterial',
-        $exp->biomaterial_id);
-    
-    //Add a property for no sorting ie by biosample name
-    $propstore["Biosample Name"] = $exp->name;
-    
-    //Build entry for this biosample/biomaterial, append it to the existing array, and store it in the master array
-    $biosample_properties = [
-      "name" => $exp->name,
-      "intensity" => $exp->signal,
-      "units" => $units,
-      "description" => $exp->description,
-      "properties" => $propstore,
+    $data['biomaterials'][] = [
+      "name" => $info['name'],
+      "intensity" => $signals[$biomaterial_id],
+      "units" => $units[$biomaterial_id],
+      "description" => $info['description'],
+      "properties" => $properties[$biomaterial_id],
       "node" => $node_present,
     ];
-    $existing_samples = $array_to_encode["biomaterials"];
-    array_push($existing_samples, $biosample_properties);
-    $array_to_encode["biomaterials"] = $existing_samples;
   }
   
-  $json_exp = json_encode($array_to_encode);
-  
-  if ($hide_expression == 1) {
-    $json_exp = "";
-  }
-  
-
-  
-  $data = [    
+  return [    
+    'allprops' => $allprops,
     'has_exp' => $has_exp,
-    'json_exp' => $json_exp,
-    'limit_label_length' => $limit_label_length,
-    'hide_expression' => $hide_expression,
-    'hide_biomaterial_labels' => $hide_biomaterial_labels,
-    'expression_display' => $expression_display,
-    'biomaterial_display_width' => $biomaterial_display_width,
-    'min_num_biomaterials' => $min_num_biomaterials,
+    'num_samples' => count(array_keys($biomaterials)),    
+    'json_exp' => json_encode($data),
   ];
-  
-  return $data;
 }
