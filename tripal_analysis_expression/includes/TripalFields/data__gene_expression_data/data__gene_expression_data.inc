@@ -93,37 +93,20 @@ class data__gene_expression_data extends ChadoField{
   
   private function loadAnalysis(&$entity) {
     
-    $field = get_class();
-    $analysis_id = $entity->chado_record_id;
-    $features = $this->get_analysis_info($analysis_id);
+    $record = $entity->chado_record;
+    $settings = $this->instance['settings'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
     
-    $sql = 'SELECT a.value FROM {chado.analysisprop} a
-                WHERE a.analysis_id = :analysis_id
-                AND a.type_id = :type_id';
+    // Get the term used for the URL
+    $url_type = tripal_get_chado_semweb_term('db', 'url');
+    $analysis_id = $record->analysis_id;
     
-    $cvterm_id = tripal_get_cvterm([
-      'name' => 'data_source_file',
-      'cv_id' => [
-        'name' => 'local',
-      ],
-    ]) ?? new stdClass();
-    $cvterm_id = $cvterm_id->cvterm_id ?? 1;
-    
-    $file = db_query($sql, [
-      ':analysis_id' => $analysis_id,
-      ':type_id' => $cvterm_id,
-    ])->fetchField();
-    
-    $variables = ["features" => $features];
-    $variables['file'] = $file;
-    
-    if (count($features["features"]) == 0) {
-      $entity->{$field}['und'][0]["values"] = NULL;
-      return;
-    }
-    
-    // Save data into the entity
-    $entity->{$field}['und'][0] = array_merge($entity->{$field}['und'][0], $variables);
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0]['value'] = [];
+    $entity->{$field_name}['und'][0]['value'][$url_type] = url('fix_me');
   }
   
   /**
@@ -143,7 +126,7 @@ class data__gene_expression_data extends ChadoField{
     
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0]['value'] = [];
-    $entity->{$field_name}['und'][0]['value'][$url_type] = url('bio_data/' . $feature_id);
+    $entity->{$field_name}['und'][0]['value'][$url_type] = url('fix_me');
   }
 
   /**

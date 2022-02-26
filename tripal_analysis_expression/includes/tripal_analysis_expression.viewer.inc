@@ -101,6 +101,13 @@ function tripal_analysis_expression_feature_viewer_form($form, &$form_state,
   
   if ($analysis_id) {
     
+    $entity_id = chado_get_record_entity_by_table('analysis', $analysis_id);
+    
+    $form['analysis_link'] = [
+      '#type' => 'markup',
+      '#markup' => '<p>' . l(t('Learn about this analysis'), 'bio_data/' . $entity_id, ['attributes' => ['target' => '_blank']]) . '</p>'
+    ];
+    
     // Add these data values to the JSON so that the viewer can work.
     $data = tripal_analysis_expression_feature_viewer_get_data($feature_id,
         $analysis_id, $analyses[$analysis_id]);

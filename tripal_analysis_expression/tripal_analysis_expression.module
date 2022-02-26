@@ -400,15 +400,6 @@ function tripal_analysis_expression_theme($existing, $type, $theme, $path)
       'template' => 'tripal_analysis_expression.analysis',
       'path' => "$path/theme/templates",
     ],
-    'feature_expression_plot' => [
-      'variables' => [
-        'analyses' => [],
-        'default_analysis_id' => 0,
-        'feature_id' => 0,
-      ],
-      'template' => 'tripal_analysis_expression.feature',
-      'path' => "$path/theme/templates",
-    ],
   ];
 
   return $items;

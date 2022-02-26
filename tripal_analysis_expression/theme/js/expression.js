@@ -26,10 +26,8 @@
 
       
       // Activate plot
-      if (this.num_samples > 0) {
-      	this.expNormal()
-      	this.attachEventListeners()
-      }      
+      this.expNormal()
+      this.attachEventListeners()
     },
 
     /**
@@ -527,7 +525,7 @@
 
       this.buildLegend(color, calculatedWidth, margin, height)
 
-      var title = 'Expression by ' + this.currentSorting
+      var title = '' //'Expression by ' + this.currentSorting
 
       svg.append('text')
         .attr('x', (calculatedWidth / 2 - margin.horizontal))
