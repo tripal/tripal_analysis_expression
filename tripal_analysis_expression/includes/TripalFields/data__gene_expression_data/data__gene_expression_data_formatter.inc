@@ -99,7 +99,6 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
     $content = [];
     $content['data_summary_table'] = [
       '#type' => 'item',
-      '#title' => t("Expression Data Summary"),
       '#markup' => $table
     ];
     
