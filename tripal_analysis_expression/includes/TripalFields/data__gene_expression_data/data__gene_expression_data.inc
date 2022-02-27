@@ -124,6 +124,11 @@ class data__gene_expression_data extends ChadoField{
         }
       }      
     }
+    
+    if (count(array_keys($analyses)) == 0) {
+      $entity->{$field_name}['und'][0]['value'] = [];
+      return $entity;
+    }
 
     // Get the number of features.
     $values = [];

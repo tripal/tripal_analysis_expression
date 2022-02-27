@@ -39,7 +39,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
     // Get the list of analyses
     $analyses = [];
 
-    if (count($items) == 0) {
+    if (count($items) == 0 or (count($items) == 1 and empty($items[0]['value']))) {
       return;
     }
                   
