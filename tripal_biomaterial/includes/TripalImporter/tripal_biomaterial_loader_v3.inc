@@ -1654,7 +1654,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           
           // Add to the sample array the value but with the proper CVterm t key.
           $arg_key = 'biomaterial_key.' . $adj_attr_name . '.id';
-          if (array_key_exists($arg_key, $this->arguments['run_args']) and
+          if (array_key_exists('run_args', $this->arguments) and array_key_exists($arg_key, $this->arguments['run_args']) and
               $this->arguments['run_args'][$arg_key]) {
             $term = $this->terms[$adj_attr_name];
             $term_id = $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession;
