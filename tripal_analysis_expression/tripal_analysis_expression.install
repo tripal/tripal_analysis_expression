@@ -34,6 +34,10 @@ function tripal_analysis_expression_requirements($phase) {
  * @ingroup tripal_analysis_module
  */
 function tripal_analysis_expression_install() {
+  // data directories for upload and download
+  tripal_create_files_dir('tripal_analysis_expression');
+  tripal_create_files_dir('tripal_analysis_expression_download');
+
   // Insert term used for fields
   tripal_insert_cvterm([
     'id' => 'data:2603',

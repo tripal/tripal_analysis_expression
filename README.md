@@ -93,7 +93,7 @@ To upload the file into Chado/Tripal, navigate to:
 First, provide the path on the server to the biosample file, or use the file uploader. You must select an Organism to associate the biosamples with.  You may also associate the imported biosamples with an analysis, but this is not required.
 
 Press the **Check Biosamples** button to preview your biosample properties.  To take advantage of a controlled vocabulary (CV), you must manually assign each property to a CVterm.  The uploader will list all CV terms matching each property, and provide the CV, database (DB) and accession for the match.
-If a match does not exist for your term, use the CVterm browser to identify an appropriate CVterm in your Tripal site, and rename the property in your input file to match the term.  If no term exists in your database, you should use the EBI ontology lookup serice to identify an appropriate term and insert it manually, or, load the corresponding CV.
+If a match does not exist for your term, use the CVterm browser to identify an appropriate CVterm in your Tripal site, and rename the property in your input file to match the term.  If no term exists in your database, you should use the EBI ontology lookup service to identify an appropriate term and insert it manually, or, load the corresponding CV.
 
 > ![The Biosample property configuration tool](example_files/doc_images/biosample_prop_checker.png)
 > Pressing the 'Check Biosamples' button allows you to assign CVterms to every biosample property in your upload.  If there isn't a suitable CVterm, you should rename it in your upload file to match a CVterm in the database and/or insert new CVterms.
@@ -103,7 +103,7 @@ After clicking "Submit job", the page should reload with the job status and Drus
 
 ### Loading Biosamples From a Flat File
 
-Altenatively biosamples may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.
+Alternatively biosamples may be loaded from a flat file (CSV or TSV). The flat file loader is designed to upload files that are in the [NCBI BioSample submission format](https://submit.ncbi.nlm.nih.gov/biosample/template/) which can be downloaded [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Download the TSV version of the file. The file must have a header that specifies the type of data in the column. There must be one column labeled "sample\_name". The loader will begin to collect data from the line that follows the line containing "sample\_name" which is assumed to be the header line. Columns are not required to be in any order. Other columns will be either attributes or accessions. Available NCBI [attributes](https://submit.ncbi.nlm.nih.gov/biosample/template/) can be found [here](https://submit.ncbi.nlm.nih.gov/biosample/template/). Available accession headers are bioproject\_accession, sra\_accession, biosample\_accession. All other columns will be uploaded as properties. To upload other accessions use the bulk loader provided with this module labeled, "Biomaterial Accession Term Loader". This loader will load a flat file with 3 columns (sample name, database name, accession term). A Tripal database must be created with the same name as the database name in the upload file.
 
 Click here to see an example of a [CSV file](example_files/exampleCSV.csv) and a [TSV file](example_files/exampleTSV.tsv).
 
@@ -127,7 +127,7 @@ If there are multiple sequencing runs associated with the same biosample that sh
 
 ![image](https://user-images.githubusercontent.com/43583505/87336786-669dfd00-c510-11ea-8171-86c83e3ce253.png)
 
-4) Click metadata to download the csv flie 
+4) Click metadata to download the csv file 
   
 ![image](https://user-images.githubusercontent.com/43583505/87336991-b7adf100-c510-11ea-963a-4caabee6a2e2.png)
 
@@ -138,7 +138,7 @@ If there are multiple sequencing runs associated with the same biosample that sh
 After loading, biosamples must be published to create entities for each biosample content type. As an administrator or user with correct permissions, navigate to **Content->Tripal Content->Publish Tripal Content**. Select the biological sample type to publish, apply any optional filtering, and press Publish.
 
 ### Loading a Single Biosample
-Biosamples may also be loaded one at a time. As an administer or a user with permission to create Tripal content, go to: **Content->Tripal Content -> Add Tripal Content -> Biological Sample**. Available biosamples fields include the following.
+Biosamples may also be loaded one at a time. As an administrator or a user with permission to create Tripal content, go to: **Content->Tripal Content -> Add Tripal Content -> Biological Sample**. Available biosamples fields include the following.
 * **Accession** - If the biosample is in a database stored in your Tripal site, the accession can be entered here.
 * **Name (must be unique - required)**
 * **Description** - A description of the biosample.
@@ -167,7 +167,7 @@ The steps for loading expression data are as follows (detailed instructions can 
 1. Obtain expression data. Click [here to read about the file formats accepted for expression data](#data-loader).
 2. Add the organism associated with the expression data if it hasn't been added.
 3. Upload all features in the expression data to the Chado database. To bulk upload features, go to **Tripal->Data Loaders->Chado FASTA Loader** and upload a FASTA file (click here to see an example of [fasta file of transcriptome sequences](http://www.hardwoodgenomics.org/sites/default/files/sequences/sugarMaple022416/Acer_saccharum_022416_transcripts.fasta)). Or upload one feature at a time via **content-> Tripal Content -> Add content**, and select the relevant entity type (such as mRNA).
-4. Load the espression data.  This is also the step where you can add experimental design details.
+4. Load the expression data.  This is also the step where you can add experimental design details.
 
 ### Creating the Analysis
 Before loading data, describe the experimental setup used to collect the data. As an administrator or a user with permission to create content, navigate to content -> tripal content -> Analysis.
@@ -188,7 +188,7 @@ Before loading data, describe the experimental setup used to collect the data. A
 
 #### Expression Data Loader
 
-The Chado Expression Data Loader provide a way for the user to load expression data associated with the experiment. The loader can load data from two types of formats, matrix and column. The matrix format expects a row of data containing biosample names. The first column should be unique feature names. Features must already be loaded into the database. Biosamples will be added if not present. Expression values will map to a biosample library in the column and a feature in the row. Only one matrix file may be loaded at a time. The column format expects the first column to contain features and the second column to be expression values.
+The Chado Expression Data Loader provides a way for the user to load expression data associated with the experiment. The loader can load data from two types of formats, matrix and column. The matrix format expects a row of data containing biosample names. The first column should be unique feature names. Features must already be loaded into the database. Biosamples will be added if not present. Expression values will map to a biosample library in the column and a feature in the row. Only one matrix file may be loaded at a time. The column format expects the first column to contain features and the second column to be expression values.
 
 For an example column file, click [here](example_files/exampleExpressionData.rpkm). For an example matrix file, click [here](example_files/exampleMatrix.tsv).
 
@@ -202,12 +202,12 @@ The biosample name will be taken as the name of the file minus the file extensio
 * **Name Match Type** - Will the data be associated with feature names or unique names?
 * **File Type Suffix** - The suffix of the files to load. This is used to submit multiple column format files in the same directory. A suffix is not required for a matrix file.
 * **Regex for Start of Data** - If the expression file has a header, use this field to capture the line that occurs before the start of expression data. This line of text and any text preceding this line will be ignored.
-* **Regex for End of Data** - If the expression file has a footer, use this field to capture teh line that occurs after the end of expression data. This line of text and all text following will be ignored.
+* **Regex for End of Data** - If the expression file has a footer, use this field to capture the line that occurs after the end of expression data. This line of text and all text following will be ignored.
 
 #### Experimental Design Fields
 The "Experimental Design" fields allow a complete description of the experimental design by implementing the [Chado MAGE design schema](http://gmod.org/wiki/Chado_Mage_Module).  The Chado MAGE module uses the arraydesign, assay, quantification, and acquisition tables to describe an experiment. The Tripal Analysis Expression creates generic instances of all these for you.
 
-* **Array Design** - This is only applicable for microarray expression data. This may be left blank for experiments that do not utilize an array (ie next generation sequencing).
+* **Array Design** - This is only applicable for microarray expression data. This may be left blank for experiments that do not utilize an array (i.e. next generation sequencing).
 * **Units** - The units associated with the loaded values, such as FPKM.  You may also update the units of your experiments using the **Quantification Units** admin page.
 
 >![file information portion of expression loader](example_files/doc_images/expression_loader_file_info.png)
@@ -251,7 +251,7 @@ The pvalue data loader only cares about two columns (order matters):
 1. the column containing the feature names
 2. the column containing the pvalues (not the adjusted values)
 
-Copy the values from these columns (and only the values, we don't care about the headers) into a new sheet. The resulting spreadsheet should contain exactly two columns (feature name first, then pvalue) with no headers. Save the sheet as either a csv or a tsv. The resulting file should be in this format:
+Copy the values from these columns (and only the values, we don't care about the headers) into a new sheet. The resulting spreadsheet should contain exactly two columns (feature name first, then pvalue) with no headers. Save the sheet as either a csv or a tsv. The resulting file should be in this format (csv), or alternatively use tab delimiters (tsv format):
 
 ```
 FRAEX38873_v2_000000010.1,3.70E-74
@@ -324,7 +324,7 @@ Loaded expression data can be viewed and downloaded by users in three places.  *
 
 ### Downloading data
 
-Data downloads are provided for individual features, analyses, and for feature sets selected in the heatmap.  For data downloading to be functionaly, you must *populate the materialized views associated with this module*.  This can be done by navigating to Tripal -> Data Storage -> Chado -> Materialized Views.  Press the populate link for the **expression_feature** and *expression_feature_all** materialized views and run the submitted job.  Materialized views must be manually repopulated when you add new data.
+Data downloads are provided for individual features, analyses, and for feature sets selected in the heatmap.  For data downloading to be functional, you must *populate the materialized views associated with this module*.  This can be done by navigating to Tripal -> Data Storage -> Chado -> Materialized Views.  Press the populate link for the **expression_feature** and *expression_feature_all** materialized views and run the submitted job.  Materialized views must be manually repopulated when you add new data.
 
 ### Using the Feature Expression Data field
 
@@ -378,11 +378,11 @@ Note that these content types are provided by **Tripal Core**.
 
 There is currently no support for inputting, or displaying, acquisitions, quantifications, or assays.  The Expression module creates generic instances of these entities.
 
-**Protocol Descripton** - The protocol content types can be created by navigating to **Add Tripal Content->Protocol**. A protocol can be used to add extra detail to an experimental design. A protocol can be used to describe the assay, acquisition, and quantification steps of the experiment design. A protocol can also be used to further describe the array design content type. The fields of a protocol are:
+**Protocol Description** - The protocol content types can be created by navigating to **Add Tripal Content->Protocol**. A protocol can be used to add extra detail to an experimental design. A protocol can be used to describe the assay, acquisition, and quantification steps of the experiment design. A protocol can also be used to further describe the array design content type. The fields of a protocol are:
 * **Protocol Name (must be unique - required)**
 * **Protocol Link (Required)** - A web address to a page that describes the protocol.
 * **Protocol Description** - A description of the protocol.
-* **Hardware Description** - A description of the wardware used in the protocol.
+* **Hardware Description** - A description of the hardware used in the protocol.
 * **Software Description** - A description of the software used in the protocol.
 * **Protocol Type (required)** - The protocol type can acquisition, array design, assay, or quantification. The user can also create new protocol types by inserting new CVterms into the protocol type CV.
 * **Publication** - A publication that describes the protocol.
