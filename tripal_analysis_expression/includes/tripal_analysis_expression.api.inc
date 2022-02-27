@@ -70,10 +70,10 @@ function tripal_analysis_expression_get_protocol_select_options($protocol_type) 
  *   Returns the file path to the new location of the file.
  */
 function tripal_analysis_expression_cache_file($file_path) {
-  $destination = 'public://expression';
+  $destination = tripal_get_files_dir('tripal_analysis_expression');
   if (!file_prepare_directory($destination, FILE_CREATE_DIRECTORY)) {
     tripal_report_error('tripal_analysis_expression', TRIPAL_ERROR,
-      "Could not create directory at $destination, please check your permissions and try again.\n",
+      "Could not create directory $destination, please check your permissions and try again.\n",
       [], ['print' => TRUE]);
     return FALSE;
   }
