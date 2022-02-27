@@ -10,7 +10,7 @@
 class data__gene_expression_data_widget extends ChadoFieldWidget {
 
   // The default label for this field.
-  public static $default_label = 'Expression';
+  public static $default_label = 'Expression Data';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('data__gene_expression_data');

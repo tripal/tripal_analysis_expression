@@ -135,15 +135,6 @@ function tripal_analysis_expression_menu()
     'page callback' => 'tripal_analysis_expression_list_pvalue',
     'type' => MENU_CALLBACK,
   ];
-  
-  $items['expression/viewer/feature'] = [
-    'title' => 'AJAX callback for features',
-    'description' => 'AJAX callback to retrieve data for viewing on a feature page',
-    'access arguments' => ['access content'],
-    'page callback' => 'tripal_analysis_expression_feature_viewer_ajax_retrieve',
-    'file' => '/includes/tripal_analysis_expression.viewer.inc',
-    'type' => MENU_CALLBACK,
-  ];
 
   return $items;
 }

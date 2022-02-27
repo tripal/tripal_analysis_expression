@@ -18,10 +18,10 @@ class data__gene_expression_data extends ChadoField{
   // --------------------------------------------------------------------------
 
   // The default label for this field.
-  public static $default_label = 'Expression';
+  public static $default_label = 'Expression Data';
 
   // The default description for this field.
-  public static $default_description = 'Visualize expression data';
+  public static $default_description = 'Expression data';
 
   // The default widget for this field.
   public static $default_widget = 'data__gene_expression_data_widget';
@@ -71,12 +71,6 @@ class data__gene_expression_data extends ChadoField{
     // should have auto_attach set to FALSE so tha their values can be
     // attached asynchronously.
     'auto_attach' => FALSE,
-    // The table in Chado that the instance maps to.
-    'chado_table' => 'feature',
-    // The column of the table in Chado where the value of the field comes from.
-    'chado_column' => 'feature_id',
-    // The base table.
-    'base_table' => 'feature',
   ];
 
   // A boolean specifying that users should not be allowed to create
@@ -90,77 +84,208 @@ class data__gene_expression_data extends ChadoField{
   // could be a quick search field that appears on the page that redirects
   // the user but otherwise provides no data.
   public static $no_data = FALSE;
-  
-  private function loadAnalysis(&$entity) {
     
-    $record = $entity->chado_record;
-    $settings = $this->instance['settings'];
-    $field_name = $this->field['field_name'];
-    $field_type = $this->field['type'];
-    $field_table = $this->instance['settings']['chado_table'];
-    $field_column = $this->instance['settings']['chado_column'];
-    
-    // Get the term used for the URL
-    $url_type = tripal_get_chado_semweb_term('db', 'url');
-    $analysis_id = $record->analysis_id;
-    
-    // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0]['value'] = [];
-    $entity->{$field_name}['und'][0]['value'][$url_type] = url('fix_me');
-  }
-  
-  /**
-   * 
-   */
-  private function loadFeature(&$entity) {
-    $record = $entity->chado_record;
-    $settings = $this->instance['settings'];
-    $field_name = $this->field['field_name'];
-    $field_type = $this->field['type'];
-    $field_table = $this->instance['settings']['chado_table'];
-    $field_column = $this->instance['settings']['chado_column'];
-    
-    // Get the term used for the URL
-    $url_type = tripal_get_chado_semweb_term('db', 'url');
-    $feature_id = $record->feature_id;
-    
-    // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0]['value'] = [];
-    $entity->{$field_name}['und'][0]['value'][$url_type] = url('fix_me');
-  }
 
   /**
    * Loads the field values from the underlying data store.
    *
-   * @param $entity
-   *
-   * @return
-   *   An array of the following format:
-   *     $entity->{$field_name}['und'][0]['value'] = $value;
-   *   where:
-   *     - $entity is the entity object to which this field is attached.
-   *     - $field_name is the name of this field
-   *     - 'und' is the language code (in this case 'und' == undefined)
-   *     - 0 is the cardinality.  Increment by 1 when more than one item is
-   *       available.
-   *     - 'value' is the key indicating the value of this field. It should
-   *       always be set.  The value of the 'value' key will be the contents
-   *       used for web services and for downloadable content.  The value
-   *       should be of the follow format types: 1) A single value (text,
-   *       numeric, etc.) 2) An array of key value pair. 3) If multiple entries
-   *       then cardinality should incremented and format types 1 and 2 should
-   *       be used for each item.
-   *   The array may contain as many other keys at the same level as 'value'
-   *   but those keys are for internal field use and are not considered the
-   *   value of the field.
    */
   public function load($entity) {
-    if ($entity->chado_table === "analysis") {
-      $this->loadAnalysis($entity);
+    
+    $record = $entity->chado_record;
+    $chado_table = $entity->chado_table;
+    $field_name = $this->field['field_name'];
+    
+    // Get the list of analyses
+    $analyses = [];
+    if ($chado_table === "analysis") {      
+      $analyses[$record->analysis_id] = [
+        'name' => $record->name,
+        'entity_id' => $entity->id,
+      ];
     }
-    if ($entity->chado_table === "feature") {
-      $this->loadFeature($entity);
+    if ($chado_table === "feature") {
+      $sql = "
+        SELECT * 
+        FROM (SELECT DISTINCT analysis_id
+              FROM {expression_feature_all}
+              WHERE feature_id = :feature_id) as TBL1
+          INNER JOIN {analysis} A ON TBL1.analysis_id = A.analysis_id  
+      ";      
+      $results = chado_query($sql, [':feature_id' => $record->feature_id]);
+      while ($analysis = $results->fetchObject()) {        
+        // Only iclude analyses that are published.
+        $entity_id = chado_get_record_entity_by_table('analysis', $analysis->analysis_id);
+        if ($entity_id) {
+          $analyses[$analysis->analysis_id] = [
+            'entity_id' => $entity_id,
+            'name' => $analysis->name,
+          ];
+        }
+      }      
+    }
+
+    // Get the number of features.
+    $values = [];
+    $sql = "
+      SELECT analysis_id, count(feature_id) as num_features
+      FROM 
+        (SELECT DISTINCT analysis_id, feature_id
+         FROM {expression_feature_all} EFA  
+         WHERE analysis_id IN (:analysis_ids)) AS TBL1
+      GROUP BY analysis_id
+    ";
+    $results = chado_query($sql, [":analysis_ids" => array_keys($analyses)]);
+    while ($result = $results->fetchObject()) {
+      
+      // Analysis information.
+      $values[$result->analysis_id]['operation:2945'] = [
+        'entity' => 'TripalEntity:' . $analyses[$result->analysis_id]['entity_id'],
+        'schema:name' => $analyses[$result->analysis_id]['name']
+      ];
+      
+      // Description statistics.
+      $values[$result->analysis_id]['AFP:0003636'][] = [
+        'NCIT:C25463' => $result->num_features,
+        'NCIT:C25284' => 'Feature',
+      ];
+      
+      // Data Download link
+      if ($chado_table == 'analysis') {
+        $values[$result->analysis_id]['schema:DataDownload'] = url("tripal/analysis-expression/download") . "?analysis_id=" . $result->analysis_id;          
+      }
+      if ($chado_table == 'feature') {
+        $values[$result->analysis_id]['schema:DataDownload'] = url("tripal/analysis-expression/download") . "?feature_ids=" . $record->feature_id . "&analysis_id=" . $result->analysis_id;
+      }
+    }
+      
+    // Get the number of biomaterials.
+    $sql = "
+      SELECT analysis_id, count(biomaterial_name) as num_biomaterials
+      FROM
+        (SELECT DISTINCT analysis_id, biomaterial_name
+         FROM {expression_feature_all}
+         WHERE analysis_id IN (:analysis_ids)) AS TBL1
+      GROUP BY analysis_id
+    ";
+    $results = chado_query($sql, [":analysis_ids" => array_keys($analyses)]);
+    while ($result = $results->fetchObject()) {
+      
+      // Analysis information.
+      $values[$result->analysis_id]['operation:2945'] = [
+        'entity' => 'TripalEntity:' . $analyses[$result->analysis_id]['entity_id'],
+        'schema:name' => $analyses[$result->analysis_id]['name']
+      ];
+      
+      // Description statistics.
+      $values[$result->analysis_id]['AFP:0003636'][] = [
+        'NCIT:C25463' => $result->num_biomaterials,
+        'NCIT:C25284' => 'Sample'
+      ];
+      
+      // Data Download link
+      if ($chado_table == 'analysis') {
+        $values[$result->analysis_id]['schema:DataDownload'] = NULL;
+      }
+      if ($chado_table == 'feature') {
+        $values[$result->analysis_id]['schema:DataDownload'] = url("tripal/analysis-expression/download",
+            ['absolute' => TRUE, 'query' => ['analysis_id' => $result->analysis_id, 'feature_ids' => $record->feature_id]]);
+      }
+    }
+       
+    // Set some defaults for the empty record.
+    $i = 0;
+    foreach ($values as $value) {
+      $entity->{$field_name}['und'][$i]['value'] = $value;
+      $i++;
     }
     return $entity;
+  }
+  
+  /**
+   * @see TripalField::elementInfo()
+   */
+  public function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    
+    $analysis_term = 'operation:2945';
+    $type_term = 'NCIT:C25463';
+    $count_term = 'NCIT:C25463';
+    $dlink_term = 'schema:DataDownload';
+    $stats_term = 'AFP:0003636';
+    $name_term = 'schema:name';
+    
+    return [
+      $field_term => [
+        'operations' => ['eq', 'contains', 'starts'],
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+        'readonly' => FALSE,
+        'type' => 'xs:complexType',
+        'elements' => [
+          $analysis_term => [
+            'searchable' => FALSE,
+            'name' => 'Analysis',
+            'operations' => [],
+            'sortable' => FALSE,
+            'type' => 'xs:string',
+            'readonly' => TRUE,
+            'required' => TRUE,
+            'elements' => [
+              'entity' => [
+                'searchable' => FALSE,
+              ],
+              $name_term => [
+                'searchable' => FALSE,
+                'name' => 'Name',
+                'operations' => [],
+                'sortable' => FALSE,
+                'readonly' => TRUE,
+                'type' => 'xs:string',
+                'required' => FALSE,
+              ],
+            ],
+          ],
+          $stats_term => [
+            'searchable' => FALSE,
+            'name' => 'Descriptive Statistics',
+            'operations' => [],
+            'sortable' => FALSE,
+            'readonly' => TRUE,
+            'type' => 'xs:string',
+            'required' => FALSE,
+            'elements' => [
+              $count_term => [
+                'searchable' => FALSE,
+                'name' => 'Count',
+                'operations' => [],
+                'sortable' => FALSE,
+                'readonly' => TRUE,
+                'type' => 'xs:string',
+                'required' => FALSE,
+              ],
+              $type_term => [
+                'searchable' => FALSE,
+                'name' => 'Element Type',
+                'operations' => [],
+                'sortable' => FALSE,
+                'readonly' => TRUE,
+                'type' => 'xs:string',
+                'required' => FALSE,
+              ]
+            ],
+          ],
+          $dlink_term => [
+            'searchable' => FALSE,
+            'name' => 'Data Download',
+            'operations' => [],
+            'sortable' => FALSE,
+            'readonly' => TRUE,
+            'type' => 'xs:string',
+            'required' => FALSE,
+          ]
+        ],
+      ],
+    ];
   }
 }

@@ -1,5 +1,55 @@
 <?php 
 
+function tripal_analysis_expression_feature_download_form($form, &$form_state,
+    $feature_id = NULL) {  
+ 
+  global $user;
+  
+  // Get the list of analyses:
+  $sql = "
+    SELECT AN.analysis_id, AN.name
+    FROM {elementresult} ER
+      INNER JOIN {element} E ON E.element_id = ER.element_id
+      INNER JOIN {feature} F ON F.feature_id = E.feature_id
+      INNER JOIN {quantification} Q ON Q.quantification_id = ER.quantification_id
+      INNER JOIN {acquisition} AQ ON AQ.acquisition_id = Q.acquisition_id
+      INNER JOIN {assay} A ON A.assay_id = AQ.assay_id
+      INNER JOIN {assay_biomaterial} AB ON AB.assay_id = A.assay_id
+      INNER JOIN {biomaterial} B ON B.biomaterial_id = AB.biomaterial_id
+      INNER JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
+    WHERE F.feature_id = :feature_id
+    ORDER BY AN.name
+  ";
+  $results = chado_query($sql, [":feature_id" => $feature_id]);
+  $analyses = [0 => '--Select--'];
+  while ($analysis = $results->fetchObject()) {
+    // Only show analyses the user has permission tovie.
+    $entity_id = chado_get_record_entity_by_table('analysis', $analysis->analysis_id);
+    if ($entity_id){
+      $entity = tripal_load_entity('TripalEntity', [$entity_id]);
+      if (tripal_entity_access('view', $entity[$entity_id], $user, 'TripalEntity')) {
+        $analyses[$analysis->analysis_id] = $analysis->name;
+      }
+    }
+  }
+  
+  $form['instructions'] = [
+    '#type' => 'markup',
+    '#markup' => '<p>' . t('You can download the expression data for this feature by selecting an analysis and clicking the Download button.') . '</p>',
+  ];
+  $form['analysis_id'] = [
+    '#type' => 'select',
+    '#title' => 'Analysis',
+    '#options' => $analyses,
+    '#description' => 'Select an analysis to download expression data for this feature.',
+    '#attributes' => ['class' => ['analyses-dropdown']],
+  ];
+  $form['download_button'] = [
+    '#type' => 'button',
+    '#value' => 'Download'
+  ];
+  return $form;
+}
 /**
  * 
  */
@@ -151,14 +201,6 @@ function tripal_analysis_expression_feature_viewer_form($form, &$form_state,
         rearrange groups along the x-axis. You can also click and drag to move
         the legend.</p>'
     ];  
-    
-    $form['download'] = [
-      '#type' => 'markup',
-      '#markup' => '
-        <a href="/tripal/analysis-expression/download?feature_ids=' . $feature_id . '&analysis_id=' . $analysis_id .'" id="expressionDownloadLink">
-         Download expression dataset for this feature
-      </a>'
-    ];
   }
   
   $form['viewer_wrapper_end'] = [
