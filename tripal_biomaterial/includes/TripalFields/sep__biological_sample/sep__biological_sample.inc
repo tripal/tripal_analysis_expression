@@ -123,6 +123,10 @@ class sep__biological_sample extends ChadoField{
       $this->analysisCount($entity);
     }
 
+    if ($entity->chado_table == 'project') {
+      $this->projectCount($entity);
+    }
+
     if ($entity->chado_table == 'organism') {
       $this->organismCount($entity);
     }
@@ -140,17 +144,50 @@ class sep__biological_sample extends ChadoField{
     $entity->{$field}['und'] = [];
     $analysis_id = $entity->chado_record_id;
 
-    $sql = 'SELECT COUNT(*) as count
-              FROM {biomaterial} B
-              JOIN {assay_biomaterial} AB ON B.biomaterial_id = AB.biomaterial_id
+    $sql = 'SELECT COUNT(*) as count FROM (
+              SELECT DISTINCT B1.biomaterial_id FROM {biomaterial} B1
+              JOIN {assay_biomaterial} AB ON B1.biomaterial_id = AB.biomaterial_id
               JOIN {assay} A ON A.assay_id = AB.assay_id
               JOIN {acquisition} AQ ON AQ.assay_id = A.assay_id
               JOIN {quantification} Q ON Q.acquisition_id = AQ.acquisition_id
-              JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
-              WHERE AN.analysis_id=:analysis_id';
+              JOIN {analysis} AN1 ON AN1.analysis_id = Q.analysis_id
+              WHERE AN1.analysis_id=:analysis_id
+            UNION
+            SELECT DISTINCT B2.biomaterial_id FROM {biomaterial} B2
+              JOIN {biomaterial_project} BP ON B2.biomaterial_id = BP.biomaterial_id
+              JOIN {project_analysis} PA ON PA.project_id = BP.project_id
+              JOIN {analysis} AN2 ON PA.analysis_id = AN2.analysis_id
+              WHERE AN2.analysis_id=:analysis_id
+            ) N';
 
     $count = (int) chado_query($sql,
       [":analysis_id" => $analysis_id])->fetchField(0);
+
+    if ($count > 0) {
+      $entity->{$field}['und'][0]['value'] = $count;
+    }
+  }
+
+  /**
+   * Load data for project pages.
+   *
+   * @param $entity
+   *
+   * @return void
+   */
+  protected function projectCount(&$entity) {
+    $field = get_class();
+    $entity->{$field}['und'] = [];
+    $project_id = $entity->chado_record_id;
+
+    $sql = 'SELECT COUNT(*) as count
+              FROM {biomaterial} B
+              JOIN {biomaterial_project} BP ON B.biomaterial_id = BP.biomaterial_id
+              JOIN {project} P ON P.project_id = BP.project_id
+              WHERE P.project_id=:project_id';
+
+    $count = (int) chado_query($sql,
+      [":project_id" => $project_id])->fetchField(0);
 
     if ($count > 0) {
       $entity->{$field}['und'][0]['value'] = $count;
