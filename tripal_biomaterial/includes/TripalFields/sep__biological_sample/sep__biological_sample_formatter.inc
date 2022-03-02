@@ -103,6 +103,9 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter{
     if ($entity->chado_table === 'analysis') {
       $data_items = $this->loadAnalysis($entity, $page * $per_page, $per_page);
     }
+    elseif ($entity->chado_table === 'project') {
+      $data_items = $this->loadProject($entity, $page * $per_page, $per_page);
+    }
     elseif ($entity->chado_table === 'organism') {
       $data_items = $this->loadOrganism($entity, $page * $per_page, $per_page);
     }
@@ -173,17 +176,22 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter{
     $entity->{$field}['und'] = [];
     $analysis_id = $entity->chado_record_id;
 
-    $sql = 'SELECT B.biomaterial_id, B.name, B.description
-              FROM {biomaterial} B
-              JOIN {assay_biomaterial} AB ON B.biomaterial_id = AB.biomaterial_id
+    $sql = 'SELECT DISTINCT B1.biomaterial_id, B1.name, B1.description FROM {biomaterial} B1
+              JOIN {assay_biomaterial} AB ON B1.biomaterial_id = AB.biomaterial_id
               JOIN {assay} A ON A.assay_id = AB.assay_id
               JOIN {acquisition} AQ ON AQ.assay_id = A.assay_id
               JOIN {quantification} Q ON Q.acquisition_id = AQ.acquisition_id
-              JOIN {analysis} AN ON AN.analysis_id = Q.analysis_id
-              WHERE AN.analysis_id=:analysis_id
-              ORDER BY B.name ASC
-              OFFSET :offset
-              LIMIT :limit';
+              JOIN {analysis} AN1 ON AN1.analysis_id = Q.analysis_id
+              WHERE AN1.analysis_id=:analysis_id
+            UNION
+            SELECT DISTINCT B2.biomaterial_id, B2.name, B2.description FROM {biomaterial} B2
+              JOIN {biomaterial_project} BP ON B2.biomaterial_id = BP.biomaterial_id
+              JOIN {project_analysis} PA ON PA.project_id = BP.project_id
+              JOIN {analysis} AN2 ON PA.analysis_id = AN2.analysis_id
+              WHERE AN2.analysis_id=:analysis_id
+            ORDER BY name ASC
+            OFFSET :offset
+            LIMIT :limit';
 
     $results = chado_query($sql, [
       ":analysis_id" => $analysis_id,
@@ -213,9 +221,87 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter{
         $treatment = NULL;
         $tissue = NULL;
 
-        if (is_object($properties)) {
-          $properties = [$properties];
+        if (!empty($properties)) {
+          foreach ($properties as $property) {
+            $name = strtolower($property->type_id->name);
+            if ($name == "tissue") {
+              $tissue = $property->value;
+            }
+            if ($name == "treatment") {
+              $treatment = $property->value;
+            }
+          }
         }
+
+        $biomaterial_entity_id = chado_get_record_entity_by_table("biomaterial",
+          $b_record_id);
+
+        $value = [
+          'name' => $biomaterial->name,
+          'record_id' => $b_record_id,
+          'entity_id' => $biomaterial_entity_id,
+          'description' => $biomaterial->description,
+          'tissue' => $tissue,
+          'treatment' => $treatment,
+        ];
+
+        $rows[] = $value;
+
+        $i++;
+      }
+    }
+
+    return $rows;
+  }
+
+  /**
+   * Load data for project pages.
+   *
+   * @param $entity
+   *
+   * @return mixed
+   */
+  protected function loadProject(&$entity, $offset, $limit) {
+    $field = get_class();
+    $entity->{$field}['und'] = [];
+    $project_id = $entity->chado_record_id;
+
+    $sql = 'SELECT B.biomaterial_id, B.name, B.description
+              FROM {biomaterial} B
+              JOIN {biomaterial_project} BP ON B.biomaterial_id = BP.biomaterial_id
+              JOIN {project} P ON P.project_id = BP.project_id
+              WHERE P.project_id=:project_id
+              ORDER BY B.name ASC
+              OFFSET :offset
+              LIMIT :limit';
+
+    $results = chado_query($sql, [
+      ":project_id" => $project_id,
+      ':offset' => $offset,
+      ':limit' => $limit,
+    ])->fetchAll();
+
+    if (!$results) {
+      return [];
+    }
+
+    $rows = [];
+    if ($results) {
+      $i = 0;
+      foreach ($results as $biomaterial) {
+
+        $b_record_id = $biomaterial->biomaterial_id;
+
+        $values = [
+          'biomaterial_id' => $b_record_id,
+        ];
+
+        $biomat_full = chado_generate_var("biomaterial", $values);
+        $expanded = chado_expand_var($biomat_full, 'table', 'biomaterialprop');
+        $properties = $expanded->biomaterialprop;
+
+        $treatment = NULL;
+        $tissue = NULL;
 
         if (!empty($properties)) {
           foreach ($properties as $property) {
@@ -294,10 +380,6 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter{
       $expanded = chado_expand_var($biomat_full, 'table', 'biomaterialprop');
       $properties = $expanded->biomaterialprop;
 
-      if (is_object($properties)) {
-        $properties = [$properties];
-      }
-
       $treatment = NULL;
       $tissue = NULL;
 
@@ -365,5 +447,4 @@ class sep__biological_sample_formatter extends ChadoFieldFormatter{
   public function settingsSummary($view_mode) {
     return '';
   }
-
 }
