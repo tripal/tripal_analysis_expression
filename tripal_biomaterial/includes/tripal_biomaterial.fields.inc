@@ -57,7 +57,7 @@ function tripal_biomaterial_bundle_fields_info($entity_type, $bundle) {
     $fields[$field_name] = [
       'field_name' => $field_name,
       'type' => $field_type,
-      'cardinality' => -1,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'locked' => FALSE,
       'storage' => [
         'type' => 'field_chado_storage',
