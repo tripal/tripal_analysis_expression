@@ -208,3 +208,50 @@ function tripal_biomaterial_update_7301() {
     chado_query("ALTER TABLE {biomaterialprop} ADD CONSTRAINT biomaterialprop_cvalue_id_fkey FOREIGN KEY (cvalue_id) REFERENCES {cvterm} (cvterm_id) ON DELETE SET NULL;");
   }
 }
+
+/**
+ * Adds linker table for the sep__biological_sample field.
+ *
+ * This linker table is proposed for chado 1.4, and is used to link a
+ * biomaterial to a project in the sep__biological_sample field.
+ */
+function tripal_biomaterial_update_7302() {
+  try {
+    if (!db_table_exists('biomaterial_project')) {
+      $schema = [
+        'fields' => [
+          'biomaterial_project_id' => ['type' => 'serial', 'not null' => TRUE],
+          'biomaterial_id' => ['type' => 'int', 'not null' => TRUE],
+          'project_id' => ['type' => 'int', 'not null' => TRUE],
+        ],
+        'primary key' => ['biomaterial_project_id'],
+        'foreign keys' => [
+          'biomaterial' => [
+            'table' => 'biomaterial',
+            'columns' => [
+              'biomaterial_id' => 'biomaterial_id',
+            ],
+          ],
+          'project' => [
+            'table' => 'project',
+            'columns' => [
+              'project_id' => 'project_id',
+            ],
+          ],
+        ],
+        'indexes' => [
+          'biomaterial_project_idx1' => ['biomaterial_id'],
+          'biomaterial_project_idx2' => ['project_id'],
+        ],
+        'unique keys' => [
+          'biomaterial_project_unique_uq1' => ['biomaterial_id', 'project_id'],
+        ],
+      ];
+      chado_create_custom_table('biomaterial_project', $schema, TRUE, NULL, FALSE);
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to create chado table biomaterial_project: '. $error);
+  }
+}
