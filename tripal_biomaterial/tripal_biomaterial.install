@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Functions used to install the analysis: expression module.
+ * Functions used to install the tripal_biomaterial module.
  */
 
 /**
@@ -36,19 +36,20 @@ function tripal_biomaterial_install() {
   // Get localization function for installation.
   $t = get_t();
 
-
   tripal_biomaterial_add_cvs();
   tripal_biomaterial_add_cvterms();
 
-  // Make sure the  biomaterial, table is  set
-  // as base tables. This allows the tables to be used as base tables in
-  // Drupal Views.
+  // Make sure the biomaterial table is set as base tables. This
+  // allows the tables to be used as base tables in Drupal Views.
   $update = db_update('tripal_views')->fields([
     'base_table' => 1,
   ])->condition('table_name', 'biomaterial', '=')->execute();
 
-  //Add cvalue_id if not already present in biomateiralprop
+  // Add cvalue_id if not already present in biomaterialprop
   tripal_biomaterial_update_7301();
+
+  // Add biomaterial_project linker table
+  tripal_biomaterial_add_table_biomaterial_project();
 }
 
 
@@ -59,8 +60,10 @@ function tripal_biomaterial_install() {
  */
 function tripal_biomaterial_add_cvs() {
   // CVs for the biomaterial content type.
-  tripal_insert_cv('biomaterial_property', 'Contains property terms for biomaterials.');
-  tripal_insert_cv('biomaterial_relationship', 'Contains types of relationships between biomaterials.');
+  tripal_insert_cv('biomaterial_property',
+                   'Contains property terms for biomaterials.');
+  tripal_insert_cv('biomaterial_relationship',
+                   'Contains types of relationships between biomaterials.');
 }
 
 /**
@@ -108,7 +111,7 @@ function tripal_biomaterial_schema() {
 }
 
 /**
- * Add cvterms related to the analysis: expression module.
+ * Add cvterms related to the tripal_biomaterial module.
  *
  * @ingroup tripal_biomaterial
  */
@@ -118,7 +121,10 @@ function tripal_biomaterial_add_cvterms() {
   // BioSample database.
   tripal_insert_cvterm([
     'name' => 'sample_name',
-    'def' => 'Sample Name is a name that you choose for the sample. It can have any format, but we suggest that you make it concise, unique and consistent within your lab, and as informative as possible. Every Sample Name from a single Submitter must be unique.',
+    'def' => 'Sample Name is a name that you choose for the sample. It can have any ' .
+             'format, but we suggest that you make it concise, unique and consistent ' .
+             'within your lab, and as informative as possible. Every Sample Name from ' .
+             'a single Submitter must be unique.',
     'cv_name' => 'biomaterial_property',
     'db_name' => 'tripal',
   ]);
@@ -132,7 +138,10 @@ function tripal_biomaterial_add_cvterms() {
 
   tripal_insert_cvterm([
     'name' => 'bioproject_accession',
-    'def' => 'The accession number of the BioProject(s) to which the BioSample belongs. If the BioSample belongs to more than one BioProject, enter multiple bioproject_accession columns. A valid BioProject accession has prefix PRJN, PRJE or PRJD, e.g., PRJNA12345.',
+    'def' => 'The accession number of the BioProject(s) to which the BioSample belongs. If ' .
+             'the BioSample belongs to more than one BioProject, enter multiple ' .
+             'bioproject_accession columns. A valid BioProject accession has prefix PRJN, ' .
+             'PRJE or PRJD, e.g., PRJNA12345.',
     'cv_name' => 'biomaterial_property',
     'db_name' => 'tripal',
   ]);
@@ -158,6 +167,48 @@ function tripal_biomaterial_add_cvterms() {
       'db_name' => 'tripal',
     ]);
   }
+}
+
+/**
+ * Adds biomaterial_project linker table.
+ *
+ * This linker table is proposed for chado 1.4, and is used to link a
+ * biomaterial to a project in the sep__biological_sample field.
+ *
+ * @ingroup tripal_biomaterial
+ */
+function tripal_biomaterial_add_table_biomaterial_project() {
+      $schema = [
+        'fields' => [
+          'biomaterial_project_id' => ['type' => 'serial', 'not null' => TRUE],
+          'biomaterial_id' => ['type' => 'int', 'not null' => TRUE],
+          'project_id' => ['type' => 'int', 'not null' => TRUE],
+        ],
+        'primary key' => ['biomaterial_project_id'],
+        'foreign keys' => [
+          'biomaterial' => [
+            'table' => 'biomaterial',
+            'columns' => [
+              'biomaterial_id' => 'biomaterial_id',
+            ],
+          ],
+          'project' => [
+            'table' => 'project',
+            'columns' => [
+              'project_id' => 'project_id',
+            ],
+          ],
+        ],
+        'indexes' => [
+          'biomaterial_project_idx1' => ['biomaterial_id'],
+          'biomaterial_project_idx2' => ['project_id'],
+        ],
+        'unique keys' => [
+          'biomaterial_project_unique_uq1' => ['biomaterial_id', 'project_id'],
+        ],
+      ];
+      chado_create_custom_table('biomaterial_project', $schema, TRUE, NULL, FALSE);
+
 }
 
 /**
@@ -203,8 +254,29 @@ function tripal_biomaterial_update_7300() {
  * Updates the biomaterialprop table to support cvterm target values
  */
 function tripal_biomaterial_update_7301() {
-  if (!chado_column_exists('biomaterialprop', 'cvalue_id')) {
-    chado_query("ALTER TABLE {biomaterialprop} ADD COLUMN cvalue_id bigint");
-    chado_query("ALTER TABLE {biomaterialprop} ADD CONSTRAINT biomaterialprop_cvalue_id_fkey FOREIGN KEY (cvalue_id) REFERENCES {cvterm} (cvterm_id) ON DELETE SET NULL;");
+  try {
+    if (!chado_column_exists('biomaterialprop', 'cvalue_id')) {
+      chado_query("ALTER TABLE {biomaterialprop} ADD COLUMN cvalue_id bigint");
+      chado_query("ALTER TABLE {biomaterialprop} ADD CONSTRAINT biomaterialprop_cvalue_id_fkey FOREIGN KEY (cvalue_id) REFERENCES {cvterm} (cvterm_id) ON DELETE SET NULL;");
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to create chado table biomaterial_project: '. $error);
+  }
+}
+
+/**
+ * Adds biomaterial_project linker table
+ */
+function tripal_biomaterial_update_7302() {
+  try {
+    if (!db_table_exists('biomaterial_project')) {      
+      tripal_biomaterial_add_table_biomaterial_project();
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to create chado table biomaterial_project: '. $error);
   }
 }
