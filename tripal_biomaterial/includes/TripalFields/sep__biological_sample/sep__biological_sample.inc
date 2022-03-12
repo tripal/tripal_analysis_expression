@@ -230,11 +230,6 @@ class sep__biological_sample extends ChadoField{
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = [
       'value' => [],
-      'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__' . 'biomaterial_id' => '',
-      'chado-' . $field_table . '__' . 'tissue' => '',
-      'chado-' . $field_table . '__' . 'treatment' => '',
-      'chado-' . $field_table . '__' . 'description' => '',
     ];
 
     // Chado queries are quite different depending on our content type, use custom sql for each.
@@ -324,12 +319,6 @@ class sep__biological_sample extends ChadoField{
           $tissue_term => $record->tissue,
           $treatment_term => $record->treatment,
         ],
-        'chado-' . $field_table . '__' . $pkey => $entity->chado_record_id,
-        'chado-' . $field_table . '__' . 'biomaterial_id' => $record->biomaterial_id,
-        'chado-' . $field_table . '__' . 'description' => $record->description,
-        'chado-' . $field_table . '__' . 'name' => $record->name,
-        'chado-' . $field_table . '__' . 'tissue' => $record->tissue,
-        'chado-' . $field_table . '__' . 'treatment' => $record->treatment,
       ];
 
       // Is there a published entity for this biomaterial?
@@ -340,7 +329,5 @@ class sep__biological_sample extends ChadoField{
 
       $i++;
     }
-//ob_start(); var_dump($entity); $astring = ob_get_clean(); //@@@
-//file_put_contents( "/dev/shm/entity", "CP1 bio entity=\"$astring\"\n", FILE_APPEND ); //@@@
   }
 }
