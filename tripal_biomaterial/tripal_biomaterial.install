@@ -352,11 +352,9 @@ function tripal_biomaterial_update_7302() {
 function tripal_biomaterial_update_7303() {
   try {
 
-    // Add additional cvterms.
     tripal_biomaterial_add_cvs();
     tripal_biomaterial_add_dbs();
-    tripal_biomaterial_add_cvterms();
-
+    
     // Create new dbxref's for the biomaterial property t erms and
     // swap out the dbxref_id for the terms in the cv table to use these.
     $local_db = new ChadoRecord('db');
@@ -392,6 +390,9 @@ function tripal_biomaterial_update_7303() {
         $cvterm->update();
       }
     }
+    
+    // Add additional cvterms.
+    tripal_biomaterial_add_cvterms();
 
     // Update the NCBI BioSample DB terms. This will create new versions of
     // thes terms in the 'NCBi_BioSample_Terms' database rather than the
