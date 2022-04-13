@@ -1,4 +1,6 @@
 <?php
+require_once('api/tripal_biomaterial.api.inc');
+
 /**
  * @file
  * Functions used to install the tripal_biomaterial module.
@@ -47,7 +49,7 @@ function tripal_biomaterial_install() {
     'base_table' => 1,
   ])->condition('table_name', 'biomaterial', '=')->execute();
 
-  // Add cvalue_id if not already present in biomateiralprop.
+  // Add cvalue_id if not already present in biomaterialprop.
   tripal_biomaterial_alter_biomaterial_table();
 
   // Add biomaterial_project linker table.
@@ -367,12 +369,11 @@ function tripal_biomaterial_update_7302() {
 function tripal_biomaterial_update_7303() {
   try {
 
-    // Add additional cvterms.
-    tripal_biomaterial_add_cvs();
+    // Add additional databases and controlled vocabularies.
     tripal_biomaterial_add_dbs();
-    tripal_biomaterial_add_cvterms();
+    tripal_biomaterial_add_cvs();
 
-    // Create new dbxref's for the biomaterial property t erms and
+    // Create new dbxref's for the biomaterial property terms and
     // swap out the dbxref_id for the terms in the cv table to use these.
     $local_db = new ChadoRecord('db');
     $local_db->setValues(['name' => 'local']);
@@ -413,6 +414,10 @@ function tripal_biomaterial_update_7303() {
     // the 'tripal' database.  For biomaterials that already exist in the
     // database those older terms will still be there.
     tripal_biomaterial_update_prop_terms();
+
+    // Now that db is fixed for existing terms, make sure all cv terms
+    // are present.
+    tripal_biomaterial_add_cvterms();
 
   }
   catch (\PDOException $e) {
