@@ -41,17 +41,16 @@ function tripal_biomaterial_install() {
   tripal_biomaterial_add_cvterms();
   tripal_biomaterial_update_prop_terms();
 
-  // Make sure the biomaterial, table is set
-  // as base tables. This allows the tables to be used as base tables in
-  // Drupal Views.
+  // Make sure the biomaterial table is set as base tables.
+  // This allows the tables to be used as base tables in Drupal Views.
   $update = db_update('tripal_views')->fields([
     'base_table' => 1,
   ])->condition('table_name', 'biomaterial', '=')->execute();
 
-  // Add cvalue_id if not already present in biomateiralprop
+  // Add cvalue_id if not already present in biomateiralprop.
   tripal_biomaterial_alter_biomaterial_table();
 
-  // Add biomaterial_project linker table
+  // Add biomaterial_project linker table.
   tripal_biomaterial_add_table_biomaterial_project();
 }
 
@@ -88,8 +87,8 @@ function tripal_biomaterial_add_dbs() {
     'urlprefix' => 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={accession}'
   ]);
   tripal_insert_db([
-    'name' => 'NCBI_BioSample_Terms',
-    'description' => 'This database provides, in XML format, the listing of attribute names for biosmaples housed in NCBI.',
+    'name' => 'NCBI_BioSample_Attributes',
+    'description' => 'This database provides, in XML format, the listing of attribute names for biosamples housed in NCBI.',
     'url' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes',
     'urlprefix' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes#'
   ]);
@@ -102,12 +101,12 @@ function tripal_biomaterial_add_dbs() {
  */
 function tripal_biomaterial_add_cvs() {
   // CVs for the biomaterial content type.
+  tripal_insert_cv('NCBI Biosample Attributes',
+                   'Attributes describe a BioSample using structured attribute name:value pairs, for example, tissue:liver. BioSample maintains a list of recognized attributes which participate in one or more BioSample packages. In addition to recognized attributes, submitters may provide any number of custom attributes to fully describe a sample.');
   tripal_insert_cv('biomaterial_property',
-                   'Contains property terms for biomaterials.');
+                   'Contains additional property terms for biomaterials.');
   tripal_insert_cv('biomaterial_relationship',
                    'Contains types of relationships between biomaterials.');
-  tripal_insert_cv('NCBI Biosample Attributes', 
-                   'Attributes describe a BioSample using structured attribute name:value pairs, for example, tissue:liver. BioSample maintains a list of recognized attributes which participate in one or more BioSample packages. In addition to recognized attributes, submitters may provide any number of custom attributes to fully describe a sample.');
 }
 
 /**
@@ -229,19 +228,19 @@ function tripal_biomaterial_add_cvterms() {
     'db_name' => 'local',
   ]);
 
-  // We use NCBI biosample attributes as to fill the biomaterialprop cv table.
+  // We use NCBI BioSample attributes to fill the NCBI_BioSample_Attributes cv.
   // These attributes can be accessed at the following url.
-  $url = "http://www.ncbi.nlm.nih.gov/biosample/docs/attributes/?format=xml";
+  $url = "https://www.ncbi.nlm.nih.gov/biosample/docs/attributes/?format=xml";
   $xml_str = file_get_contents($url);
   $xml_obj = simplexml_load_string($xml_str);
 
   foreach ($xml_obj->Attribute as $attribute) {
     chado_insert_cvterm([
-      'id' => 'local:' . $attribute->HarmonizedName
+      'id' => 'local:' . $attribute->HarmonizedName,
       'name' => $attribute->Name,
       'definition' => $attribute->Description,
-      'cv_name' => 'biomaterial_property',
-      'db_name' => 'tripal',
+      'cv_name' => 'NCBI_BioSample_Attributes',
+      'db_name' => 'NCBI BioSample Attributes',
     ]);
   }
 }
@@ -255,36 +254,36 @@ function tripal_biomaterial_add_cvterms() {
  * @ingroup tripal_biomaterial
  */
 function tripal_biomaterial_add_table_biomaterial_project() {
-      $schema = [
-        'fields' => [
-          'biomaterial_project_id' => ['type' => 'serial', 'not null' => TRUE],
-          'biomaterial_id' => ['type' => 'int', 'not null' => TRUE],
-          'project_id' => ['type' => 'int', 'not null' => TRUE],
+  $schema = [
+    'fields' => [
+      'biomaterial_project_id' => ['type' => 'serial', 'not null' => TRUE],
+      'biomaterial_id' => ['type' => 'int', 'not null' => TRUE],
+      'project_id' => ['type' => 'int', 'not null' => TRUE],
+    ],
+    'primary key' => ['biomaterial_project_id'],
+    'foreign keys' => [
+      'biomaterial' => [
+        'table' => 'biomaterial',
+        'columns' => [
+          'biomaterial_id' => 'biomaterial_id',
         ],
-        'primary key' => ['biomaterial_project_id'],
-        'foreign keys' => [
-          'biomaterial' => [
-            'table' => 'biomaterial',
-            'columns' => [
-              'biomaterial_id' => 'biomaterial_id',
-            ],
-          ],
-          'project' => [
-            'table' => 'project',
-            'columns' => [
-              'project_id' => 'project_id',
-            ],
-          ],
+      ],
+      'project' => [
+        'table' => 'project',
+        'columns' => [
+          'project_id' => 'project_id',
         ],
-        'indexes' => [
-          'biomaterial_project_idx1' => ['biomaterial_id'],
-          'biomaterial_project_idx2' => ['project_id'],
-        ],
-        'unique keys' => [
-          'biomaterial_project_unique_uq1' => ['biomaterial_id', 'project_id'],
-        ],
-      ];
-      chado_create_custom_table('biomaterial_project', $schema, TRUE, NULL, FALSE);
+      ],
+    ],
+    'indexes' => [
+      'biomaterial_project_idx1' => ['biomaterial_id'],
+      'biomaterial_project_idx2' => ['project_id'],
+    ],
+    'unique keys' => [
+      'biomaterial_project_unique_uq1' => ['biomaterial_id', 'project_id'],
+    ],
+  ];
+  chado_create_custom_table('biomaterial_project', $schema, TRUE, NULL, FALSE);
 
 }
 
@@ -299,7 +298,7 @@ function tripal_biomaterial_uninstall() {
 
 
 /**
- * Correct cases where the ncbi biosample accession was inserted into
+ * Correct cases where the NCBI biosample accession was inserted into
  * biomaterial.dbxref_id instead of added as a true dbxref
  *
  */
@@ -309,20 +308,21 @@ function tripal_biomaterial_update_7300() {
     $results = chado_query($sql);
     foreach ($results as $result) {
 
-    if ($result->dbxref_id) {
-      $sql = "SELECT DB.name, DBX.accession FROM {dbxref} DBX
-        INNER JOIN {db} DB ON  DBX.db_id = db.db_id
-        WHERE DBX.dbxref_id = :dbxref_id";
+      if ($result->dbxref_id) {
+        $sql = "SELECT DB.name, DBX.accession FROM {dbxref} DBX
+          INNER JOIN {db} DB ON  DBX.db_id = db.db_id
+          WHERE DBX.dbxref_id = :dbxref_id";
 
-      $dbxref = chado_query($sql, [":dbxref_id" => $result->dbxref_id])->fetchObject();
-      if ($dbxref->name == "NCBI BioSample") {
-        $biomaterial_id = $result->biomaterial_id;
-        $ncbi_accession = $dbxref->accession;
+        $dbxref = chado_query($sql, [":dbxref_id" => $result->dbxref_id])->fetchObject();
+        if ($dbxref->name == "NCBI BioSample") {
+          $biomaterial_id = $result->biomaterial_id;
+          $ncbi_accession = $dbxref->accession;
 
-        tripal_associate_dbxref('biomaterial', $biomaterial_id, [
-          'accession' => $ncbi_accession,
-          'db_name' => 'NCBI BioSample',
-        ]);
+          tripal_associate_dbxref('biomaterial', $biomaterial_id, [
+            'accession' => $ncbi_accession,
+            'db_name' => 'NCBI BioSample',
+          ]);
+        }
       }
     }
   }
@@ -388,7 +388,6 @@ function tripal_biomaterial_update_7303() {
     $names = ['organism', 'sample_name', 'sample_title', 'bioproject_accession'];
     foreach ($names as $name) {
 
-
       $dbxref = new ChadoRecord('dbxref');
       $dbxref->setValues([
         'accession' => $name,
@@ -410,8 +409,8 @@ function tripal_biomaterial_update_7303() {
     }
 
     // Update the NCBI BioSample DB terms. This will create new versions of
-    // thes terms in the 'NCBi_BioSample_Terms' database rather than the
-    // 'tripal' database.  For biomaterials that already exist in the
+    // these terms in the 'NCBI_BioSample_Attributes' database rather than
+    // the 'tripal' database.  For biomaterials that already exist in the
     // database those older terms will still be there.
     tripal_biomaterial_update_prop_terms();
 
