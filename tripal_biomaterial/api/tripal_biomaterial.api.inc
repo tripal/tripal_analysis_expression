@@ -784,7 +784,7 @@ function tripal_biomaterial_create_ncbi_db($url_name, $db_name, $db_description)
 function tripal_biomaterial_update_prop_terms() {
   // We use NCBI biosample attributes to fill the biomaterialprop cv table.
   // These attributes can be accessed at the following url.
-  $url = "http://www.ncbi.nlm.nih.gov/biosample/docs/attributes/?format=xml";
+  $url = "https://www.ncbi.nlm.nih.gov/biosample/docs/attributes/?format=xml";
   $xml_str = file_get_contents($url);
   $xml_obj = simplexml_load_string($xml_str);
 
