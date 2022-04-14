@@ -776,7 +776,7 @@ function tripal_biomaterial_create_ncbi_db($url_name, $db_name, $db_description)
 }
 
 /**
- * Updates the NCBI Biosample Attribute CV Terms
+ * Updates the NCBI BioSample Attribute CV Terms
  *
  * Automatically downloads and imports into the CVterm table the attribute
  * names for biomaterials.
@@ -792,7 +792,7 @@ function tripal_biomaterial_update_prop_terms() {
     tripal_insert_cvterm([
       'name' => $attribute->HarmonizedName,
       'definition' => $attribute->Description,
-      'cv_name' => 'NCBI Biosample Attributes',
+      'cv_name' => 'NCBI BioSample Attributes',
       'db_name' => 'NCBI_BioSample_Attributes',
     ]);
   }

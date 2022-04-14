@@ -103,7 +103,7 @@ function tripal_biomaterial_add_dbs() {
  */
 function tripal_biomaterial_add_cvs() {
   // CVs for the biomaterial content type.
-  tripal_insert_cv('NCBI Biosample Attributes',
+  tripal_insert_cv('NCBI BioSample Attributes',
                    'Attributes describe a BioSample using structured attribute name:value pairs, for example, tissue:liver. BioSample maintains a list of recognized attributes which participate in one or more BioSample packages. In addition to recognized attributes, submitters may provide any number of custom attributes to fully describe a sample.');
   tripal_insert_cv('biomaterial_property',
                    'Contains additional property terms for biomaterials.');
