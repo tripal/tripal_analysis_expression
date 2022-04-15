@@ -70,25 +70,25 @@ function tripal_biomaterial_alter_biomaterial_table(){
  *
  */
 function tripal_biomaterial_add_dbs() {
-  tripal_insert_db([
+  chado_insert_db([
     'name' => 'NCBI BioSample',
     'description' => 'The NCBI BioSample database.',
     'url' => 'https://www.ncbi.nlm.nih.gov/biosample/',
     'urlprefix' => 'https://www.ncbi.nlm.nih.gov/biosample/?term={accession}'
   ]);
-  tripal_insert_db([
+  chado_insert_db([
     'name' => 'NCBI SRA',
     'description' => 'The NCBI Sequence Read Archive (SRA) database.',
     'url' => 'https://www.ncbi.nlm.nih.gov/sra',
     'urlprefix' => 'https://www.ncbi.nlm.nih.gov/sra/?term={accession}'
   ]);
-  tripal_insert_db([
+  chado_insert_db([
     'name' => 'NCBI GEO',
     'description' => 'The NCBI Gene Expression Omnibus (GEO) database.',
     'url' => 'https://www.ncbi.nlm.nih.gov/geo',
     'urlprefix' => 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={accession}'
   ]);
-  tripal_insert_db([
+  chado_insert_db([
     'name' => 'NCBI_BioSample_Attributes',
     'description' => 'This database provides, in XML format, the listing of attribute names for biosamples housed in NCBI.',
     'url' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes',
@@ -103,12 +103,12 @@ function tripal_biomaterial_add_dbs() {
  */
 function tripal_biomaterial_add_cvs() {
   // CVs for the biomaterial content type.
-  tripal_insert_cv('NCBI BioSample Attributes',
-                   'Attributes describe a BioSample using structured attribute name:value pairs, for example, tissue:liver. BioSample maintains a list of recognized attributes which participate in one or more BioSample packages. In addition to recognized attributes, submitters may provide any number of custom attributes to fully describe a sample.');
-  tripal_insert_cv('biomaterial_property',
-                   'Contains additional property terms for biomaterials.');
-  tripal_insert_cv('biomaterial_relationship',
-                   'Contains types of relationships between biomaterials.');
+  chado_insert_cv('NCBI BioSample Attributes',
+                  'Attributes describe a BioSample using structured attribute name:value pairs, for example, tissue:liver. BioSample maintains a list of recognized attributes which participate in one or more BioSample packages. In addition to recognized attributes, submitters may provide any number of custom attributes to fully describe a sample.');
+  chado_insert_cv('biomaterial_property',
+                  'Contains additional property terms for biomaterials.');
+  chado_insert_cv('biomaterial_relationship',
+                  'Contains types of relationships between biomaterials.');
 }
 
 /**

@@ -213,10 +213,10 @@ function expression_create_biomaterial_structure($biomaterial, $organism_id, $an
   $assay_biomaterial_id = create_assay_biomaterial($assay_id, $biomaterial_id,
     $channel_id);
 
-  //Attach the units to the quantification
+  // Attach the units to the quantification
   if ($quantificationunits) {
 
-    $cvterm_id = tripal_get_cvterm([
+    $cvterm_id = chado_get_cvterm([
       'name' => 'unit_of_measure',
       'cv_id' => [
         'name' => 'sep',
@@ -224,7 +224,7 @@ function expression_create_biomaterial_structure($biomaterial, $organism_id, $an
     ])->cvterm_id;
 
     if (!$cvterm_id) {
-      $cvterm_id = tripal_insert_cvterm([
+      $cvterm_id = chado_insert_cvterm([
         'id' => 'sep:00056',
         'name' => 'unit_of_measure',
         'cv_name' => 'sep',
@@ -789,11 +789,12 @@ function tripal_biomaterial_update_prop_terms() {
   $xml_obj = simplexml_load_string($xml_str);
 
   foreach ($xml_obj->Attribute as $attribute) {
-    tripal_insert_cvterm([
+    chado_insert_cvterm([
       'name' => $attribute->HarmonizedName,
       'definition' => $attribute->Description,
       'cv_name' => 'NCBI BioSample Attributes',
       'db_name' => 'NCBI_BioSample_Attributes',
-    ]);
+    ],
+    ['update_existing' => true]);
   }
 }
