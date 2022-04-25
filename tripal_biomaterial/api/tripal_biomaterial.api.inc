@@ -794,7 +794,6 @@ function tripal_biomaterial_update_prop_terms() {
       'definition' => $attribute->Description,
       'cv_name' => 'NCBI BioSample Attributes',
       'db_name' => 'NCBI_BioSample_Attributes',
-    ],
-    ['update_existing' => true]);
+    ]);
   }
 }

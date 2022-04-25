@@ -92,7 +92,6 @@ function tripal_biomaterial_add_dbs() {
     'name' => 'NCBI_BioSample_Attributes',
     'description' => 'This database provides, in XML format, the listing of attribute names for biosamples housed in NCBI.',
     'url' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes',
-    'urlprefix' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes#'
   ]);
 }
 
