@@ -284,6 +284,22 @@ function tripal_biomaterial_uninstall() {
 
 }
 
+/**
+ * Repopulates db2cv materialized view.
+ */
+function tripal_biomaterial_repopulate_db2cv_mview($jobname='Repopulating db2cv_mview') {
+  global $user;
+  $sql = "SELECT mview_id FROM [tripal_mviews] WHERE modulename=:modulename AND name=:name";
+  $args = [':modulename' => 'tripal_chado', ':name' => 'db2cv_mview'];
+  $mview_id = chado_query($sql, $args)->fetchField();
+  tripal_add_job(
+    $jobname,
+    'tripal_chado',
+    'chado_populate_mview',
+    [$mview_id],
+    $user->uid
+  );
+}
 
 /**
  * Correct cases where the NCBI biosample accession was inserted into
@@ -404,6 +420,9 @@ function tripal_biomaterial_update_7303() {
     // Now that the db is fixed for existing terms, make sure all cv terms
     // are present.
     tripal_biomaterial_add_cvterms();
+
+    // Repopulate materialized view
+    tripal_biomaterial_repopulate_db2cv_mview('Repopulating db2cv_mview after CV update');
 
   }
   catch (\PDOException $e) {
