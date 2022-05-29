@@ -36,22 +36,64 @@ function tripal_biomaterial_install() {
   // Get localization function for installation.
   $t = get_t();
 
+  tripal_biomaterial_add_dbs();
   tripal_biomaterial_add_cvs();
   tripal_biomaterial_add_cvterms();
+  tripal_biomaterial_update_prop_terms();
 
-  // Make sure the biomaterial table is set as base tables. This
-  // allows the tables to be used as base tables in Drupal Views.
+  // Make sure the biomaterial, table is set
+  // as base tables. This allows the tables to be used as base tables in
+  // Drupal Views.
   $update = db_update('tripal_views')->fields([
     'base_table' => 1,
   ])->condition('table_name', 'biomaterial', '=')->execute();
 
-  // Add cvalue_id if not already present in biomaterialprop
-  tripal_biomaterial_update_7301();
+  // Add cvalue_id if not already present in biomateiralprop
+  tripal_biomaterial_alter_biomaterial_table();
 
   // Add biomaterial_project linker table
   tripal_biomaterial_add_table_biomaterial_project();
 }
 
+/**
+ *
+ */
+function tripal_biomaterial_alter_biomaterial_table(){
+  if (!chado_column_exists('biomaterialprop', 'cvalue_id')) {
+    chado_query("ALTER TABLE {biomaterialprop} ADD COLUMN cvalue_id bigint");
+    chado_query("ALTER TABLE {biomaterialprop} ADD CONSTRAINT biomaterialprop_cvalue_id_fkey FOREIGN KEY (cvalue_id) REFERENCES {cvterm} (cvterm_id) ON DELETE SET NULL;");
+  }
+}
+
+/**
+ *
+ */
+function tripal_biomaterial_add_dbs() {
+  tripal_insert_db([
+    'name' => 'NCBI BioSample',
+    'description' => 'The NCBI BioSample database.',
+    'url' => 'https://www.ncbi.nlm.nih.gov/biosample/',
+    'urlprefix' => 'https://www.ncbi.nlm.nih.gov/biosample/?term={accession}'
+  ]);
+  tripal_insert_db([
+    'name' => 'NCBI SRA',
+    'description' => 'The NCBI Sequence Read Archive (SRA) database.',
+    'url' => 'https://www.ncbi.nlm.nih.gov/sra',
+    'urlprefix' => 'https://www.ncbi.nlm.nih.gov/sra/?term={accession}'
+  ]);
+  tripal_insert_db([
+    'name' => 'NCBI GEO',
+    'description' => 'The NCBI Gene Expression Omnibus (GEO) database.',
+    'url' => 'https://www.ncbi.nlm.nih.gov/geo',
+    'urlprefix' => 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={accession}'
+  ]);
+  tripal_insert_db([
+    'name' => 'NCBI_BioSample_Terms',
+    'description' => 'This database provides, in XML format, the listing of attribute names for biosmaples housed in NCBI.',
+    'url' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes',
+    'urlprefix' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes#'
+  ]);
+}
 
 /**
  * Add controlled vocabulary terms used by the biomaterials module.
@@ -64,6 +106,8 @@ function tripal_biomaterial_add_cvs() {
                    'Contains property terms for biomaterials.');
   tripal_insert_cv('biomaterial_relationship',
                    'Contains types of relationships between biomaterials.');
+  tripal_insert_cv('NCBI Biosample Attributes', 
+                   'Attributes describe a BioSample using structured attribute name:value pairs, for example, tissue:liver. BioSample maintains a list of recognized attributes which participate in one or more BioSample packages. In addition to recognized attributes, submitters may provide any number of custom attributes to fully describe a sample.');
 }
 
 /**
@@ -119,54 +163,71 @@ function tripal_biomaterial_add_cvterms() {
 
   // Insert the basic biomaterialprop types. These types are used in the NCBI
   // BioSample database.
-  tripal_insert_cvterm([
+  chado_insert_cvterm([
+    'id' => 'local:sample_name',
     'name' => 'sample_name',
-    'def' => 'Sample Name is a name that you choose for the sample. It can have any ' .
-             'format, but we suggest that you make it concise, unique and consistent ' .
-             'within your lab, and as informative as possible. Every Sample Name from ' .
-             'a single Submitter must be unique.',
+    'definition' => 'Sample Name is a name that you choose for the sample. It can have any ' .
+      'format, but we suggest that you make it concise, unique and consistent ' .
+      'within your lab, and as informative as possible. Every Sample Name from ' .
+      'a single Submitter must be unique.',
     'cv_name' => 'biomaterial_property',
-    'db_name' => 'tripal',
+    'db_name' => 'local',
   ]);
 
-  tripal_insert_cvterm([
+  chado_insert_cvterm([
+    'id' => 'local:sample_title',
     'name' => 'sample_title',
-    'def' => 'Title of the sample.',
+    'definition' => 'Title of the sample.',
     'cv_name' => 'biomaterial_property',
-    'db_name' => 'tripal',
+    'db_name' => 'local',
   ]);
 
-  tripal_insert_cvterm([
-    'name' => 'bioproject_accession',
-    'def' => 'The accession number of the BioProject(s) to which the BioSample belongs. If ' .
+  chado_insert_cvterm([
+    'id' => 'local:ncbi_bioproject_accession',
+    'name' => 'NCBI BioProject accession',
+    'definition' => 'The accession number of the BioProject(s) to which the BioSample belongs. If ' .
              'the BioSample belongs to more than one BioProject, enter multiple ' .
              'bioproject_accession columns. A valid BioProject accession has prefix PRJN, ' .
              'PRJE or PRJD, e.g., PRJNA12345.',
     'cv_name' => 'biomaterial_property',
-    'db_name' => 'tripal',
+    'db_name' => 'local',
   ]);
 
-  tripal_insert_cvterm([
-    'name' => 'organism',
-    'def' => 'The most descriptive organism name for this sample (to the species, if relevant).',
+  chado_insert_cvterm([
+    'id' => 'local:ncbi_biosample_accession',
+    'name' => 'NCBI BioSample accession',
+    'definition' => 'The accession number of the NCBI Biosample.',
     'cv_name' => 'biomaterial_property',
-    'db_name' => 'tripal',
+    'db_name' => 'local',
   ]);
-
-  // We use NCBI biosample attributes as to fill the biomaterialprop cv table.
-  // These attributes can be accessed at the following url.
-  $url = "http://www.ncbi.nlm.nih.gov/biosample/docs/attributes/?format=xml";
-  $xml_str = file_get_contents($url);
-  $xml_obj = simplexml_load_string($xml_str);
-
-  foreach ($xml_obj->Attribute as $attribute) {
-    tripal_insert_cvterm([
-      'name' => $attribute->HarmonizedName,
-      'def' => $attribute->Description,
-      'cv_name' => 'biomaterial_property',
-      'db_name' => 'tripal',
-    ]);
-  }
+  chado_insert_cvterm([
+    'id' => 'local:ncbi_sra_run_accession',
+    'name' => 'NCBI SRA run accession',
+    'definition' => 'The accession number of the NCBI SRA Run.',
+    'cv_name' => 'biomaterial_property',
+    'db_name' => 'local',
+  ]);
+  chado_insert_cvterm([
+    'id' => 'local:ncbi_sra_exp_accession',
+    'name' => 'NCBI SRA experiment accession',
+    'definition' => 'The accession number of the NCBI SRA Experiment.',
+    'cv_name' => 'biomaterial_property',
+    'db_name' => 'local',
+  ]);
+  chado_insert_cvterm([
+    'id' => 'local:ncbi_sra_study_accession',
+    'name' => 'NCBI SRA study accession',
+    'definition' => 'The accession number of the NCBI SRA Study.',
+    'cv_name' => 'biomaterial_property',
+    'db_name' => 'local',
+  ]);
+  chado_insert_cvterm([
+    'id' => 'local:organism',
+    'name' => 'organism',
+    'definition' => 'The most descriptive organism name for this sample (to the species, if relevant).',
+    'cv_name' => 'biomaterial_property',
+    'db_name' => 'local',
+  ]);
 }
 
 /**
@@ -178,36 +239,36 @@ function tripal_biomaterial_add_cvterms() {
  * @ingroup tripal_biomaterial
  */
 function tripal_biomaterial_add_table_biomaterial_project() {
-      $schema = [
-        'fields' => [
-          'biomaterial_project_id' => ['type' => 'serial', 'not null' => TRUE],
-          'biomaterial_id' => ['type' => 'int', 'not null' => TRUE],
-          'project_id' => ['type' => 'int', 'not null' => TRUE],
+  $schema = [
+    'fields' => [
+      'biomaterial_project_id' => ['type' => 'serial', 'not null' => TRUE],
+      'biomaterial_id' => ['type' => 'int', 'not null' => TRUE],
+      'project_id' => ['type' => 'int', 'not null' => TRUE],
+    ],
+    'primary key' => ['biomaterial_project_id'],
+    'foreign keys' => [
+      'biomaterial' => [
+        'table' => 'biomaterial',
+        'columns' => [
+          'biomaterial_id' => 'biomaterial_id',
         ],
-        'primary key' => ['biomaterial_project_id'],
-        'foreign keys' => [
-          'biomaterial' => [
-            'table' => 'biomaterial',
-            'columns' => [
-              'biomaterial_id' => 'biomaterial_id',
-            ],
-          ],
-          'project' => [
-            'table' => 'project',
-            'columns' => [
-              'project_id' => 'project_id',
-            ],
-          ],
+      ],
+      'project' => [
+        'table' => 'project',
+        'columns' => [
+          'project_id' => 'project_id',
         ],
-        'indexes' => [
-          'biomaterial_project_idx1' => ['biomaterial_id'],
-          'biomaterial_project_idx2' => ['project_id'],
-        ],
-        'unique keys' => [
-          'biomaterial_project_unique_uq1' => ['biomaterial_id', 'project_id'],
-        ],
-      ];
-      chado_create_custom_table('biomaterial_project', $schema, TRUE, NULL, FALSE);
+      ],
+    ],
+    'indexes' => [
+      'biomaterial_project_idx1' => ['biomaterial_id'],
+      'biomaterial_project_idx2' => ['project_id'],
+    ],
+    'unique keys' => [
+      'biomaterial_project_unique_uq1' => ['biomaterial_id', 'project_id'],
+    ],
+  ];
+  chado_create_custom_table('biomaterial_project', $schema, TRUE, NULL, FALSE);
 
 }
 
@@ -227,26 +288,32 @@ function tripal_biomaterial_uninstall() {
  *
  */
 function tripal_biomaterial_update_7300() {
-  $sql = "SELECT * FROM {biomaterial}";
-  $results = chado_query($sql);
-  foreach ($results as $result) {
+  try {
+    $sql = "SELECT * FROM {biomaterial}";
+    $results = chado_query($sql);
+    foreach ($results as $result) {
 
-    if ($result->dbxref_id) {
-      $sql = "SELECT DB.name, DBX.accession FROM {dbxref} DBX
-        INNER JOIN {db} DB ON  DBX.db_id = db.db_id
-        WHERE DBX.dbxref_id = :dbxref_id";
-
-      $dbxref = chado_query($sql, [":dbxref_id" => $result->dbxref_id])->fetchObject();
-      if ($dbxref->name == "NCBI BioSample") {
-        $biomaterial_id = $result->biomaterial_id;
-        $ncbi_accession = $dbxref->accession;
-
-        tripal_associate_dbxref('biomaterial', $biomaterial_id, [
-          'accession' => $ncbi_accession,
-          'db_name' => 'NCBI BioSample',
-        ]);
+      if ($result->dbxref_id) {
+        $sql = "SELECT DB.name, DBX.accession FROM {dbxref} DBX
+          INNER JOIN {db} DB ON  DBX.db_id = db.db_id
+          WHERE DBX.dbxref_id = :dbxref_id";
+  
+        $dbxref = chado_query($sql, [":dbxref_id" => $result->dbxref_id])->fetchObject();
+        if ($dbxref->name == "NCBI BioSample") {
+          $biomaterial_id = $result->biomaterial_id;
+          $ncbi_accession = $dbxref->accession;
+  
+          tripal_associate_dbxref('biomaterial', $biomaterial_id, [
+            'accession' => $ncbi_accession,
+            'db_name' => 'NCBI BioSample',
+          ]);
+        }
       }
     }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
 
@@ -255,14 +322,11 @@ function tripal_biomaterial_update_7300() {
  */
 function tripal_biomaterial_update_7301() {
   try {
-    if (!chado_column_exists('biomaterialprop', 'cvalue_id')) {
-      chado_query("ALTER TABLE {biomaterialprop} ADD COLUMN cvalue_id bigint");
-      chado_query("ALTER TABLE {biomaterialprop} ADD CONSTRAINT biomaterialprop_cvalue_id_fkey FOREIGN KEY (cvalue_id) REFERENCES {cvterm} (cvterm_id) ON DELETE SET NULL;");
-    }
+    tripal_biomaterial_alter_biomaterial_table();
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to create chado table biomaterial_project: '. $error);
+    throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
 
@@ -278,5 +342,67 @@ function tripal_biomaterial_update_7302() {
   catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to create chado table biomaterial_project: '. $error);
+  }
+}
+
+/**
+ * Adds the NCBI biomaterial database and adds the terms to it.  Also moves
+ * terms from the tripal vocabulary into local.
+ */
+function tripal_biomaterial_update_7303() {
+  try {
+
+    tripal_biomaterial_add_cvs();
+    tripal_biomaterial_add_dbs();
+    
+    // Create new dbxref's for the biomaterial property t erms and
+    // swap out the dbxref_id for the terms in the cv table to use these.
+    $local_db = new ChadoRecord('db');
+    $local_db->setValues(['name' => 'local']);
+    $local_db->find();
+
+    $biomprop_cv = new ChadoRecord('cv');
+    $biomprop_cv->setValues(['name' => 'biomaterial_property']);
+    $biomprop_cv->find();
+
+    // Iterate through each of the terms that used to be in the 'tripal'
+    // database and swap the dbxrefs to the new terms linked to the 'local'
+    // database.
+    $names = ['organism', 'sample_name', 'sample_title', 'bioproject_accession'];
+    foreach ($names as $name) {
+
+      $dbxref = new ChadoRecord('dbxref');
+      $dbxref->setValues([
+        'accession' => $name,
+        'db_id' => $local_db->getID(),
+      ]);
+      if (!$dbxref->find()) {
+        $dbxref->insert();
+      }
+
+      $cvterm = new ChadoRecord('cvterm');
+      $cvterm->setValues([
+        'name' => $name,
+        'cv_id' => $biomprop_cv->getID(),
+      ]);
+      if ($cvterm->find()) {
+        $cvterm->setValue('dbxref_id', $dbxref->getID());
+        $cvterm->update();
+      }
+    }
+    
+    // Add additional cvterms.
+    tripal_biomaterial_add_cvterms();
+
+    // Update the NCBI BioSample DB terms. This will create new versions of
+    // thes terms in the 'NCBi_BioSample_Terms' database rather than the
+    // 'tripal' database.  For biomaterials that already exist in the
+    // database those older terms will still be there.
+    tripal_biomaterial_update_prop_terms();
+
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }

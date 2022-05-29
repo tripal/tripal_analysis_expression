@@ -774,3 +774,27 @@ function tripal_biomaterial_create_ncbi_db($url_name, $db_name, $db_description)
   }
   return $db_id;
 }
+
+/**
+ * Updates the NCBI Biosample Attribute CV Terms
+ *
+ * Automatically downloads and imports into the CVterm table the attribute
+ * names for biomaterials.
+ */
+function tripal_biomaterial_update_prop_terms() {
+  // We use NCBI biosample attributes as to fill the biomaterialprop cv table.
+  // These attributes can be accessed at the following url.
+  $url = "http://www.ncbi.nlm.nih.gov/biosample/docs/attributes/?format=xml";
+  $xml_str = file_get_contents($url);
+  $xml_obj = simplexml_load_string($xml_str);
+
+  foreach ($xml_obj->Attribute as $attribute) {
+    chado_insert_cvterm([
+      'id' => 'NCBI_BioSample_Terms:' . $attribute->Name,
+      'name' => $attribute->Name,
+      'definition' => $attribute->Description,
+      'cv_name' => 'NCBI Biosample Attributes',
+      'db_name' => 'NCBI_BioSample_Terms',
+    ], ['update_existing' => FALSE]);
+  }
+}
