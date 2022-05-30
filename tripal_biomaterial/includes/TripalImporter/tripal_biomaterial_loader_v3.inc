@@ -2060,7 +2060,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
 
         if ($name == 'biosample_accession') {
           $url_name = 'biosample';
-          $db_name = 'NCBI Biosample';
+          $db_name = 'NCBI BioSample';
         }
         if ($name == 'bioproject_accession') {
           $url_name = 'bioproject';

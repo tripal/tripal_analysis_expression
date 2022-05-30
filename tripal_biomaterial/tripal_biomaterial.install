@@ -196,7 +196,7 @@ function tripal_biomaterial_add_cvterms() {
   chado_insert_cvterm([
     'id' => 'local:ncbi_biosample_accession',
     'name' => 'NCBI BioSample accession',
-    'definition' => 'The accession number of the NCBI Biosample.',
+    'definition' => 'The accession number of the NCBI BioSample.',
     'cv_name' => 'biomaterial_property',
     'db_name' => 'local',
   ]);
