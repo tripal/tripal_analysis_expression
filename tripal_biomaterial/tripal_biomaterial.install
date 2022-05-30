@@ -106,7 +106,7 @@ function tripal_biomaterial_add_cvs() {
                    'Contains property terms for biomaterials.');
   tripal_insert_cv('biomaterial_relationship',
                    'Contains types of relationships between biomaterials.');
-  tripal_insert_cv('NCBI Biosample Attributes', 
+  tripal_insert_cv('NCBI BioSample Attributes', 
                    'Attributes describe a BioSample using structured attribute name:value pairs, for example, tissue:liver. BioSample maintains a list of recognized attributes which participate in one or more BioSample packages. In addition to recognized attributes, submitters may provide any number of custom attributes to fully describe a sample.');
 }
 
@@ -196,7 +196,7 @@ function tripal_biomaterial_add_cvterms() {
   chado_insert_cvterm([
     'id' => 'local:ncbi_biosample_accession',
     'name' => 'NCBI BioSample accession',
-    'definition' => 'The accession number of the NCBI Biosample.',
+    'definition' => 'The accession number of the NCBI BioSample.',
     'cv_name' => 'biomaterial_property',
     'db_name' => 'local',
   ]);
@@ -227,6 +227,13 @@ function tripal_biomaterial_add_cvterms() {
     'definition' => 'The most descriptive organism name for this sample (to the species, if relevant).',
     'cv_name' => 'biomaterial_property',
     'db_name' => 'local',
+  ]);
+  chado_insert_cvterm([
+    'id' => 'data:1147',
+    'name' => 'GEO accession number',
+    'definition' => 'Accession number of an entry from the GEO database.',
+    'cv_name' => 'EADM',
+    'db_name' => 'data',
   ]);
 }
 
@@ -352,6 +359,7 @@ function tripal_biomaterial_update_7302() {
 function tripal_biomaterial_update_7303() {
   try {
 
+    // Add additional cvterms.
     tripal_biomaterial_add_cvs();
     tripal_biomaterial_add_dbs();
     

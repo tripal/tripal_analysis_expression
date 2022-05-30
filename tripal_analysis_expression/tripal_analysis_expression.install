@@ -70,6 +70,7 @@ function tripal_analysis_expression_install() {
   tripal_analysis_expression_add_experimental_factor_cvterms();
 
   tripal_analysis_expression_add_eco_cvterm();
+  tripal_analysis_expression_add_sep_cvterm();
 }
 
 /**
@@ -305,6 +306,15 @@ function tripal_analysis_expression_add_eco_cvterm() {
   ], ['update_existing' => FALSE]);
 }
 
+function tripal_analysis_expression_add_sep_cvterm() {
+  tripal_insert_cvterm([
+    'id' => 'sep:00056',
+    'name' => 'unit_of_measure',
+    'cv_name' => 'sep',
+    'definition' => 'A unit of measure is a quantity which is a standard of measurement for some dimension. For example, the Meter is a Unit O fMeasure for the dimension of length, as is the Inch. There is no intrinsic property of a UnitOfMeasure that makes it primitive or fundamental; rather, a system of units (e.g. Systeme International Unit) defines a set of orthogonal dimensions and assigns units for each. [ SUMO:unit of measure ]',
+  ], ['update_existing' => FALSE]);
+}
+
 /**
  * Add heatmap variables.
  */
@@ -339,23 +349,60 @@ function tripal_analysis_expression_update_7203() {
  * If cvalue_id column for cvtermprop doesn't exist, add it
  */
 function tripal_analysis_expression_update_7300() {
-  $cvalue_exists = db_query('SELECT column_name 
-    FROM information_schema.columns 
-    WHERE table_name=\'feature_cvtermprop\'
-    AND column_name=\'cvalue\'
-    ')->fetchAll();
-
-  if (!$cvalue_exists) {
-    db_query('ALTER TABLE chado.feature_cvtermprop ADD COLUMN cvalue_id bigint');
+  try {
+    $cvalue_exists = db_query('SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name=\'feature_cvtermprop\'
+      AND column_name=\'cvalue\'
+      ')->fetchAll();
+  
+    if (!$cvalue_exists) {
+      db_query('ALTER TABLE chado.feature_cvtermprop ADD COLUMN cvalue_id bigint');
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
-function tripal_analysis_expression_update_7302() {
-  tripal_analysis_expression_add_eco_cvterm();
+/**
+ * Adds pvalue, evidence code and experimental factor cvterms.
+ */
+function tripal_analysis_expression_update_7301() {
+  try {
+    tripal_analysis_expression_add_pvalue_cvterm();
+    tripal_analysis_expression_add_evidence_code_cvterm();
+    tripal_analysis_expression_add_experimental_factor_cvterms();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
+  }
 }
 
-function tripal_analysis_expression_update_7301() {
-  tripal_analysis_expression_add_pvalue_cvterm();
-  tripal_analysis_expression_add_evidence_code_cvterm();
-  tripal_analysis_expression_add_experimental_factor_cvterms();
+/**
+ * Adds ECO cvterm.
+ */
+function tripal_analysis_expression_update_7302() {
+  try {
+    tripal_analysis_expression_add_eco_cvterm();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
+  }
+}
+
+/**
+ * Adds sep cvterm.
+ */
+function tripal_analysis_expression_update_7303() {
+  try {
+    tripal_analysis_expression_add_sep_cvterm();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
+  }
 }
