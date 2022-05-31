@@ -222,8 +222,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     if (array_key_exists('local:sample_name', $sample)) {
       $name = $sample['local:sample_name'];
     }
-    if (array_key_exists('NCBI_BioSample_Terms:sample_name', $sample)) {
-      $name = $sample['NCBI_BioSample_Terms:sample_name'];
+    if (array_key_exists('NCBI_BioSample_Attributes:sample_name', $sample)) {
+      $name = $sample['NCBI_BioSample_Attributes:sample_name'];
     }
     
     // Make sure we're at the end of the file.
@@ -454,7 +454,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       // we'll try the global drupal variable that has some defaults.
       else {
         // First see if the term is found in the NCBI biosample vocab.
-        $term_id = 'NCBI_BioSample_Terms:' . $attr_name_adj;
+        $term_id = 'NCBI_BioSample_Attributes:' . $attr_name_adj;
         $term = chado_get_cvterm(['id' => $term_id]);
         if ($term) {
           $default_term_name = $term->name;
@@ -705,7 +705,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $cvterm_id = $selected_term[0]->cvterm_id;
         $term = chado_get_cvterm(['cvterm_id' => $cvterm_id], $options);
         $term_id = $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession;
-        if ($term_id == 'local:sample_name' or $term_id == 'NCBI_BioSample_Terms:sample_name'){
+        if ($term_id == 'local:sample_name' or $term_id == 'NCBI_BioSample_Attributes:sample_name'){
           $has_sample_name = TRUE;
         }
         $form_state['storage']['biomaterial_key.' . $attr_name_adj . '.id'] = $cvterm_id;
@@ -718,7 +718,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     }
 
     if (!$has_sample_name) {
-      form_set_error('', t("You must indicate which column is the sample name by assigning the 'local:sample_name' or 'NCBi_BioSample_Terms:sample_name' term to one of the columns."));
+      form_set_error('', t("You must indicate which column is the sample name by assigning the 'local:sample_name' or 'NCBI_BioSample_Attributes:sample_name' term to one of the columns."));
     }
   }
   /**
@@ -1119,8 +1119,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       if (array_key_exists('schema:description', $sample)) {
         $description = $sample['schema:description'];
       }
-      if (array_key_exists('NCBI_BioSample_Terms:description', $sample)) {
-        $description = $sample['NCBI_BioSample_Terms:description'];
+      if (array_key_exists('NCBI_BioSample_Attributes:description', $sample)) {
+        $description = $sample['NCBI_BioSample_Attributes:description'];
       }
 
       $total++;
@@ -1550,7 +1550,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
             case 'BioSample':
               $db = 'NCBI BioSample';
               $this->attributes['sample_name'] = 'sample_name';
-              $sample['NCBI_BioSample_Terms:sample_name'] = $accession;               
+              $sample['NCBI_BioSample_Attributes:sample_name'] = $accession;
               break;
             default:
               // TODO: what to do.
