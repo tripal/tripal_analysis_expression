@@ -70,6 +70,12 @@ function tripal_analysis_expression_install() {
   tripal_analysis_expression_add_experimental_factor_cvterms();
 
   tripal_analysis_expression_add_eco_cvterm();
+  
+  tripal_analysis_expression_add_NCIT_cvterms();
+  tripal_analysis_expression_add_sep_cvterm();
+  tripal_analysis_expression_add_local_cvterms();
+  tripal_analysis_expression_add_schema_cvterms();
+  tripal_analysis_expression_add_AFO_cvterms();
 }
 
 /**
@@ -227,6 +233,9 @@ function tripal_analysis_expression_add_mview_expression_feature_all() {
   chado_add_mview($mv_name, 'tripal_analysis_expression', $schema, $sql, $comment, false);
 }
 
+/**
+ *
+ */
 function tripal_analysis_expression_add_pvalue_cvterm() {
   chado_insert_cvterm([
     'id' => 'OBI:0000175',
@@ -237,6 +246,9 @@ function tripal_analysis_expression_add_pvalue_cvterm() {
   ]);
 }
 
+/**
+ *
+ */
 function tripal_analysis_expression_add_experimental_factor_cvterms() {
   chado_insert_cvterm([
     'id' => 'GO:0010193',
@@ -287,6 +299,9 @@ function tripal_analysis_expression_add_experimental_factor_cvterms() {
   ]);
 }
 
+/**
+ *
+ */
 function tripal_analysis_expression_add_evidence_code_cvterm() {
   chado_insert_cvterm([
     'id' => 'local:evidence_code',
@@ -295,6 +310,9 @@ function tripal_analysis_expression_add_evidence_code_cvterm() {
   ]);
 }
 
+/**
+ *
+ */
 function tripal_analysis_expression_add_eco_cvterm() {
   chado_insert_cvterm([
     'id' => 'ECO:0006068',
@@ -302,6 +320,95 @@ function tripal_analysis_expression_add_eco_cvterm() {
     'definition' => 'A type of high throughput nucleotide sequencing assay evidence used in a manual assertion based on high-throughput (HT) sequencing of fragmented cDNA molecules. [ECO:MCC]',
     'cv_name' => 'ECO',
     'db_name' => 'ECO',
+  ], ['update_existing' => FALSE]);
+}
+
+/**
+ *
+ */
+function tripal_analysis_expression_add_sep_cvterm() {
+  
+  chado_insert_cvterm([
+    'id' => 'sep:00056',
+    'name' => 'unit_of_measure',
+    'cv_name' => 'sep',
+    'db_name' => 'sep',
+    'definition' => 'A unit of measure is a quantity which is a standard of measurement for some dimension. For example, the Meter is a Unit O fMeasure for the dimension of length, as is the Inch. There is no intrinsic property of a UnitOfMeasure that makes it primitive or fundamental; rather, a system of units (e.g. Systeme International Unit) defines a set of orthogonal dimensions and assigns units for each. [ SUMO:unit of measure ]',
+  ], ['update_existing' => FALSE]);
+}
+
+/**
+ *
+ */
+function tripal_analysis_expression_add_NCIT_cvterms() {
+    
+  chado_insert_cvterm([
+    'id' => 'NCIT:C25284',
+    'name' => 'Type',
+    'definition' => 'Something distinguishable as an identifiable class based on common qualities. [ NCI ]',
+    'cv_name' => 'ncit',
+    'db_name' => 'NCIT',
+  ], ['update_existing' => FALSE]);
+  
+  chado_insert_cvterm([
+    'id' => 'NCIT:C25463',
+    'name' => 'Count',
+    'definition' => 'Determining the number or amount of something. [ NCI ]',
+    'cv_name' => 'ncit',
+    'db_name' => 'NCIT',
+  ], ['update_existing' => FALSE]);
+}
+
+/**
+ *
+ */
+function tripal_analysis_expression_add_local_cvterms() {
+  chado_insert_cvterm([
+    'id' => 'local:expression_details',
+    'name' => 'expression_details',
+    'cv_name' => 'local',
+    'definition' => 'Evidence-based annotation with p-values',
+  ], ['update_existing' => FALSE]);
+  
+  chado_insert_cvterm([
+    'id' => 'local:gene_expression_bargraph',
+    'name' => 'Gene Expression Bargraph',
+    'definition' => 'A plot of gene expression in a bargraph',
+    'cv_name' => 'local',
+    'db_name' => 'local',
+  ], ['update_existing' => FALSE]);
+}
+
+/**
+ *
+ */
+function tripal_analysis_expression_add_schema_cvterms(){
+  chado_insert_cvterm([
+    'id' => 'schema:DataDownload',
+    'name' => 'DataDownload',
+    'definition' => 'A dataset in downloadable form.',
+    'cv_name' => 'schema',
+    'db_name' => 'schema',
+  ], ['update_existing' => FALSE]);
+}
+
+/**
+ *
+ */
+function tripal_analysis_expression_add_AFO_cvterms(){
+  chado_insert_cv('afp','Allotrope Merged Ontology Suite');
+  chado_insert_db([
+    'name' => 'AFP',
+    'description' => 'Allotrope Merged Ontology Suite',
+    'url' => 'https://www.allotrope.org/',
+    'urlprefix' => ' http://purl.allotrope.org/ontologies/process#{db}_{accession}'
+  ]);
+  chado_insert_cvterm([
+    'id' => 'AFP:0003636',
+    'name' => 'descriptive statistics',
+    'definition' => 'Descriptive statistics is the process of using and analyzing descriptive statistics. A descriptive statistic is a summary statistic that quantitatively describes or summarizes features of a collection of information. [Wikipedia]',
+    'cv_name' => 'afo',
+    'db_name' => 'AFO',
   ], ['update_existing' => FALSE]);
 }
 
@@ -339,23 +446,76 @@ function tripal_analysis_expression_update_7203() {
  * If cvalue_id column for cvtermprop doesn't exist, add it
  */
 function tripal_analysis_expression_update_7300() {
-  $cvalue_exists = db_query('SELECT column_name 
-    FROM information_schema.columns 
-    WHERE table_name=\'feature_cvtermprop\'
-    AND column_name=\'cvalue\'
-    ')->fetchAll();
-
-  if (!$cvalue_exists) {
-    db_query('ALTER TABLE chado.feature_cvtermprop ADD COLUMN cvalue_id bigint');
+  try {
+    $cvalue_exists = db_query('SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name=\'feature_cvtermprop\'
+      AND column_name=\'cvalue\'
+      ')->fetchAll();
+  
+    if (!$cvalue_exists) {
+      db_query('ALTER TABLE chado.feature_cvtermprop ADD COLUMN cvalue_id bigint');
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
-function tripal_analysis_expression_update_7302() {
-  tripal_analysis_expression_add_eco_cvterm();
+/**
+ * Adds pvalue, evidence code and experimental factor cvterms.
+ */
+function tripal_analysis_expression_update_7301() {
+  try {
+    tripal_analysis_expression_add_pvalue_cvterm();
+    tripal_analysis_expression_add_evidence_code_cvterm();
+    tripal_analysis_expression_add_experimental_factor_cvterms();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
+  }
 }
 
-function tripal_analysis_expression_update_7301() {
-  tripal_analysis_expression_add_pvalue_cvterm();
-  tripal_analysis_expression_add_evidence_code_cvterm();
-  tripal_analysis_expression_add_experimental_factor_cvterms();
+/**
+ * Adds ECO cvterm.
+ */
+function tripal_analysis_expression_update_7302() {
+  try {
+    tripal_analysis_expression_add_eco_cvterm();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
+  }
+}
+
+/**
+ * Adds sep cvterm.
+ */
+function tripal_analysis_expression_update_7303() {
+  try {
+    tripal_analysis_expression_add_sep_cvterm();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
+  }
+}
+
+/**
+ * Adds additional cvterms terms
+ */
+function tripal_analysis_expression_update_7304() {
+  try {
+    tripal_analysis_expression_add_NCIT_cvterms();
+    tripal_analysis_expression_add_local_cvterms();
+    tripal_analysis_expression_add_schema_cvterms();
+    tripal_analysis_expression_add_AFO_cvterms();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
+  }  
 }

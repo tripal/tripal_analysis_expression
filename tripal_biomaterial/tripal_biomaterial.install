@@ -196,7 +196,7 @@ function tripal_biomaterial_add_cvterms() {
   chado_insert_cvterm([
     'id' => 'local:ncbi_biosample_accession',
     'name' => 'NCBI BioSample accession',
-    'definition' => 'The accession number of the NCBI Biosample.',
+    'definition' => 'The accession number of the NCBI BioSample.',
     'cv_name' => 'biomaterial_property',
     'db_name' => 'local',
   ]);
@@ -228,7 +228,14 @@ function tripal_biomaterial_add_cvterms() {
     'cv_name' => 'biomaterial_property',
     'db_name' => 'local',
   ]);
-
+  chado_insert_cvterm([
+    'id' => 'data:1147',
+    'name' => 'GEO accession number',
+    'definition' => 'Accession number of an entry from the GEO database.',
+    'cv_name' => 'EADM',
+    'db_name' => 'data',
+  ]);
+  
   // Populate the NCBI BioSample DB terms.
   tripal_biomaterial_update_prop_terms();
 }
@@ -410,6 +417,9 @@ function tripal_biomaterial_update_7303() {
         $cvterm->update();
       }
     }
+    
+    // Add additional cvterms.
+    tripal_biomaterial_add_cvterms();
 
     // Update the NCBI BioSample DB terms. This will create new versions of
     // these terms in the 'NCBI_BioSample_Attributes' database rather than

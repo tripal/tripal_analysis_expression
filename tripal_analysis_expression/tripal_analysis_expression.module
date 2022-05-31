@@ -15,6 +15,7 @@ require_once 'theme/tripal_analysis_expression.theme.inc';
 require_once 'includes/feature_heatmap_form.inc';
 require_once 'includes/analysis_expression_data_downloader.inc';
 require_once 'includes/tripal_analysis_expression.api.inc';
+require_once 'includes/tripal_analysis_expression.viewer.inc';
 
 /**
  * Implements hook_permission().
@@ -388,15 +389,6 @@ function tripal_analysis_expression_theme($existing, $type, $theme, $path)
         'analysis_id' => NULL,
       ],
       'template' => 'tripal_analysis_expression.analysis',
-      'path' => "$path/theme/templates",
-    ],
-    'feature_expression_plot' => [
-      'variables' => [
-        'analyses' => [],
-        'default_analysis_id' => 0,
-        'feature_id' => 0,
-      ],
-      'template' => 'tripal_analysis_expression.feature',
       'path' => "$path/theme/templates",
     ],
   ];
