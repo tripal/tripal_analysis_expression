@@ -16,10 +16,11 @@ Please note this module requires **Tripal 3** or greater.  The [Tripal 2 functio
 4. [Loading Biosamples](#loading-biosamples)
 5. [Loading Expression Data](#loading-expression-data)
 6. [Loading P-Value Data](#loading-p-value-data)
-6. [Viewing Data](#viewing-and-downloading-data)
-7. [Administrative Pages](#administrative-pages)
-8. [Protocols](#protocols)
-9. [Example Files](#example-files)
+7. [Viewing Data](#viewing-and-downloading-data)
+8. [Administrative Pages](#administrative-pages)
+9. [Protocols](#protocols)
+10. [Example Files](#example-files)
+11. [Module Updating](#module-updating)
 
 # Introduction
 Tripal Analysis: Expression is a [Drupal](https://www.drupal.org/) module built to extend the functionality of the [Tripal](http://tripal.info/) toolset.
@@ -33,6 +34,7 @@ The purpose of the module is to visually represent gene expression for Tripal fe
 # Installation
 1. Click on the green "Clone or download" button on the top right corner of this page to obtain the web URL. Download this module by running ```git clone <URL> ``` on command line.
 2. Place the cloned module folder "tripal_analysis_expression" inside your /sites/all/modules. Then enable the module by running ```drush en tripal_analysis_expression``` (for more instructions, read the [Drupal documentation page](https://www.drupal.org/node/120641)).
+3. If you are updating this module, you may want to consult the [Module Updating](#module-updating) section for explanation of changes that have been made to controlled vocabularies.
 
 # Features
 * Provides data loaders for biosamples, expression data, and p-value data
@@ -401,6 +403,35 @@ There is currently no support for inputting, or displaying, acquisitions, quanti
 
 ### P-Value Loader
 1. [Example csv](example_files/example_pvalue.csv)
+
+
+
+# Module Updating
+This module shares some controlled vocabulary terms and database references with the [tripal-eutils](https://github.com/NAL-i5K/tripal_eutils) module. To provide compatibility between these two modules, as of `tripal_biomaterial` update 7303 the following changes have been made:
+* The controlled vocabulary created by the previous version of this module "biomaterial_property" and the tripal_eutils controlled vocabulary "ncbi_properties" have both been replaced with "NCBI BioSample Attributes". The "biomaterial_properties" cv will continue to be used for terms not defined by NCBI.
+* The database created by the previous version of this module "NCBI_BioSample_Terms" and the tripal_eutils database "ncbi_properties" have both replaced with "NCBI_BioSample_Attributes".
+* To prevent unintended changes to existing sites, any biomaterial properties already loaded will not be automatically updated. A site administrator may want to update existing properties to be compatible between modules. The following steps will provide a way to migrate existing properties.
+1. After updating this module, run database updates with `drush updatedb` or by navigating to `/update.php` on your site.
+2. A list of those biomaterial properties that can be transferred to the new controlled vocabulary can be obtained with the following SQL:
+
+`SELECT DISTINCT CVT.cvterm_id, CV.name AS old_cv_name, CVT.name AS term_name, CVT2.cvterm_id, CV2.name AS new_cv_name FROM chado.biomaterialprop BP LEFT JOIN chado.cvterm CVT ON BP.type_id=CVT.cvterm_id LEFT JOIN chado.cv CV ON CVT.cv_id=CV.cv_id LEFT JOIN chado.dbxref X on CVT.dbxref_id=X.dbxref_id LEFT JOIN chado.db DB on X.db_id=DB.db_id LEFT JOIN chado.cvterm CVT2 ON REPLACE(CVT.name,' ','_')=REPLACE(CVT2.name,' ', '_') LEFT JOIN chado.cv CV2 ON CVT2.cv_id=CV2.cv_id WHERE CV.name IN ('biomaterial_property', 'ncbi_properties') AND CV2.name='NCBI BioSample Attributes';`
+
+For example:
+```
+ cvterm_id |     old_cv_name      |      term_name       | cvterm_id |        new_cv_name
+-----------+----------------------+----------------------+-----------+---------------------------
+      3019 | biomaterial_property | sample_name          |     65128 | NCBI BioSample Attributes
+      3114 | biomaterial_property | description          |     64867 | NCBI BioSample Attributes
+     61429 | ncbi_properties      | age                  |     64780 | NCBI BioSample Attributes
+     61456 | ncbi_properties      | biomaterial provider |     64808 | NCBI BioSample Attributes
+...
+```
+
+3. After verifying this list, these terms can be migrated with the following SQL, please backup your site first!
+
+`WITH LOOKUP AS (SELECT BP1.biomaterialprop_id, CVT2.cvterm_id FROM chado.biomaterialprop BP1 JOIN chado.cvterm CVT1 ON BP1.type_id=CVT1.cvterm_id JOIN chado.cv CV1 ON CVT1.cv_id=CV1.cv_id JOIN chado.cvterm CVT2 ON REPLACE(CVT1.name,' ','_')=REPLACE(CVT2.name,' ','_') JOIN chado.cv CV2 ON CVT2.cv_id=CV2.cv_id WHERE CV1.name IN ('biomaterial_property', 'ncbi_properties') AND CV2.name = 'NCBI BioSample Attributes') UPDATE chado.biomaterialprop BP3 SET type_id=LOOKUP.cvterm_id FROM LOOKUP WHERE BP3.biomaterialprop_id=LOOKUP.biomaterialprop_id;`
+
+4. Check for new tripal fields and remove ones no longer needed as described in the [Biosample Properties](#biosample-properties) section.
 
 
 

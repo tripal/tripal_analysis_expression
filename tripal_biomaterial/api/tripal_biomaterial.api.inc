@@ -6,6 +6,7 @@
  *
  * @ingroup tripal_biomaterial
  */
+
 function create_unique_arraydesign($arraydesign_id, $organism_id, $analysis_id) {
   $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id',
     [':organism_id' => $organism_id])->fetchField();
@@ -318,9 +319,9 @@ function tripal_biomaterial_create_ncbi_db($url_name, $db_name, $db_description)
  * names for biomaterials.
  */
 function tripal_biomaterial_update_prop_terms() {
-  // We use NCBI biosample attributes as to fill the biomaterialprop cv table.
+  // We use NCBI biosample attributes to fill the biomaterialprop cv table.
   // These attributes can be accessed at the following url.
-  $url = "http://www.ncbi.nlm.nih.gov/biosample/docs/attributes/?format=xml";
+  $url = "https://www.ncbi.nlm.nih.gov/biosample/docs/attributes/?format=xml";
   $xml_str = file_get_contents($url);
   $xml_obj = simplexml_load_string($xml_str);
 
@@ -330,7 +331,7 @@ function tripal_biomaterial_update_prop_terms() {
       'name' => $attribute->Name,
       'definition' => $attribute->Description,
       'cv_name' => 'NCBI BioSample Attributes',
-      'db_name' => 'NCBI_BioSample_Terms',
+      'db_name' => 'NCBI_BioSample_Attributes',
     ], ['update_existing' => FALSE]);
   }
 }

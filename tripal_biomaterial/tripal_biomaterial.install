@@ -1,4 +1,6 @@
 <?php
+require_once('api/tripal_biomaterial.api.inc');
+
 /**
  * @file
  * Functions used to install the tripal_biomaterial module.
@@ -41,17 +43,16 @@ function tripal_biomaterial_install() {
   tripal_biomaterial_add_cvterms();
   tripal_biomaterial_update_prop_terms();
 
-  // Make sure the biomaterial, table is set
-  // as base tables. This allows the tables to be used as base tables in
-  // Drupal Views.
+  // Make sure the biomaterial table is set as base tables.
+  // This allows the tables to be used as base tables in Drupal Views.
   $update = db_update('tripal_views')->fields([
     'base_table' => 1,
   ])->condition('table_name', 'biomaterial', '=')->execute();
 
-  // Add cvalue_id if not already present in biomateiralprop
+  // Add cvalue_id if not already present in biomaterialprop.
   tripal_biomaterial_alter_biomaterial_table();
 
-  // Add biomaterial_project linker table
+  // Add biomaterial_project linker table.
   tripal_biomaterial_add_table_biomaterial_project();
 }
 
@@ -69,29 +70,28 @@ function tripal_biomaterial_alter_biomaterial_table(){
  *
  */
 function tripal_biomaterial_add_dbs() {
-  tripal_insert_db([
+  chado_insert_db([
     'name' => 'NCBI BioSample',
     'description' => 'The NCBI BioSample database.',
     'url' => 'https://www.ncbi.nlm.nih.gov/biosample/',
     'urlprefix' => 'https://www.ncbi.nlm.nih.gov/biosample/?term={accession}'
   ]);
-  tripal_insert_db([
+  chado_insert_db([
     'name' => 'NCBI SRA',
     'description' => 'The NCBI Sequence Read Archive (SRA) database.',
     'url' => 'https://www.ncbi.nlm.nih.gov/sra',
     'urlprefix' => 'https://www.ncbi.nlm.nih.gov/sra/?term={accession}'
   ]);
-  tripal_insert_db([
+  chado_insert_db([
     'name' => 'NCBI GEO',
     'description' => 'The NCBI Gene Expression Omnibus (GEO) database.',
     'url' => 'https://www.ncbi.nlm.nih.gov/geo',
     'urlprefix' => 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={accession}'
   ]);
-  tripal_insert_db([
-    'name' => 'NCBI_BioSample_Terms',
-    'description' => 'This database provides, in XML format, the listing of attribute names for biosmaples housed in NCBI.',
+  chado_insert_db([
+    'name' => 'NCBI_BioSample_Attributes',
+    'description' => 'This database provides, in XML format, the listing of attribute names for biosamples housed in NCBI.',
     'url' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes',
-    'urlprefix' => 'https://www.ncbi.nlm.nih.gov/biosample/docs/attributes#'
   ]);
 }
 
@@ -102,12 +102,12 @@ function tripal_biomaterial_add_dbs() {
  */
 function tripal_biomaterial_add_cvs() {
   // CVs for the biomaterial content type.
-  tripal_insert_cv('biomaterial_property',
-                   'Contains property terms for biomaterials.');
-  tripal_insert_cv('biomaterial_relationship',
-                   'Contains types of relationships between biomaterials.');
-  tripal_insert_cv('NCBI BioSample Attributes', 
-                   'Attributes describe a BioSample using structured attribute name:value pairs, for example, tissue:liver. BioSample maintains a list of recognized attributes which participate in one or more BioSample packages. In addition to recognized attributes, submitters may provide any number of custom attributes to fully describe a sample.');
+  chado_insert_cv('NCBI BioSample Attributes',
+                  'Attributes describe a BioSample using structured attribute name:value pairs, for example, tissue:liver. BioSample maintains a list of recognized attributes which participate in one or more BioSample packages. In addition to recognized attributes, submitters may provide any number of custom attributes to fully describe a sample.');
+  chado_insert_cv('biomaterial_property',
+                  'Contains additional property terms for biomaterials.');
+  chado_insert_cv('biomaterial_relationship',
+                  'Contains types of relationships between biomaterials.');
 }
 
 /**
@@ -235,6 +235,9 @@ function tripal_biomaterial_add_cvterms() {
     'cv_name' => 'EADM',
     'db_name' => 'data',
   ]);
+  
+  // Populate the NCBI BioSample DB terms.
+  tripal_biomaterial_update_prop_terms();
 }
 
 /**
@@ -288,9 +291,25 @@ function tripal_biomaterial_uninstall() {
 
 }
 
+/**
+ * Repopulates db2cv materialized view.
+ */
+function tripal_biomaterial_repopulate_db2cv_mview($jobname='Repopulating db2cv_mview') {
+  global $user;
+  $sql = "SELECT mview_id FROM [tripal_mviews] WHERE modulename=:modulename AND name=:name";
+  $args = [':modulename' => 'tripal_chado', ':name' => 'db2cv_mview'];
+  $mview_id = chado_query($sql, $args)->fetchField();
+  tripal_add_job(
+    $jobname,
+    'tripal_chado',
+    'chado_populate_mview',
+    [$mview_id],
+    $user->uid
+  );
+}
 
 /**
- * Correct cases where the ncbi biosample accession was inserted into
+ * Correct cases where the NCBI biosample accession was inserted into
  * biomaterial.dbxref_id instead of added as a true dbxref
  *
  */
@@ -304,12 +323,12 @@ function tripal_biomaterial_update_7300() {
         $sql = "SELECT DB.name, DBX.accession FROM {dbxref} DBX
           INNER JOIN {db} DB ON  DBX.db_id = db.db_id
           WHERE DBX.dbxref_id = :dbxref_id";
-  
+
         $dbxref = chado_query($sql, [":dbxref_id" => $result->dbxref_id])->fetchObject();
         if ($dbxref->name == "NCBI BioSample") {
           $biomaterial_id = $result->biomaterial_id;
           $ncbi_accession = $dbxref->accession;
-  
+
           tripal_associate_dbxref('biomaterial', $biomaterial_id, [
             'accession' => $ncbi_accession,
             'db_name' => 'NCBI BioSample',
@@ -359,11 +378,11 @@ function tripal_biomaterial_update_7302() {
 function tripal_biomaterial_update_7303() {
   try {
 
-    // Add additional cvterms.
-    tripal_biomaterial_add_cvs();
+    // Add additional databases and controlled vocabularies.
     tripal_biomaterial_add_dbs();
-    
-    // Create new dbxref's for the biomaterial property t erms and
+    tripal_biomaterial_add_cvs();
+
+    // Create new dbxref's for the biomaterial property terms and
     // swap out the dbxref_id for the terms in the cv table to use these.
     $local_db = new ChadoRecord('db');
     $local_db->setValues(['name' => 'local']);
@@ -403,10 +422,17 @@ function tripal_biomaterial_update_7303() {
     tripal_biomaterial_add_cvterms();
 
     // Update the NCBI BioSample DB terms. This will create new versions of
-    // thes terms in the 'NCBi_BioSample_Terms' database rather than the
-    // 'tripal' database.  For biomaterials that already exist in the
+    // these terms in the 'NCBI_BioSample_Attributes' database rather than
+    // the 'tripal' database.  For biomaterials that already exist in the
     // database those older terms will still be there.
     tripal_biomaterial_update_prop_terms();
+
+    // Now that the db is fixed for existing terms, make sure all cv terms
+    // are present.
+    tripal_biomaterial_add_cvterms();
+
+    // Repopulate materialized view
+    tripal_biomaterial_repopulate_db2cv_mview('Repopulating db2cv_mview after CV update');
 
   }
   catch (\PDOException $e) {
