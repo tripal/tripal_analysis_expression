@@ -5,7 +5,7 @@
  */
 
 /**
- * Impelments hook_views_default_views().
+ * Implements hook_views_default_views().
  *
  * This function informs tripal of the default views of the
  * Analysis: Expression module. An administrator view and an anonymous
