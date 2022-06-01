@@ -1540,27 +1540,30 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
           $db = $this->file->getAttribute('db');
           $this->file->read();
           $accession = $this->file->value;
-          switch ($db) {
-            case 'GEO':
-              $db = 'NCBI GEO';
-              break;
-            case 'SRA':
-              $db = 'NCBI SRA';
-              break;
-            case 'BioSample':
-              $db = 'NCBI BioSample';
-              $this->attributes['sample_name'] = 'sample_name';
-              $sample['NCBI_BioSample_Attributes:sample_name'] = $accession;
-              break;
-            default:
-              // TODO: what to do.
+          // Only process if Id element is a db reference, and not e.g. a db_label
+          if ($db) {
+            switch ($db) {
+              case 'GEO':
+                $db = 'NCBI GEO';
+                break;
+              case 'SRA':
+                $db = 'NCBI SRA';
+                break;
+              case 'BioSample':
+                $db = 'NCBI BioSample';
+                $this->attributes['sample_name'] = 'sample_name';
+                $sample['NCBI_BioSample_Attributes:sample_name'] = $accession;
+                break;
+              default:
+                // TODO: what to do.
+            }
+            $this->db_lookup[$db] = chado_generate_var('db', ['name' => $db]);
+            $this->dbxref_lookup[$db . ":" . $accession] = [
+              'db' => $db,
+              'accession' => $accession,
+            ];
+            $sample['dbxrefs'][] = $db . ":" . $accession;
           }
-          $this->db_lookup[$db] = chado_generate_var('db', ['name' => $db]);
-          $this->dbxref_lookup[$db . ":" . $accession] = [
-            'db' => $db,
-            'accession' => $accession,
-          ];
-          $sample['dbxrefs'][] = $db . ":" . $accession;
         }
 
       }
