@@ -134,7 +134,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
   ];
 
   /**
-   * These terms are cross reference attribtues for the biosample.
+   * These terms are cross reference attributes for the biosample.
    * Do not list here cross-references for bioprojects, etc as
    * those should be properties and not a cross reference for the biosample.
    * The key is the vocabulary term mapped to an attribute in the input file
@@ -454,7 +454,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       // we'll try the global drupal variable that has some defaults.
       else {
         // First see if the term is found in the NCBI biosample vocab.
-        $term_id = 'NCBI_BioSample_Attributes:' . $attr_name_adj;
+        $term_id = 'NCBI_BioSample_Attributes:' . $attr_name;
         $term = chado_get_cvterm(['id' => $term_id]);
         if ($term) {
           $default_term_name = $term->name;
@@ -856,7 +856,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $biomaterial_ids = [];
       }
@@ -1012,7 +1012,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $names = [];
       }
@@ -1142,7 +1142,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -1217,7 +1217,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -1282,7 +1282,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -1332,7 +1332,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
             $this->setItemsHandled($batch_num);
             $batch_num++;
 
-            // Now reset all of the varables for the next batch.
+            // Now reset all of the variables for the next batch.
             $sql = '';
             $i = 0;
             $j = 0;
@@ -1385,7 +1385,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -1413,7 +1413,7 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
         $term = chado_get_cvterm(['cvterm_id' => $value], $options);
         $this->terms[$matches[1]] = $term;
 
-        // Store the  term with it's full accession so we can look
+        // Store the term with its full accession so we can look
         // it up either way.
         $term_name = $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession;
         $this->terms[$term_name] = $term;
@@ -1640,12 +1640,12 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
       if ($this->file->nodeType == XMLReader::ELEMENT) {
 
         if (strcmp($this->file->name, 'Attribute') == 0) {
-          $attr_name = $this->file->getAttribute('attribute_name');
+          $attr_name = $this->file->getAttribute('display_name');
           
           // NCBI has changed the headers so to support consistency make
           // them all lower case with underscores separating non alphanumeric
           // characters
-          $adj_attr_name = preg_replace('/[^\w]/', '_', strtolower($attr_name));          
+          $adj_attr_name = preg_replace('/[^\w]/', '_', strtolower($attr_name));
           $this->attributes[$attr_name] = $adj_attr_name;
 
           // Get the value.

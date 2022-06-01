@@ -408,7 +408,7 @@ There is currently no support for inputting, or displaying, acquisitions, quanti
 
 # Module Updating
 This module shares some controlled vocabulary terms and database references with the [tripal-eutils](https://github.com/NAL-i5K/tripal_eutils) module. To provide compatibility between these two modules, as of `tripal_biomaterial` update 7303 the following changes have been made:
-* The controlled vocabulary created by the previous version of this module "biomaterial_property" and the tripal_eutils controlled vocabulary "ncbi_properties" have both been replaced with "NCBI BioSample Attributes". The "biomaterial_properties" cv will continue to be used for terms not defined by NCBI.
+* The controlled vocabulary created by the previous version of this module "biomaterial_property" and the tripal_eutils controlled vocabulary "ncbi_properties" have both been replaced with "NCBI BioSample Attributes". The "biomaterial_property" cv will continue to be used for terms not defined by NCBI.
 * The database created by the previous version of this module "NCBI_BioSample_Terms" and the tripal_eutils database "ncbi_properties" have both replaced with "NCBI_BioSample_Attributes".
 * To prevent unintended changes to existing sites, any biomaterial properties already loaded will not be automatically updated. A site administrator may want to update existing properties to be compatible between modules. The following steps will provide a way to migrate existing properties.
 1. After updating this module, run database updates with `drush updatedb` or by navigating to `/update.php` on your site.
