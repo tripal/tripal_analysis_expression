@@ -343,7 +343,10 @@ function feature_heatmap_get_organisms() {
     return drupal_map_assoc(tripal_elasticsearch_get_gene_search_organisms());
   }
 
-  $sql = 'SELECT * FROM {organism} ORDER BY genus ASC, species ASC';
+  // subquery here is faster than a join
+  $sql = 'SELECT * FROM {organism} WHERE organism_id IN
+    (SELECT DISTINCT organism_id FROM {expression_feature})
+    ORDER BY genus ASC, species ASC';
 
   $organism_list = chado_query($sql)->fetchAll();
 
