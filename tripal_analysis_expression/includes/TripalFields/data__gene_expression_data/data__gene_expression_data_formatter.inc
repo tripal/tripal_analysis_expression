@@ -53,7 +53,7 @@ class data__gene_expression_data_formatter extends ChadoFieldFormatter{
       $aname = $item['operation:2945']['schema:name'];
       $data_link = $item['schema:DataDownload'];
       
-      // Itereate throught he descriptive statistics
+      // Iterate through the descriptive statistics
       foreach ($item['AFP:0003636'] as $stat) {
         $type = $stat['NCIT:C25284'];
         $quantity = $stat['NCIT:C25463'];

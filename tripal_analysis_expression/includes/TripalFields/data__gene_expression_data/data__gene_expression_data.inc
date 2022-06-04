@@ -95,6 +95,9 @@ class data__gene_expression_data extends ChadoField{
     $record = $entity->chado_record;
     $chado_table = $entity->chado_table;
     $field_name = $this->field['field_name'];
+
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0]['value'] = [];
     
     // Get the list of analyses
     $analyses = [];
@@ -126,7 +129,6 @@ class data__gene_expression_data extends ChadoField{
     }
     
     if (count(array_keys($analyses)) == 0) {
-      $entity->{$field_name}['und'][0]['value'] = [];
       return $entity;
     }
 
