@@ -571,7 +571,7 @@ class tripal_expression_data_loader extends TripalImporter {
         foreach ($sample_names as $index => $sample_name) {
           $this->samples[$sample_name] = [
             'name' => $sample_name,
-            'col' => $index            
+            'col' => $index + 1
           ];
         }
         $in_header = FALSE;
@@ -1625,6 +1625,13 @@ class tripal_expression_data_loader extends TripalImporter {
       if (array_key_exists('assay_biomaterial_id', $info)) {
         $skip = TRUE;
       }
+
+      // If the "Create BioSample Records" checkbox was not checked, and
+      // we didn't find the biosample_id in an earlier step, we have to fail.
+      if (!$info['biomaterial_id']) {
+        throw new Exception(t('There is no biomaterial_id available for "!sample_name". Either check the "Create BioSample Records" checkbox, or make sure the sample names exactly match those loaded with the biomaterial loader.',
+          ['!sample_name' => $info['name']]));
+        }
       
       if (!$skip) {
         $sql .= "(:assay_id_$i, :biomaterial_id_$i, :channel_id_$i, 1),\n";
