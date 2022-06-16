@@ -852,7 +852,7 @@ class tripal_expression_data_loader extends TripalImporter {
       $total++;
       $i++;
       
-      $assay_name =  $this->getAssayName($info);
+      $assay_name = $this->getAssayName($info);
       $names[] = $assay_name;
       $mapping[$assay_name] = $name;
               
@@ -1504,7 +1504,7 @@ class tripal_expression_data_loader extends TripalImporter {
       return 'Expression assay from, ' . $sample['name'] . ', from biological sample, ' . $sample['biomaterial_name']  . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
     }
     else {
-      return 'Expression assay from, ' . $sample['name'] . ', derived from analysis "' .  $sample->analysis->getValue('name') . '"';
+      return 'Expression assay from, ' . $sample['name'] . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
     }
   }
   
