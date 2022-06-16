@@ -531,7 +531,7 @@ class tripal_expression_data_loader extends TripalImporter {
     }
     return [
       'findex' => $findex, 
-      'line' => trim($line)     
+      'line' => rtrim($line)
     ];
   }
   /**
@@ -564,6 +564,8 @@ class tripal_expression_data_loader extends TripalImporter {
       // If we've hit the header then extract the sample names.
       if ($in_header) {
         $sample_names = explode($this->delim, $line); 
+        // First column is feature_name, ignore this header.
+        array_shift($sample_names);
         $this->sample_order = $sample_names;
         $num_samples = count($sample_names);
         foreach ($sample_names as $index => $sample_name) {
@@ -601,8 +603,10 @@ class tripal_expression_data_loader extends TripalImporter {
         // As a sanity check, make sure the number of values matches the number
         // of samples.
         if (count($values) != $num_samples) {
-          throw new Exception(t('Line, !num_lines, of the input matrix has an incorrect number of values. Chekck that the file delimiter has been set correctly and if the file is complete.',
-              ['!num_lines' => $num_lines]));
+          throw new Exception(t('Line !num_lines of the input matrix has an incorrect number of values. !found values found, but !expected values were expected. Check that the file delimiter has been set correctly and if the file is complete.',
+              ['!num_lines' => $num_lines,
+               '!found' => count($values),
+               '!expected' => $num_samples]));
         }
         $findex = ftell($this->files[0]);
       }
