@@ -646,6 +646,11 @@ class tripal_expression_data_loader extends TripalImporter {
     $batch_size = 100;
     $num_samples = count($sra_ids);
     $num_batches = (int) ($num_samples / $batch_size) + 1;
+
+    // If no NCBI identifiers are present, there is nothing to do.
+    if (!$num_samples) {
+      return;
+    }
         
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
