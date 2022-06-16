@@ -1450,6 +1450,8 @@ class tripal_biomaterial_loader_v3 extends TripalImporter {
     $separator = $this->flat_parsing[$this->file_extension]['separator'];
     $enclosure = $this->flat_parsing[$this->file_extension]['enclosure'];
 
+    // The header line is parsed separately by setCSVAttributes(), ignore it here.
+    $headers = fgetcsv($this->file, 0, $separator, $enclosure);
     while($cols = fgetcsv($this->file, 0, $separator, $enclosure)) {
       $sample = [];
       $sample['dbxrefs'] = [];
