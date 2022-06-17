@@ -1739,7 +1739,7 @@ class tripal_expression_data_loader extends TripalImporter {
       return 'Measured expression from, ' . $sample['name'] . ', from biological sample, ' . $sample['biomaterial_name']  . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
     }
     else {
-      return 'Measured expression from, ' . $sample['name'] . ', derived from analysis "' .  $sample->analysis->getValue('name') . '"';
+      return 'Measured expression from, ' . $sample['name'] . ', derived from analysis "' .  $this->analysis->getValue('name') . '"';
     }
   }
   
