@@ -12,15 +12,17 @@ class tripal_expression_data_loader extends TripalImporter {
 
   public static $machine_name = 'Chado_Expression_Data_Loader';
 
-  public static $description = 'Import expression data.  Requires an analaysis and biomaterial.';
+  public static $description = 'Import expression data.  Requires an analysis and biomaterial.';
 
   public static $file_types = ['csv', 'tsv', 'txt'];
 
   public static $upload_description = 'Expression data can be loaded from two format types. ' .
     'Select the column format for files that have two columns - transcript id and expression ' .
-    'value. Select the matrix format for files that specify biosample ' .
-    'by column and transcript by row. If "Column Format" is selected, the name of the column ' .
-    'file will be taken as the biomaterial name. It is recommended to avoid the use of white ' .
+    'value, with no header line. Select the matrix format for files that specify biosample ' .
+    'by column and transcript by row, with a header line identifying biomaterial name. ' .
+    'If "Column Format" is selected, the file name of the column file, without extension, will be ' .
+    'taken as the biomaterial name. ' .
+    'In all cases the first column is transcript id. It is recommended to avoid the use of white ' .
     'space in column file names and in biomaterial names.<br><br>Please verify the column or file ' .
     'names match the intended biomaterial name in the database. The uploaded file cannot be a directory.';
 
@@ -117,6 +119,8 @@ class tripal_expression_data_loader extends TripalImporter {
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
+
+    $class = get_called_class();
 
     $organisms = chado_get_organism_select_options(FALSE);
 
@@ -326,7 +330,7 @@ class tripal_expression_data_loader extends TripalImporter {
     $form['filetype'] = [
       '#type' => 'radios',
       '#title' => t('Source File Type'),
-      '#description' => t('Data can be loaded from two format types. Select the column format for files that have two columns - transcript id and expression value. Select the matrix format for files that specify biosample by column and transcript by row. If "Column Format" is selected, the name of the column file will be taken as the biomaterial name. It is recommended to avoid the use of white space in column file names and in biomaterial names.'),
+      '#description' => t($class::$upload_description),
       '#options' => [
         'col' => t('Column Format'),
         'mat' => t('Matrix Format'),
@@ -1501,10 +1505,10 @@ class tripal_expression_data_loader extends TripalImporter {
    */
   private function getAssayName($sample) {
     if ($sample['name'] != $sample['biomaterial_name']) {
-      return 'Expression assay from, ' . $sample['name'] . ', from biological sample, ' . $sample['biomaterial_name']  . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
+      return 'Expression assay from ' . $sample['name'] . ', from biological sample, ' . $sample['biomaterial_name']  . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
     }
     else {
-      return 'Expression assay from, ' . $sample['name'] . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
+      return 'Expression assay from ' . $sample['name'] . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
     }
   }
   
@@ -1736,10 +1740,10 @@ class tripal_expression_data_loader extends TripalImporter {
    */
   private function getAcquisitionName($sample) {
     if ($sample['name'] != $sample['biomaterial_name']) {
-      return 'Measured expression from, ' . $sample['name'] . ', from biological sample, ' . $sample['biomaterial_name']  . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
+      return 'Measured expression from ' . $sample['name'] . ', from biological sample, ' . $sample['biomaterial_name']  . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
     }
     else {
-      return 'Measured expression from, ' . $sample['name'] . ', derived from analysis "' .  $this->analysis->getValue('name') . '"';
+      return 'Measured expression from ' . $sample['name'] . ', derived from analysis "' .  $this->analysis->getValue('name') . '"';
     }
   }
   
