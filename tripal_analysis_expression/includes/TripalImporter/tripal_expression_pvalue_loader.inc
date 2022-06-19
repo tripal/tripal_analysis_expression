@@ -43,7 +43,9 @@ class tripal_expression_pvalue_loader extends TripalImporter
    *
    * @var string
    */
-  public static $upload_description = 'Files containing pvalue must be uploaded as a two column tsv or csv file, where the first column consists of the names of the features and the second column consists of the adjusted p-values.';
+  public static $upload_description = 'Files containing pvalue must be uploaded as ' .
+    'a two column tsv or csv file, where the first column consists of the names of ' .
+    'the features and the second column consists of the adjusted p-values.';
 
   /**
    * Indicates the methods that the file uploader will support.

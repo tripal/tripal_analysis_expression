@@ -12,15 +12,17 @@ class tripal_expression_data_loader extends TripalImporter {
 
   public static $machine_name = 'Chado_Expression_Data_Loader';
 
-  public static $description = 'Import expression data.  Requires an analaysis and biomaterial.';
+  public static $description = 'Import expression data.  Requires an analysis and biomaterial.';
 
   public static $file_types = ['csv', 'tsv', 'txt'];
 
   public static $upload_description = 'Expression data can be loaded from two format types. ' .
     'Select the column format for files that have two columns - transcript id and expression ' .
-    'value. Select the matrix format for files that specify biosample ' .
-    'by column and transcript by row. If "Column Format" is selected, the name of the column ' .
-    'file will be taken as the biomaterial name. It is recommended to avoid the use of white ' .
+    'value, with no header line. Select the matrix format for files that specify biosample ' .
+    'by column and transcript by row, with a header line identifying biomaterial name. ' .
+    'If "Column Format" is selected, the file name of the column file, without extension, will be ' .
+    'taken as the biomaterial name. ' .
+    'In all cases the first column is transcript id. It is recommended to avoid the use of white ' .
     'space in column file names and in biomaterial names.<br><br>Please verify the column or file ' .
     'names match the intended biomaterial name in the database. The uploaded file cannot be a directory.';
 
@@ -117,6 +119,8 @@ class tripal_expression_data_loader extends TripalImporter {
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
+
+    $class = get_called_class();
 
     $organisms = chado_get_organism_select_options(FALSE);
 
@@ -326,7 +330,7 @@ class tripal_expression_data_loader extends TripalImporter {
     $form['filetype'] = [
       '#type' => 'radios',
       '#title' => t('Source File Type'),
-      '#description' => t('Data can be loaded from two format types. Select the column format for files that have two columns - transcript id and expression value. Select the matrix format for files that specify biosample by column and transcript by row. If "Column Format" is selected, the name of the column file will be taken as the biomaterial name. It is recommended to avoid the use of white space in column file names and in biomaterial names.'),
+      '#description' => t($class::$upload_description),
       '#options' => [
         'col' => t('Column Format'),
         'mat' => t('Matrix Format'),
@@ -531,7 +535,7 @@ class tripal_expression_data_loader extends TripalImporter {
     }
     return [
       'findex' => $findex, 
-      'line' => trim($line)     
+      'line' => rtrim($line)
     ];
   }
   /**
@@ -564,12 +568,14 @@ class tripal_expression_data_loader extends TripalImporter {
       // If we've hit the header then extract the sample names.
       if ($in_header) {
         $sample_names = explode($this->delim, $line); 
+        // First column is feature_name, ignore this header.
+        array_shift($sample_names);
         $this->sample_order = $sample_names;
         $num_samples = count($sample_names);
         foreach ($sample_names as $index => $sample_name) {
           $this->samples[$sample_name] = [
             'name' => $sample_name,
-            'col' => $index            
+            'col' => $index + 1
           ];
         }
         $in_header = FALSE;
@@ -601,8 +607,10 @@ class tripal_expression_data_loader extends TripalImporter {
         // As a sanity check, make sure the number of values matches the number
         // of samples.
         if (count($values) != $num_samples) {
-          throw new Exception(t('Line, !num_lines, of the input matrix has an incorrect number of values. Chekck that the file delimiter has been set correctly and if the file is complete.',
-              ['!num_lines' => $num_lines]));
+          throw new Exception(t('Line !num_lines of the input matrix has an incorrect number of values. !found values found, but !expected values were expected. Check that the file delimiter has been set correctly and if the file is complete.',
+              ['!num_lines' => $num_lines,
+               '!found' => count($values),
+               '!expected' => $num_samples]));
         }
         $findex = ftell($this->files[0]);
       }
@@ -642,6 +650,11 @@ class tripal_expression_data_loader extends TripalImporter {
     $batch_size = 100;
     $num_samples = count($sra_ids);
     $num_batches = (int) ($num_samples / $batch_size) + 1;
+
+    // If no NCBI identifiers are present, there is nothing to do.
+    if (!$num_samples) {
+      return;
+    }
         
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
@@ -843,7 +856,7 @@ class tripal_expression_data_loader extends TripalImporter {
       $total++;
       $i++;
       
-      $assay_name =  $this->getAssayName($info);
+      $assay_name = $this->getAssayName($info);
       $names[] = $assay_name;
       $mapping[$assay_name] = $name;
               
@@ -1492,10 +1505,10 @@ class tripal_expression_data_loader extends TripalImporter {
    */
   private function getAssayName($sample) {
     if ($sample['name'] != $sample['biomaterial_name']) {
-      return 'Expression assay from, ' . $sample['name'] . ', from biological sample, ' . $sample['biomaterial_name']  . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
+      return 'Expression assay from ' . $sample['name'] . ', from biological sample, ' . $sample['biomaterial_name']  . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
     }
     else {
-      return 'Expression assay from, ' . $sample['name'] . ', derived from analysis "' .  $sample->analysis->getValue('name') . '"';
+      return 'Expression assay from ' . $sample['name'] . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
     }
   }
   
@@ -1616,6 +1629,13 @@ class tripal_expression_data_loader extends TripalImporter {
       if (array_key_exists('assay_biomaterial_id', $info)) {
         $skip = TRUE;
       }
+
+      // If the "Create BioSample Records" checkbox was not checked, and
+      // we didn't find the biosample_id in an earlier step, we have to fail.
+      if (!$info['biomaterial_id']) {
+        throw new Exception(t('There is no biomaterial_id available for "!sample_name". Either check the "Create BioSample Records" checkbox, or make sure the sample names exactly match those loaded with the biomaterial loader.',
+          ['!sample_name' => $info['name']]));
+        }
       
       if (!$skip) {
         $sql .= "(:assay_id_$i, :biomaterial_id_$i, :channel_id_$i, 1),\n";
@@ -1720,10 +1740,10 @@ class tripal_expression_data_loader extends TripalImporter {
    */
   private function getAcquisitionName($sample) {
     if ($sample['name'] != $sample['biomaterial_name']) {
-      return 'Measured expression from, ' . $sample['name'] . ', from biological sample, ' . $sample['biomaterial_name']  . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
+      return 'Measured expression from ' . $sample['name'] . ', from biological sample, ' . $sample['biomaterial_name']  . ', derived from the analysis named "' .  $this->analysis->getValue('name') . '"';
     }
     else {
-      return 'Measured expression from, ' . $sample['name'] . ', derived from analysis "' .  $sample->analysis->getValue('name') . '"';
+      return 'Measured expression from ' . $sample['name'] . ', derived from analysis "' .  $this->analysis->getValue('name') . '"';
     }
   }
   
