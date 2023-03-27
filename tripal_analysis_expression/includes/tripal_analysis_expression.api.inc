@@ -49,7 +49,7 @@ function tripal_analysis_expression_get_protocol_select_options($protocol_type) 
   $csql = "SELECT P.name, P.protocol_id
       FROM {protocol} P ORDER BY name";
 
-  $protocols = chado_query($csql, [':protocol_type' => $protocol_type]);
+  $protocols = chado_query($csql, []);
 
   // Iterate through the protocols and build an array of all protocols including
   // those that are not synced.
