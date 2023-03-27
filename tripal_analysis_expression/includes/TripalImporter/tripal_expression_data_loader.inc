@@ -187,8 +187,9 @@ class tripal_expression_data_loader extends TripalImporter {
     //      '#suffix' => $lt_message,
     //    ];
 
-    $lt_message = tripal_set_message(t('If the array design does not appear in this list, ') . l(t('add a new arraydesign.'),
-        'bio_data/add') . t(' If an array design is not selected, then a generic array design will be created for the analysis.'),
+    $lt_message = tripal_set_message(t('If the array design does not appear in this list, ') .
+        l(t('add a new arraydesign.'), 'bio_data/add') .
+        t(' If an array design is not selected, then a generic array design will be created for the analysis.'),
       TRIPAL_INFO, ['return_html' => TRUE]);
 
     $arraydesigns = tripal_analysis_expression_get_arraydesign_select_options();
@@ -196,7 +197,9 @@ class tripal_expression_data_loader extends TripalImporter {
     $form['experimental_design']['arraydesign_id'] = [
       '#title' => t('Array Design'),
       '#type' => 'select',
-      '#description' => t('The array design associated with this analysis. This is not required if the experimental') . t(' data was gathered from next generation sequencing methods. If an array design is not') . t(' selected, a generic array design will be used as a place filler.'),
+      '#description' => t('The array design associated with this analysis. This is not required if the ' .
+         'experimental data was gathered from next generation sequencing methods. If an array design ' .
+         'is not selected, a generic array design will be used as a place filler.'),
       '#options' => $arraydesigns,
       '#suffix' => $lt_message,
     ];
@@ -233,8 +236,9 @@ class tripal_expression_data_loader extends TripalImporter {
     //      '#description' => t('URI location that describes the acquisition.'),
     //    ];
 
-    $lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ') . l(t('add a new protocol.'),
-        'bio_data/add') . t(' An acquisition protocol is not required.'),
+    $lt_message = tripal_set_message(t('If the acquisition protocol is not present in the dropdown list, ') .
+        l(t('add a new protocol.'), 'bio_data/add') .
+        t(' An acquisition protocol is not required.'),
       TRIPAL_INFO, ['return_html' => TRUE]);
 
     $acquisitions = tripal_analysis_expression_get_protocol_select_options('Acquisition Protocol');
@@ -253,7 +257,7 @@ class tripal_expression_data_loader extends TripalImporter {
     $form['experimental_design']['quantification_details'] = [
       '#title' => t('Quantification Details'),
       '#type' => 'fieldset',
-      '#description' => t(' Quantification is the transformation of an image or set of sequences to numeric expression data. This typically involves statistical procedures.'),
+      '#description' => t('Quantification is the transformation of an image or set of sequences to numeric expression data. This typically involves statistical procedures.'),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
       '#weight' => 1,
@@ -364,7 +368,7 @@ class tripal_expression_data_loader extends TripalImporter {
       '#type' => 'checkbox',
       '#title' => t('Create BioSample Records'),
       '#description' => t('Check here if the expression sample names in your input file(s) ' . 
-         'should be used to create BioSample records?  The name of the expression sample will '. 
+         'should be used to create BioSample records. The name of the expression sample will ' .
          'be used to create the biological sample. The BioSample is a "sample" of the biological ' .
          'source material (e.g. sample of tissue from an individual) and all expression ' . 
          'values are obtained from a biological sample. This loader links all expression samples with ' .
@@ -873,7 +877,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $names = [];
         $mapping = [];
@@ -920,7 +924,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $assay_ids = [];
         $mapping = [];
@@ -967,7 +971,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $assay_ids = [];
         $mapping = [];
@@ -1014,7 +1018,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $acquisition_ids = [];
         $mapping = [];
@@ -1080,7 +1084,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $names = [];
         $mapping = [];
@@ -1136,7 +1140,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $names = [];
       }
@@ -1199,7 +1203,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $feature_ids = [];
         $mapping = [];
@@ -1295,7 +1299,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -1434,7 +1438,7 @@ class tripal_expression_data_loader extends TripalImporter {
           $this->setItemsHandled($batch_num);
           $batch_num++;
           
-          // Now reset all of the varables for the next batch.
+          // Now reset all of the variables for the next batch.
           $sql = '';
           $i = 0;
           $args = [];
@@ -1492,7 +1496,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -1571,7 +1575,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -1654,7 +1658,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -1692,7 +1696,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $assay_ids = [];
       }
@@ -1728,7 +1732,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $quantification_ids = [];
       }
@@ -1787,7 +1791,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -1836,7 +1840,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -1892,7 +1896,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
         
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -1950,7 +1954,7 @@ class tripal_expression_data_loader extends TripalImporter {
       ]);
       $this->feature_type_id = $result->fetchField();
       
-      // Make sure an arary design record exists. If the user didn't
+      // Make sure an array design record exists. If the user didn't
       // specify one then we'll make a generic one.
       if (!$this->arraydesign_id) {
         $this->insertArrayDesign();
@@ -2046,7 +2050,7 @@ class tripal_expression_data_loader extends TripalImporter {
         $this->insertQuantificationProps();
       }
       else {
-        $this->logMessage("  Skipping: no quantifcation unit specified.                             ");
+        $this->logMessage("  Skipping: no quantification unit specified.                            ");
       }
       
       $this->logMessage("Step 23 of 23: Insert Expression Data...                                   ");
