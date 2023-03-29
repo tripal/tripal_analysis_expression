@@ -133,9 +133,11 @@ class analysis_expression_data_downloader{
       drupal_add_http_header($name, $value);
     }
     drupal_send_headers();
-    $scheme = file_uri_scheme($uri);
+    $uri = drupal_realpath($uri);
+    //$scheme = file_uri_scheme($uri);
     // Transfer file in 1024 byte chunks to save memory usage.
-    if ($scheme && file_stream_wrapper_valid_scheme($scheme) && $fd = fopen($uri,
+    //    if ($scheme && file_stream_wrapper_valid_scheme($scheme) && $fd = fopen($uri,
+    if ($fd = fopen($uri,
         'rb')) {
       while (!feof($fd)) {
         print fread($fd, 1024);
@@ -161,7 +163,13 @@ class analysis_expression_data_downloader{
    * @throws \Exception
    */
   public function write() {
-    $out_file = $this->outfile;
+
+    // drupal_realpath() is converting this file to null if the file does not exist.
+    // split off the file name so that this doesn't happen.
+    // $out_file = $this->outfile;
+    $path_parts = pathinfo($this->outfile);
+    $out_file = drupal_realpath($path_parts['dirname']) . '/' . $path_parts['basename'];
+
     $data = [];
     $biomaterials = [];
 
@@ -171,7 +179,7 @@ class analysis_expression_data_downloader{
       $biomaterials[$result->biomaterial_name] = $result->biomaterial_name;
     }
 
-    $fh = fopen(drupal_realpath($out_file), "w");
+    $fh = fopen($out_file, "w");
     if (!$fh) {
       throw new Exception("Cannot open collection file: " . $out_file);
     }
