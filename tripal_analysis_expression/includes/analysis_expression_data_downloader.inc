@@ -184,24 +184,21 @@ class analysis_expression_data_downloader{
       throw new Exception("Cannot open collection file: " . $out_file);
     }
 
-    // Prepare the header
-    $header = " ,";//blank for feature name
-    $header .= implode(",", $biomaterials);
-    $header .= "\n";
-
-    fwrite($fh, $header);
+    // Save the header
+    $header = array_merge([""], $biomaterials); // blank for feature name column
+    fputcsv($fh, $header);
 
     foreach ($data as $feature_name => $feature) {
-      fwrite($fh, $feature_name . ",");
-      // Loop through biomaterials (rows)
+      $line = [$feature_name];
+      // Loop through biomaterials (columns)
       foreach ($biomaterials as $biomaterial) {
         $value = "NA";
         if (isset($feature[$biomaterial])) {
           $value = $feature[$biomaterial];
         }
-        fwrite($fh, $value . ",");
+        $line[] = $value;
       }
-      fwrite($fh, "\n"); // End of feature, newline
+      fputcsv($fh, $line);
     }
 
     fclose($fh);
