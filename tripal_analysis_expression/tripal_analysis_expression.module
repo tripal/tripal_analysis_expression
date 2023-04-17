@@ -510,13 +510,15 @@ function tripal_analysis_expression_heatmap_block(&$block)
                </a>';
 
       drupal_add_js(drupal_get_path('module',
-          'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js');
+          'tripal_analysis_expression') . '/theme/js/plotly-latest.min.js',
+        ['weight' => -999]);
       drupal_add_js(['tripal_analysis_expression' => ['data' => $heatmap]],
-        ['type' => 'setting']);
+        ['type' => 'setting', 'weight' => -998]);
       drupal_add_js(['tripal_analysis_expression' => ['baseURL' => $base_url]],
-        ['type' => 'setting']);
+        ['type' => 'setting', 'weight' => -997]);
       drupal_add_js(drupal_get_path('module',
-          'tripal_analysis_expression') . '/theme/js/heatmap.js');
+          'tripal_analysis_expression') . '/theme/js/heatmap.js',
+        ['weight' => -996]);
     } else {
       $block['subject'] = '';
       if (isset($_GET['heatmap_feature_uniquename']) && !empty($_GET['heatmap_feature_uniquename'])) {
