@@ -39,7 +39,7 @@ class local__expression_features_formatter extends ChadoFieldFormatter
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display)
   {
     $pvalue_cvterm_id = chado_get_cvterm([
-      'cv_id' => ['name' => 'obi'],
+      'cv_id' => ['name' => 'OBI'],
       'name' => 'p-value',
     ])->cvterm_id;
     $evidence_code_cvterm_id = chado_get_cvterm([

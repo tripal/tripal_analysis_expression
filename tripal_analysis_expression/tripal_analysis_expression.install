@@ -240,7 +240,7 @@ function tripal_analysis_expression_add_pvalue_cvterm() {
   chado_insert_cvterm([
     'id' => 'OBI:0000175',
     'name' => 'p-value',
-    'cv_name' => 'obi',
+    'cv_name' => 'OBI',
     'db_name' => 'OBI',
     'description' => 'A quantitative confidence value that represents the probability of obtaining a result at least as extreme as that actually obtained, assuming that the actual value was the result of chance alone.'
   ]);
@@ -518,17 +518,4 @@ function tripal_analysis_expression_update_7304() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not perform update: ' . $error);
   }  
-}
-
-/**
- * Corrects CV name for p-value term, formerly cv name was "OBI" but should be "obi"
- */
-function tripal_analysis_expression_update_7305() {
-  try {
-    tripal_analysis_expression_add_pvalue_cvterm();
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: ' . $error);
-  }
 }
