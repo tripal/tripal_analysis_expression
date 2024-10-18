@@ -318,11 +318,11 @@ class tripal_expression_pvalue_loader extends TripalImporter
     $so_term = $run_args['so_term'];
 
     $this->pvalue_cvterm_id = chado_get_cvterm([
-      'cv_id' => ['name' => 'OBI'],
+      'cv_id' => ['name' => 'obi'],
       'name' => 'p-value',
     ])->cvterm_id;
     if (!$this->pvalue_cvterm_id) {
-      throw new Exception(t('The CV term "p-value" was not found in the CV "OBI". Please add this term',
+      throw new Exception(t('The CV term "p-value" was not found in the CV "obi". Please add this term',
         []));
     }
 

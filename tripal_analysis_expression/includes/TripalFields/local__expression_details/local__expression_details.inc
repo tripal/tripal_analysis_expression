@@ -110,7 +110,7 @@ class local__expression_details extends ChadoField{
     $feature_id = $entity->chado_record->feature_id;
 
     $pvalue_cvterm_id = chado_get_cvterm([
-      'cv_id' => ['name' => 'OBI'],
+      'cv_id' => ['name' => 'obi'],
       'name' => 'p-value',
     ])->cvterm_id;
 
